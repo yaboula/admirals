@@ -1,0 +1,1598 @@
+# 📱 Admirals — Plataforma raíz: La Admirals Tablet
+
+> **Versión:** 1.0 (firmado)
+> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
+> **Documento hermano:** `01_node_farm.md` v1.1 (la Granja consume el Manager Panel y varias apps de la Tablet).
+> **Estado:** primera redacción completa de las 4 partes (29 secciones, ~1600 líneas).
+
+> **Lectura previa obligatoria:** Product Bible §3 (5 Pilares — la Tablet es el Pilar 5), §13.4 (División 3D vs Código).
+
+---
+
+## 0. Resumen ejecutivo
+
+La **Admirals Tablet** es la **plataforma raíz de software del ecosistema** y el **único "menú" aceptable de Admirals**.
+
+Es a la vez:
+
+- **Un dispositivo físico** con modelo 3D propio, animaciones de manipulación, sonidos identitarios, variantes de hardware. Cuando un jugador lo saca del bolsillo, todo el mundo lo ve.
+- **Un sistema operativo** (AdmiralsOS) con boot, home, notificaciones, ajustes — diseñado como un sistema empresarial, no como un smartphone genérico.
+- **Una plataforma de apps modulares** que cada producto Admirals instala. La Granja añade su Manager Panel. El Molino añade su panel de molienda. Los Restaurantes añaden su panel de cocina. Etc.
+- **El gancho universal** que conecta jugadores entre sí y con el ecosistema: mensajes, contratos, banca, ofertas de trabajo, comercio.
+
+Sin la Tablet, Admirals sería un conjunto de scripts. **Con la Tablet, Admirals es un ecosistema unificado.**
+
+---
+
+## 1. Filosofía y posicionamiento
+
+### 1.1 Por qué la Tablet es el 5º Pilar
+
+La pregunta original del fundador fue: *"¿Cómo abrimos un menú sin romper el Pilar 1 (todo es físico)?"*
+
+**Respuesta:** no abrimos un menú. Sacamos un dispositivo. El dispositivo es real, es un objeto del mundo, tiene modelo 3D, animación de manipulación, sonidos, peso visual. La pantalla del dispositivo muestra la UI — pero la UI **vive dentro del dispositivo, no flotando sobre el HUD**.
+
+Esto resuelve la tensión filosófica:
+
+- **Pilar 1 respetado:** todo es físico, incluida la interfaz administrativa. La Tablet es un objeto.
+- **Pilar 3 respetado:** el detalle obsesivo se vuelca también en la UI — animaciones, transiciones, sonidos, polish AAA.
+- **Pilar 4 respetado:** modelo propio, branding propio, OS propio.
+- **Pilar 5 nuevo:** la Tablet es el sistema nervioso del ecosistema. Cualquier vertical futura instala apps; ninguna inventa su propio menú.
+
+### 1.2 La Tablet NO es un teléfono
+
+> **Decisión de diseño crítica.** En FiveM hay decenas de scripts de "phone" (lb-phone, qb-phone, gksphone). La Tablet **no compite con ellos**. La Tablet es **complementaria**.
+
+Diferencias intencionadas con un phone genérico:
+
+| Phone genérico FiveM | Admirals Tablet |
+|---|---|
+| Vida personal del personaje | Vida profesional / empresarial del jugador |
+| Twitter / Instagram in-game | Mercado laboral, contratos B2B |
+| Llamadas privadas, mensajes ligeros | Comunicación profesional, documentos firmables |
+| Apps "redes sociales" | Apps de gestión de empresa, dashboards, analytics |
+| Pequeño, vertical, pantalla 6" | Tablet 10" horizontal, pensada para ver datos y tablas |
+| 1 app de banca básica | Banca empresarial real con cuentas, contratos, libros |
+| 1 app de fotos | Cámara para documentar (uso profesional, no selfies) |
+
+**Convivencia con phones de terceros:** la Tablet es opcional — un servidor puede usar phone genérico para vida social + Tablet Admirals para vida empresarial. **No competimos por el mismo espacio mental del jugador.**
+
+### 1.3 La Tablet NO es un menú
+
+Lo que la Tablet **NO hace**:
+
+- ❌ No abre flotando con un comando `/menu`.
+- ❌ No es invisible cuando el jugador la usa (otros jugadores la ven en sus manos).
+- ❌ No tiene UI sobre el HUD de GTA. La UI está **dentro de la pantalla del modelo 3D**.
+- ❌ No es instantánea. Hay animación de sacarla del bolsillo, encenderla, cerrarla, guardarla.
+- ❌ No reemplaza a la acción física. Sembrar sigue siendo físico, pagar nóminas no.
+
+### 1.4 Anti-patrones específicos de la Tablet
+
+> Lo que **JAMÁS** vamos a hacer en este producto.
+
+- ❌ **UI flotante sobre HUD** que no esté contenida en el modelo 3D del dispositivo.
+- ❌ **"Phone clone"** con apps de redes sociales, swipe-to-match, etc. Eso es vida personal — no es nuestro espacio.
+- ❌ **App que sustituye una acción física** (cosechar desde la Tablet, sembrar desde la Tablet). La Tablet **organiza**, no **ejecuta** trabajo manual.
+- ❌ **Apps con UIs cada una a su rollo.** El sistema operativo impone consistencia: tipografía, paleta, controles, transiciones — todos comparten librería de componentes.
+- ❌ **Notificaciones genéricas tipo "tienes 1 mensaje".** Cada notificación tiene icono, color, sonido, contexto.
+- ❌ **Boot instantáneo.** El boot es parte del wooow — no se salta.
+- ❌ **App icons mal pensados.** Cada app tiene un icono propio diseñado, coherente con la paleta y el lenguaje visual Admirals.
+- ❌ **No tener identidad de marca en la UI.** El logo Admirals aparece en el boot, en el lock screen, en el dorso de la tablet. La marca está omnipresente sin ser invasiva.
+- ❌ **Apps imposibles de quitar.** Aunque las apps de Admirals son las predeterminadas, el jugador puede ocultar/reordenar.
+
+---
+
+## 2. Hardware — el dispositivo físico
+
+### 2.1 Modelo 3D y formato
+
+**Form factor:** tablet horizontal de 10 pulgadas. Estilo industrial-elegante, no consumer-cute. Inspiración: iPad Pro + tablet rugged de empresa.
+
+**Dimensiones aproximadas (in-game):**
+- 24cm × 17cm × 0.9cm.
+- Peso visual: se siente sólida cuando se manipula (animaciones con cierta inercia).
+
+**Elementos físicos visibles:**
+- **Pantalla** (frontal, ocupa ~85% del frente).
+- **Marco** delgado con el nombre **ADMIRALS** grabado en la parte inferior (sutil, no llamativo).
+- **Cámara frontal** pequeña en el bisel superior (selfie / video-llamadas).
+- **Cámara trasera** en esquina superior izquierda (para documentación in-world: fotos de campos, productos).
+- **Botón físico de power** en lateral derecho.
+- **Botón físico de volumen** (subir/bajar) en lateral derecho.
+- **Puerto de carga** en lateral inferior (decorativo, no funcional gameplay).
+- **Logo Admirals** grabado en el dorso (con acabado especular sutil).
+- **Identificador del propietario** opcional — el jugador puede grabar su nombre en el dorso desde Settings (texto plano).
+
+**Materiales por variante (ver §2.2):**
+- Básica: aluminio mate.
+- Pro: aluminio cepillado + bisel acentuado.
+- Enterprise: marco de titanio mate + dorso con patrón sutil tipo carbono.
+
+### 2.2 Variantes (3 tiers)
+
+> **Decisión de diseño:** las variantes son **mismo software**, diferente hardware. La diferenciación es estética + algunas features secundarias. **No bloqueamos apps por tier** — un nuevo jugador con Tablet Básica puede operar una empresa igual que uno con Enterprise. El upgrade es por estatus, no por gating.
+
+| Tier | Coste in-game | Hardware | Beneficios extra |
+|---|---|---|---|
+| **Básica** | Bajo (o gratis al crear personaje) | Aluminio mate, color gris | Acceso a todas las apps base. 6 wallpapers. 3 ringtones. |
+| **Pro** | Medio | Aluminio cepillado, 4 colores (gris, negro, dorado, plata) | + 20 wallpapers premium. + 10 ringtones. + Skin "Premium" para AdmiralsOS. + Animación de boot premium. |
+| **Enterprise** | Alto | Titanio + dorso carbono, 2 acabados (negro mate / champagne) | + 50 wallpapers exclusivos. + 25 ringtones. + Skin "Enterprise" (paleta más sobria, tipografía más fina). + **Dock-ready certificado** (anim distinta al docking). + Grabado personalizado del dorso (logo de empresa). + Soporte para **2 cuentas simultáneas** (útil para gerentes de varias empresas). |
+
+**Compra:** desde la **Tienda Admirals** (la propia app, ver §13). NPC vendedor opcional + entrega física (caja con animación de unboxing — wooow).
+
+**Pérdida/robo:** la Tablet puede perderse o ser robada. Si pasa, el jugador puede comprar una nueva en la Tienda y **toda su data se restaura** (cuenta cloud Admirals — ver §16). Los archivos privados (notas, fotos) se restauran si tenía sync activo; si no, se pierden.
+
+### 2.3 Estados físicos de la Tablet
+
+La Tablet tiene **4 estados físicos** distintos que el mundo ve:
+
+| Estado | Descripción | Visual |
+|---|---|---|
+| **Guardada** | En el bolsillo del personaje | No visible — solo bulto sutil en bolsillo trasero o mochila |
+| **En mano (off)** | Sacada pero pantalla apagada | Modelo 3D en mano, pantalla negra con logo apenas visible |
+| **En mano (on)** | Pantalla encendida y operativa | Modelo 3D en mano, pantalla con UI activa |
+| **En dock / mesa** | Apoyada en superficie o en dock | Modelo 3D estático sobre prop, pantalla puede estar on/off |
+
+**Transiciones:** cada cambio entre estados tiene animación específica (ver §3 y §25).
+
+### 2.4 Identidad visual de la marca
+
+- **Logo Admirals** grabado en dorso — siempre visible cuando otro jugador ve la Tablet de espaldas.
+- **Splash screen de boot** — logo Admirals + ondas de "señal naval" expandiéndose.
+- **Wallpapers oficiales** — todos con motivos navales/militares/cinematográficos sobrios.
+- **Tipografía** — sans-serif moderna pero con peso (sugerencia: Inter / Manrope / SF Pro). Nunca tipografía playful.
+- **Paleta** — azul marino profundo + dorado discreto + blanco/gris neutros. La paleta está fijada en el `art_direction.md`.
+- **Sonidos identitarios** — boot sound naval (ver §3.2), notification sound suave, app launch click discreto.
+
+---
+
+## 3. La animación de saque/guarde — el wooow del primer segundo
+
+> **Esta animación es lo primero que ve un jugador nuevo de Admirals.** Tiene que ser memorable.
+
+### 3.1 Sacar la Tablet
+
+**Trigger:** tecla configurable (default: `K`) o comando `/tablet`.
+
+**Secuencia:**
+1. Personaje detiene movimiento principal (no se cancela conducción ni acciones críticas).
+2. Mano dominante se mueve hacia bolsillo trasero / interior chaqueta. **Animación 1: alcanzar bolsillo**.
+3. Saca la Tablet (visible). **Animación 2: extraer**.
+4. Lleva la Tablet a posición de uso (frente al pecho, ligeramente inclinada). **Animación 3: posicionar**.
+5. Pulsa botón de power con el pulgar. **Animación 4: encender**.
+6. Pantalla pasa de negro a logo Admirals (boot).
+7. Boot completo en 1.5-2 segundos.
+8. Aparece **lock screen** o, si está desbloqueada, **home**.
+
+**Tiempo total:** ~2.5 segundos. Es lento adrede — comunica **"esto es algo que estás haciendo, no algo que se abre"**.
+
+**Variaciones contextuales:**
+- Si está conduciendo: la Tablet se monta automáticamente en un dock del salpicadero (modelos de coche con dock real visible — futuro). Por ahora: la Tablet se saca pero la animación es más rápida y la mano izquierda mantiene volante.
+- Si va a pie: secuencia completa.
+- Si está sentado en silla del despacho: la Tablet ya está en el dock (no hay sacar — ver §21).
+- Si está en un vehículo agrícola: lo mismo, dock del salpicadero (futuro).
+
+### 3.2 Boot sound — el sonido identitario
+
+> **Comparable a la campana al subir a un puente naval.** Distintivo, breve, profesional.
+
+- **Sonido:** ~1.2 segundos. Una nota grave de campana naval suavizada + un acorde sintético sobrio que sube. Termina con un click discreto.
+- **No es alegre.** Es serio, profesional, naval. Como un Mac chime pero con identidad propia.
+- **No se puede silenciar al 100%** — el volumen mínimo es bajo pero perceptible. Es parte del branding.
+- **Variantes Pro / Enterprise:** versiones con más capas armónicas, más "ricas". Mismo motivo, calidad de mezcla mayor.
+
+### 3.3 Guardar la Tablet
+
+**Trigger:** misma tecla, o gesto "swipe down + close" en la propia Tablet, o pulsando botón de power.
+
+**Secuencia:**
+1. Pantalla muestra animación de "apagado" — la UI hace fade-out a un punto en el centro (como TV antigua), 0.4s.
+2. Pantalla apagada (negra con logo apenas tenue).
+3. Personaje guarda la Tablet en el bolsillo. **Animación inversa de saque** (1s).
+
+**Tiempo total:** ~1.4 segundos. Más rápido que sacar — porque guardar es menos ceremonia.
+
+### 3.4 Estados intermedios visibles
+
+- **Notificación entrante mientras Tablet guardada:** sutil vibración del personaje (ligero shake del modelo + sonido de vibración amortiguada del bolsillo). El jugador decide sacarla o no.
+- **Llamada entrante:** vibración + ringtone audible (proporcional al volumen configurado). Si el jugador no responde en X segundos, va al buzón.
+- **Tablet boca abajo en mesa:** las notificaciones se silencian visualmente (la pantalla no se enciende). Sonido sigue. Es un gesto humano: poner el "móvil boca abajo" para concentrarse.
+
+---
+
+## 4. AdmiralsOS — el sistema operativo
+
+### 4.1 Filosofía: tablet empresarial, no smartphone
+
+AdmiralsOS está diseñado como un **sistema operativo de productividad empresarial**, no como un sistema social-personal.
+
+- **Layout horizontal por defecto** (la Tablet vive horizontal — formato dashboard).
+- **Densidad de información alta** — caben varios paneles a la vez. No es minimalismo decorativo; es información útil empaquetada con jerarquía clara.
+- **Colores sobrios** — azul marino, dorado, blancos. Cero saturación gratuita.
+- **Animaciones contenidas** — transiciones suaves de 200-300ms, nunca rebotes ni "spring" llamativos. Profesional, no juguetón.
+- **Sonidos discretos** — clicks suaves, sin chimes alegres.
+
+### 4.2 Boot sequence
+
+**Cuando se enciende la Tablet desde apagada:**
+
+| Fase | Duración | Visual | Audio |
+|---|---|---|---|
+| **0 — Pantalla negra** | 0.2s | Negro absoluto | Silencio |
+| **1 — Logo Admirals aparece** | 0.4s | Logo en blanco fundido al centro | Inicio del boot sound |
+| **2 — Ondas de señal naval expandiéndose** | 0.5s | 3 anillos concéntricos brevemente desde el logo | Climax del boot sound |
+| **3 — Texto "AdmiralsOS"** debajo del logo | 0.3s | Aparece tipografía fina + versión OS muy pequeña | Decay del sonido |
+| **4 — Fade a home/lock** | 0.4s | Cross-fade limpio | Click discreto al final |
+
+Total boot: ~1.8 segundos. **No skippable** — es parte de la firma.
+
+**Boot rápido** (cuando la Tablet ya estaba en standby, no apagada del todo): solo fase 4. Pasa en 0.4s.
+
+### 4.3 Lock screen
+
+**Cuándo aparece:**
+- Tras boot completo (si lock activado en Settings — default off para reducir fricción inicial; admins de servidor pueden forzar lock por config).
+- Tras N minutos de inactividad (configurable).
+
+**Layout:**
+- **Wallpaper** (configurable, ver §2.4).
+- **Hora grande** en la esquina superior izquierda (fuente fina elegante).
+- **Fecha** debajo de la hora.
+- **Logo Admirals** sutil en esquina superior derecha.
+- **Indicador de notificaciones** si hay alguna pendiente (badges en los iconos abajo).
+- **Indicador de estado** (señal in-world, batería decorativa, modo silencio).
+- **Texto inferior**: *"Toca para desbloquear"* o equivalente.
+
+**Desbloqueo:**
+- **Modo simple** (default): tap en pantalla → home directo.
+- **Modo PIN** (opt-in): el jugador define un PIN de 4-6 dígitos. Aparece teclado numérico al tap. Si falla 3 veces, espera 30s.
+- **Modo huella** (futuro RP): swipe sobre lector de huella.
+- **Modo facial** (futuro): cámara frontal "escanea" al personaje (animación + verificación instantánea).
+
+### 4.4 Home screen
+
+> **El centro neurálgico de la experiencia.**
+
+**Layout horizontal de pantalla (1280x800 efectivo):**
+
+```
+┌─────────────────────────────────────────────────┐
+│ [Hora] [Notif badge] [Wifi] [Bat] │ [Buscar...] │  ← status bar
+├─────────────────────────────────────────────────┤
+│                                                 │
+│   [📊] [🌾] [💼] [📨] [🏦] [📋] [🛒] [⚙]      │  ← grid de apps (4 columnas × 2 filas por defecto)
+│   Empr  Mngr  Mrkt  Msgs  Banca Notas Tienda Set│
+│                                                 │
+│   [⊕]   [⊕]   [⊕]   [⊕]                          │  ← slots libres para apps de futuras verticales
+│                                                 │
+├─────────────────────────────────────────────────┤
+│  Widget: tareas pendientes  │  Widget: caja     │  ← widgets opcionales en la fila inferior
+└─────────────────────────────────────────────────┘
+```
+
+**Elementos clave:**
+- **Status bar superior** (40px): hora, notificaciones, indicadores, **buscador global** (tap → busca en apps, contactos, contratos, etc.).
+- **Grid de apps** (4 columnas × 2 filas, expandible scrolleando hacia derecha si hay más apps instaladas).
+- **Widgets opcionales** en la franja inferior — cada app puede registrar widget (Manager Panel ofrece "tareas pendientes hoy", Banca ofrece "saldo de caja", etc.). Configurables.
+
+**Wallpaper:** detrás de todo. 30-50% de oscurecimiento dinámico para que los iconos contrasten siempre.
+
+**Reordenar apps:** long-press en un icono → modo "shake" sutil → drag-and-drop. Igual que iPad pero más sobrio (shake casi imperceptible).
+
+### 4.5 App switcher (multitarea)
+
+**Trigger:** swipe desde el borde inferior con dos dedos, o gesto "borde + swipe up", o botón Home doble-tap.
+
+**Layout:**
+- Vista de **tarjetas grandes** de cada app abierta — preview en vivo de lo que estaba haciendo.
+- Tarjetas se pueden swipe-up para cerrarlas.
+- Tap en una tarjeta = volver a esa app.
+
+**Wooow:** en el preview se ve la UI viva de la app (tareas asignadas en Manager Panel, último mensaje en Mensajes, etc.). No es un screenshot estático.
+
+### 4.6 Panel de notificaciones (centro de control)
+
+**Trigger:** swipe desde borde superior hacia abajo.
+
+**Layout:**
+
+```
+┌─────────────────────────────────────────────────┐
+│         [Brillo ─────●──]  [Vol ───●────]       │
+│                                                 │
+│ [WiFi] [Silencio] [No molestar] [Cámara] [Modo] │  ← toggles
+│                                                 │
+│ ─── Notificaciones ─────────────────────── Limpiar
+│                                                 │
+│ 🔴 Plaga detectada — Granja Marcos    hace 2min │
+│ 💰 Pago recibido — 1,240$              hace 8min │
+│ 📋 Contrato firmado — Molino Pedro    hace 23min │
+│ 🌦️ Tormenta entrante — 30 min          hace 45min │
+│                                                 │
+│ ─── Anteriores ─────────────────────────         │
+│ ...                                              │
+└─────────────────────────────────────────────────┘
+```
+
+**Notificaciones:**
+- Cada una tiene **icono + color + sonido distintivo según tipo** (ver Granja §12.4 — el mismo sistema vale para todo el ecosistema).
+- Tap en una → abre la app correspondiente en el contexto exacto (ej. tap en plaga → abre Manager Panel directamente en parcela afectada).
+- Swipe-left → ocultar.
+- Swipe-right → marcar como leída sin abrir.
+
+**Toggles del centro de control:**
+- **WiFi** (in-world: activar conexión — afecta a si recibes notificaciones).
+- **Silencio** (mute notificaciones).
+- **No molestar** (silencio + bloquea pop-ups en pantalla).
+- **Cámara** (acceso rápido a la app cámara — ver §13 / oleada futura).
+- **Modo trabajo / personal** (futuro — perfila qué notificaciones llegan).
+
+### 4.7 App de Settings (visión previa, detalle en §14)
+
+Acceso a configuración global del dispositivo. Incluye:
+
+- Personalización (wallpaper, ringtones, theme).
+- Sonidos (volumen general, ringtones por app, vibración).
+- Notificaciones (qué apps notifican, qué tipos).
+- Cuenta(s) (gestionar cuenta(s) Admirals — ver §16).
+- Privacidad (PIN, qué apps son visibles a otros jugadores que vean tu pantalla).
+- Almacenamiento (qué apps ocupan más espacio — uso narrativo / RP).
+- Acerca de (versión OS, modelo, número de serie, soporte).
+- Apagar / Reiniciar.
+
+### 4.8 Sistema operativo — principios técnicos visibles al jugador
+
+Estos no son detalles internos — son cosas que **el jugador percibe**:
+
+- **Apps siempre disponibles si están instaladas.** No hay "no tengo cobertura". Solo el toggle WiFi cambia la disponibilidad de funciones online (mensajes, mercado).
+- **Sincronización cloud Admirals.** Los datos de cuenta (banca, contratos, mensajes, notas) se guardan en cuenta cloud. Cambias de Tablet → todo restaurado (ver §16).
+- **Apps modulares.** Cada producto Admirals añade su(s) app(s) sin tocar el OS. Si un servidor instala solo Granja, en la Tablet se ven las apps base + las apps de Granja. Si añade Molino, aparecen las apps de Molino.
+- **Updates de apps in-world.** Visualmente: cuando un servidor actualiza un producto, el jugador ve un breve splash *"App Manager Panel actualizada"* la próxima vez que abra la Tablet. Detalle de inmersión.
+
+---
+
+## 5. Catálogo de apps de lanzamiento — visión general
+
+> Las apps siguientes son las **apps base** que cualquier jugador del ecosistema Admirals tiene instaladas desde el momento que adquiere su primera Tablet. Son apps **transversales** — no dependen de un nodo concreto. Los productos Admirals (Granja, Molino, Restaurantes…) **añaden** apps adicionales (como Manager Panel del granjero, panel del molinero, etc.).
+
+### 5.1 Mapa de apps de lanzamiento
+
+| # | App | Icono concept | Propósito |
+|---|---|---|---|
+| 1 | **Empresa** | 🏢 silueta edificio | Gestionar las empresas a las que perteneces (dueño, gerente, empleado) |
+| 2 | **Manager Panel** ⭐ | 📊 dashboard | App insignia — ERP de gestión empresarial avanzada (5 vistas) |
+| 3 | **Mercado** | 🏷️ etiqueta | Compra-venta entre jugadores, ofertas de trabajo temporal, marketplace |
+| 4 | **Logística** | 🚚 camión | Gestión de transportes, rutas, entregas, recibos |
+| 5 | **Mensajes** | 💬 burbuja | Comunicación profesional 1-a-1 y grupal entre jugadores y empresas |
+| 6 | **Banca** | 🏦 columna | Cuentas personales y empresariales, transferencias, contratos financieros |
+| 7 | **Notas & Contratos** | 📋 pergamino | Documentos personales y contratos B2B con firma digital |
+| 8 | **Tienda Admirals** | 🛒 carro | Compra de productos Admirals (variantes Tablet, licencias, skins, apps) |
+| 9 | **Settings** | ⚙ engranaje | Configuración global del dispositivo |
+
+> **Nota sobre Manager Panel:** la app es **una sola** pero su contenido **se compone dinámicamente** según las empresas a las que el jugador pertenezca. Un dueño de Granja ve el Manager Panel del granjero (descrito en `01_node_farm.md` §12). Un dueño de Molino verá el del molinero (futuro). Un jugador con Granja + Molino verá un selector de empresa al abrir la app y luego el panel correspondiente.
+
+### 5.2 Lenguaje visual común a todas las apps
+
+> **El OS impone consistencia. Cada app sigue el mismo lenguaje.**
+
+- **Header** estándar: nombre de app a la izquierda, acciones contextuales a la derecha, badge de notificación si aplica.
+- **Tab bar** lateral izquierda (rara) o superior (común) para sub-secciones.
+- **Tipografía**: la misma del OS (sans-serif corporativa).
+- **Colores**: cada app puede tener un color de acento, pero todas comparten la paleta base.
+- **Botones primarios**: estilo Admirals (azul marino + dorado al hover).
+- **Tablas**: estilo dashboard, filas alternadas, sortable, filtrable.
+- **Modales**: con fade + slight scale-in (200ms).
+- **Toasts**: arriba a la derecha, fade out en 4s.
+
+---
+
+## 6. App Empresa
+
+### 6.1 Propósito
+
+Permite a cualquier jugador **ver y gestionar las empresas a las que pertenece** (como dueño, gerente, empleado o temporal). Es la **lista de afiliaciones laborales del personaje**.
+
+### 6.2 Layout
+
+**Vista principal (Inicio):**
+
+```
+┌─────────────────────────────────────────────────┐
+│ Empresa                              [+ Nueva]  │
+├─────────────────────────────────────────────────┤
+│  Mis empresas                                   │
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │ 🌾 Granja del Valle                       │  │
+│  │ Rol: Dueño                                │  │
+│  │ Empleados: 4 │ Reputación: 87 │ Caja: ✓  │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │ 🍞 Panadería Pedro                         │  │
+│  │ Rol: Empleado · Tendero                   │  │
+│  │ Próx. salario: 1,200$ en 2h               │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+│  Tap en empresa → detalle / Manager Panel       │
+└─────────────────────────────────────────────────┘
+```
+
+### 6.3 Detalle de empresa (al tap)
+
+**Para una empresa donde eres Dueño/Gerente:**
+
+- Resumen visual: nombre, logo, reputación (estrella + número), sede (ubicación), antigüedad.
+- Acciones rápidas: **Abrir Manager Panel** (botón grande), Ver libro contable, Ver empleados, Pagar nóminas.
+- Métricas top 3: Beneficio mes / Empleados / Producción acumulada.
+- Acceso a los detalles administrativos (modificar nombre, logo, vender empresa, dar de baja).
+
+**Para una empresa donde eres Empleado/Temporal:**
+
+- Resumen: nombre, tu rol, antigüedad, salario, próximo pago.
+- Tareas pendientes (si gerente te asignó alguna).
+- Botón "Solicitar día libre" / "Hablar con gerente" (abre Mensajes).
+- Botón "Renunciar" (con confirmación + nota al dueño).
+
+### 6.4 Crear nueva empresa
+
+Botón **[+ Nueva]** → wizard:
+1. Selección de **vertical** (Granja, Molino, Restaurante, etc. — solo aparecen las verticales que el servidor tenga instaladas).
+2. **Nombre comercial** + **logo** (subir o elegir entre presets).
+3. **Sede física** (selección en mapa — solo lugares disponibles que el servidor permita).
+4. **Pago de licencia** (tarifa única configurable por servidor — sink económico).
+5. **Confirmar.** Animación de "registrando empresa" + sonido de sello (~3s).
+6. Aparece en la lista. Acceso al Manager Panel desbloqueado.
+
+### 6.5 Wooow específicos
+
+- **Animación de sello al fundar** la empresa (el sistema "imprime" un certificado virtual + lo añade a Notas & Contratos).
+- **Logo de empresa visible en TODOS los lugares** del ecosistema donde aparece esa empresa (saco con logo, camión con livery del logo, contrato firmado con el logo, Tablet de empleados con el logo en su Empresa app).
+- **Reputación visible** como una insignia con estrella dorada/plateada/bronce según rango.
+
+---
+
+## 7. App Manager Panel ⭐ (la app insignia)
+
+### 7.1 Propósito
+
+> **Esta es la app que más identifica a Admirals.**
+
+El **ERP de gestión empresarial** del ecosistema. Cuando una empresa tiene complejidad (empleados, parcelas, inventario, finanzas), el jugador la opera desde el Manager Panel.
+
+Su contenido **es modular**: cada vertical aporta sus propias vistas. Para la **Granja**, las vistas se describen en detalle en `01_node_farm.md` §12 (Operations / Personnel / Finance / Inventory / Strategic). Para Molino, Restaurantes, etc., habrá vistas equivalentes adaptadas a su gameplay.
+
+### 7.2 Estructura común a todas las verticales
+
+Independientemente del nodo, el Manager Panel siempre tiene **5 áreas conceptuales**:
+
+| Área | Pregunta que responde | Ejemplo Granja |
+|---|---|---|
+| **Operations** | "¿Qué está pasando ahora mismo en mi negocio?" | Mapa de parcelas, tareas del día |
+| **Personnel** | "¿Quién trabaja para mí y cómo de bien?" | Lista de empleados, productividad, salarios |
+| **Finance** | "¿Cómo va el dinero?" | Ingresos, gastos, beneficio, gráficos |
+| **Inventory** | "¿Qué tengo en stock?" | Silos, cámaras, almacenes |
+| **Strategic** | "¿Cuál es la mejor decisión a futuro?" | Sugerencias, calendario, comparativa, contratos |
+
+Cada vertical instancia estas 5 áreas con su contenido. **Esta consistencia es clave**: un jugador que aprende a operar la Granja, ya sabe dónde mirar cuando opere un Molino o un Restaurante.
+
+### 7.3 Selector de empresa
+
+Si el jugador es dueño/gerente de **varias empresas**, al abrir Manager Panel aparece un **selector** en el header:
+
+```
+┌─────────────────────────────────────────────────┐
+│ Manager Panel                                    │
+│ Empresa: [▼ Granja del Valle]                    │
+│  ─ Granja del Valle                              │
+│  ─ Panadería Pedro                               │
+│  ─ Cooperativa Norte                             │
+└─────────────────────────────────────────────────┘
+```
+
+Cambiar empresa = recargar el panel con sus datos. **Wooow:** transición suave de 300ms entre datasets, no flash bruto.
+
+### 7.4 Datos en tiempo real
+
+> Toda la información se actualiza en vivo. El bus de eventos del ecosistema (`admirals:state_change`) garantiza que cualquier cambio en el mundo aparece en la Tablet inmediatamente.
+
+Esto permite escenas wooow: el dueño está en la oficina viendo el Manager Panel y, **al mismo tiempo que su empleado termina una cosecha**, el silo se llena en la pantalla. Sin refrescar.
+
+### 7.5 Modo dock (pantalla grande)
+
+Cuando la Tablet está **acoplada al dock del despacho** (ver §21), el Manager Panel se redimensiona automáticamente al monitor del despacho. La densidad de información sube (más columnas, más gráficos visibles a la vez). El control sigue siendo desde la Tablet.
+
+---
+
+## 8. App Mercado
+
+### 8.1 Propósito
+
+Marketplace abierto del ecosistema. Aquí los jugadores y empresas publican y descubren:
+
+- **Ofertas de trabajo temporal** (publicadas por empresas, aceptables por cualquier jugador — ver `01_node_farm.md` §11.7).
+- **Productos físicos a la venta** (B2B y B2C).
+- **Servicios** (transporte, mantenimiento, seguridad, consultoría RP).
+- **Compra-venta de empresas** completas (oleada 3 — para ya escribirlo en arquitectura).
+
+### 8.2 Layout
+
+**Tabs principales:**
+
+```
+┌─────────────────────────────────────────────────┐
+│ Mercado    [Trabajo] [Productos] [Servicios]    │
+│                                       [Empresas]│
+├─────────────────────────────────────────────────┤
+│ Filtros: [Categoría ▼] [Ubicación ▼] [Precio ▼] │
+│ Buscar: [_________________________]   [Buscar]  │
+├─────────────────────────────────────────────────┤
+│ Listado de ofertas/productos en cards           │
+│                                                 │
+│ ┌────────────────────────────────────────────┐  │
+│ │ 🌾 Cosechar parcela hortícola 2            │  │
+│ │ Granja Marcos · Hortalizas Premium          │  │
+│ │ Pago: 500$ · Estimado: 30 min · Hoy         │  │
+│ │ [Ver detalle]  [Aceptar]                    │  │
+│ └────────────────────────────────────────────┘  │
+│                                                 │
+│ ┌────────────────────────────────────────────┐  │
+│ │ 🍞 Pan rústico Calidad A · 50 unidades     │  │
+│ │ Panadería del Sur · Reputación 92          │  │
+│ │ Precio: 4.5$/unidad · Recoger en sede       │  │
+│ │ [Ver]  [Comprar]                            │  │
+│ └────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
+
+### 8.3 Mecánicas clave
+
+- **Trabajo temporal:**
+  - Publicación desde Manager Panel del empleador.
+  - Aceptación 1-click. Sistema valida disponibilidad horaria + reputación mínima.
+  - **Notificación push al aceptarla** (con dirección y descripción).
+  - Al completar, **pago automático** + actualización de reputación de ambas partes.
+
+- **Productos físicos:**
+  - Las empresas publican lotes con precio. Los compradores reservan o compran.
+  - **Si producto perecedero**, la oferta caduca con el producto.
+  - **Logística:** opción de recogida en sede o entrega a domicilio (servicio de logística contratable, ver §9).
+
+- **Servicios:**
+  - Jugadores con licencias específicas (mecánico, transportista, fumigador, seguridad) publican sus servicios.
+  - Las empresas contratan puntualmente.
+
+- **Empresas en venta** (oleada 3):
+  - Lista pública de empresas que el dueño ha puesto en venta.
+  - Valoración automática del sistema (precio sugerido) + precio del vendedor.
+  - Comprador potencial puede solicitar **due diligence** (acceso temporal al libro contable público).
+  - Cierre vía notaría (nodo futuro).
+
+### 8.4 Sistema de reputación visible
+
+Cada usuario y cada empresa tiene **reputación pública** visible en sus listings:
+- Estrellas + número (ej. 4.7 ★ — 124 transacciones).
+- Insignias (Verificada, Premium Vendor, etc.).
+- Historial de últimas transacciones (sin valores monetarios privados, solo "OK" / "Issue").
+
+### 8.5 Wooow específicos
+
+- **Mapa de oportunidades** (vista alternativa): las ofertas se muestran como pins en un minimap del servidor. El jugador puede aceptar la más cercana — geolocalización de oportunidades.
+- **Notificaciones push** cuando aparece una oferta que matchea las preferencias guardadas (ej. *"Buscas trabajo de cosecha cerca de Sandy → nueva oferta a 1km"*).
+
+---
+
+## 9. App Logística
+
+### 9.1 Propósito
+
+Gestión de transportes, rutas, entregas. Tanto para el dueño que envía/recibe productos, como para el jugador transportista que ofrece servicios.
+
+### 9.2 Layout
+
+**Tabs:**
+
+| Tab | Para quién | Contenido |
+|---|---|---|
+| **Mis envíos** | Dueño / gerente | Envíos pendientes, en ruta, completados |
+| **Mis recogidas** | Dueño / gerente | Productos comprados que están por llegar |
+| **Mis rutas** | Transportista | Rutas asignadas, estado, GPS in-game |
+| **Tarifas** | Todos | Tabla de tarifas de transporte por distancia/peso |
+
+### 9.3 Crear un envío
+
+Wizard:
+1. **Origen:** sede de mi empresa (auto) o ubicación custom.
+2. **Destino:** sede del cliente (si tengo contrato), o dirección manual.
+3. **Producto + cantidad** (selección desde inventario del almacén).
+4. **Vehículo:** propio (uno de mis vehículos + chofer empleado) o **contratado** (pinchar transportista del Mercado).
+5. **Coste estimado:** km × tarifa + recargos (refrigerado, peso, prisa).
+6. **Programar:** ahora / en X horas / cuando producto esté listo.
+7. **Confirmar.** Se genera **albarán físico** (un PDF impreso si docking + impresora — wooow del Granja §11.4 reusado).
+
+### 9.4 Tracking en vivo
+
+Una vez en ruta:
+- **Mapa con la posición actual del vehículo** (ping en tiempo real).
+- **Estado del producto** (peso restante, calidad — si refrigerado, alerta si la temperatura ha subido).
+- **ETA**.
+- **Botón llamar al transportista** (si es jugador) → abre Mensajes o llamada.
+
+### 9.5 Wooow específicos
+
+- **Albarán impreso físicamente** al confirmar el envío (impresora del despacho hace el ruido).
+- **Tracking en tiempo real** real (no fake): el camión del transportista está físicamente moviéndose por el mapa. El pin de la app sigue la posición real.
+- **Firma de entrega:** al llegar el vehículo, el receptor firma en su Tablet. La firma se sincroniza al albarán original. **Cierre del ciclo logístico.**
+- **Hub futuro:** cuando salga la vertical "Distribución / Almacenes", esta app conecta directamente con almacenes profesionales jugables.
+
+---
+
+## 10. App Mensajes
+
+### 10.1 Propósito
+
+Comunicación profesional entre jugadores y empresas. **Mensajes 1-a-1**, **grupales**, y **canales empresariales** (toda la empresa).
+
+### 10.2 Layout
+
+```
+┌─────────────────────────────────────────────────┐
+│ Mensajes                          [+ Nuevo chat]│
+├──────────────┬──────────────────────────────────┤
+│ Chats        │  Conversación                    │
+│              │                                  │
+│ ● Pedro      │  Pedro:                          │
+│   "Cuándo... │  "¿Cuándo me entregas el trigo?" │
+│              │                                  │
+│ ● Granja...  │  Tú:                             │
+│   2 mensajes │  "Mañana al amanecer."           │
+│              │                                  │
+│ ● Molino...  │                                  │
+│              │  [Adjuntar 📎] [Foto 📷] [Enviar]│
+└──────────────┴──────────────────────────────────┘
+```
+
+### 10.3 Funciones
+
+- **Chats 1-a-1** entre jugadores.
+- **Chats grupales** (creas un grupo, añades miembros).
+- **Canales empresariales:** cada empresa tiene un canal propio. Todos los empleados están suscritos por defecto. El gerente puede publicar avisos.
+- **Adjuntar documentos** (PDF de Notas & Contratos), **fotos** (de la app cámara), **ubicaciones** del mapa.
+- **Mensajes de voz** (oleada 2 — graban audio in-game vía pma-voice).
+- **Llamadas de voz** (oleada 2 — directo entre Tablets, ringtone).
+- **Indicadores:** entregado / leído / escribiendo... (típicos pero pulidos).
+
+### 10.4 Privacidad
+
+- Los mensajes son **privados**. Solo participantes del chat los ven.
+- **Cifrado simulado** (visual: indicador 🔒 que dice *"Mensajes cifrados de extremo a extremo Admirals"*) — RP, no implementación real, pero refuerza profesionalismo.
+- **Borrar mensaje** disponible (deja "mensaje eliminado" como placeholder).
+
+### 10.5 Wooow específicos
+
+- **Notificación cuando contacto importante escribe** — los jugadores VIP del jugador (ej. su jefe, sus empleados) tienen prioridad alta y notifican incluso en modo silencio (configurable).
+- **Sticker pack Admirals**: 12 stickers con motivos navales / agricolas (futuro) — el lado humano del profesionalismo.
+
+---
+
+## 11. App Banca
+
+### 11.1 Propósito
+
+Gestión financiera personal y empresarial. Cuentas, transferencias, contratos financieros, libro de movimientos.
+
+### 11.2 Layout
+
+**Tabs:**
+
+| Tab | Contenido |
+|---|---|
+| **Cuentas** | Lista de cuentas accesibles (personal + empresariales) con saldos |
+| **Movimientos** | Historial completo, filtrable |
+| **Transferir** | Wizard de transferencia |
+| **Contratos** | Préstamos, hipotecas, depósitos (oleada 2-3) |
+| **Caja física** | Si tengo permiso → estado de la caja física de mi empresa |
+
+### 11.3 Cuentas
+
+Cada cuenta tiene:
+- Nombre (ej. "Cuenta personal Marcos", "Cuenta Granja del Valle").
+- Saldo actual.
+- IBAN ficticio Admirals (formato `AD-XXXX-XXXX-XXXX`).
+- Tipo (personal / empresarial / cooperativa).
+- Permisos (quién puede operar — relevante en empresarial).
+
+### 11.4 Transferencia
+
+Wizard simple:
+1. Cuenta origen (selección si tengo varias).
+2. Cuenta destino (IBAN o nombre — autocompleta de contactos).
+3. Cantidad.
+4. Concepto (texto libre).
+5. **Confirmar.** Animación de transferencia + sonido satisfactorio (moneda).
+6. Recibo digital aparece en Notas & Contratos automáticamente.
+
+### 11.5 Caja física (si tengo permiso)
+
+Vista del estado de la caja fuerte de mi empresa:
+- Cantidad actual visible.
+- Última apertura (quién, cuándo).
+- Movimientos recientes.
+- **No permite operar desde la app** — la caja física es **acción en mundo** (Pilar 1). Solo monitorización.
+
+### 11.6 Wooow específicos
+
+- **Animación de moneda al transferir** — sutil, no festiva.
+- **Recibos auto-archivados** en Notas & Contratos. Cada transferencia genera un PDF con el sello Admirals.
+- **Alertas anti-fraude** (RP): si hay un pago grande inesperado, el sistema pregunta confirmación adicional. Detalle de profesionalismo.
+
+---
+
+## 12. App Notas & Contratos
+
+### 12.1 Propósito
+
+Repositorio de **documentos personales y contractuales** del personaje.
+
+- **Notas privadas** (libreta digital — solo el jugador las ve).
+- **Contratos B2B firmados** (con otras empresas).
+- **Albaranes y recibos** (auto-generados por Logística y Banca).
+- **Certificados** (licencias, alta de empresa, escrituras, etc.).
+- **Documentos compartidos** (compartidos por otros jugadores con el personaje).
+
+### 12.2 Layout
+
+```
+┌─────────────────────────────────────────────────┐
+│ Notas & Contratos                  [+ Nueva]    │
+├──────────────┬──────────────────────────────────┤
+│ Carpetas     │  Vista previa del documento      │
+│              │                                  │
+│ 📁 Notas     │  CONTRATO DE SUMINISTRO           │
+│ 📁 Contratos │  ─────────────────────────────    │
+│ 📁 Albaranes │  Entre Granja del Valle...       │
+│ 📁 Recibos   │  ...y Molino Pedro...            │
+│ 📁 Certif    │                                  │
+│ 📁 Compart.  │  [Imprimir] [Compartir] [Firmar] │
+└──────────────┴──────────────────────────────────┘
+```
+
+### 12.3 Tipos de documento
+
+**Notas privadas:**
+- Texto libre con formato básico (negrita, listas).
+- Etiquetables.
+- Adjuntables a chats.
+- 100% privadas (no salen del personaje).
+
+**Contratos B2B:**
+- Plantillas oficiales por tipo (Suministro recurrente / Compra puntual / Exclusividad / Calidad mínima — descritas en `01_node_farm.md` §11.4).
+- Editables (rellenar campos: partes, fechas, cantidades, precios, calidad).
+- **Firma digital** (animación de teclear nombre + huella).
+- Una vez firmado por ambas partes → **inmutable**. Cualquier cambio requiere addendum.
+- **Estado visible:** Borrador / Pendiente firma / Activo / Cumplido / Incumplido.
+
+**Albaranes y recibos:**
+- Auto-generados por Logística y Banca.
+- No editables (auditoría).
+- **Imprimibles** desde dock de oficina (Pilar 1: papel físico opcional).
+
+**Certificados:**
+- Licencias (de conducir maquinaria, fumigación, transporte, etc.).
+- Alta de empresa.
+- Escrituras de propiedades.
+- **Actualización automática** — si pierdes una licencia, el certificado se marca caducado.
+
+**Documentos compartidos:**
+- Cuando alguien te comparte un PDF (vía Mensajes), aparece aquí.
+- Puedes archivarlo o eliminarlo.
+
+### 12.4 Firma digital
+
+Cuando un contrato requiere firma:
+1. Apertura del PDF en pantalla completa.
+2. El sistema resalta los campos pendientes de firma.
+3. Tap en el campo → **animación de firma** (el jugador "dibuja" su firma con el dedo en pantalla, o usa una firma guardada).
+4. Sello Admirals se aplica con timestamp.
+5. Notificación a la otra parte si ya cerraron por ambos lados.
+6. **Si docking + impresora física en oficina:** el contrato se imprime físicamente al cerrarse.
+
+### 12.5 Wooow específicos
+
+- **Sello Admirals con timestamp visible** en cada documento firmado.
+- **Animación de impresora** cuando se imprime físicamente.
+- **Búsqueda potente** dentro de los documentos (tipo Apple Notes — buscas "trigo 200kg" y aparecen los contratos relevantes).
+- **OCR de fotos** (futuro): si el jugador toma una foto de un papel del mundo, la Tablet la guarda como nota con texto reconocido.
+
+---
+
+## 13. App Tienda Admirals
+
+### 13.1 Propósito
+
+Tienda oficial dentro del ecosistema. Donde se compran:
+
+- **Variantes de Tablet** (Pro, Enterprise) — upgrades de hardware.
+- **Skins de OS** (incluidas con tiers o sueltas).
+- **Wallpapers premium**, ringtones, packs de stickers.
+- **Apps adicionales** que el servidor monetiza (oleada 2+).
+- **Licencias profesionales** (de maquinaria — Granja §9.5, de mecánico, de transporte, etc.). Esta es la entrada al sistema de licencias del ecosistema.
+- **Servicios premium** (verificación de empresa, entrega prioritaria, etc.).
+
+### 13.2 Layout
+
+```
+┌─────────────────────────────────────────────────┐
+│ Tienda Admirals                       [Carrito] │
+├─────────────────────────────────────────────────┤
+│ Categorías:                                     │
+│ [Hardware] [Skins] [Apps] [Licencias] [Premium] │
+├─────────────────────────────────────────────────┤
+│ Destacados                                      │
+│                                                 │
+│ ┌─────────────┐  ┌─────────────┐  ┌──────────┐  │
+│ │ Tablet Pro  │  │ Skin Carbon │  │ Lic Cosec│  │
+│ │ Aluminio    │  │ Tema OS     │  │ Cosechad │  │
+│ │ 4 colores   │  │ +tipografía │  │ Tractor+ │  │
+│ │ 5,000$      │  │ 800$        │  │ 2,500$   │  │
+│ └─────────────┘  └─────────────┘  └──────────┘  │
+│                                                 │
+│ Recomendados para ti                            │
+│ ...                                              │
+└─────────────────────────────────────────────────┘
+```
+
+### 13.3 Mecánica de compra
+
+1. Selección de producto.
+2. Vista detalle (descripción, beneficios, capturas).
+3. **Añadir al carrito** o **Comprar ahora**.
+4. Confirmación de pago (cuenta personal o empresarial).
+5. **Animación de compra** (carro avanzando + check verde).
+6. Entrega:
+   - **Hardware (Tablet)**: NPC delivery → camión Admirals llega a la dirección registrada del jugador → animación de unboxing wooow.
+   - **Skins / digital**: aplicado instantáneamente.
+   - **Licencias**: añadidas a Notas & Contratos > Certificados, accesibles por el sistema de validación de la vertical correspondiente.
+
+### 13.4 Cursos asociados a licencias
+
+Algunas licencias requieren un **mini-curso** antes de obtenerse:
+- **Licencia de cosechadora**: tras pagar, el jugador debe ir a un punto de la finca/granja, hacer un mini-tutorial de 5 min (animación + checkpoint físico). Solo entonces se entrega el certificado.
+- Esto **gamifica el sink económico** y enseña el sistema. **Wooow** porque no es solo "paga y ya".
+
+### 13.5 Wooow específicos
+
+- **Entrega de Tablet por NPC delivery** — animación de unboxing en la oficina/casa del jugador.
+- **Mini-cursos de licencias** físicos en mundo, no en menú.
+- **Integración total con verticales** — al comprar la "Licencia de Mecánico Admirals" desde la Tienda, automáticamente se desbloquea el rol en el nodo Mecánico (futuro).
+
+---
+
+## 14. App Settings — detalle
+
+### 14.1 Estructura
+
+| Sección | Contenido |
+|---|---|
+| **Personalización** | Wallpaper, theme (Auto/Claro/Oscuro), color de acento, tamaño tipografía |
+| **Sonido** | Volumen general, ringtone por app, vibración on/off, modo silencio horario |
+| **Notificaciones** | Lista de apps con toggle y prioridad por app |
+| **Privacidad** | PIN, modo huella (futuro), apps ocultas a vista externa, sync cloud |
+| **Cuenta(s)** | Mi cuenta Admirals, cambiar de cuenta (Enterprise: 2 simultáneas) |
+| **Almacenamiento** | Uso por app, limpieza de cache (RP) |
+| **Hardware** | Modelo Tablet, número serie, tier, accesorios (dock, teclado futuro) |
+| **Acerca de** | Versión OS, créditos, soporte |
+| **Apagar / Reiniciar** | Acciones del dispositivo |
+
+### 14.2 Wooow específicos
+
+- **Toggle "Pantalla privada":** cuando otro jugador mira tu Tablet (cámara cerca), si está activo, ven solo el wallpaper y el logo (oculta UI sensible). Si está desactivado, ven lo mismo que tú. **Esto crea decisiones RP**.
+- **Modo nocturno automático:** al anochecer in-game, la Tablet baja la luminosidad (efecto en pantalla del modelo 3D — el dispositivo emite menos luz al mundo).
+- **Ringtone per-contact:** asignar un sonido específico a cada contacto importante (mi gerente / mi pareja in-game / mi proveedor estrella).
+- **Apagado real:** al apagar la Tablet, deja de recibir notificaciones, no llegan mensajes (entran en cola). Wooow porque es coherente con el dispositivo físico.
+
+---
+
+## 15. Sistema de notificaciones — diseño cross-app
+
+### 15.1 Filosofía
+
+> Las notificaciones son la **voz del ecosistema** entrando al jugador. Mal hechas, son ruido. Bien hechas, son **el latido del juego**.
+
+Reglas Admirals:
+- **Cada notificación tiene contexto, no solo texto.** Icono + color + sonido + acción profunda.
+- **Cada notificación es accionable.** Tap → abre la app en el contexto exacto (parcela afectada, mensaje nuevo, contrato pendiente).
+- **Cada notificación tiene caducidad.** Si pasa N tiempo sin atender, se archiva como "no leída antigua" (no se pierde, pero no presiona).
+- **El jugador controla el ruido.** Settings permite silenciar tipos enteros, apps enteras, contactos individuales.
+
+### 15.2 Tipología de notificaciones (espectro completo)
+
+| Tipo | Color | Sonido | Cuándo | Ejemplo |
+|---|---|---|---|---|
+| **Crítica operativa** | 🔴 Rojo | Alerta urgente | Algo en mi negocio se rompe ahora | "Plaga detectada en parcela 3" |
+| **Crítica financiera** | 🔴 Rojo | Alarma grave | Dinero en riesgo | "Caja insuficiente para nóminas" |
+| **Importante** | 🟡 Amarillo | Bip medio | Decisión próxima necesaria | "Riego fuera de ventana" |
+| **Informativa** | 🟢 Verde | Bip suave | Algo bueno pasó | "Cosecha lista — Calidad A" |
+| **Financiera positiva** | 💰 Dorado | Moneda | Ingreso recibido | "Pago recibido — 1,200$" |
+| **Contractual** | 📋 Azul | Sello/papel | Contrato implicado | "Contrato propuesto por Molino" |
+| **Mensajería** | 💬 Azul claro | Pop | Comunicación humana | "Pedro: ¿Cuándo entregas?" |
+| **Meteorológica** | 🌦️ Cian | Viento | Clima va a cambiar | "Tormenta entrante en 30 min" |
+| **Sistema** | ⚙ Gris | Click | Eventos OS | "App actualizada" |
+| **Mercado** | 🏷️ Naranja | Cha-ching suave | Marketplace | "Nueva oferta cerca de ti" |
+| **Logística** | 🚚 Lila | Camión | Envíos / recogidas | "Tu camión llegó a destino" |
+| **Reputación** | ⭐ Dorado | Estrella | Cambio de status | "Subiste a reputación 90 — Premium Vendor" |
+
+### 15.3 Anatomía visual de una notificación
+
+```
+┌───────────────────────────────────────────────────┐
+│ 🔴 [Icono color]                    hace 2 min    │
+│ Plaga detectada                                   │
+│ Parcela hortícola 3 — pulgón                      │
+│ Daño estimado: 30% si no se trata en 24h          │
+│ [Tratar ahora]   [Ver detalle]   [Ignorar]        │
+└───────────────────────────────────────────────────┘
+```
+
+- **Icono coloreado** a la izquierda.
+- **Título corto** (máx. 4 palabras).
+- **Subtítulo** con contexto (parcela, empresa, persona).
+- **Cuerpo** con la consecuencia o la información clave (máx. 1 línea).
+- **Acciones rápidas** integradas (1-3 botones).
+- **Timestamp relativo** ("hace 2 min").
+
+### 15.4 Modos de entrega
+
+| Modo | Comportamiento |
+|---|---|
+| **Push pop-up** | Banner desplegable arriba a la derecha, 6s, click para abrir |
+| **Banner inferior** | Aparece en la pantalla si la Tablet está abierta, en la zona inferior — no obstaculiza |
+| **Solo en panel** | Va al panel de notificaciones, sin pop-up (sutil) |
+| **Bloqueante** | Modal en la Tablet que requiere acción (críticas) |
+
+Cada tipo de notificación tiene su modo por defecto, y el jugador lo puede ajustar.
+
+### 15.5 Integración con el mundo físico
+
+- **Vibración del bolsillo** cuando la Tablet está guardada (modelo del personaje vibra sutilmente + sonido amortiguado).
+- **Pantalla se enciende** brevemente al recibir push si la Tablet está fuera del bolsillo (incluso boca abajo en mesa — la pantalla NO se enciende si está boca abajo, RP coherente).
+- **Sonido espacial:** la notificación viene del bolsillo del jugador → audio 3D, los demás jugadores cerca también la oyen sutilmente. **Wooow.**
+
+---
+
+## 16. Sistema multi-cuenta y multi-empresa
+
+### 16.1 Cuenta Admirals (cloud)
+
+> **Cada personaje tiene una cuenta Admirals**. Es la identidad del personaje en el ecosistema.
+
+La cuenta guarda:
+- Datos personales (nombre, alias, foto de perfil).
+- Contactos (otros jugadores, empresas).
+- Preferencias de Tablet (wallpaper, ringtones, layout).
+- Documentos (Notas & Contratos).
+- Historial de mensajes.
+- Saldos y movimientos bancarios.
+- Empresas a las que pertenece (con su rol).
+- Reputación.
+
+### 16.2 Sincronización cloud
+
+- Toda la cuenta vive en el servidor (Admirals Cloud — RP).
+- Cambias de Tablet → todo restaurado al hacer login.
+- Si pierdes la Tablet, los datos no se pierden.
+- **Detalle inmersivo:** hay una breve animación de "Sincronizando con Admirals Cloud" al hacer login en una Tablet nueva (~5s). Recuerda al primer setup de un iPhone.
+
+### 16.3 Multi-empresa (jugador único, varias empresas)
+
+Un jugador puede ser:
+- Dueño de la Granja del Valle (rol Owner).
+- Gerente de Panadería Pedro (rol Manager).
+- Empleado de Cooperativa Norte (rol Employee).
+- Y temporal en cualquier oferta del Mercado.
+
+**La Tablet maneja todas estas afiliaciones simultáneamente:**
+- App Empresa → lista todas las empresas.
+- Manager Panel → selector entre las empresas donde tiene rol gerencial.
+- Banca → todas las cuentas (personal + las empresariales accesibles).
+- Mensajes → canales de cada empresa visibles.
+
+### 16.4 Multi-cuenta (Tablet Enterprise)
+
+> **Solo tier Enterprise (§2.2).** Permite **dos cuentas Admirals simultáneas** en el mismo dispositivo.
+
+Caso de uso: jugadores que mueven multi-personaje muy estructurado (admin RP, periodista que cubre dos empresas, etc.). Excepción RP — no es default.
+
+- Switch entre cuentas con un menú en el avatar superior derecho.
+- Cada cuenta tiene su propia configuración, datos, notificaciones.
+- **Nunca se mezclan.** Aislamiento absoluto.
+
+### 16.5 Login y logout
+
+- **Primer arranque:** Tablet pide vincular cuenta (escribir nombre del personaje + verificación in-world).
+- **Logout:** desde Settings > Cuentas > Cerrar sesión. Borra la sesión local. Datos siguen en cloud.
+- **Login en otra Tablet:** restaura cuenta. Logout automático en la Tablet anterior (una sesión por cuenta — salvo Enterprise).
+
+---
+
+## 17. Permisos y seguridad
+
+### 17.1 Niveles de seguridad
+
+| Nivel | Ejemplo | Cómo se protege |
+|---|---|---|
+| **Datos públicos** | Nombre, alias, reputación | Visibles a todos |
+| **Datos profesionales** | Empresas a las que pertenezco | Visibles según política de la empresa |
+| **Datos personales** | Mensajes, notas, banca | Solo el dueño (PIN si activado) |
+| **Datos críticos** | Permisos de admin de empresa | Doble confirmación + ventana de tiempo |
+
+### 17.2 PIN y bloqueo
+
+- **PIN:** 4-6 dígitos, opt-in.
+- Tras 3 intentos fallidos: bloqueo 30s. Tras 6: bloqueo 5min. Tras 10: requiere reset desde cuenta cloud.
+- **Bloqueo automático:** tras N min de inactividad de la Tablet (configurable, default 5 min).
+
+### 17.3 Vista privada de pantalla
+
+> **Wooow del Pilar 5** mencionado en §14.2.
+
+Settings > Privacidad > Pantalla privada (toggle).
+
+Cuando activo, si otro jugador acerca su cámara a la Tablet del personaje (target raycast detecta), **la pantalla se enmascara**: solo se ve el wallpaper y el logo. Esto crea decisiones RP — *"¿Te muestro mi Tablet o no?"*
+
+Cuando inactivo, todos pueden ver lo mismo que el dueño.
+
+### 17.4 Anti-suplantación
+
+- Cada Tablet tiene un **número de serie único**.
+- Si un jugador roba una Tablet de otro (mecánica oleada 2), no puede entrar — la Tablet pide login. **Es solo hardware sin la cuenta**.
+- El robo afecta a la persona porque pierde el dispositivo físico (necesita comprar otro), pero no compromete sus datos.
+
+---
+
+## 18. Capa de personalización por servidor
+
+> **Los servidores que compren Admirals deben poder retocar la marca para encajar con su universo.** Pero sin destruir la identidad Admirals.
+
+### 18.1 Qué pueden personalizar los servidores
+
+| Personalizable | Cómo |
+|---|---|
+| **Boot logo splash** | Servidor puede añadir su logo en una sub-pantalla "Servidor: [Nombre]" antes del logo Admirals. Pero el logo Admirals siempre está. |
+| **Wallpapers default** | Servidor puede añadir wallpapers propios al pack base. |
+| **Idiomas de UI** | Servidor selecciona idioma default. Multi-idioma soportado. |
+| **Coste de Tablet básica** | Configurable (gratis a alto). |
+| **Disponibilidad de tiers** | Servidor puede deshabilitar Pro / Enterprise si quiere homogeneidad. |
+| **Apps disponibles** | Servidor activa/desactiva apps según los productos Admirals que tenga. |
+| **Apps de terceros** | Servidor puede instalar **apps de terceros compatibles** con el SDK Admirals (oleada 2 — ver §20). |
+| **Branding de impresión** | Los PDFs (contratos, albaranes) pueden llevar logo del servidor además del de Admirals. |
+
+### 18.2 Qué NO pueden personalizar
+
+- ❌ Quitar el logo Admirals del boot.
+- ❌ Cambiar la fuente del OS (consistencia de marca).
+- ❌ Cambiar el sonido de boot a otro genérico (es identidad).
+- ❌ Reemplazar la app Manager Panel por otra (es la app insignia).
+- ❌ Skins que ridiculicen la marca (TOS de licencia).
+
+> **Filosofía:** queremos que servidores sientan la Tablet **suya** sin destruir lo que la hace **Admirals**.
+
+---
+
+## 19. La Tablet en el mundo físico — interacciones especiales
+
+### 19.1 Cámara — capturar el mundo
+
+> **Oleada 1 incluye una app Cámara básica.** Permite tomar fotos del mundo y guardarlas.
+
+**Funciones (oleada 1):**
+- Apuntar con la Tablet (cámara trasera) y capturar.
+- Visor en pantalla con framing en vivo.
+- Foto se guarda en **Galería** (sub-app o sección de Notas & Contratos).
+- Adjuntable a Mensajes (para enviar evidencia, productos a la venta, ubicaciones, etc.).
+
+**Funciones (oleada 2-3):**
+- **Selfies con cámara frontal**.
+- **Vídeos cortos**.
+- **OCR** sobre fotos de papeles → reconocimiento a texto en notas.
+- **Foto cenital con drone** (cuando salga la app Drones — Granja §20 oleada 3).
+
+### 19.2 Inter-tablet — interacciones entre dispositivos
+
+- **Compartir contacto:** acercar dos Tablets y tap en "Compartir" → swap de tarjeta de contacto. Animación bonita.
+- **Pago rápido cara a cara:** en mostrador de tienda, dueño y cliente acercan Tablets, dueño introduce monto, cliente confirma → pago instantáneo. **Reemplaza el TPV.** **Wooow.**
+- **Transferencia de archivo:** un PDF de un contrato → swipe de "compartir" entre dos Tablets cercanas.
+- **Llamadas inter-Tablet** (oleada 2): timbrar como un teléfono, descolgar con animación.
+
+### 19.3 Tablet vs Phone genérico — convivencia
+
+> **La Tablet NO sustituye al phone.** Se diseña para que **convivan**.
+
+Si el servidor tiene phone genérico instalado:
+- **Phone:** vida personal — Twitter, mensajes informales, llamadas privadas, fotos casuales.
+- **Tablet:** vida profesional — empresa, contratos, banca, marketplace, apps Admirals.
+- Algunos datos pueden duplicarse (Mensajes pueden estar en ambos — el jugador elige a qué responde desde dónde).
+- Numeros de teléfono y mensajes son interoperables (oleada 2 — bridge configurable).
+
+Si el servidor solo tiene Tablet: la Tablet asume todas las funciones, incluyendo las personales si quiere.
+
+### 19.4 Modos de uso especiales
+
+- **En vehículo:** la Tablet se monta en dock del salpicadero (modelos compatibles), animación de mostrar pantalla mientras se conduce. Solo lectura — para acciones complejas hay que parar.
+- **En oficina:** dock fijo (ver §21).
+- **En reuniones / sala de juntas:** hay un dock proyector — la Tablet emite a una pantalla grande de la sala. Útil para presentar Manager Panel a inversores RP.
+
+---
+
+## 20. Integración con apps de servidor (compatibilidad con stack)
+
+### 20.1 Filosofía: Admirals como ciudadano modelo del servidor
+
+> La Tablet **no impone**. Se integra elegantemente con QBox, QBCore, ESX, ox_inventory, ox_target, pma-voice, sistemas de phone existentes, etc.
+
+### 20.2 Bridges nativos
+
+| Sistema | Cómo se integra Tablet |
+|---|---|
+| **QBox / QBCore** | Detecta automáticamente. Cuentas se sincronizan. Roles de empresa Admirals interopera con jobs/gangs nativos. |
+| **ox_inventory** | Tablet es item físico estándar. Se ve en inventario, se puede dar/quitar. |
+| **ox_target** | Interacción con docks, dispensadores, lectores de tarjeta usa ox_target. |
+| **pma-voice** | Llamadas y mensajes de voz usan el voice nativo del servidor. |
+| **Phone scripts** | Bridge configurable: pasar mensajes entre Tablet y phone. Default: separados (Tablet pro, phone personal). |
+| **Banking nativo** | Banca de Tablet puede usar las cuentas del banco nativo o tener sus propias. Configurable. |
+
+### 20.3 SDK para apps de terceros (oleada 2-3)
+
+> **Visión a futuro: la Admirals Tablet será una plataforma con SDK público.**
+
+Cualquier desarrollador puede crear apps que se instalan en la Tablet:
+- **Definidas por API**: estructura de datos, eventos, layout.
+- **Distribuidas vía Tienda Admirals** (o sideload por servidor).
+- **Sandboxed**: no pueden romper apps del core ni acceder a datos de otras apps sin permiso explícito del usuario.
+
+Esto convierte a Admirals en **plataforma**, no solo en producto. Estratégicamente clave a largo plazo.
+
+---
+
+## 21. Dock de la Tablet — el wooow del despacho
+
+### 21.1 Concepto
+
+> **Pieza icónica del Pilar 5 + Pilar 1 unidos.**
+
+En el despacho del dueño de una empresa hay un **dock físico**: una base de metal con un slot vertical para la Tablet, conectada a un **monitor grande** (curvo, ultrawide, 32"+) y un teclado físico.
+
+Cuando el dueño llega a su despacho:
+1. Saca la Tablet del bolsillo.
+2. La introduce en el dock (animación de slide-in con click magnético + sonido satisfactorio).
+3. **El monitor grande se enciende.** La Tablet **proyecta su contenido** ampliado al monitor.
+4. La Tablet sigue siendo el control (touch), pero la información se ve en el monitor enorme.
+5. El teclado físico permite escribir más cómodo (mensajes largos, contratos, búsquedas).
+6. **Wooow:** ver la oficina con el dueño escribiendo en el teclado mientras el monitor muestra Manager Panel con todos los gráficos del Granja en vivo.
+
+### 21.2 Beneficios funcionales
+
+- Más densidad de información (multi-panel en vez de mono-panel).
+- Más cómodo para sesiones largas (planificar la siembra, revisar contabilidad, firmar contratos).
+- Permite gameplay **"trabajo de oficina"** RP — un dueño puede quedarse 30 min en su despacho gestionando.
+- Permite **reuniones**: el dueño y un visitante (jugador) pueden ver el monitor juntos. Negociaciones físicas en el despacho.
+
+### 21.3 Variantes de dock
+
+| Variante | Para quién | Qué incluye |
+|---|---|---|
+| **Dock básico** | Cualquier oficina | Solo dock + monitor mediano |
+| **Dock pro** | Despachos premium | Dock + monitor curvo grande + teclado físico + impresora |
+| **Dock enterprise** | Sala de juntas | Dock + pantalla 65" + sistema de proyección a mesa de reuniones |
+
+Vendidos en Tienda Admirals.
+
+### 21.4 Animación del docking
+
+1. Personaje se acerca al dock.
+2. Saca Tablet (anim §3.1).
+3. **Acerca la Tablet al dock — los imanes la atraen visiblemente** (los últimos cm la Tablet "salta" al dock).
+4. **Click magnético** + sonido de conexión.
+5. El monitor del despacho se enciende con un fade desde negro al wallpaper de la Tablet.
+6. Aparece sonido de "conexión periférica" (~0.5s).
+7. La UI de la Tablet se redibuja en el monitor con layout expandido.
+8. Personaje se sienta en la silla.
+9. Listo para trabajar.
+
+### 21.5 Salida del dock
+
+- **Pulsar botón eject** (físico en el dock) o **soltar tirando de la Tablet** (cierre suave magnético).
+- Animación inversa: monitor se apaga con fade, Tablet vuelve a UI compacta, personaje guarda Tablet o la lleva en mano.
+
+---
+
+## 22. Casos de uso narrativos
+
+### 22.1 Caso A — Mañana de Marcos (granjero solo)
+
+> Marcos despierta en su casa de la granja. Es lunes 06:30 in-game. La Tablet vibra en la mesilla.
+>
+> Marcos coge la Tablet. Ve **3 notificaciones**:
+> - 🔴 Plaga detectada en parcela hortícola 3 (4h)
+> - 💰 Pago recibido: 4,200$ del Molino (1h)
+> - 🌦️ Tormenta entrante a las 14:00
+>
+> Tap en la primera. Manager Panel se abre directamente en la parcela 3, vista detalle. Calcula: tratar le cuesta 30 min y 200$ en fitosanitario. No tratar = perder 30% del cultivo (~3,000$). Decide tratar.
+>
+> Va al despacho. Mete la Tablet en el dock. Monitor grande se enciende. Empieza a planificar el día desde el panel ampliado: marca las tareas (regar parcela 5 antes del medio día, tratar parcela 3 ya), revisa la previsión meteorológica detallada.
+>
+> Saca la Tablet del dock. Va al granero. Engancha la fumigadora al tractor. Trata la parcela 3 (acción física — fuera de Tablet). Vuelve. Recibe push: "Granja Marcos — Reputación subió a 88. Nuevo descuento del 5% en Tienda Admirals."
+>
+> Sonríe.
+
+### 22.2 Caso B — Lucía en sala de juntas
+
+> Lucía es CEO de Lucía Foods (granja + molino + panadería). Tiene reunión con un inversor RP.
+>
+> Llega a la sala de juntas de su casa. Mete la Tablet en el dock enterprise. La pantalla 65" muestra Manager Panel — vista Strategic.
+>
+> El inversor se sienta enfrente. Lucía navega:
+> - Beneficio mes pasado: +18,400$ (gráfico verde subiendo).
+> - Producción: 3 cultivos top, 1 underperforming.
+> - Reputación cross-empresa: 91 / 100.
+> - Contratos B2B activos: 7. Cumplimiento: 100%.
+>
+> El inversor está impresionado. Lucía abre Notas & Contratos > plantilla "Inversión externa". La rellena en vivo en el monitor. La firma con su huella en la Tablet. El inversor firma con la suya (acerca su Tablet — inter-tablet sharing).
+>
+> El contrato se imprime en la impresora del despacho. Cierre con apretón de manos físico (animación).
+
+### 22.3 Caso C — Trabajador temporal Diego
+
+> Diego es jugador casual, no quiere comprometerse con ninguna empresa. Conecta al servidor un sábado por la noche.
+>
+> Saca su Tablet básica. Abre Mercado. Tab "Trabajo". Filtra por "Cerca de mí" + "Hoy" + "Pago > 200$".
+>
+> Aparecen 4 ofertas. Acepta una: "Cosechar parcela hortícola 2 — Granja del Valle — 500$ — 30 min".
+>
+> Recibe push con dirección + descripción. Llega a la granja. Ficha con tarjeta (lector físico). Su Tablet vibra: "Acceso temporal concedido a parcela hortícola 2."
+>
+> Cosecha la parcela. Al terminar, recibe push: "Pago de 500$ recibido. Reputación temporal: +1." Vuelve al servidor a hacer otra oferta o a desconectar.
+
+### 22.4 Caso D — Servidor "Costa Naval" personalizando
+
+> Server "Costa Naval" tiene tema marino-portuario. Compran Admirals.
+>
+> Configuran:
+> - Wallpapers default: añaden 5 imágenes de barcos del puerto.
+> - Boot splash: muestra "Costa Naval" antes del logo Admirals (~0.5s).
+> - Idiomas: español + portugués (la comunidad es ibérica).
+> - Apps disponibles: solo Granja oleada 1 + Cadena Pan.
+> - Coste Tablet básica: gratis (la entregan con el contrato de personaje).
+>
+> El branding se siente personal para sus jugadores, sin destruir la identidad Admirals.
+
+---
+
+## 23. Arquitectura técnica resumida (briefing programación)
+
+> **No es una especificación de implementación**, es la guía de qué necesitamos construir. La arquitectura técnica completa irá en `technical/01_architecture.md` cuando se redacte.
+
+### 23.1 Stack tecnológico
+
+| Capa | Tecnología | Por qué |
+|---|---|---|
+| **NUI (frontend Tablet)** | React + TypeScript + Vite | UI moderna, hot-reload en dev, ecosistema rico |
+| **Estilos** | TailwindCSS + componentes propios (estilo shadcn/ui) | Velocidad de desarrollo, consistencia |
+| **Iconos** | Lucide + set propio Admirals | Profesional + identidad de marca |
+| **Animaciones** | Framer Motion | Transiciones AAA |
+| **Estado global** | Zustand o Redux Toolkit | Reactivo, simple |
+| **Sockets / eventos** | NUI ↔ Lua bridge estándar FiveM | Compatible con QBox/QBCore |
+| **Persistencia** | MySQL/MariaDB (oxmysql) | Estándar del stack QBox |
+| **Voice** | pma-voice integration | Estándar comunidad |
+| **3D model en escena** | GTA V prop attached al ped + render targets para pantalla | Pantalla in-world real |
+
+### 23.2 Componentes técnicos clave
+
+#### A — El modelo 3D con pantalla "viva"
+
+La pantalla del modelo 3D **renderiza la UI real**. Esto se consigue con:
+- **Render target / scaleform** sobre la cara frontal de la Tablet.
+- La UI se renderiza en un canvas 2D que se proyecta a la textura.
+- Cuando otro jugador mira la Tablet del dueño, ve **literalmente lo mismo** (salvo modo Pantalla Privada §17.3).
+- Esto es el **wooow técnico crítico** — sin esto, la Tablet sería una excusa.
+
+#### B — Bus de eventos `admirals:*`
+
+Toda la integración entre nodos y la Tablet pasa por un bus de eventos único:
+- `admirals:state_change` — algo en el mundo cambió, las Tablets afectadas refrescan.
+- `admirals:notification` — empujar una notificación a una o varias Tablets.
+- `admirals:tablet_action` — algo se ejecutó desde una Tablet (firma, transferencia, oferta).
+- `admirals:dock_in` / `admirals:dock_out` — Tablet se acopla / desacopla.
+- `admirals:account_login` / `admirals:account_logout` — cambio de sesión.
+
+Diseño: pub/sub eficiente, escalable, con throttling en eventos chatty.
+
+#### C — Sistema de apps modulares
+
+Cada app es un **paquete** con:
+- Manifest (id, nombre, icono, permisos requeridos, vertical asociada).
+- Componente React principal.
+- Componentes de widget (opcional, para Home).
+- Listeners de eventos del bus (qué events consume).
+
+Productos Admirals (Granja, Molino, etc.) registran sus apps en el bootstrap del OS. Si un servidor desinstala el resource de Granja, su app desaparece del OS automáticamente.
+
+#### D — Cuenta cloud
+
+Tabla `admirals_accounts` en MySQL guarda estado por cuenta. La Tablet consulta y muta vía API Lua → MySQL.
+
+Estructura simplificada:
+```sql
+admirals_accounts (account_id, char_id, alias, profile_data_json, ...)
+admirals_tablets (tablet_serial, owner_account_id, tier, customizations_json, ...)
+admirals_notifications (notif_id, account_id, type, data_json, read, created_at, ...)
+admirals_messages (msg_id, chat_id, sender_id, body, attachments_json, ...)
+admirals_documents (doc_id, account_id, type, content_json, signatures_json, ...)
+admirals_companies (company_id, owner_account_id, name, vertical, ...)
+admirals_company_members (company_id, account_id, role, ...)
+admirals_market_offers (offer_id, type, publisher_id, data_json, ...)
+admirals_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...)
+```
+
+#### E — Performance
+
+- La Tablet **NO renderiza en el HUD permanentemente**. Solo cuando está visible.
+- Los render targets se reactivan al sacar/dock, se desactivan al guardar.
+- Las animaciones de UI son lightweight (transform, opacity — nada de re-render por frame).
+- Las notificaciones llegan vía evento, no polling.
+- Las consultas pesadas (libro contable, búsqueda en miles de documentos) son async + paginadas.
+
+### 23.3 Compatibilidad
+
+- **QBox / QBCore:** detección automática + bridge.
+- **ESX:** bridge limitado (oleada 2).
+- **ox_inventory:** la Tablet es item con metadata `tablet_serial`.
+- **ox_target:** docks y lectores de tarjeta usan ox_target.
+- **ox_lib:** notificaciones nativas opcional para fallback.
+
+---
+
+## 24. Lista de assets 3D (briefing equipo 3D)
+
+> **Aplicando regla global Bible §13.4:** el 3D entrega asset funcional con idea wooow CORE. El código (shaders, partículas, post, swap dinámico) lo añadimos nosotros.
+
+### 24.1 Assets de hardware Tablet
+
+| ID | Asset | Origen | Prioridad | Oleada |
+|---|---|---|---|---|
+| TBL-01 | **Tablet Básica** (modelo único, color gris, aluminio mate, pantalla con render target activo) | Custom propio | Alta | 1 |
+| TBL-02 | **Tablet Pro** (4 colores: gris/negro/dorado/plata, aluminio cepillado) | Custom propio | Media | 1 |
+| TBL-03 | **Tablet Enterprise** (titanio, dorso carbono, 2 acabados) | Custom propio | Media | 1 |
+| TBL-04 | **Caja unboxing** (animación de apertura, espuma, accesorios visibles) | Custom propio | Media | 1 |
+
+### 24.2 Assets de docking
+
+| ID | Asset | Origen | Prioridad | Oleada |
+|---|---|---|---|---|
+| DCK-01 | **Dock básico** (base metálica, slot vertical, monitor mediano 27") | Custom propio | Alta | 1 |
+| DCK-02 | **Dock pro** (dock + monitor curvo 32" + teclado físico + impresora) | Custom propio | Alta | 1 |
+| DCK-03 | **Dock enterprise** (pantalla 65" + sistema proyección sala juntas) | Custom propio | Media | 1 |
+| DCK-04 | **Dock vehículo** (montaje en salpicadero) | Custom propio | Baja | 2 |
+
+### 24.3 Props auxiliares
+
+| ID | Asset | Origen | Prioridad | Oleada |
+|---|---|---|---|---|
+| PRP-01 | Lector de tarjeta (pequeño, LED operable) | Custom propio | Alta | 1 |
+| PRP-02 | Tarjeta de empleado / cliente | Custom propio | Alta | 1 |
+| PRP-03 | Impresora de oficina (con animación papel saliendo) | Custom propio | Alta | 1 |
+| PRP-04 | Documento físico / contrato impreso | Custom propio | Media | 1 |
+| PRP-05 | Camión Admirals delivery (livery propia) | GTA V tuneo | Media | 1 |
+
+### 24.4 Lo que NO se pide al 3D
+
+> **Regla Bible §13.4 aplicada:**
+>
+> No se pide al 3D:
+> - Animaciones internas de UI (CÓDIGO).
+> - Boot animation visual (CÓDIGO con render target).
+> - Sonidos de boot (AUDIO).
+> - Notificaciones, transiciones, modos privacidad (CÓDIGO).
+> - Wallpapers (DISEÑO 2D — diseñador gráfico, no equipo 3D).
+> - Iconos de app (DISEÑO 2D).
+>
+> Briefing 3D = compacto: ~10 modelos hardware/dock + ~5 props auxiliares. Total **< 20 assets para oleada 1**. Razonable.
+
+---
+
+## 25. Lista de animaciones requeridas
+
+### 25.1 Animaciones del personaje con Tablet
+
+- Sacar Tablet del bolsillo (mano dominante, alcanzar, extraer, posicionar) — ~2.5s.
+- Guardar Tablet en bolsillo — ~1.4s.
+- Sostener Tablet en mano (idle de uso, dos manos, ligero ajuste).
+- Tap en pantalla con dedo (movimiento sutil del pulgar / índice).
+- Swipe en pantalla.
+- Pinch zoom (dos dedos).
+- Encender Tablet (pulsar botón power).
+- Apagar Tablet (mismo gesto).
+- Dejar Tablet en mesa (boca arriba o boca abajo).
+- Coger Tablet de mesa.
+- **Insertar Tablet en dock** (acercar + click magnético).
+- **Sacar Tablet del dock** (eject).
+- Cubrirse de la lluvia con la Tablet (idle pequeño, raro).
+- Mirar pantalla de Tablet ajena (cuando hay otra cerca, target raycast).
+
+### 25.2 Animaciones de la Tablet (el dispositivo en sí)
+
+- Pantalla encendiéndose (fade negro → wallpaper).
+- Pantalla apagándose (fade a punto central).
+- Vibración (sutil shake del modelo).
+- Pulsación de botón power (tactile feedback en el modelo).
+
+### 25.3 Animaciones internas de UI (responsabilidad CÓDIGO)
+
+> Estas las hace el frontend React + Framer Motion, no el equipo 3D.
+
+- Boot sequence completa (logo + ondas + texto).
+- Lock screen → home (transición).
+- App switcher (cards animadas).
+- Apertura de app (zoom-in del icono).
+- Cierre de app (zoom-out).
+- Notificación pop-up (slide-down).
+- Notificación pop-up dismiss (slide-up).
+- Modal (fade + scale-in 200ms).
+- Toast (slide-in derecha + fade-out 4s).
+- Cambio entre vistas Manager Panel (cross-fade 300ms).
+- Animación de firma digital (línea siendo dibujada).
+- Animación de transferencia bancaria (moneda + check).
+- Animación de impresión (impresora trabajando dentro de la app + impresora física en mundo).
+
+---
+
+## 26. Lista de sonidos requeridos
+
+### 26.1 Sonidos del dispositivo
+
+- **Boot sound** (~1.2s) — campana naval suavizada + acorde sintético + click final.
+- **Boot sound Pro** (variante con más capas).
+- **Boot sound Enterprise** (variante premium).
+- **Pantalla encendiéndose** — click discreto.
+- **Pantalla apagándose** — click más suave.
+- **Tap en UI** — click ultra-discreto, feedback táctil sonoro.
+- **Swipe** — whoosh muy sutil.
+- **Vibración bolsillo** (Tablet guardada) — buzz amortiguado.
+- **Vibración mesa** (Tablet sobre superficie) — buzz tableteando contra superficie.
+
+### 26.2 Sonidos de notificación
+
+(Ver tabla §15.2 — uno por tipo).
+
+- Crítica operativa.
+- Crítica financiera.
+- Importante.
+- Informativa.
+- Financiera positiva (moneda).
+- Contractual (sello/papel).
+- Mensajería (pop).
+- Meteorológica (viento sutil).
+- Sistema (click).
+- Mercado (cha-ching suave).
+- Logística (camión sutil).
+- Reputación (estrella mágica).
+
+### 26.3 Sonidos de docking
+
+- **Click magnético** al introducir Tablet en dock.
+- **Sonido de conexión periférica** (~0.5s).
+- **Pantalla del monitor encendiéndose** (zumbido eléctrico breve).
+- **Eject** del dock (click suave).
+
+### 26.4 Sonidos de inter-tablet
+
+- **Acercar dos Tablets** (acoplamiento detectado — bip discreto).
+- **Compartir contacto / archivo** — whoosh + check.
+- **Pago cara a cara** — moneda + check verde.
+
+### 26.5 Sonidos ambiente del entorno
+
+- **Impresora trabajando** (motor + papel saliendo).
+- **Lector de tarjeta bip** (al fichar).
+
+---
+
+## 27. Anti-patrones específicos de la Tablet
+
+> Lo que **JAMÁS** vamos a hacer en este producto.
+
+- ❌ **UI flotante sobre HUD** que no esté contenida en el modelo 3D del dispositivo.
+- ❌ **Comando `/menu`** que abre la Tablet sin animación de saque.
+- ❌ **Tablet invisible para otros jugadores** mientras la usas.
+- ❌ **Phone-clone** con Twitter, Instagram, Tinder, etc. — no es nuestro espacio.
+- ❌ **App que ejecuta una acción física por ti** (cosechar desde Tablet, sembrar desde Tablet).
+- ❌ **Cada app con su UI propia** sin seguir el lenguaje del OS.
+- ❌ **Notificaciones genéricas** ("Tienes 1 mensaje") sin contexto, color, sonido específicos.
+- ❌ **Boot instantáneo** que se salta el sound + animación.
+- ❌ **Apps imposibles de quitar / reordenar.**
+- ❌ **Sin identidad de marca visible en el dispositivo** (logo, branding, paleta).
+- ❌ **Reemplazar la Tablet por menú clásico** en cualquier acción administrativa.
+- ❌ **Ringtone único genérico** para todo.
+- ❌ **Pantalla siempre 100% visible a otros** sin opción de privacidad.
+- ❌ **Dock que es solo decorativo** (debe transformar la experiencia).
+- ❌ **Sin sincronización cloud** (perder datos al cambiar de Tablet sería frustrante).
+- ❌ **Sin SDK pensado para apps de terceros** (mata la visión de plataforma).
+
+---
+
+## 28. Roadmap de oleadas Tablet
+
+### Oleada 1 — Lanzamiento
+
+**Hardware:**
+- 3 tiers (Básica, Pro, Enterprise) con todos los acabados.
+- 3 docks (básico, pro, enterprise).
+- Camión delivery + animación de unboxing.
+
+**OS:**
+- Boot, lock screen, home, panel notificaciones, settings.
+- 3 themes (Auto, Claro, Oscuro).
+- 30+ wallpapers (mix de packs).
+- 13 ringtones.
+- Multi-idioma (ES, EN — base; resto como overlay).
+
+**Apps de lanzamiento (8):**
+- Empresa, Manager Panel, Mercado, Logística, Mensajes, Banca, Notas & Contratos, Tienda Admirals + Settings.
+
+**Apps de productos:**
+- Manager Panel del Granjero (incluido con resource Granja).
+- Manager Panel del Molinero (incluido con Molino).
+- Manager Panel del Panadero (incluido con Panadería).
+- Manager Panel del Tendero (incluido con Retail).
+
+**Sistemas:**
+- Notificaciones cross-app completo.
+- Multi-empresa (no multi-cuenta — solo Enterprise).
+- Cloud sync.
+- PIN básico.
+- Pantalla privada toggle.
+- Inter-tablet (compartir contacto, pago cara a cara).
+- Cámara básica (foto solo).
+
+### Oleada 2 — Update gratis tras 2-3 meses
+
+- **Mensajes de voz** + **llamadas inter-Tablet** (con ringtone, descolgar).
+- **Robo de Tablet** (mecánica RP — pierde dispositivo, recupera datos).
+- **Galería extendida** (vídeos cortos + selfies).
+- **Bridge configurable** con phone scripts (ESX phone, lb-phone, qb-phone).
+- **Modo huella** para desbloqueo.
+- **Apps adicionales:** Servicios externos (mecánico, seguridad — cuando salgan los nodos).
+- **Compostaje, granizo, etc.** (apps de Granja oleada 2 enchufadas).
+
+### Oleada 3 — Update tras 6 meses
+
+- **App Drones** (con la vertical de drones agrícolas — Granja oleada 3).
+- **OCR** sobre fotos de papeles → notas.
+- **SDK público** para apps de terceros + Tienda Admirals con sección "Apps de la comunidad" (curado).
+- **Sistema de notaría** (compra/venta de empresas vía Mercado + escritura digital).
+- **Pago cara a cara con QR físico** (variante alternativa al inter-Tablet).
+- **Modo facial** (cámara frontal escanea al personaje).
+- **Cuenta multi-personaje** (admin RP, periodistas RP, etc.).
+
+### Oleada 4+ — visión a largo plazo
+
+- **Plataforma:** Admirals Tablet como SO público con cientos de apps de terceros.
+- **Mercado de apps Admirals:** developers cobran, comparten ingreso con Admirals.
+- **Tablet for Server Admins:** versión especial con apps administrativas (gestión de jugadores, métricas, intervención RP).
+
+---
+
+## 29. Estado del documento
+
+- **Versión:** 1.0 (firmado).
+- **Próxima revisión:** evolución cuando se añadan apps de nuevas verticales.
+- **Documentos derivados pendientes:**
+  - `technical/01_architecture.md` — arquitectura técnica completa (NUI, render target, bus de eventos, schema DB).
+  - `art/01_art_direction.md` — guía visual: paleta exacta, tipografía exacta, iconos, wallpapers oficiales, estilo de animaciones.
+  - `economy/01_economic_model.md` — precios de Tablet por tier, precios de licencias, sinks económicos, márgenes de tienda.
+  - `02_admirals_tablet_apps_spec.md` (futuro) — especificaciones de cada app a nivel de UI/UX detallado (mockups, flows).
+
+---
+
+*"Open the bridge."*

@@ -1,0 +1,2334 @@
+# 🗄️ Admirals — Schema de Base de Datos
+
+> **Versión:** 1.0 (firmado)
+> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
+> **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
+> **Documento hermano:** `02_events_catalog.md` v1.0 (eventos que mutan estas tablas).
+> **Estado:** primera redacción completa de las 4 partes (20 secciones, ~2335 líneas, 28 tablas con DDL completo).
+
+> **Lectura previa obligatoria:** `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad).
+
+---
+
+## 0. Resumen ejecutivo
+
+Este documento es **la referencia oficial del schema relacional de Admirals**. Define cada tabla, columna, tipo, índice, foreign key y query crítica del ecosistema.
+
+Cubre:
+
+- **Filosofía y convenciones** del schema.
+- **ERD textual** del ecosistema completo.
+- **DDL formal** de cada tabla (CREATE TABLE listo para producción).
+- **Índices justificados** con razón de cada uno.
+- **Queries críticas** documentadas (las que se ejecutan en hot path).
+- **Migrations:** estrategia, formato, versionado.
+- **Particionado** de tablas a escala.
+- **Backup, restore y archival.**
+- **Reference data (seeds)** mínima.
+- **Diccionario de datos** completo.
+
+> **Toda tabla del ecosistema Admirals DEBE estar definida aquí.** Si la tabla no está documentada, no existe en producción.
+
+---
+
+## 1. Filosofía y convenciones del schema
+
+### 1.1 Principios
+
+| # | Principio | Significado práctico |
+|---|---|---|
+| **D1** | **Prefijo `admirals_` obligatorio** | Todas las tablas Admirals empiezan con `admirals_`. Cero colisión con framework, addons o terceros. |
+| **D2** | **UUID v4 como id primario por defecto** | Los `id` de entidades de negocio (accounts, companies, tablets, etc.) son UUID v4 (CHAR(36)). Las tablas con alto volumen de inserts (movements, messages, event_log) usan BIGINT autoincrement. |
+| **D3** | **Charset y collation:** `utf8mb4` + `utf8mb4_0900_ai_ci` | Soporte completo Unicode (emojis, idiomas). MySQL 8 default. |
+| **D4** | **Engine InnoDB** | Transacciones ACID, foreign keys, row-level locking. Cero MyISAM. |
+| **D5** | **Timestamps con DEFAULT CURRENT_TIMESTAMP + ON UPDATE** | Toda tabla tiene `created_at` (UNIX timestamp INT UNSIGNED) y `updated_at` (UNIX timestamp INT UNSIGNED). |
+| **D6** | **Soft deletes donde aplique** | Tablas con histórico legal (documents, bank_movements) usan `deleted_at` nullable, no `DELETE`. |
+| **D7** | **Foreign keys explícitas con ON DELETE definido** | Cada FK declara comportamiento (CASCADE, SET NULL, RESTRICT) según semántica. |
+| **D8** | **Naming snake_case en todo** | Tablas, columnas, índices, constraints. |
+| **D9** | **Índices documentados** | Cada índice tiene razón explícita. Ningún índice "por si acaso". |
+| **D10** | **JSON columns donde el schema sea genuinamente flexible** | Reservado para metadatos, payloads de eventos, lineage del item físico. **Nunca para datos consultables por filtros frecuentes** (esos van en columnas estructuradas). |
+| **D11** | **Migraciones inmutables, versionadas, idempotentes** | Toda mutación de schema viene de un archivo `migrations/NNN_description.sql`. Nunca `ALTER` manual en producción. |
+| **D12** | **Particionado proactivo en tablas de alto volumen** | `event_log`, `bank_movements`, `messages` con particionado por fecha desde día 1. |
+
+### 1.2 Convención de naming
+
+- **Tablas:** `admirals_<recurso>` (singular o plural según semántica). Ejemplo: `admirals_accounts`, `admirals_event_log`.
+- **Columnas:** `snake_case` siempre.
+- **Foreign keys:** column name = `<related_table_singular>_id` (ej. `account_id`, `company_id`).
+- **Índices:** `idx_<table>_<col1>_<col2>` para no únicos, `uq_<table>_<col>` para únicos, `pk_<table>` para PK explícitos compuestos, `fk_<table>_<col>` para FKs.
+- **Constraints CHECK:** `chk_<table>_<col>_<descripcion>`.
+
+### 1.3 Tipos de columna canónicos
+
+> **Reproducimos los tipos canónicos de `02_events_catalog.md` §1.6 mapeados a MySQL 8.**
+
+| Tipo Admirals | MySQL | Descripción |
+|---|---|---|
+| `AccountId`, `CompanyId`, `TabletSerial`, `BankAccountId` | `CHAR(36)` | UUID v4. |
+| `IBAN` | `VARCHAR(20)` | `AD-XXXX-XXXX-XXXX` formato. |
+| `BatchId` | `VARCHAR(32)` | `FARM-2026-0001-A` formato. |
+| `Vertical` | `VARCHAR(32)` | enum-like libre (validación en código). |
+| `Role` | `ENUM('owner','manager','employee','temporary')` | |
+| `Grade` | `CHAR(1)` | S, A, B, C, D. CHECK constraint. |
+| `Score` | `TINYINT UNSIGNED` | 0-100. CHECK constraint. |
+| `Money` | `DECIMAL(12,2)` | hasta 9.999.999.999,99 (suficiente). UNSIGNED si nunca negativo. |
+| `Coords` (JSON) | `JSON` | `{x, y, z, heading}`. |
+| `UnixSec` | `INT UNSIGNED` | timestamp segundos (válido hasta 2106). |
+| `UnixMs` | `BIGINT UNSIGNED` | timestamp ms. |
+| `Boolean` | `TINYINT(1)` | 0/1. |
+| `EventName` | `VARCHAR(96)` | `admirals:domain:action`, suficiente para los nombres canónicos. |
+| `JsonPayload` | `JSON` | payloads de eventos, metadata flexible. |
+
+### 1.4 Convención de timestamps
+
+Toda tabla tiene **al menos** estas dos columnas:
+
+```sql
+created_at INT UNSIGNED NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+updated_at INT UNSIGNED NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP())
+```
+
+> **Nota:** se usa `INT UNSIGNED` (segundos UNIX) en lugar de `DATETIME` para coherencia total con timestamps del bus de eventos y zero ambigüedad de timezone. La capa de aplicación traduce a humano.
+
+### 1.5 Convención de soft delete
+
+Tablas con histórico legal:
+
+```sql
+deleted_at INT UNSIGNED NULL DEFAULT NULL,
+deleted_by_account_id CHAR(36) NULL DEFAULT NULL
+```
+
+Las queries de aplicación filtran `WHERE deleted_at IS NULL` por defecto. Vista `*_active` provee el filtrado automático para queries comunes.
+
+### 1.6 Convención de foreign keys
+
+```sql
+-- Sintaxis canónica
+CONSTRAINT fk_<table>_<col>
+  FOREIGN KEY (<col>)
+  REFERENCES <referenced_table>(<referenced_col>)
+  ON DELETE <CASCADE|SET NULL|RESTRICT>
+  ON UPDATE CASCADE
+```
+
+**Reglas para `ON DELETE`:**
+
+- **CASCADE:** cuando la fila hija no tiene sentido sin el padre (ej. `company_members` sin `company`).
+- **SET NULL:** cuando la fila hija puede sobrevivir (ej. `created_by_account_id` si la cuenta se borra, el documento sobrevive como anónimo).
+- **RESTRICT:** cuando borrar el padre debe ser bloqueado por integridad legal (ej. `bank_accounts` con `movements` activos).
+
+### 1.7 Convención de naming de eventos en triggers
+
+> **Política:** preferimos lógica de eventos **en código aplicación** (resources Lua) para mantener el bus como fuente de verdad. **Triggers se reservan a 2 casos:**
+
+1. **Updates de `updated_at`** (no soportado puramente con DEFAULT en MySQL 8 sin generated columns). En la práctica, MySQL 8 sí lo soporta con `ON UPDATE` — confirmado en §1.4.
+2. **Auditoría de columnas críticas** opcional (ej. capturar valor anterior de `quality_score` en una tabla satélite — uso muy puntual).
+
+> **NO se usan triggers para lógica de negocio.** Eso vive en el bus de eventos.
+
+### 1.8 Convención sobre JSON columns
+
+JSON está reservado para:
+- **Metadatos del Item Físico** (lineage, quality components).
+- **Payloads de eventos** en `event_log`.
+- **Configuración por entidad** (settings, preferencias).
+- **Ubicaciones físicas** (Coords).
+- **Estructuras anidadas con schema variable** documentado en este doc.
+
+JSON **NO se usa** para:
+- Listas de IDs consultables por relación (van en tabla intermedia).
+- Datos requeridos por filtros (van en columnas).
+- Estados (van en ENUM o columna estructurada).
+
+---
+
+## 2. ERD — Diagrama de relaciones (textual)
+
+> **Vista panorámica del schema.** Las tablas con (*) son particionadas.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      DOMINIO IDENTIDAD Y EMPRESA                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_accounts
+  └─< admirals_tablets         (1 account → 0..N tablets)
+  └─< admirals_company_members (1 account → 0..N memberships)
+  └─< admirals_documents       (created_by) (1 account → 0..N docs)
+  └─< admirals_messages        (sender)     (1 account → 0..N messages)
+  └─< admirals_notifications   (target)     (1 account → 0..N notifs)
+
+admirals_companies
+  └─< admirals_company_members         (1 company → N members)
+  ├─> admirals_bank_accounts (1 company → 1 bank account empresarial)
+  └─< admirals_documents               (1 company → 0..N docs)
+
+admirals_company_members ──> admirals_accounts
+admirals_company_members ──> admirals_companies
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                          DOMINIO BANCA                               │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_bank_accounts
+  └─< admirals_bank_movements (*)  (1 account → N movements)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                       DOMINIO DOCUMENTOS                             │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_documents
+  └─< admirals_document_signatures   (1 doc → N firmas)
+  └─< admirals_documents              (parent_doc_id self-reference)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     DOMINIO MENSAJERÍA                               │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_chats
+  └─< admirals_chat_participants     (1 chat → N participantes)
+  └─< admirals_messages (*)          (1 chat → N messages)
+
+admirals_messages (*)
+  └─< admirals_message_attachments   (1 message → N attachments)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     DOMINIO NOTIFICACIONES                           │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_notifications (*)
+  └─> admirals_accounts              (target)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                   DOMINIO MARKET Y REPUTATION                        │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_market_offers
+  └─< admirals_market_reviews        (1 offer → 0..1 review típicamente)
+  └─> admirals_logistics_jobs        (offer → optional job)
+
+admirals_reputation
+  └─> admirals_accounts | admirals_companies (subject polymorphic)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     DOMINIO LOGÍSTICA                                │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_logistics_jobs
+  └─< admirals_logistics_disputes    (1 job → 0..N disputes)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                       DOMINIO NODOS                                  │
+│  (cada nodo gestiona sus propias tablas con prefijo admirals_<nodo>) │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_granja_plots         (1 company → N plots)
+admirals_granja_silos         (1 company → N silos)
+admirals_granja_machines      (1 company → N machines)
+admirals_granja_licenses      (1 account → N licenses)
+
+admirals_molino_silos
+admirals_molino_machines
+admirals_molino_batches       (lineage)
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                  DOMINIO INFRAESTRUCTURA                             │
+└─────────────────────────────────────────────────────────────────────┘
+
+admirals_event_log (*)              (audit trail particionado por mes)
+admirals_schema_versions            (registry de migraciones aplicadas)
+admirals_settings_per_account       (preferencias usuario)
+```
+
+### 2.1 Resumen de cardinalidades clave
+
+| Relación | Cardinalidad | Notas |
+|---|---|---|
+| `account` ↔ `tablet` | 1:N | Una cuenta puede poseer varias Tablets en oleadas futuras. Oleada 1: 1:1. |
+| `account` ↔ `company_member` | 1:N | Un jugador puede ser miembro de varias empresas. |
+| `company` ↔ `company_member` | 1:N | Una empresa tiene varios miembros. |
+| `company` ↔ `bank_account` | 1:1 (empresarial) | Cuenta empresarial única. |
+| `account` ↔ `bank_account` | 1:N | Personal + (futuro) ahorros, etc. |
+| `bank_account` ↔ `movement` | 1:N | Histórico inmutable. |
+| `document` ↔ `signature` | 1:N | Multi-firmantes. |
+| `chat` ↔ `participant` | 1:N | Chats grupales. |
+| `chat` ↔ `message` | 1:N | Mensajes ordenados. |
+| `offer` ↔ `logistics_job` | 1:0..1 | Si delivery automático. |
+| `company` ↔ `granja_plot` | 1:N | Empresa Granja con N parcelas. |
+
+### 2.2 Listado de tablas oleada 1
+
+| # | Tabla | Dominio | Particionada | Tamaño esperado (servidor 200 jug) |
+|---|---|---|---|---|
+| 1 | `admirals_accounts` | core | no | < 10K filas |
+| 2 | `admirals_tablets` | core | no | < 10K filas |
+| 3 | `admirals_companies` | core | no | < 5K filas |
+| 4 | `admirals_company_members` | core | no | < 50K filas |
+| 5 | `admirals_bank_accounts` | bank | no | < 20K filas |
+| 6 | `admirals_bank_movements` | bank | sí (mes) | crece sin límite |
+| 7 | `admirals_documents` | docs | no | crece — archival manual |
+| 8 | `admirals_document_signatures` | docs | no | proporcional a docs |
+| 9 | `admirals_chats` | messages | no | < 50K filas |
+| 10 | `admirals_chat_participants` | messages | no | < 200K filas |
+| 11 | `admirals_messages` | messages | sí (mes) | crece sin límite |
+| 12 | `admirals_message_attachments` | messages | no | proporcional a messages |
+| 13 | `admirals_notifications` | notif | sí (mes) | crece sin límite |
+| 14 | `admirals_market_offers` | market | no | < 100K filas |
+| 15 | `admirals_market_reviews` | market | no | proporcional a offers |
+| 16 | `admirals_reputation` | core | no | < 30K filas |
+| 17 | `admirals_logistics_jobs` | logistics | no | crece moderadamente |
+| 18 | `admirals_logistics_disputes` | logistics | no | raras |
+| 19 | `admirals_granja_plots` | granja | no | < 10K filas |
+| 20 | `admirals_granja_silos` | granja | no | < 5K filas |
+| 21 | `admirals_granja_machines` | granja | no | < 10K filas |
+| 22 | `admirals_granja_licenses` | granja | no | < 50K filas |
+| 23 | `admirals_molino_silos` | molino | no | < 1K filas |
+| 24 | `admirals_molino_machines` | molino | no | < 1K filas |
+| 25 | `admirals_molino_batches` | molino | no | crece moderadamente |
+| 26 | `admirals_event_log` | infra | sí (mes) | crece sin límite |
+| 27 | `admirals_schema_versions` | infra | no | < 200 filas |
+| 28 | `admirals_settings_per_account` | infra | no | < 10K filas |
+
+**Total tablas oleada 1: 28** (12 core + 13 dominios + 3 nodos + 0 reservas).
+
+---
+
+## 3. DDL — Dominio identidad y empresa
+
+### 3.1 admirals_accounts
+
+> **La cuenta Admirals.** Vinculada a un personaje del framework. Es el "DNI digital" del jugador en el ecosistema.
+
+```sql
+CREATE TABLE admirals_accounts (
+  id                    CHAR(36)        NOT NULL,
+  char_id               VARCHAR(64)     NOT NULL COMMENT 'citizenid QBox / identifier ESX / character_id manual',
+  framework_source      ENUM('qbox','qbcore','esx','manual') NOT NULL,
+  alias                 VARCHAR(64)     NOT NULL COMMENT 'nombre mostrado público en Admirals',
+  reputation_global     TINYINT UNSIGNED NOT NULL DEFAULT 50 COMMENT '0-100',
+  preferred_locale      VARCHAR(8)      NOT NULL DEFAULT 'es-ES',
+  developer_mode        TINYINT(1)      NOT NULL DEFAULT 0,
+  meta                  JSON            NULL COMMENT 'preferencias y datos extensibles',
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+  last_login_at         INT UNSIGNED    NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_accounts_char_id (char_id, framework_source),
+
+  CHECK (reputation_global BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `id` es UUID v4 generado en `admirals_core` al primer login del jugador.
+- `char_id` + `framework_source` es único — un personaje del framework solo tiene una cuenta Admirals.
+- `reputation_global` se actualiza vía `admirals:core:reputation_changed`.
+- `meta` puede contener: `{ "wallpaper": "...", "theme": "...", ... }`.
+
+### 3.2 admirals_tablets
+
+> **Hardware Tablet.** Es **un item físico inventariable** además de una entry en DB. Ver `02_admirals_tablet.md` para semántica.
+
+```sql
+CREATE TABLE admirals_tablets (
+  serial                CHAR(36)        NOT NULL COMMENT 'UUID v4 — número de serie único',
+  owner_account_id      CHAR(36)        NULL COMMENT 'NULL si está en venta o sin asignar',
+  model                 ENUM('admirals_basic','admirals_pro','admirals_enterprise') NOT NULL DEFAULT 'admirals_basic',
+  os_version            VARCHAR(16)     NOT NULL DEFAULT '1.0.0',
+
+  is_lost               TINYINT(1)      NOT NULL DEFAULT 0,
+  is_locked             TINYINT(1)      NOT NULL DEFAULT 0 COMMENT 'PIN activado',
+  pin_hash              VARCHAR(128)    NULL,
+
+  wallpaper             VARCHAR(64)     NOT NULL DEFAULT 'default_naval',
+  theme                 ENUM('auto','light','dark') NOT NULL DEFAULT 'auto',
+  accent_color          VARCHAR(16)     NOT NULL DEFAULT '#0a3a5e',
+  privacy_screen        TINYINT(1)      NOT NULL DEFAULT 0,
+
+  home_layout           JSON            NULL COMMENT '{ columns, app_order[], widgets[] }',
+  ringtones             JSON            NULL COMMENT '{ default, per_contact: { account_id: ringtone } }',
+  notifications_per_app JSON            NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (serial),
+  KEY idx_admirals_tablets_owner (owner_account_id),
+
+  CONSTRAINT fk_admirals_tablets_owner
+    FOREIGN KEY (owner_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `serial` es UUID v4 generado al fabricar la Tablet (al "comprarla" o al spawnear).
+- `owner_account_id` puede ser NULL si la Tablet está en una tienda, perdida sin recuperar, o vendida sin nuevo dueño asignado.
+- `is_lost` se setea via `admirals:tablet:lost_or_stolen`.
+- Settings personales de UI viven aquí, no en la cuenta — porque la Tablet es física y el dueño podría cambiar.
+
+### 3.3 admirals_companies
+
+> **Empresa Admirals.** Entidad jurídica RP, dueña de assets físicos, contratos, cuenta empresarial.
+
+```sql
+CREATE TABLE admirals_companies (
+  id                    CHAR(36)        NOT NULL,
+  vertical              VARCHAR(32)     NOT NULL COMMENT 'farm, mill, bakery, retail, logistics, mechanic, ...',
+  name                  VARCHAR(96)     NOT NULL,
+  legal_name            VARCHAR(128)    NULL COMMENT 'razón social RP',
+  status                ENUM('active','suspended','bankrupt','sold','dissolved') NOT NULL DEFAULT 'active',
+
+  owner_account_id      CHAR(36)        NOT NULL,
+  hq_location           JSON            NOT NULL COMMENT 'Coords MLO sede',
+  bank_account_id       CHAR(36)        NULL COMMENT 'cuenta empresarial — nullable hasta creación',
+
+  cash_balance          DECIMAL(12,2) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'caja física disponible en sede',
+  reputation            TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  logo_url              VARCHAR(255)    NULL,
+  brand_color           VARCHAR(16)     NULL,
+
+  config                JSON            NULL COMMENT 'configuración específica del vertical',
+
+  founded_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+  dissolved_at          INT UNSIGNED    NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_companies_name (name),
+  KEY idx_admirals_companies_owner (owner_account_id),
+  KEY idx_admirals_companies_vertical_status (vertical, status),
+
+  CONSTRAINT fk_admirals_companies_owner
+    FOREIGN KEY (owner_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CHECK (cash_balance >= 0),
+  CHECK (reputation BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `cash_balance` es la caja física en sede (cash en efectivo). Pool separado de `bank_account_id`.
+- `bank_account_id` es FK lógica a `admirals_bank_accounts` — se añade el constraint después en migración debido a dependencia circular en orden de creación de tablas.
+- `vertical` no es ENUM porque se añadirán verticales en oleadas futuras sin ALTER TABLE.
+- `config` ejemplo Granja: `{ "max_plots": 10, "weather_zone": "paleto" }`.
+
+### 3.4 admirals_company_members
+
+> **Tabla intermedia** account ↔ company con rol y datos de empleo.
+
+```sql
+CREATE TABLE admirals_company_members (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  company_id            CHAR(36)        NOT NULL,
+  account_id            CHAR(36)        NOT NULL,
+  role                  ENUM('owner','manager','employee','temporary') NOT NULL DEFAULT 'employee',
+  position              VARCHAR(64)     NULL COMMENT 'maquinista, tendero, conductor, etc.',
+  salary                DECIMAL(10,2) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'salario por turno o por hora — depende de config empresa',
+  salary_period         ENUM('hourly','shift','daily','monthly') NOT NULL DEFAULT 'shift',
+
+  permissions_overrides JSON            NULL COMMENT 'overrides puntuales sobre matriz de rol',
+
+  hired_at              INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  hired_by_account_id   CHAR(36)        NULL,
+
+  fired_at              INT UNSIGNED    NULL,
+  fired_by_account_id   CHAR(36)        NULL,
+  fire_reason           ENUM('fired','resigned','temporary_completed','banned') NULL,
+
+  is_active             TINYINT(1)      AS (CASE WHEN fired_at IS NULL THEN 1 ELSE 0 END) STORED,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_company_members_active (company_id, account_id, is_active),
+  KEY idx_admirals_company_members_account (account_id, is_active),
+  KEY idx_admirals_company_members_company (company_id, is_active, role),
+
+  CONSTRAINT fk_admirals_company_members_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_company_members_account
+    FOREIGN KEY (account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CHECK (salary >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- **Histórico preservado:** una empresa puede tener al mismo `account_id` varias veces (entró, salió, volvió). Solo una con `is_active = 1` por par (company, account).
+- `is_active` es columna generada (computed) basada en `fired_at IS NULL`.
+- `permissions_overrides` ejemplo: `{ "approve_payments": true, "edit_prices": false }` — overrides puntuales sobre la matriz de permisos del rol (definida en código).
+
+---
+
+## 4. DDL — Dominio Banca
+
+### 4.1 admirals_bank_accounts
+
+> **Cuenta bancaria** personal o empresarial. IBAN único formato Admirals.
+
+```sql
+CREATE TABLE admirals_bank_accounts (
+  id                    CHAR(36)        NOT NULL,
+  iban                  VARCHAR(20)     NOT NULL COMMENT 'AD-XXXX-XXXX-XXXX',
+  type                  ENUM('personal','company','cooperative','escrow') NOT NULL,
+
+  owner_account_id      CHAR(36)        NULL COMMENT 'NULL si type=company',
+  owner_company_id      CHAR(36)        NULL COMMENT 'NULL si type=personal',
+
+  balance               DECIMAL(14,2)   NOT NULL DEFAULT 0 COMMENT 'saldo actual (puede ser negativo si admin overdraft)',
+  daily_limit_out       DECIMAL(12,2) UNSIGNED NULL COMMENT 'límite saliente diario (NULL = sin límite)',
+  is_frozen             TINYINT(1)      NOT NULL DEFAULT 0,
+  frozen_reason         VARCHAR(255)    NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+  closed_at             INT UNSIGNED    NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_bank_accounts_iban (iban),
+  KEY idx_admirals_bank_accounts_owner_account (owner_account_id),
+  KEY idx_admirals_bank_accounts_owner_company (owner_company_id),
+
+  CONSTRAINT fk_admirals_bank_accounts_owner_account
+    FOREIGN KEY (owner_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_bank_accounts_owner_company
+    FOREIGN KEY (owner_company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CHECK (
+    (type = 'personal' AND owner_account_id IS NOT NULL AND owner_company_id IS NULL)
+    OR (type IN ('company','cooperative','escrow') AND owner_company_id IS NOT NULL AND owner_account_id IS NULL)
+  )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- Solo uno de `owner_account_id` / `owner_company_id` está poblado según `type` — CHECK lo enforzia.
+- IBAN único con formato `AD-XXXX-XXXX-XXXX`. Generado por `admirals_core` con checksum interno.
+- `escrow` se usa para holding payments (delivery_via_logistics, contratos) — son cuentas técnicas internas.
+- Constraint FK de `admirals_companies.bank_account_id → admirals_bank_accounts.id` se añade en migración 002 tras crear ambas tablas.
+
+### 4.2 admirals_bank_movements (PARTITIONED)
+
+> **Movimientos bancarios — registro contable inmutable.** Cada transferencia genera 2 entradas (debe + haber).
+
+```sql
+CREATE TABLE admirals_bank_movements (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  bank_account_id       CHAR(36)        NOT NULL,
+  occurred_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  amount                DECIMAL(14,2)   NOT NULL COMMENT 'positivo=ingreso, negativo=salida',
+  balance_after         DECIMAL(14,2)   NOT NULL COMMENT 'saldo tras este movimiento (snapshot)',
+
+  category              ENUM('salary','b2b_payment','transfer','tax','refund','b2c_sale','expense','deposit','withdrawal','escrow_lock','escrow_release','adjustment') NOT NULL,
+  counterpart_iban      VARCHAR(20)     NULL,
+  concept               VARCHAR(255)    NULL,
+
+  related_doc_id        CHAR(36)        NULL,
+  related_offer_id      CHAR(36)        NULL,
+  related_job_id        CHAR(36)        NULL,
+  request_nonce         CHAR(36)        NULL COMMENT 'idempotencia anti-replay',
+
+  initiated_by_account_id CHAR(36)      NULL,
+  source_resource       VARCHAR(64)     NOT NULL COMMENT 'admirals_core, admirals_market, etc.',
+
+  PRIMARY KEY (id, occurred_at),
+  KEY idx_admirals_bank_movements_account (bank_account_id, occurred_at DESC),
+  KEY idx_admirals_bank_movements_category (category, occurred_at DESC),
+  KEY idx_admirals_bank_movements_nonce (request_nonce),
+  KEY idx_admirals_bank_movements_related_doc (related_doc_id),
+  KEY idx_admirals_bank_movements_related_offer (related_offer_id),
+  KEY idx_admirals_bank_movements_related_job (related_job_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  PARTITION BY RANGE (occurred_at) (
+    PARTITION p_2026_01 VALUES LESS THAN (1738368000),  -- Feb 1 2026
+    PARTITION p_2026_02 VALUES LESS THAN (1740787200),  -- Mar 1 2026
+    PARTITION p_2026_03 VALUES LESS THAN (1743465600),  -- Apr 1 2026
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+  );
+```
+
+**Notas:**
+- **No FK a `bank_account_id`** intencionalmente — particionamiento + volumen + integridad por aplicación. La integridad la garantizan repos en código.
+- `request_nonce` evita replay attacks: el mismo nonce no puede crear 2 movimientos.
+- `balance_after` es snapshot — auditable sin recalcular toda la cadena.
+- Particionado mensual gestionado por cron: añadir partition siguiente, archivar las > 12 meses (ver §15 backup/archival).
+- Orden de columnas optimizada para acceso por cuenta y rango temporal.
+
+---
+
+## 5. DDL — Dominio Documentos
+
+### 5.1 admirals_documents
+
+> **Repositorio documental Admirals.** Notas, contratos, albaranes, recibos, certificados.
+
+```sql
+CREATE TABLE admirals_documents (
+  id                    CHAR(36)        NOT NULL,
+  type                  ENUM('note','contract','delivery_note','receipt','license','company_deed','bill_of_sale','invoice','custom') NOT NULL,
+  title                 VARCHAR(192)    NOT NULL,
+  body                  LONGTEXT        NULL COMMENT 'cuerpo del documento (markdown / texto plano)',
+  template_id           VARCHAR(64)     NULL COMMENT 'plantilla usada (para contratos)',
+
+  status                ENUM('draft','pending_signature','active','fulfilled','breached','archived','cancelled') NOT NULL DEFAULT 'draft',
+
+  owner_account_id      CHAR(36)        NULL,
+  owner_company_id      CHAR(36)        NULL,
+  parent_doc_id         CHAR(36)        NULL COMMENT 'self-reference para versiones / hijos',
+
+  parties_json          JSON            NULL COMMENT 'array de partes (account_ids o company_ids)',
+  data_json             JSON            NULL COMMENT 'datos estructurados del doc (campos formulario)',
+  attachments_json      JSON            NULL COMMENT 'urls / refs a adjuntos',
+
+  visibility            ENUM('private','company','parties','public') NOT NULL DEFAULT 'private',
+  expires_at            INT UNSIGNED    NULL,
+
+  created_by_account_id CHAR(36)        NOT NULL,
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  archived_at           INT UNSIGNED    NULL,
+  deleted_at            INT UNSIGNED    NULL,
+  deleted_by_account_id CHAR(36)        NULL,
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_documents_owner_account (owner_account_id, type, status),
+  KEY idx_admirals_documents_owner_company (owner_company_id, type, status),
+  KEY idx_admirals_documents_status (status, type),
+  KEY idx_admirals_documents_parent (parent_doc_id),
+  KEY idx_admirals_documents_created_by (created_by_account_id, created_at DESC),
+
+  CONSTRAINT fk_admirals_documents_owner_account
+    FOREIGN KEY (owner_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_documents_owner_company
+    FOREIGN KEY (owner_company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_documents_created_by
+    FOREIGN KEY (created_by_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_documents_parent
+    FOREIGN KEY (parent_doc_id)
+    REFERENCES admirals_documents(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `data_json` para contratos: `{ "monthly_rent": 2500, "duration_months": 12, ... }`. Estructura por template documentada en `04_sdk_reference.md` futuro.
+- `parties_json` ejemplo: `[{"kind":"company","id":"..."},{"kind":"account","id":"..."}]`.
+- Soft delete mediante `deleted_at`. Documentos firmados son inmutables — no se editan, se versionan vía `parent_doc_id`.
+- `body` es LONGTEXT para soportar contratos extensos, no solo notas cortas.
+
+### 5.2 admirals_document_signatures
+
+> **Firmas individuales** de un documento. Permite multi-firmantes (contratos B2B con N partes).
+
+```sql
+CREATE TABLE admirals_document_signatures (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  doc_id                CHAR(36)        NOT NULL,
+  signer_account_id     CHAR(36)        NOT NULL,
+  signer_role           VARCHAR(64)     NULL COMMENT 'rol del firmante en el contrato (representante, testigo, etc.)',
+
+  signature_method      ENUM('typed','drawn','biometric') NOT NULL,
+  signature_visual_ref  TEXT            NULL COMMENT 'base64 imagen si drawn, nombre si typed',
+  signature_hash        VARCHAR(128)    NOT NULL COMMENT 'hash SHA-256 del documento + signer + timestamp',
+
+  signed_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  ip_address            VARCHAR(45)     NULL COMMENT 'opcional para audit',
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_document_signatures_doc_signer (doc_id, signer_account_id),
+  KEY idx_admirals_document_signatures_signer (signer_account_id, signed_at DESC),
+
+  CONSTRAINT fk_admirals_document_signatures_doc
+    FOREIGN KEY (doc_id)
+    REFERENCES admirals_documents(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_document_signatures_signer
+    FOREIGN KEY (signer_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `signature_hash` permite verificar integridad: si el `body` del doc cambia post-firma, el hash recalculado no coincidirá → tampering detectado.
+- `UNIQUE (doc_id, signer_account_id)` impide doble firma del mismo signer.
+- Cuando todas las partes han firmado, se actualiza `admirals_documents.status = 'active'` (lógica en código vía `admirals:documents:signed`).
+
+---
+
+## 6. DDL — Dominio Mensajería
+
+### 6.1 admirals_chats
+
+> **Conversación.** Puede ser 1-1, grupal o canal empresarial.
+
+```sql
+CREATE TABLE admirals_chats (
+  id                    CHAR(36)        NOT NULL,
+  type                  ENUM('direct','group','company_channel') NOT NULL,
+  name                  VARCHAR(96)     NULL COMMENT 'NULL en directos (se infiere de participantes)',
+  icon_url              VARCHAR(255)    NULL,
+
+  company_id            CHAR(36)        NULL COMMENT 'NULL excepto si type=company_channel',
+  is_archived           TINYINT(1)      NOT NULL DEFAULT 0,
+
+  last_message_at       INT UNSIGNED    NULL COMMENT 'denormalizado para sort eficiente',
+  last_message_preview  VARCHAR(255)    NULL COMMENT 'denormalizado para list view',
+
+  created_by_account_id CHAR(36)        NULL,
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_chats_company (company_id, is_archived),
+  KEY idx_admirals_chats_last_message (last_message_at DESC),
+
+  CONSTRAINT fk_admirals_chats_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_chats_creator
+    FOREIGN KEY (created_by_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `last_message_at` y `last_message_preview` son **denormalizaciones intencionales** para evitar JOIN en list view de chats (hot path UI). Se actualizan en cada mensaje vía repo.
+- `company_channel` se vincula a `admirals_companies.id` — si la empresa se borra (ON DELETE CASCADE), el chat empresarial también.
+
+### 6.2 admirals_chat_participants
+
+```sql
+CREATE TABLE admirals_chat_participants (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  chat_id               CHAR(36)        NOT NULL,
+  account_id            CHAR(36)        NOT NULL,
+
+  joined_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  left_at               INT UNSIGNED    NULL,
+
+  last_read_message_id  BIGINT UNSIGNED NULL,
+  is_muted              TINYINT(1)      NOT NULL DEFAULT 0,
+  is_pinned             TINYINT(1)      NOT NULL DEFAULT 0,
+  custom_name           VARCHAR(96)     NULL COMMENT 'override local del nombre del chat',
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_chat_participants_active (chat_id, account_id, left_at),
+  KEY idx_admirals_chat_participants_account (account_id, left_at, is_pinned DESC),
+  KEY idx_admirals_chat_participants_chat (chat_id, left_at),
+
+  CONSTRAINT fk_admirals_chat_participants_chat
+    FOREIGN KEY (chat_id)
+    REFERENCES admirals_chats(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_chat_participants_account
+    FOREIGN KEY (account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `last_read_message_id` permite read receipts y cálculo de unread count sin agregaciones costosas.
+- `left_at` permite leave/rejoin sin perder histórico.
+
+### 6.3 admirals_messages (PARTITIONED)
+
+> **Mensajes** del ecosistema. Particionado mensual desde día 1.
+
+```sql
+CREATE TABLE admirals_messages (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  chat_id               CHAR(36)        NOT NULL,
+  sent_at               INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  sender_id             CHAR(36)        NOT NULL,
+  sender_kind           ENUM('account','company','system') NOT NULL DEFAULT 'account',
+
+  body                  TEXT            NULL COMMENT 'cuerpo del mensaje, max 2000 chars',
+  body_kind             ENUM('text','rich','system_event') NOT NULL DEFAULT 'text',
+
+  edited_at             INT UNSIGNED    NULL,
+  deleted_at            INT UNSIGNED    NULL,
+  deleted_by_account_id CHAR(36)        NULL,
+
+  reply_to_message_id   BIGINT UNSIGNED NULL,
+
+  PRIMARY KEY (id, sent_at),
+  KEY idx_admirals_messages_chat (chat_id, sent_at DESC),
+  KEY idx_admirals_messages_sender (sender_id, sent_at DESC),
+  KEY idx_admirals_messages_reply (reply_to_message_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  PARTITION BY RANGE (sent_at) (
+    PARTITION p_2026_01 VALUES LESS THAN (1738368000),
+    PARTITION p_2026_02 VALUES LESS THAN (1740787200),
+    PARTITION p_2026_03 VALUES LESS THAN (1743465600),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+  );
+```
+
+**Notas:**
+- **No FK a chat_id** intencional — particionamiento + volumen. Integridad por aplicación (repo valida chat existe antes de insertar).
+- Particiones gestionadas por cron — añadir nueva mensual + archivar > 12 meses a tabla `admirals_messages_archive` o cold storage.
+
+### 6.4 admirals_message_attachments
+
+```sql
+CREATE TABLE admirals_message_attachments (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  message_id            BIGINT UNSIGNED NOT NULL,
+  message_sent_at       INT UNSIGNED    NOT NULL COMMENT 'duplicada para FK lógica + facilita queries',
+
+  kind                  ENUM('document','photo','location','voice','contact','offer') NOT NULL,
+  ref                   VARCHAR(255)    NOT NULL COMMENT 'doc_id, image_url, coords json, voice_clip_url, etc.',
+  meta                  JSON            NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_message_attachments_message (message_id, message_sent_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- No FK a `messages` debido a tabla particionada. Integridad por aplicación.
+- `kind = 'contact'` permite compartir tarjeta de contacto entre Tablets.
+- `kind = 'offer'` para compartir ofertas del Mercado en chat.
+
+---
+
+## 7. DDL — Dominio Notificaciones
+
+### 7.1 admirals_notifications (PARTITIONED)
+
+> **Notificaciones push** dirigidas a una cuenta. Histórico completo (no se borran al leer — el panel histórico de la Tablet las usa).
+
+```sql
+CREATE TABLE admirals_notifications (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  account_id            CHAR(36)        NOT NULL,
+  pushed_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  type                  ENUM(
+    'critical_op','critical_fin','important','info','fin_pos',
+    'contract','message','weather','system','market','logistics','reputation'
+  ) NOT NULL,
+
+  source_resource       VARCHAR(64)     NOT NULL,
+  title                 VARCHAR(96)     NOT NULL,
+  subtitle              VARCHAR(160)    NULL,
+  body                  VARCHAR(500)    NULL,
+
+  actions_json          JSON            NULL COMMENT 'array de { label, action_id, params }',
+  related_doc_id        CHAR(36)        NULL,
+  related_offer_id      CHAR(36)        NULL,
+  related_job_id        CHAR(36)        NULL,
+  related_chat_id       CHAR(36)        NULL,
+
+  delivery_mode         ENUM('push_popup','banner_inferior','panel_only','blocking') NOT NULL DEFAULT 'push_popup',
+
+  is_read               TINYINT(1)      NOT NULL DEFAULT 0,
+  read_at               INT UNSIGNED    NULL,
+
+  is_archived           TINYINT(1)      NOT NULL DEFAULT 0,
+  archived_at           INT UNSIGNED    NULL,
+
+  PRIMARY KEY (id, pushed_at),
+  KEY idx_admirals_notifications_account (account_id, pushed_at DESC),
+  KEY idx_admirals_notifications_account_unread (account_id, is_read, is_archived, pushed_at DESC),
+  KEY idx_admirals_notifications_type (type, pushed_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  PARTITION BY RANGE (pushed_at) (
+    PARTITION p_2026_01 VALUES LESS THAN (1738368000),
+    PARTITION p_2026_02 VALUES LESS THAN (1740787200),
+    PARTITION p_2026_03 VALUES LESS THAN (1743465600),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+  );
+```
+
+**Notas:**
+- Particionada por mes — limpieza histórica >6 meses opcional según política de retención.
+- Índice compuesto `(account_id, is_read, is_archived, pushed_at DESC)` optimiza el query principal de la Tablet: "notifs activas no leídas del usuario X".
+
+---
+
+## 8. DDL — Dominio Market
+
+### 8.1 admirals_market_offers
+
+> **Ofertas en el Mercado:** trabajos temporales, productos, servicios, empresas en venta.
+
+```sql
+CREATE TABLE admirals_market_offers (
+  id                    CHAR(36)        NOT NULL,
+  type                  ENUM('temp_job','product','service','company_sale','rent') NOT NULL,
+  status                ENUM('active','accepted','completed','cancelled','expired') NOT NULL DEFAULT 'active',
+
+  publisher_kind        ENUM('account','company') NOT NULL,
+  publisher_account_id  CHAR(36)        NULL,
+  publisher_company_id  CHAR(36)        NULL,
+
+  title                 VARCHAR(192)    NOT NULL,
+  description           TEXT            NULL,
+  category              VARCHAR(64)     NULL COMMENT 'subcategoría libre del type',
+
+  data_json             JSON            NOT NULL COMMENT 'datos específicos por type',
+  price                 DECIMAL(12,2) UNSIGNED NULL,
+  price_currency        ENUM('AD') NOT NULL DEFAULT 'AD' COMMENT 'admirals dollars (RP)',
+
+  location_json         JSON            NULL COMMENT 'Coords del trabajo / producto',
+  vertical_filter       VARCHAR(32)     NULL COMMENT 'filtrable por vertical',
+
+  accepted_by_account_id CHAR(36)       NULL,
+  accepted_at           INT UNSIGNED    NULL,
+  expected_completion_at INT UNSIGNED   NULL,
+  completed_at          INT UNSIGNED    NULL,
+
+  expires_at            INT UNSIGNED    NULL,
+  views_count           INT UNSIGNED    NOT NULL DEFAULT 0,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_market_offers_status_type (status, type, created_at DESC),
+  KEY idx_admirals_market_offers_publisher_account (publisher_account_id, status),
+  KEY idx_admirals_market_offers_publisher_company (publisher_company_id, status),
+  KEY idx_admirals_market_offers_vertical (vertical_filter, status, type),
+  KEY idx_admirals_market_offers_expires (status, expires_at),
+
+  CONSTRAINT fk_admirals_market_offers_publisher_account
+    FOREIGN KEY (publisher_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_market_offers_publisher_company
+    FOREIGN KEY (publisher_company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_market_offers_acceptor
+    FOREIGN KEY (accepted_by_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CHECK (
+    (publisher_kind = 'account' AND publisher_account_id IS NOT NULL AND publisher_company_id IS NULL)
+    OR (publisher_kind = 'company' AND publisher_company_id IS NOT NULL AND publisher_account_id IS NULL)
+  )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `data_json` ejemplo `temp_job`: `{ "estimated_minutes": 30, "task_kind": "harvest", "plot_id": "..." }`.
+- `data_json` ejemplo `product`: `{ "item_kind": "flour_baker_25kg", "quantity": 100, "quality_grade": "A" }`.
+- Cron de expiración consulta `WHERE status = 'active' AND expires_at < NOW()` — índice `idx_admirals_market_offers_expires` lo soporta.
+
+### 8.2 admirals_market_reviews
+
+> **Reseñas y rating** post-transacción.
+
+```sql
+CREATE TABLE admirals_market_reviews (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  reviewer_kind         ENUM('account','company') NOT NULL,
+  reviewer_id           CHAR(36)        NOT NULL,
+  subject_kind          ENUM('account','company') NOT NULL,
+  subject_id            CHAR(36)        NOT NULL,
+
+  rating                TINYINT UNSIGNED NOT NULL,
+  comment               VARCHAR(500)    NULL,
+
+  related_offer_id      CHAR(36)        NULL,
+  related_job_id        CHAR(36)        NULL,
+
+  is_hidden             TINYINT(1)      NOT NULL DEFAULT 0,
+  hidden_reason         VARCHAR(255)    NULL,
+
+  posted_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_market_reviews_offer (related_offer_id, reviewer_id),
+  KEY idx_admirals_market_reviews_subject (subject_id, posted_at DESC),
+  KEY idx_admirals_market_reviews_reviewer (reviewer_id, posted_at DESC),
+
+  CHECK (rating BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `UNIQUE (related_offer_id, reviewer_id)` impide doble review del mismo reviewer sobre la misma transacción.
+- Reseñas polimórficas — pueden ser de account a account, company a company, etc.
+- No FK polimórfica directa — integridad por aplicación.
+
+### 8.3 admirals_reputation
+
+> **Histórico de cambios de reputación** y valor agregado actual. Permite ver "por qué" un sujeto tiene su rep actual.
+
+```sql
+CREATE TABLE admirals_reputation (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  subject_kind          ENUM('account','company') NOT NULL,
+  subject_id            CHAR(36)        NOT NULL,
+  occurred_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  delta                 SMALLINT        NOT NULL COMMENT 'signed, típicamente -10..+10',
+  value_after           TINYINT UNSIGNED NOT NULL COMMENT '0-100',
+
+  reason_code           VARCHAR(64)     NOT NULL COMMENT 'contract_fulfilled, contract_breached, good_review, etc.',
+  reason_text           VARCHAR(255)    NULL,
+
+  source_resource       VARCHAR(64)     NOT NULL,
+  related_doc_id        CHAR(36)        NULL,
+  related_offer_id      CHAR(36)        NULL,
+  related_review_id     BIGINT UNSIGNED NULL,
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_reputation_subject (subject_id, occurred_at DESC),
+  KEY idx_admirals_reputation_reason (reason_code, occurred_at DESC),
+
+  CHECK (value_after BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- Tabla de **trail** — el valor agregado vivo se mantiene en `admirals_accounts.reputation_global` y `admirals_companies.reputation` (denormalizado para queries frecuentes).
+- Esta tabla permite reconstruir histórico, analytics, debugging. Insert-only.
+
+---
+
+## 9. DDL — Dominio Logística
+
+### 9.1 admirals_logistics_jobs
+
+> **Trabajos de transporte.** Origen + destino + cargo + carrier + estado.
+
+```sql
+CREATE TABLE admirals_logistics_jobs (
+  id                    CHAR(36)        NOT NULL,
+  status                ENUM('pending','assigned','in_transit','delivered','disputed','cancelled') NOT NULL DEFAULT 'pending',
+
+  origin_company_id     CHAR(36)        NOT NULL,
+  destination_company_id CHAR(36)       NOT NULL,
+
+  carrier_kind          ENUM('account','company') NULL,
+  carrier_account_id    CHAR(36)        NULL,
+  carrier_company_id    CHAR(36)        NULL,
+  vehicle_plate         VARCHAR(16)     NULL,
+
+  cargo_json            JSON            NOT NULL COMMENT 'array de { item_kind, quantity, batch_id, quality_grade, weight_kg }',
+  total_weight_kg       DECIMAL(10,2)   NOT NULL DEFAULT 0,
+  estimated_distance_km DECIMAL(8,2)    NOT NULL DEFAULT 0,
+
+  price                 DECIMAL(12,2) UNSIGNED NOT NULL DEFAULT 0,
+  payment_holding_movement_id BIGINT UNSIGNED NULL COMMENT 'FK lógica a bank_movements (escrow)',
+
+  delivery_note_id      CHAR(36)        NULL,
+  receiver_signature_doc_id CHAR(36)    NULL,
+
+  scheduled_at          INT UNSIGNED    NULL,
+  started_at            INT UNSIGNED    NULL,
+  delivered_at          INT UNSIGNED    NULL,
+  cancelled_at          INT UNSIGNED    NULL,
+
+  related_offer_id      CHAR(36)        NULL,
+
+  created_by_account_id CHAR(36)        NOT NULL,
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_logistics_jobs_status (status, created_at DESC),
+  KEY idx_admirals_logistics_jobs_origin (origin_company_id, status),
+  KEY idx_admirals_logistics_jobs_destination (destination_company_id, status),
+  KEY idx_admirals_logistics_jobs_carrier_account (carrier_account_id, status),
+  KEY idx_admirals_logistics_jobs_carrier_company (carrier_company_id, status),
+  KEY idx_admirals_logistics_jobs_offer (related_offer_id),
+
+  CONSTRAINT fk_admirals_logistics_jobs_origin
+    FOREIGN KEY (origin_company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_logistics_jobs_destination
+    FOREIGN KEY (destination_company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_logistics_jobs_carrier_account
+    FOREIGN KEY (carrier_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_logistics_jobs_carrier_company
+    FOREIGN KEY (carrier_company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_logistics_jobs_delivery_note
+    FOREIGN KEY (delivery_note_id)
+    REFERENCES admirals_documents(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- `cargo_json` por practicidad — heterogéneo, no consultable individualmente.
+- `payment_holding_movement_id` apunta al movimiento de escrow lock — al confirmar entrega se libera (escrow_release).
+- ON DELETE RESTRICT en origin/destination evita borrar empresa con jobs activos por accidente.
+
+### 9.2 admirals_logistics_disputes
+
+```sql
+CREATE TABLE admirals_logistics_disputes (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  job_id                CHAR(36)        NOT NULL,
+  raised_by_account_id  CHAR(36)        NOT NULL,
+  raised_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  reason                ENUM('cargo_damaged','quantity_mismatch','late','wrong_destination','other') NOT NULL,
+  evidence_json         JSON            NULL,
+  notes                 TEXT            NULL,
+
+  status                ENUM('open','investigating','resolved_in_favor_origin','resolved_in_favor_destination','resolved_in_favor_carrier','dismissed') NOT NULL DEFAULT 'open',
+  resolved_at           INT UNSIGNED    NULL,
+  resolved_by_account_id CHAR(36)       NULL,
+  resolution_notes      TEXT            NULL,
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_logistics_disputes_job (job_id, status),
+  KEY idx_admirals_logistics_disputes_raiser (raised_by_account_id, raised_at DESC),
+
+  CONSTRAINT fk_admirals_logistics_disputes_job
+    FOREIGN KEY (job_id)
+    REFERENCES admirals_logistics_jobs(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_logistics_disputes_raiser
+    FOREIGN KEY (raised_by_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+---
+
+## 10. DDL — Dominio Granja
+
+> **Tablas del nodo Granja Admirals.** Cada empresa Granja tiene sus parcelas, silos, máquinas. Las licencias son por jugador, no por empresa.
+
+### 10.1 admirals_granja_plots
+
+```sql
+CREATE TABLE admirals_granja_plots (
+  id                    CHAR(36)        NOT NULL,
+  company_id            CHAR(36)        NOT NULL,
+  plot_label            VARCHAR(64)     NOT NULL COMMENT 'identificador legible: parcela_3, hortícola_1',
+
+  kind                  ENUM('cereal','hortícola','frutal','industrial','pasto','viña') NOT NULL,
+  area_m2               INT UNSIGNED    NOT NULL DEFAULT 0,
+  location_json         JSON            NOT NULL COMMENT 'Coords + polygon vertices',
+
+  current_crop_id       VARCHAR(64)     NULL COMMENT 'wheat_soft, tomato, etc. NULL si vacío',
+  current_variant       ENUM('common','premium') NULL,
+  current_stage         TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=vacío, 1..N=stages crecimiento',
+  growth_pct            TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0-100 dentro del stage',
+
+  current_batch_id      VARCHAR(32)     NULL,
+  seeded_at             INT UNSIGNED    NULL,
+  expected_harvest_at   INT UNSIGNED    NULL,
+
+  -- Quality tracking (componentes que se acumulan durante el ciclo)
+  soil_quality_score    TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  irrigation_score      TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  fertilization_score   TINYINT UNSIGNED NOT NULL DEFAULT 50,
+  pest_control_score    TINYINT UNSIGNED NOT NULL DEFAULT 100,
+  weather_score         TINYINT UNSIGNED NOT NULL DEFAULT 100,
+
+  -- Estado físico/visual
+  is_protected_mesh     TINYINT(1)      NOT NULL DEFAULT 0 COMMENT 'malla anti-granizo instalada',
+  visual_state          VARCHAR(32)     NOT NULL DEFAULT 'fallow' COMMENT 'sincroniza shader / props',
+
+  -- Pests
+  active_pest_kind      VARCHAR(32)     NULL,
+  active_pest_severity  ENUM('low','medium','high') NULL,
+  pest_detected_at      INT UNSIGNED    NULL,
+
+  meta                  JSON            NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_granja_plots_company_label (company_id, plot_label),
+  KEY idx_admirals_granja_plots_company (company_id),
+  KEY idx_admirals_granja_plots_stage (current_stage, expected_harvest_at),
+  KEY idx_admirals_granja_plots_pest (active_pest_kind, active_pest_severity),
+
+  CONSTRAINT fk_admirals_granja_plots_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CHECK (soil_quality_score BETWEEN 0 AND 100),
+  CHECK (irrigation_score BETWEEN 0 AND 100),
+  CHECK (fertilization_score BETWEEN 0 AND 100),
+  CHECK (pest_control_score BETWEEN 0 AND 100),
+  CHECK (weather_score BETWEEN 0 AND 100),
+  CHECK (growth_pct BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- Componentes de calidad acumulan durante el ciclo. Al cosechar (`harvest_completed`) se calcula `quality.score` final con la fórmula del `01_node_farm.md`.
+- `visual_state` sincroniza con shader del prop (sprouting, leafing, flowering, mature, rotten).
+- Cron de crecimiento actualiza `growth_pct` y, al llegar 100, avanza `current_stage`.
+
+### 10.2 admirals_granja_silos
+
+```sql
+CREATE TABLE admirals_granja_silos (
+  id                    CHAR(36)        NOT NULL,
+  company_id            CHAR(36)        NOT NULL,
+  silo_label            VARCHAR(64)     NOT NULL,
+
+  kind                  ENUM('grain','feed','seed','fertilizer','water','compost') NOT NULL,
+  capacity_kg           INT UNSIGNED    NOT NULL,
+  current_kg            DECIMAL(10,2)   NOT NULL DEFAULT 0,
+  capacity_pct          TINYINT UNSIGNED AS (LEAST(100, FLOOR(current_kg / capacity_kg * 100))) STORED,
+
+  -- Lo que contiene actualmente (puede ser mezcla de batches)
+  content_kind          VARCHAR(64)     NULL COMMENT 'wheat_soft, etc. NULL si vacío o mezclado',
+  batches_json          JSON            NULL COMMENT 'array de { batch_id, kg, quality_grade, quality_score }',
+  is_mixed              TINYINT(1)      NOT NULL DEFAULT 0 COMMENT '1 si tiene mezcla cross-grain (penalización calidad)',
+
+  location_json         JSON            NOT NULL,
+  visual_state          VARCHAR(32)     NOT NULL DEFAULT 'empty',
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_granja_silos_company_label (company_id, silo_label),
+  KEY idx_admirals_granja_silos_company (company_id, kind),
+
+  CONSTRAINT fk_admirals_granja_silos_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CHECK (current_kg >= 0 AND current_kg <= capacity_kg)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+### 10.3 admirals_granja_machines
+
+```sql
+CREATE TABLE admirals_granja_machines (
+  id                    CHAR(36)        NOT NULL,
+  company_id            CHAR(36)        NOT NULL,
+  machine_label         VARCHAR(64)     NOT NULL,
+
+  kind                  ENUM('tractor','harvester','sprayer','irrigator','sower','forklift','plow','baler') NOT NULL,
+  model_id              VARCHAR(64)     NOT NULL COMMENT 'modelo específico (admirals_tractor_basic_01)',
+
+  status                ENUM('idle','in_use','broken','maintenance') NOT NULL DEFAULT 'idle',
+  fuel_l                DECIMAL(6,2)    NOT NULL DEFAULT 0,
+  fuel_capacity_l       DECIMAL(6,2)    NOT NULL,
+  health_pct            TINYINT UNSIGNED NOT NULL DEFAULT 100,
+  hours_used            DECIMAL(10,2)   NOT NULL DEFAULT 0,
+
+  current_user_account_id CHAR(36)      NULL COMMENT 'NULL si no está siendo usada',
+  parked_location_json  JSON            NULL,
+
+  last_maintenance_at   INT UNSIGNED    NULL,
+  next_maintenance_due_hours DECIMAL(8,2) NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_granja_machines_company_label (company_id, machine_label),
+  KEY idx_admirals_granja_machines_company_status (company_id, status),
+  KEY idx_admirals_granja_machines_user (current_user_account_id),
+
+  CONSTRAINT fk_admirals_granja_machines_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_granja_machines_user
+    FOREIGN KEY (current_user_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CHECK (health_pct BETWEEN 0 AND 100),
+  CHECK (fuel_l >= 0 AND fuel_l <= fuel_capacity_l)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+### 10.4 admirals_granja_licenses
+
+> **Licencias de conducción / handling.** Por jugador, no por empresa.
+
+```sql
+CREATE TABLE admirals_granja_licenses (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  account_id            CHAR(36)        NOT NULL,
+
+  kind                  ENUM(
+    'driving_basic','driving_agricultural','driving_harvester','driving_transport',
+    'pesticide_handling','fumigation_drone'
+  ) NOT NULL,
+
+  obtained_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  expires_at            INT UNSIGNED    NULL COMMENT 'NULL = no caduca',
+  issued_by             VARCHAR(64)     NOT NULL DEFAULT 'admirals_granja_npc',
+  cost                  DECIMAL(8,2) UNSIGNED NOT NULL DEFAULT 0,
+  related_doc_id        CHAR(36)        NULL COMMENT 'certificado en admirals_documents',
+
+  is_revoked            TINYINT(1)      NOT NULL DEFAULT 0,
+  revoked_at            INT UNSIGNED    NULL,
+  revoke_reason         VARCHAR(255)    NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_granja_licenses_account_kind (account_id, kind, is_revoked),
+  KEY idx_admirals_granja_licenses_expires (expires_at),
+
+  CONSTRAINT fk_admirals_granja_licenses_account
+    FOREIGN KEY (account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+---
+
+## 11. DDL — Dominio Molino
+
+### 11.1 admirals_molino_silos
+
+```sql
+CREATE TABLE admirals_molino_silos (
+  id                    CHAR(36)        NOT NULL,
+  company_id            CHAR(36)        NOT NULL,
+  silo_label            VARCHAR(64)     NOT NULL,
+
+  kind                  ENUM('input_grain','intermediate_flour','intermediate_semolina','intermediate_bran','additive') NOT NULL,
+  grain_kind            VARCHAR(64)     NULL COMMENT 'wheat_soft, wheat_durum, rye, etc.',
+
+  capacity_kg           INT UNSIGNED    NOT NULL,
+  current_kg            DECIMAL(10,2)   NOT NULL DEFAULT 0,
+  capacity_pct          TINYINT UNSIGNED AS (LEAST(100, FLOOR(current_kg / capacity_kg * 100))) STORED,
+
+  batches_json          JSON            NULL COMMENT 'array { batch_id, kg, quality_grade, quality_score, lineage[] }',
+  is_mixed              TINYINT(1)      NOT NULL DEFAULT 0,
+  humidity_pct          DECIMAL(5,2)    NOT NULL DEFAULT 12 COMMENT 'humedad almacenada — afecta calidad',
+
+  location_json         JSON            NOT NULL,
+  visual_state          VARCHAR(32)     NOT NULL DEFAULT 'empty',
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_molino_silos_company_label (company_id, silo_label),
+  KEY idx_admirals_molino_silos_company_kind (company_id, kind),
+
+  CONSTRAINT fk_admirals_molino_silos_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CHECK (current_kg >= 0 AND current_kg <= capacity_kg),
+  CHECK (humidity_pct >= 0 AND humidity_pct <= 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+### 11.2 admirals_molino_machines
+
+```sql
+CREATE TABLE admirals_molino_machines (
+  id                    CHAR(36)        NOT NULL,
+  company_id            CHAR(36)        NOT NULL,
+  machine_label         VARCHAR(64)     NOT NULL,
+
+  kind                  ENUM('cleaner','mill_rollers','sasor_sieve','sacker','forklift','conveyor','packager') NOT NULL,
+  model_id              VARCHAR(64)     NOT NULL,
+
+  status                ENUM('idle','running','broken','cleaning','maintenance') NOT NULL DEFAULT 'idle',
+  health_pct            TINYINT UNSIGNED NOT NULL DEFAULT 100,
+  hours_used            DECIMAL(10,2)   NOT NULL DEFAULT 0,
+
+  -- Configuración operativa actual
+  current_calibration_mm DECIMAL(4,2)   NULL COMMENT 'para mill_rollers',
+  current_speed_pct     TINYINT UNSIGNED NULL COMMENT '50-100',
+  current_grain_kind    VARCHAR(64)     NULL COMMENT 'qué se está procesando ahora',
+  current_batch_id      VARCHAR(32)     NULL,
+
+  -- Cross-contamination tracking
+  last_grain_kind       VARCHAR(64)     NULL COMMENT 'último grano procesado — si difiere de current sin limpieza, hay contaminación',
+  cleaned_at            INT UNSIGNED    NULL,
+
+  current_user_account_id CHAR(36)      NULL,
+  location_json         JSON            NOT NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admirals_molino_machines_company_label (company_id, machine_label),
+  KEY idx_admirals_molino_machines_company_status (company_id, status),
+
+  CONSTRAINT fk_admirals_molino_machines_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_admirals_molino_machines_user
+    FOREIGN KEY (current_user_account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CHECK (health_pct BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+### 11.3 admirals_molino_batches
+
+> **Trazabilidad de lotes** producidos en el molino. Los batches físicos también viven como Item Físico en ox_inventory; esta tabla es el registro server-side de producción para analytics, búsqueda y queries de lineage.
+
+```sql
+CREATE TABLE admirals_molino_batches (
+  id                    VARCHAR(32)     NOT NULL COMMENT 'BatchId formato MILL-YYYY-NNNN-X',
+  company_id            CHAR(36)        NOT NULL,
+  produced_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  -- Input
+  input_batch_ids_json  JSON            NOT NULL COMMENT 'batches consumidos (granja batches)',
+  input_grain_kind      VARCHAR(64)     NOT NULL,
+  input_kg              DECIMAL(10,2)   NOT NULL,
+  input_quality_grade   CHAR(1)         NOT NULL,
+  input_quality_score   TINYINT UNSIGNED NOT NULL,
+
+  -- Output
+  output_kind           ENUM('flour_force','flour_baker','flour_whole','semolina_fine','semolina_coarse','bran') NOT NULL,
+  output_variant        ENUM('common','premium') NOT NULL,
+  output_kg             DECIMAL(10,2)   NOT NULL,
+  output_quality_grade  CHAR(1)         NOT NULL,
+  output_quality_score  TINYINT UNSIGNED NOT NULL,
+
+  -- Process metrics
+  calibration_mm        DECIMAL(4,2)    NOT NULL,
+  speed_pct             TINYINT UNSIGNED NOT NULL,
+  duration_minutes      INT UNSIGNED    NOT NULL,
+  process_factor_score  TINYINT UNSIGNED NOT NULL COMMENT 'componente process del cálculo de calidad',
+
+  -- Lineage acumulado
+  lineage_json          JSON            NOT NULL COMMENT '[ { vertical, batch_id, company_id, quality } ]',
+
+  produced_by_account_id CHAR(36)       NOT NULL,
+
+  PRIMARY KEY (id),
+  KEY idx_admirals_molino_batches_company_date (company_id, produced_at DESC),
+  KEY idx_admirals_molino_batches_kind (output_kind, output_quality_grade),
+  KEY idx_admirals_molino_batches_quality (output_quality_grade, produced_at DESC),
+
+  CONSTRAINT fk_admirals_molino_batches_company
+    FOREIGN KEY (company_id)
+    REFERENCES admirals_companies(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CHECK (input_quality_grade IN ('S','A','B','C','D')),
+  CHECK (output_quality_grade IN ('S','A','B','C','D')),
+  CHECK (input_quality_score BETWEEN 0 AND 100),
+  CHECK (output_quality_score BETWEEN 0 AND 100),
+  CHECK (process_factor_score BETWEEN 0 AND 100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- ON DELETE RESTRICT en company — los batches son histórico de producción, no se pueden borrar al borrar empresa.
+- `lineage_json` permite recorrer toda la cadena upstream (granja → ... → este batch) sin JOIN cross-tabla.
+
+---
+
+## 12. DDL — Infraestructura
+
+### 12.1 admirals_event_log (PARTITIONED)
+
+> **Audit trail del bus.** Persistencia de eventos `audit: always`. Particionado mensual desde día 1.
+
+```sql
+CREATE TABLE admirals_event_log (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  emitted_at            INT UNSIGNED    NOT NULL,
+
+  event_name            VARCHAR(96)     NOT NULL COMMENT 'admirals:domain:action',
+  event_id              CHAR(36)        NOT NULL COMMENT 'UUID v4 único de esta emisión',
+  schema_version        TINYINT UNSIGNED NOT NULL DEFAULT 1,
+
+  source_resource       VARCHAR(64)     NOT NULL,
+  payload_json          JSON            NOT NULL,
+
+  -- Indexable references (extraídos del payload para queries comunes)
+  related_account_id    CHAR(36)        NULL,
+  related_company_id    CHAR(36)        NULL,
+  related_doc_id        CHAR(36)        NULL,
+  related_offer_id      CHAR(36)        NULL,
+  related_job_id        CHAR(36)        NULL,
+  related_batch_id      VARCHAR(32)     NULL,
+
+  PRIMARY KEY (id, emitted_at),
+  UNIQUE KEY uq_admirals_event_log_event_id (event_id, emitted_at),
+  KEY idx_admirals_event_log_event_name (event_name, emitted_at DESC),
+  KEY idx_admirals_event_log_source (source_resource, emitted_at DESC),
+  KEY idx_admirals_event_log_account (related_account_id, emitted_at DESC),
+  KEY idx_admirals_event_log_company (related_company_id, emitted_at DESC),
+  KEY idx_admirals_event_log_doc (related_doc_id, emitted_at DESC),
+  KEY idx_admirals_event_log_offer (related_offer_id, emitted_at DESC),
+  KEY idx_admirals_event_log_job (related_job_id, emitted_at DESC),
+  KEY idx_admirals_event_log_batch (related_batch_id, emitted_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  PARTITION BY RANGE (emitted_at) (
+    PARTITION p_2026_01 VALUES LESS THAN (1738368000),
+    PARTITION p_2026_02 VALUES LESS THAN (1740787200),
+    PARTITION p_2026_03 VALUES LESS THAN (1743465600),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+  );
+```
+
+**Notas:**
+- Los campos `related_*` se extraen del payload por el bus al persistir, **no requieren JSON queries en hot paths**.
+- `event_id` único garantiza idempotencia: si el bus reintenta una emisión, no se duplica.
+- Particiones gestionadas por cron mensual + archival a cold storage > 12 meses.
+
+### 12.2 admirals_schema_versions
+
+> **Registro de migraciones aplicadas.** Permite saber el estado del schema y reproducir entornos.
+
+```sql
+CREATE TABLE admirals_schema_versions (
+  version               INT UNSIGNED    NOT NULL COMMENT 'numérico secuencial',
+  filename              VARCHAR(192)    NOT NULL COMMENT 'NNN_description.sql',
+  applied_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  applied_by            VARCHAR(64)     NULL COMMENT 'usuario que aplicó (admin / sistema)',
+  checksum              VARCHAR(64)     NOT NULL COMMENT 'SHA-256 del archivo migration',
+  duration_ms           INT UNSIGNED    NOT NULL DEFAULT 0,
+  notes                 TEXT            NULL,
+
+  PRIMARY KEY (version),
+  UNIQUE KEY uq_admirals_schema_versions_filename (filename)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+**Notas:**
+- Al boot, `admirals_core` lee este registro y aplica las migraciones pendientes en orden.
+- `checksum` permite detectar si una migración fue alterada post-aplicación (alerta de tampering).
+
+### 12.3 admirals_settings_per_account
+
+> **Preferencias de aplicación por cuenta.** Independientes del Tablet (Tablet tiene config visual, esto son prefs lógicas).
+
+```sql
+CREATE TABLE admirals_settings_per_account (
+  account_id            CHAR(36)        NOT NULL,
+  notifications_prefs   JSON            NULL COMMENT '{ type: { enabled, priority, delivery_mode_override } }',
+  privacy_prefs         JSON            NULL COMMENT '{ show_online, allow_strangers_message, ... }',
+  market_prefs          JSON            NULL COMMENT '{ filters_default, alerts_subscriptions[] }',
+  language              VARCHAR(8)      NOT NULL DEFAULT 'es-ES',
+  timezone              VARCHAR(64)     NOT NULL DEFAULT 'Europe/Madrid',
+
+  custom                JSON            NULL COMMENT 'extensible para apps de terceros (SDK)',
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (account_id),
+
+  CONSTRAINT fk_admirals_settings_per_account
+    FOREIGN KEY (account_id)
+    REFERENCES admirals_accounts(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+---
+
+## 13. Reference data (seeds)
+
+> **Datos mínimos** que el ecosistema necesita para arrancar. Se aplican automáticamente al boot si las tablas están vacías.
+
+### 13.1 Empresas NPC iniciales
+
+> **Empresas controladas por NPC** que sirven como demand & supply automatizado en oleada 1 — permiten que un nodo standalone funcione sin red completa de jugadores.
+
+```sql
+-- Cooperativa NPC compradora de grano (Granja standalone)
+INSERT INTO admirals_companies (id, vertical, name, status, owner_account_id, hq_location, cash_balance, reputation, founded_at)
+VALUES (
+  'a0000000-0000-0000-0000-000000000001',
+  'cooperativa',
+  'Cooperativa Admirals NPC',
+  'active',
+  'a0000000-0000-0000-0000-000000000099',  -- cuenta NPC sistema
+  '{"x": 1234.5, "y": 5678.9, "z": 30.0, "heading": 90}',
+  10000000.00,
+  85,
+  UNIX_TIMESTAMP()
+);
+
+-- Molino NPC (compra grano, vende harina al panadero NPC)
+INSERT INTO admirals_companies (id, vertical, name, status, owner_account_id, hq_location, cash_balance, reputation, founded_at)
+VALUES (
+  'a0000000-0000-0000-0000-000000000002',
+  'mill',
+  'Molino Admirals NPC',
+  'active',
+  'a0000000-0000-0000-0000-000000000099',
+  '{"x": 2345.6, "y": 6789.0, "z": 35.0, "heading": 180}',
+  10000000.00,
+  80,
+  UNIX_TIMESTAMP()
+);
+```
+
+### 13.2 Cuenta de sistema (NPC)
+
+```sql
+INSERT INTO admirals_accounts (id, char_id, framework_source, alias, reputation_global, preferred_locale)
+VALUES (
+  'a0000000-0000-0000-0000-000000000099',
+  'NPC_SYSTEM',
+  'manual',
+  'Admirals System',
+  100,
+  'es-ES'
+);
+```
+
+### 13.3 Cuenta bancaria de sistema
+
+```sql
+INSERT INTO admirals_bank_accounts (id, iban, type, owner_company_id, balance)
+VALUES (
+  'b0000000-0000-0000-0000-000000000001',
+  'AD-SYS0-0000-0001',
+  'company',
+  'a0000000-0000-0000-0000-000000000001',
+  10000000.00
+);
+```
+
+### 13.4 Templates de contratos
+
+> **Tabla satélite** opcional para templates de contratos reutilizables (no es DDL principal, va en migración separada).
+
+```sql
+CREATE TABLE admirals_document_templates (
+  id                    VARCHAR(64)     NOT NULL,
+  type                  ENUM('contract','delivery_note','receipt','license') NOT NULL,
+  name                  VARCHAR(128)    NOT NULL,
+  body_template         LONGTEXT        NOT NULL COMMENT 'plantilla con placeholders {{variable}}',
+  schema_json           JSON            NOT NULL COMMENT 'campos del formulario',
+  visibility            ENUM('builtin','custom') NOT NULL DEFAULT 'builtin',
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Seeds de templates iniciales
+INSERT INTO admirals_document_templates (id, type, name, body_template, schema_json) VALUES
+('contract_b2b_supply', 'contract', 'Contrato suministro B2B',
+'{{supplier_name}} se compromete a entregar a {{client_name}} {{quantity}} {{unit}} de {{product}} con calidad mínima {{min_grade}} a un precio de {{price_per_unit}} AD/unidad...',
+'{"fields":[{"key":"supplier_name","type":"text"},{"key":"client_name","type":"text"},{"key":"product","type":"text"},{"key":"quantity","type":"number"},{"key":"unit","type":"text"},{"key":"min_grade","type":"enum","options":["S","A","B","C","D"]},{"key":"price_per_unit","type":"number"},{"key":"duration_months","type":"number"}]}'
+),
+('contract_employment', 'contract', 'Contrato laboral',
+'Contrato de empleo entre {{company_name}} y {{employee_name}} para el puesto de {{position}} con salario {{salary}} AD por {{salary_period}}...',
+'{"fields":[{"key":"company_name","type":"text"},{"key":"employee_name","type":"text"},{"key":"position","type":"text"},{"key":"salary","type":"number"},{"key":"salary_period","type":"enum","options":["hourly","shift","daily","monthly"]}]}'
+);
+```
+
+---
+
+## 14. Índices — justificación consolidada
+
+> **Política:** ningún índice "por si acaso". Cada índice tiene una query crítica que lo usa.
+
+### 14.1 Tabla resumen de índices
+
+| Tabla | Índice | Razón |
+|---|---|---|
+| `admirals_accounts` | `uq_*_char_id (char_id, framework_source)` | login: lookup por char del framework |
+| `admirals_tablets` | `idx_*_owner` | listar tablets del jugador |
+| `admirals_companies` | `uq_*_name` | naming único + search |
+| `admirals_companies` | `idx_*_owner` | listar empresas del jugador |
+| `admirals_companies` | `idx_*_vertical_status` | listings públicos en Mercado |
+| `admirals_company_members` | `uq_*_active (company, account, is_active)` | impide doble membership activa |
+| `admirals_company_members` | `idx_*_account (account, is_active)` | "mis empresas" en Tablet |
+| `admirals_company_members` | `idx_*_company (company, is_active, role)` | "miembros de mi empresa" |
+| `admirals_bank_accounts` | `uq_*_iban` | lookup por IBAN |
+| `admirals_bank_accounts` | `idx_*_owner_account/_company` | "mis cuentas" |
+| `admirals_bank_movements` | `idx_*_account (account_id, occurred_at DESC)` | extracto bancario reciente |
+| `admirals_bank_movements` | `idx_*_category` | analytics por categoría |
+| `admirals_bank_movements` | `idx_*_nonce` | anti-replay validation |
+| `admirals_bank_movements` | `idx_*_related_*` | trazabilidad reverse (movimiento → doc/offer/job) |
+| `admirals_documents` | `idx_*_owner_account/company (..., type, status)` | "mis docs" filtrados por type/status |
+| `admirals_documents` | `idx_*_status` | jobs internos (renotificar pending_signature antiguos, etc.) |
+| `admirals_documents` | `idx_*_parent` | árbol de versiones |
+| `admirals_documents` | `idx_*_created_by` | actividad reciente del usuario |
+| `admirals_document_signatures` | `uq_*_doc_signer` | impide doble firma |
+| `admirals_document_signatures` | `idx_*_signer (signer, signed_at DESC)` | "docs firmados por mí" |
+| `admirals_chats` | `idx_*_company` | canales de empresa |
+| `admirals_chats` | `idx_*_last_message DESC` | sort en lista de chats |
+| `admirals_chat_participants` | `uq_*_active` | impide doble participación activa |
+| `admirals_chat_participants` | `idx_*_account (account, left_at, is_pinned DESC)` | lista de chats del jugador |
+| `admirals_messages` | `idx_*_chat (chat, sent_at DESC)` | render del chat (paginación) |
+| `admirals_messages` | `idx_*_sender` | "mensajes que envié" |
+| `admirals_notifications` | `idx_*_account_unread (account, is_read, is_archived, pushed_at DESC)` | bandeja activa de la Tablet |
+| `admirals_market_offers` | `idx_*_status_type` | listings principales del Mercado |
+| `admirals_market_offers` | `idx_*_publisher_*` | "mis ofertas publicadas" |
+| `admirals_market_offers` | `idx_*_vertical` | filtro por vertical |
+| `admirals_market_offers` | `idx_*_expires` | cron de expiración |
+| `admirals_market_reviews` | `uq_*_offer (offer, reviewer)` | impide doble review |
+| `admirals_market_reviews` | `idx_*_subject` | reseñas recibidas por sujeto |
+| `admirals_reputation` | `idx_*_subject` | trail de cambios reputación |
+| `admirals_logistics_jobs` | `idx_*_status` | dashboard ops |
+| `admirals_logistics_jobs` | `idx_*_origin/_destination` | "jobs de mi empresa" |
+| `admirals_logistics_jobs` | `idx_*_carrier_*` | "mis trabajos como carrier" |
+| `admirals_granja_plots` | `idx_*_company` | "mis parcelas" |
+| `admirals_granja_plots` | `idx_*_stage (current_stage, expected_harvest_at)` | cron de crecimiento |
+| `admirals_granja_plots` | `idx_*_pest` | parcelas con plaga activa |
+| `admirals_granja_silos` | `idx_*_company_kind` | "mis silos por tipo" |
+| `admirals_granja_machines` | `idx_*_company_status` | "máquinas idle / averiadas" |
+| `admirals_granja_licenses` | `uq_*_account_kind` | impide duplicada |
+| `admirals_granja_licenses` | `idx_*_expires` | cron de expiración |
+| `admirals_molino_silos` | `idx_*_company_kind` | "silos de molino por tipo" |
+| `admirals_molino_machines` | `idx_*_company_status` | dashboard ops |
+| `admirals_molino_batches` | `idx_*_company_date` | producción reciente |
+| `admirals_molino_batches` | `idx_*_kind` | búsqueda en mercado |
+| `admirals_event_log` | `uq_*_event_id` | idempotencia |
+| `admirals_event_log` | `idx_*_event_name` | "todos los `bank:transfer_completed` recientes" |
+| `admirals_event_log` | `idx_*_account/company/doc/...` | trazabilidad por entidad |
+
+### 14.2 Política de índices futuros
+
+- **Antes de añadir un índice:** documentar la query crítica que lo justifica + medir mejora en QA.
+- **Después de N días en producción:** revisar `INFORMATION_SCHEMA.STATISTICS` + `sys.schema_unused_indexes` y eliminar los que no se usan.
+- **MAX:** ~5 índices por tabla (excepto event_log con polymorphic refs).
+
+---
+
+## 15. Queries críticas — hot path
+
+> **Las queries que se ejecutan con mayor frecuencia.** Cada una tiene su índice asociado y plan de ejecución verificado.
+
+### 15.1 Login del jugador
+
+```sql
+SELECT id, alias, reputation_global, preferred_locale, meta
+FROM admirals_accounts
+WHERE char_id = ? AND framework_source = ?;
+-- usa: uq_admirals_accounts_char_id
+-- p99 esperado: < 1ms
+```
+
+### 15.2 Cargar empresas del jugador
+
+```sql
+SELECT c.id, c.name, c.vertical, c.status, c.logo_url, c.brand_color, m.role, m.position
+FROM admirals_company_members m
+JOIN admirals_companies c ON c.id = m.company_id
+WHERE m.account_id = ? AND m.is_active = 1
+ORDER BY m.hired_at ASC;
+-- usa: idx_admirals_company_members_account + PK admirals_companies
+-- p99 esperado: < 5ms
+```
+
+### 15.3 Listar miembros de una empresa
+
+```sql
+SELECT m.id, a.alias, m.role, m.position, m.salary, m.hired_at
+FROM admirals_company_members m
+JOIN admirals_accounts a ON a.id = m.account_id
+WHERE m.company_id = ? AND m.is_active = 1
+ORDER BY FIELD(m.role, 'owner','manager','employee','temporary'), m.hired_at;
+-- usa: idx_admirals_company_members_company
+```
+
+### 15.4 Extracto bancario (últimos N movimientos)
+
+```sql
+SELECT id, occurred_at, amount, balance_after, category, counterpart_iban, concept
+FROM admirals_bank_movements
+WHERE bank_account_id = ?
+ORDER BY occurred_at DESC, id DESC
+LIMIT 50;
+-- usa: idx_admirals_bank_movements_account
+-- p99 esperado: < 5ms (gracias a partitioning + index)
+```
+
+### 15.5 Notificaciones activas no leídas del usuario
+
+```sql
+SELECT id, type, title, subtitle, body, actions_json, pushed_at
+FROM admirals_notifications
+WHERE account_id = ? AND is_read = 0 AND is_archived = 0
+ORDER BY pushed_at DESC
+LIMIT 30;
+-- usa: idx_admirals_notifications_account_unread
+-- p99 esperado: < 3ms
+```
+
+### 15.6 Listings activos del Mercado por vertical
+
+```sql
+SELECT id, type, title, price, location_json, expires_at
+FROM admirals_market_offers
+WHERE status = 'active' AND vertical_filter = ?
+ORDER BY created_at DESC
+LIMIT 50;
+-- usa: idx_admirals_market_offers_vertical
+```
+
+### 15.7 Documentos pendientes de mi firma
+
+```sql
+SELECT d.id, d.type, d.title, d.created_at
+FROM admirals_documents d
+WHERE d.status = 'pending_signature'
+  AND JSON_CONTAINS(d.parties_json, JSON_OBJECT('kind','account','id', ?))
+  AND NOT EXISTS (
+    SELECT 1 FROM admirals_document_signatures s
+    WHERE s.doc_id = d.id AND s.signer_account_id = ?
+  );
+-- usa: idx_admirals_documents_status + scan parties_json
+-- p99 esperado: < 50ms (mejorable con tabla intermedia document_parties si crece)
+```
+
+> **Nota:** si crece volumen, migrar `parties_json` a tabla `admirals_document_parties` (id, doc_id, party_kind, party_id) — más performance pero más DDL. Decisión diferida hasta data real.
+
+### 15.8 Lista de chats del jugador (con preview + unread count)
+
+```sql
+SELECT c.id, c.type, c.name, c.icon_url, c.last_message_at, c.last_message_preview,
+  (
+    SELECT COUNT(*) FROM admirals_messages m
+    WHERE m.chat_id = c.id
+      AND m.sent_at > IFNULL(p.last_read_at_unix, 0)
+      AND m.deleted_at IS NULL
+  ) AS unread_count
+FROM admirals_chat_participants p
+JOIN admirals_chats c ON c.id = p.chat_id
+LEFT JOIN admirals_messages m_last
+  ON m_last.id = p.last_read_message_id
+WHERE p.account_id = ? AND p.left_at IS NULL
+ORDER BY p.is_pinned DESC, c.last_message_at DESC
+LIMIT 50;
+-- usa: idx_admirals_chat_participants_account + idx_admirals_chats_last_message
+-- nota: la subquery de unread_count es costosa; cachear por participant si bottleneck
+```
+
+### 15.9 Mensajes de un chat (paginación)
+
+```sql
+SELECT id, sender_id, sender_kind, body, body_kind, sent_at, edited_at, reply_to_message_id
+FROM admirals_messages
+WHERE chat_id = ?
+  AND sent_at < ?  -- cursor para paginación
+  AND deleted_at IS NULL
+ORDER BY sent_at DESC, id DESC
+LIMIT 50;
+-- usa: idx_admirals_messages_chat
+```
+
+### 15.10 Plots con plaga sin tratar
+
+```sql
+SELECT id, plot_label, active_pest_kind, active_pest_severity, pest_detected_at
+FROM admirals_granja_plots
+WHERE company_id = ? AND active_pest_kind IS NOT NULL
+ORDER BY active_pest_severity DESC, pest_detected_at ASC;
+-- usa: idx_admirals_granja_plots_company + filter por NULL
+```
+
+### 15.11 Cron de crecimiento — plots a tickear
+
+```sql
+SELECT id, current_stage, growth_pct, current_crop_id
+FROM admirals_granja_plots
+WHERE current_stage > 0 AND current_stage < expected_stages
+  AND updated_at < UNIX_TIMESTAMP() - 300  -- > 5 min sin tick
+LIMIT 1000;
+-- usa: idx_admirals_granja_plots_stage
+```
+
+### 15.12 Trazabilidad reverse — auditoría
+
+```sql
+-- "todos los eventos de los últimos 30 días que afectan a esta company"
+SELECT event_name, payload_json, emitted_at
+FROM admirals_event_log
+WHERE related_company_id = ?
+  AND emitted_at > UNIX_TIMESTAMP() - 86400 * 30
+ORDER BY emitted_at DESC
+LIMIT 1000;
+-- usa: idx_admirals_event_log_company + partition pruning
+```
+
+### 15.13 Reputación: trail de cambios
+
+```sql
+SELECT delta, value_after, reason_code, reason_text, occurred_at, source_resource
+FROM admirals_reputation
+WHERE subject_id = ?
+ORDER BY occurred_at DESC
+LIMIT 20;
+-- usa: idx_admirals_reputation_subject
+```
+
+---
+
+## 16. Migrations — estrategia, formato, ejemplo
+
+### 16.1 Estructura de carpeta
+
+```
+admirals_core/
+└── migrations/
+    ├── 001_initial_schema.sql
+    ├── 002_bank_accounts_link_companies.sql
+    ├── 003_add_index_market_offers_vertical.sql
+    ├── 004_partition_event_log_2026_q2.sql
+    └── 005_add_messages_voice_columns.sql
+```
+
+### 16.2 Convención de nombrado
+
+`NNN_short_description.sql` — número 3 dígitos secuencial, snake_case.
+
+### 16.3 Formato canónico de un archivo de migración
+
+```sql
+-- ============================================================
+-- Migration: 003_add_index_market_offers_vertical.sql
+-- Author: <name>
+-- Date: 2026-04-15
+-- Description: añade índice idx_admirals_market_offers_vertical
+--              para acelerar listings filtrados por vertical en Mercado.
+-- Dependencies: 001
+-- Reversible: yes (DROP INDEX en migration_down)
+-- ============================================================
+
+-- UP MIGRATION
+ALTER TABLE admirals_market_offers
+  ADD KEY idx_admirals_market_offers_vertical (vertical_filter, status, type);
+
+-- ============================================================
+-- DOWN MIGRATION (en archivo separado: 003_..._down.sql)
+-- ============================================================
+-- ALTER TABLE admirals_market_offers
+--   DROP KEY idx_admirals_market_offers_vertical;
+```
+
+### 16.4 Pipeline de aplicación al boot
+
+```lua
+-- admirals_core/server/migrations/runner.lua (esqueleto)
+local function RunMigrations()
+  -- 1. Asegurar que admirals_schema_versions existe
+  EnsureBaseTable()
+
+  -- 2. Listar archivos en migrations/ ordenados
+  local files = ListMigrationFiles()
+
+  -- 3. Para cada archivo, comprobar si está aplicado
+  for _, file in ipairs(files) do
+    local version = ParseVersionFromFilename(file)
+    if not IsApplied(version) then
+      local content = ReadFile(file)
+      local checksum = Sha256(content)
+
+      local startMs = GetTimeMs()
+
+      -- 4. Aplicar dentro de transacción
+      MySQL.transaction(content, function(success)
+        if success then
+          MySQL.insert.await(
+            'INSERT INTO admirals_schema_versions (version, filename, checksum, duration_ms) VALUES (?, ?, ?, ?)',
+            { version, file, checksum, GetTimeMs() - startMs }
+          )
+          print(('[admirals_core] Migration %s applied'):format(file))
+        else
+          print(('[admirals_core] Migration %s FAILED — server stop'):format(file))
+          os.exit(1)
+        end
+      end)
+    else
+      -- 5. Verificar checksum (detectar tampering)
+      local recorded = GetRecordedChecksum(version)
+      if recorded ~= Sha256(ReadFile(file)) then
+        print(('[admirals_core] WARN: migration %s checksum mismatch'):format(file))
+      end
+    end
+  end
+end
+```
+
+### 16.5 Reglas de oro
+
+1. **Idempotencia:** las migraciones se aplican exactamente una vez. El runner valida via `admirals_schema_versions`.
+2. **Inmutabilidad:** una vez aplicada en producción, **un archivo de migración jamás se edita**. Cambios → nueva migración.
+3. **Forward-only por defecto:** las downs son opcionales pero recomendadas para entornos dev.
+4. **Atomicidad:** cada migración corre en una transacción. Si falla, rollback completo.
+5. **Una migración = un cambio lógico.** No mezclar cambios independientes.
+
+### 16.6 Ejemplo: migración inicial 001
+
+```sql
+-- 001_initial_schema.sql
+-- Aplica todo el schema base oleada 1.
+
+START TRANSACTION;
+
+CREATE TABLE admirals_accounts ( ... );
+CREATE TABLE admirals_tablets ( ... );
+CREATE TABLE admirals_companies ( ... );
+-- ... (todas las tablas core)
+CREATE TABLE admirals_event_log ( ... );
+
+-- Seeds
+INSERT INTO admirals_accounts ... ;
+INSERT INTO admirals_companies ... ;
+
+COMMIT;
+```
+
+---
+
+## 17. Particionado y archival
+
+### 17.1 Tablas particionadas
+
+| Tabla | Partition key | Granularidad | Razón |
+|---|---|---|---|
+| `admirals_bank_movements` | `occurred_at` | Mensual | Volumen alto, queries por rango temporal recientes |
+| `admirals_messages` | `sent_at` | Mensual | Volumen muy alto, cold reads |
+| `admirals_notifications` | `pushed_at` | Mensual | Volumen alto, retención < 6 meses |
+| `admirals_event_log` | `emitted_at` | Mensual | Volumen muy alto, archival post 12 meses |
+
+### 17.2 Cron de gestión de particiones
+
+> **Tarea automática mensual** ejecutada por `admirals_core` al primer minuto de cada mes.
+
+```lua
+-- admirals_core/server/cron/partitions.lua (pseudocódigo)
+function MaintainPartitions()
+  local nextMonth = GetTimestampForFirstOfMonth(now() + 30 days)
+  local nextNextMonth = GetTimestampForFirstOfMonth(now() + 60 days)
+
+  for _, table in ipairs({
+    'admirals_bank_movements',
+    'admirals_messages',
+    'admirals_notifications',
+    'admirals_event_log',
+  }) do
+    EnsurePartitionExists(table, nextMonth)
+    EnsurePartitionExists(table, nextNextMonth)
+    ArchiveOldPartitions(table, retention_for(table))
+  end
+end
+
+function EnsurePartitionExists(table, timestamp)
+  -- ALTER TABLE ... REORGANIZE PARTITION p_future INTO (
+  --   PARTITION p_YYYY_MM VALUES LESS THAN (timestamp),
+  --   PARTITION p_future VALUES LESS THAN MAXVALUE
+  -- );
+end
+```
+
+### 17.3 Política de retención
+
+| Tabla | Hot retention (online) | Cold retention (archival) |
+|---|---|---|
+| `admirals_bank_movements` | 24 meses | indefinido (legal RP) |
+| `admirals_messages` | 12 meses | 24 meses adicionales |
+| `admirals_notifications` | 6 meses | 6 meses adicionales |
+| `admirals_event_log` | 12 meses | 36 meses adicionales |
+
+### 17.4 Archival a tabla "_archive"
+
+```sql
+-- Crear tabla de archive (mismo schema, sin particionar, motor MyISAM o cold storage)
+CREATE TABLE admirals_messages_archive LIKE admirals_messages;
+
+-- Movimiento mensual de partición vieja
+INSERT INTO admirals_messages_archive SELECT * FROM admirals_messages PARTITION (p_2025_04);
+
+-- Drop de la partición original
+ALTER TABLE admirals_messages DROP PARTITION p_2025_04;
+```
+
+### 17.5 Performance considerations
+
+- **Partition pruning** automático cuando la query incluye filtro sobre la partition key — verificar con `EXPLAIN PARTITIONS`.
+- **Índices locales** (no globales) en cada partición — InnoDB partitioned tables.
+- **Particiones futuras pre-creadas** (no esperar a que se llenen).
+
+---
+
+## 18. Backup, restore e integrity
+
+### 18.1 Estrategia recomendada
+
+> **Admirals no implementa backup propio en oleada 1** — recomienda al admin del servidor configurar uno externo. La doc lo indica claramente.
+
+**Stack recomendado:**
+
+```bash
+# Backup completo diario (cron)
+mysqldump --single-transaction --quick \
+  --databases your_admirals_db \
+  | gzip > admirals_$(date +%Y%m%d).sql.gz
+
+# Backup incremental por hora (binlog shipping)
+# Configurar replication o usar mysqlbinlog
+```
+
+### 18.2 Comando `/admirals export`
+
+> **Implementado en oleada 1.** Permite al admin generar un export JSON/SQL de todo o de una company.
+
+```
+/admirals export full              → snapshot completo (zip)
+/admirals export company <id>      → solo esa empresa + relacionados
+/admirals export account <id>      → solo ese jugador
+```
+
+### 18.3 Comando `/admirals integrity`
+
+> **Verifica consistencia del schema** vs catálogo.
+
+```
+/admirals integrity check          → verifica:
+  - todas las tablas existen
+  - índices documentados existen
+  - FK no rotas (registros huérfanos)
+  - particiones presentes para los próximos 2 meses
+  - migrations aplicadas == archivos en migrations/
+```
+
+### 18.4 Restore checklist
+
+1. Stop server.
+2. Restaurar dump `gunzip < admirals_YYYYMMDD.sql.gz | mysql admirals_db`.
+3. Verificar `admirals_schema_versions` — el server al rebootear no debe re-aplicar migrations.
+4. Boot server. Logs deberían mostrar 0 migraciones aplicadas (todas están registradas).
+5. `/admirals integrity check`.
+
+### 18.5 Estado de integridad continuo
+
+> **Cron horario** ejecuta integrity light:
+
+```lua
+function IntegrityCron()
+  -- 1. Cuentas de fuentes inválidas
+  local orphan_members = MySQL.query.await([[
+    SELECT m.id FROM admirals_company_members m
+    LEFT JOIN admirals_companies c ON c.id = m.company_id
+    WHERE c.id IS NULL
+  ]])
+  if #orphan_members > 0 then Logger.error('orphan members found', orphan_members) end
+
+  -- 2. Saldo bancario coherente con último movement
+  -- 3. Plots con company inexistente
+  -- 4. ... etc.
+end
+```
+
+---
+
+## 19. Governance del schema
+
+### 19.1 Quién puede modificar el schema
+
+| Tipo de cambio | Quién | Proceso |
+|---|---|---|
+| **Añadir tabla nueva** | Maintainer del resource dueño + founder | RFC + migration + DDL en este doc |
+| **Añadir columna NULL** | Maintainer | Migration + actualizar DDL |
+| **Añadir columna NOT NULL** | Maintainer + founder | Migration con DEFAULT obligatorio + actualizar DDL |
+| **Añadir índice** | Maintainer | Medir mejora + migration + actualizar §14 |
+| **Modificar tipo de columna** | Founder | RFC + migration + impact en código |
+| **Drop columna o tabla** | Founder | Política de deprecación: deprecate 2 versiones, drop después |
+| **Modificar FK / constraint** | Maintainer + founder | Migration + análisis de impacto |
+| **Crear partición / archive** | Cron automático | Sin intervención humana |
+
+### 19.2 Política de deprecación de columnas
+
+1. **MINOR N**: column marcada como deprecated en `01_architecture.md` + comentario `-- DEPRECATED in vN`.
+2. **MINOR N+1**: code stops writing to column. Aplicación migra lectores.
+3. **MINOR N+2**: migration que dropa la columna.
+
+### 19.3 Política de evolución de tipos
+
+- **Ampliar VARCHAR**: PATCH OK.
+- **Reducir VARCHAR**: MAJOR. Análisis previo de datos.
+- **Cambiar ENUM (añadir valores)**: PATCH OK.
+- **Cambiar ENUM (renombrar/quitar)**: MAJOR. Migración con UPDATE de datos previos.
+
+### 19.4 Diccionario de datos
+
+> **Todas las tablas, columnas y constraints están aquí.** Si una columna no está en este doc, no existe.
+
+Cuando un developer añade columna:
+1. Migration con `ALTER TABLE ... ADD COLUMN`.
+2. Update de la sección DDL correspondiente en este markdown.
+3. PR con ambos cambios atómicos.
+4. CI verifica que `INFORMATION_SCHEMA` coincide con DDL documentado (lint check).
+
+---
+
+## 20. Estado del documento
+
+- **Versión:** 1.0 (firmado).
+- **Próxima revisión:** evolución según nuevas verticales.
+- **Próximas iteraciones esperadas:**
+  - Cuando se diseñe Panadería: añadir `admirals_panaderia_*` tables.
+  - Cuando se diseñe Retail: añadir `admirals_retail_*` tables.
+  - Si emergen bottlenecks de performance: añadir índices en §14 o promover JSON a tabla intermedia.
+  - Si oleada 2 introduce voice/calls: añadir `admirals_messages_voice_*` columns o tablas.
+
+### 20.1 Resumen del schema
+
+| Métrica | Valor |
+|---|---|
+| Total tablas oleada 1 | **28** |
+| Tablas particionadas | 4 (bank_movements, messages, notifications, event_log) |
+| Total índices documentados | ~60 |
+| Tablas core | 4 (accounts, tablets, companies, members) |
+| Tablas dominio | 13 (bank, docs, msg, notif, market, logistics, reputation) |
+| Tablas nodos | 7 (granja x4, molino x3) |
+| Tablas infra | 4 (event_log, schema_versions, settings, document_templates) |
+
+### 20.2 Documentos relacionados
+
+- `01_architecture.md` v1.0 — arquitectura técnica (este DDL deriva del schema lógico de §3).
+- `02_events_catalog.md` v1.0 — eventos que mutan estas tablas.
+- `04_sdk_reference.md` (oleada 3) — para apps de terceros que consultan datos.
+- `05_deployment_guide.md` (próximo) — admin instala MySQL + aplica este schema.
+
+---
+
+## Resumen ejecutivo del documento (cierre)
+
+Este documento es **el contrato de persistencia** del ecosistema Admirals.
+
+**Pilares cumplidos:**
+
+- ✅ **Architecture P3 (Schema compartido):** todas las tablas con prefijo `admirals_`, schema único compartido entre resources.
+- ✅ **Architecture P9 (DB fuente de verdad, RAM cache):** schema completo + repos en código (cache + flush) ya listos.
+- ✅ **Pilar 3 (Detalle obsesivo):** cada tabla con DDL completo, índices justificados, queries hot path documentadas.
+- ✅ **Pilar 2 (Cadena interconectada):** FKs explícitas + lineage_json en batches + related_* en event_log permiten trazabilidad cross-vertical completa.
+- ✅ **Bible §13.4 (3D vs Code):** code maneja toda la riqueza relacional, 3D solo provee props/MLO.
+
+**Decisiones clave:**
+
+- Prefijo `admirals_` obligatorio.
+- UUID v4 para entidades de negocio + BIGINT para tablas de alto volumen.
+- MySQL 8 + InnoDB + utf8mb4.
+- Soft deletes en histórico legal.
+- 4 tablas particionadas mensualmente desde día 1.
+- Migrations versionadas con checksum + idempotentes.
+- Single source of truth = este markdown (CI lint contra INFORMATION_SCHEMA).
+- 28 tablas oleada 1 + ~60 índices documentados con razón.
+
+**~28 tablas** definidas con DDL listo para producción + ~60 índices justificados + queries críticas + estrategia de migrations + particionado + backup + governance.
+
+**Si un developer quiere saber dónde se persiste el saldo de una empresa, abre este doc y lo encuentra en 30 segundos.**
+
+**Trinidad técnica completa:** Architecture (cómo se construye) + Events Catalog (cómo se comunica) + DB Schema (cómo se persiste) = **fundación irrompible para 5-10 años.**
+
+---
+
+*"Data is the foundation. Schema is the law."*
