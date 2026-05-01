@@ -1,0 +1,99 @@
+# =============================================================================
+#  Admirals — server.cfg.example
+#
+#  Copy this file to server.cfg, fill in your values, then start the server.
+#  NEVER commit server.cfg — it contains secrets (see .gitignore).
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Endpoints
+# -----------------------------------------------------------------------------
+endpoint_add_tcp "0.0.0.0:30120"
+endpoint_add_udp "0.0.0.0:30120"
+
+# -----------------------------------------------------------------------------
+# Server identity
+# -----------------------------------------------------------------------------
+sv_hostname "Admirals — Dev Server"
+
+# Your FiveM Keymaster license key — https://keymaster.fivem.net/
+sv_licenseKey "YOUR_LICENSE_KEY_HERE"
+
+sv_maxclients 48
+
+# Disable script hook (recommended for production — disables native mods)
+sv_scriptHookAllowed 0
+
+# -----------------------------------------------------------------------------
+# Database — oxmysql connection string
+# Update host / user / password / database to match your MySQL instance.
+# -----------------------------------------------------------------------------
+set mysql_connection_string "mysql://root:YOUR_DB_PASSWORD@localhost/admirals?charset=utf8mb4"
+
+# Admirals DB convars (used by admirals_core migrations runner + DB wrappers)
+set admirals_db_host     "localhost"
+set admirals_db_user     "root"
+set admirals_db_password "YOUR_DB_PASSWORD"
+set admirals_db_database "admirals"
+
+# -----------------------------------------------------------------------------
+# Admirals environment
+# Values: development | staging | production
+#   development — verbose logs, debug overlays enabled, rate limits relaxed
+#   staging     — production-like, verbose logs
+#   production  — minimal logs, strict rate limits
+# -----------------------------------------------------------------------------
+setr admirals_env "development"
+
+# -----------------------------------------------------------------------------
+# Admirals Bridges — manual override (optional)
+#
+# By default, Admirals auto-detects which scripts are running on boot and
+# selects the best available adapter per module (priority order per
+# docs/technical/07_bridges_compatibility.md §10.1).
+#
+# Uncomment + set a convar ONLY if auto-detection picks the wrong adapter,
+# or to force a specific adapter (e.g. a custom/forked script registered via SDK).
+#
+# Valid values per module:
+#   bank:      qbox | qbcore | esx | renewed_banking | okok_banking | native
+#   inventory: ox_inventory | qs_inventory | codem_inventory | qb_inventory | native
+#   phone:     lb_phone | qs_smartphone | yseries | qb_phone | npwd | native
+#   identity:  qbox | qbcore | esx | native
+#   target:    ox_target | qb_target | qtarget | native
+#   notify:    ox_lib | qb | esx | native
+#
+# "native" = Admirals built-in fallback (no external script required).
+# -----------------------------------------------------------------------------
+#setr admirals_bridge_bank      "qbox"
+#setr admirals_bridge_inventory "ox_inventory"
+#setr admirals_bridge_phone     "lb_phone"
+#setr admirals_bridge_identity  "qbox"
+#setr admirals_bridge_target    "ox_target"
+#setr admirals_bridge_notify    "ox_lib"
+
+# Bank mode:
+#   standalone — Admirals manages all finances independently (recommended)
+#   synced     — Admirals syncs balances with framework money (legacy compat)
+#setr admirals_bridge_bank_mode "standalone"
+
+# -----------------------------------------------------------------------------
+# Resources
+# Load order matters — each resource must be ensured AFTER its dependencies.
+# -----------------------------------------------------------------------------
+
+# --- Core dependencies -------------------------------------------------------
+ensure oxmysql
+ensure ox_lib
+ensure ox_inventory
+ensure ox_target
+
+# --- Framework (QBox — primary) ----------------------------------------------
+ensure qbx_core
+
+# --- Phone -------------------------------------------------------------------
+ensure lb-phone
+
+# --- Admirals (always last — depend on everything above) --------------------
+ensure admirals_bridges
+ensure admirals_core

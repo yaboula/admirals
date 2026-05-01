@@ -60,3 +60,45 @@
 ✅ Solo modificó docs firmados con founder approval explícito (bridges.md, bootstrap, roadmap, decision_log, playbook new).
 
 ---
+
+## S0.1 — Repo code scaffolding + first push
+
+- **Fecha:** 2026-05-01
+- **Duración:** ~1h
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6)
+- **Sprint:** S0 — Setup + Bridges Layer + admirals_core
+- **Perfil:** 🔧 BUILDER + 📝 SCRIBE
+- **Modelo:** Sonnet 4.6
+- **Goal:** Code scaffolding (`.gitignore` + `server.cfg.example` + 2 fxmanifest scaffolds) + commit + push GitHub.
+- **Status:** ✅ Done
+
+### Cambios
+- **Creado:** `.gitignore` — cubre Lua/FiveM artifacts, Node (node_modules/dist/build/.next), IDE (.vscode/.idea/.cursor), OS (.DS_Store/Thumbs.db), logs (*.log/logs/), cache (.cache/), .env* + server.cfg. `.windsurf/` excluido intencionalmente (va al repo).
+- **Creado:** `server.cfg.example` — endpoints, sv_hostname/licenseKey/maxclients/scriptHookAllowed, mysql_connection_string, convars `admirals_db_*` (host/user/password/database), convars `admirals_bridge_*` (6 módulos bank/inventory/phone/identity/target/notify) + `admirals_bridge_bank_mode`, convar `admirals_env`, resources block ordenado (oxmysql→ox_lib→ox_inventory→ox_target→qbx_core→lb-phone→admirals_bridges→admirals_core).
+- **Creado:** `resources/admirals_bridges/fxmanifest.lua` — scaffold válido: fx_version cerulean, game gta5, lua54 yes, author/version/description. server_scripts vacío comentado (S0.2).
+- **Creado:** `resources/admirals_core/fxmanifest.lua` — scaffold válido: mismo header + dependencies { 'oxmysql', 'admirals_bridges' }. server_scripts vacío comentado (S0.4).
+
+### Decisiones tomadas
+- `server.cfg` añadido al `.gitignore` (contiene secrets — solo `server.cfg.example` va al repo).
+- Convars bridges con `setr` (readable client+server) per `07_bridges_compatibility.md` §10.2. Overrides comentados por defecto — auto-detection es el flujo normal.
+- Resources block: `admirals_bridges` antes de `admirals_core` (core depende de bridges per fxmanifest dependency declaration).
+
+### Issues pendientes
+- Ninguno.
+
+### Handoff próxima sesión (S0.2)
+- **Modelo recomendado:** Opus 4.7 (ARCHITECT — Bridges Layer completo es arquitectura crítica, afecta todo downstream).
+- **Goal:** `admirals_bridges` resource 100% funcional: Registry + Dispatcher + Logger + Detect + 6 bridge interfaces + 6 native fallback adapters + auto-detection + config overrides + boot report.
+- **Docs a leer obligatorio:**
+  - `docs/technical/07_bridges_compatibility.md` §2-§12 completo.
+  - `docs/technical/06_fivem_standards.md` (perf budgets — resmon <0.3ms idle).
+  - `docs/technical/01_architecture.md` §Bridges Layer.
+  - `progress/SESSION_LOG.md` últimas 2 entries (S0.0 + S0.1).
+  - `progress/SPRINT_PLAN_S0.md` §S0.2.
+- **Files in scope S0.2:** 19 archivos en `resources/admirals_bridges/` — ver `SPRINT_PLAN_S0.md` §S0.2 lista exacta.
+- **Pre-condición:** repo limpio con commit S0.1 presente.
+
+### Files in scope respetados
+✅ Solo tocó los 4 files whitelist (`.gitignore`, `server.cfg.example`, 2 `fxmanifest.lua`) + append SESSION_LOG. No tocó `docs/*`, `.windsurf/*`, `README.md`, `SPRINT_PLAN_S0.md`.
+
+---
