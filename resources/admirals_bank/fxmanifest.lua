@@ -39,11 +39,8 @@ dependencies {
 --                                    no re-registramos).
 --                                 d. Mark Bank._ready + emit admirals:bank:ready.
 --
---   client_scripts (S1.2 SMOKE TEST TEMPORAL — DELETE post sign-off):
---     - @ox_lib/init.lua    — lib.callback.await en client.
---     - client/smoke.lua    — 5 commands /smoke_transfer* para harness manual
---                             founder smoke 10 pasos. Disposable infrastructure.
---                             Se elimina en cleanup commit S1.2 final.
+--   No client_scripts (callbacks via ox_lib server-side; client UI llega
+--   S1.5+ con admirals_tablet).
 -- =============================================================================
 
 shared_scripts {
@@ -81,14 +78,4 @@ server_scripts {
 
   -- Boot orchestration (LAST).
   'server/init.lua',
-}
-
--- =============================================================================
--- S1.2 SMOKE TEST TEMPORAL — DELETE post sign-off (cleanup commit separado).
--- 5 client commands: /smoke_transfer /smoke_transfer_replay /smoke_transfer_self
--- /smoke_transfer_overdraw /smoke_transfer_burst.
--- =============================================================================
-client_scripts {
-  '@ox_lib/init.lua',
-  'client/smoke.lua',
 }

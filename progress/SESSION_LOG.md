@@ -752,3 +752,71 @@ Confirmado vía oxmysql doc oficial (`overextended.dev/oxmysql/Functions/transac
 ✅ 2 creates + 7 edits = 9 operaciones. Strict whitelist founder cumplida (migration 005, transfer.lua, callbacks.lua RATE_LIMITED + RACE_DETECTED, init.lua limpieza + 3 admin, client/smoke.lua, fxmanifest client_scripts, core/config + core/fxmanifest wire 005, SESSION_LOG addendum). NO tocó `admirals_bridges/*` ni adapters T1 ni docs firmados ni migration 003.
 
 ---
+
+### S1.2 cleanup (post sign-off smoke 10/10) — 2026-05-02
+
+**Trigger:** founder sign-off smoke 10/10 ✅ (PASS en todos los pasos: integridad atómica SQL, happy path, idempotencia replay, self-transfer reject, overdraw protection, rate limiting burst, persistencia cross-restart, stress test delta=0.0000 exacto, audit log eventos, resmon optimizado). Commit S1.2 implementación realizado con hash `436d247` (16 files changed, 2042 insertions, 39 deletions). Founder green-light Fase 2 cleanup smoke harness inmediatamente per workspace convention S1.x (smoke harness disposable removible post-sign-off).
+
+### Operaciones cleanup (1 delete + 2 edits)
+
+| # | File | Cambio |
+|---|---|---|
+| 1 | `resources/admirals_bank/client/smoke.lua` | **DELETED** completo — 5 client commands disposables (`/smoke_transfer`, `/smoke_transfer_replay`, `/smoke_transfer_self`, `/smoke_transfer_overdraw`, `/smoke_transfer_burst`). Directorio `client/` también eliminado (vacío). |
+| 2 | `resources/admirals_bank/server/init.lua` | **REMOVED** sección "S1.2 SMOKE TEST TEMPORAL" líneas 247-369 (helper `_smoke_ace` + 3 RegisterCommand: `admirals_bank_recalc`, `admirals_bridge_idem_count`, `admirals_bank_stress_transfer`). File final = 245 LoC (boot orchestration + Identity hooks + `/admirals_bank_status` admin only). |
+| 3 | `resources/admirals_bank/fxmanifest.lua` | **REMOVED** `client_scripts {'@ox_lib/init.lua', 'client/smoke.lua'}` block + comment "S1.2 SMOKE TEST TEMPORAL". Header doc actualizado: "No client_scripts (callbacks via ox_lib server-side; client UI llega S1.5+ con admirals_tablet)". |
+| 4 | `progress/SESSION_LOG.md` | Append cleanup entry (este). |
+
+**Total cleanup: 1 delete + 3 edits = 4 operaciones (3 files únicos modificados + directorio cliente eliminado).**
+
+**Total S1.2 acumulado (implementación + fix-and-validate + cleanup):** 6 creates (mig 004, mig 005, movements.lua, transfer.lua, events.lua) + 1 delete (client/smoke.lua) + 11 file modifications = 18 file ops netas.
+
+### Pendiente founder (server.cfg cleanup)
+
+Founder elimina manualmente las 3 ACE lines en `d:/fivem-dev/server-data/server.cfg` líneas 22-24 (añadidas pre-smoke):
+
+```cfg
+# REMOVE these 3 lines (S1.2 smoke harness no longer exists):
+add_ace builtin.everyone command.admirals_bank_recalc          allow
+add_ace builtin.everyone command.admirals_bridge_idem_count    allow
+add_ace builtin.everyone command.admirals_bank_stress_transfer allow
+```
+
+Tras remove, restart server o reload server.cfg → validación: `IsPlayerAceAllowed(source, 'command.admirals_bank_recalc')` retorna false. Comandos no existen en código → no efecto runtime, pero limpieza conceptual recomendada.
+
+### Verificación estática (cleanup)
+
+- ✅ **0 instancias `_smoke_ace`** en `resources/admirals_bank/`.
+- ✅ **0 instancias `admirals_bank_recalc` / `admirals_bridge_idem_count` / `admirals_bank_stress_transfer`** en `resources/admirals_bank/`.
+- ✅ **0 referencias `client/smoke.lua`** en fxmanifest.
+- ✅ **0 `client_scripts` block** en `admirals_bank/fxmanifest.lua`.
+- ✅ **Directorio `resources/admirals_bank/client/` eliminado** (no existe).
+- 🟡 **2 menciones "smoke"** restantes en comments documentales legítimos: `transfer.lua:284` ("smoke test step 8 stress detection" en mapping RACE_DETECTED) + `movements.lua:24` ("Usado por smoke atomicity verification" en RecalcBalance docstring). Workspace rule "no añadir/borrar comments sin pedido" — comments preservados. Son references contextuales explicando intent, no harness en sí.
+
+### Done criteria S1.2 cleanup
+
+- ✅ **Smoke harness eliminado** (5 client + 3 admin commands + helpers + comments header).
+- ✅ **fxmanifest sin client_scripts** disposable.
+- ✅ **server/init.lua final shape** = boot orchestration only (245 LoC vs 369 LoC pre-cleanup).
+- 🟡 **Founder elimina 3 ACEs server.cfg** — manual, fuera de repo (server.cfg en `d:/fivem-dev/server-data/`, no en workspace `d:/theBigProject/`).
+
+### Commit Fase 2
+
+Pendiente ejecutar:
+```
+git add resources/admirals_bank progress/SESSION_LOG.md
+git commit -m "S1.2 cleanup remove temporal smoke harness post sign-off"
+```
+
+Mensaje sigue convention `S{N}.{M} {imperative present}` per workspace rule + S1.1 precedent ("S1.1 cleanup remove temporal smoke client + iban_gen command").
+
+### Issues post-cleanup
+
+- 🔵 **Working tree limpio** — solo `scripts/smoke_test_s1_2.md` queda untracked (founder decision opt-out commit).
+- 🟢 **Sprint S1.2 completo** — implementación + fix-and-validate + smoke 10/10 + cleanup. Ready para S1.2 close + S1.3 escrow lock+release session arranque.
+- 🔵 **Smoke S1.2 reproducible** — `git checkout 436d247 -- resources/admirals_bank/client/ resources/admirals_bank/server/init.lua resources/admirals_bank/fxmanifest.lua` recupera harness completo si necesita re-run (e.g., regression test pre-S2 release).
+
+### Files in scope respetados (cleanup)
+
+✅ 1 delete + 3 edits = 4 operaciones. Strict scope cumplido (cleanup solo touches files que tenían smoke harness o reference a él). NO tocó admirals_core (3 admin commands eran solo en admirals_bank/server/init.lua), NO tocó admirals_bridges, NO tocó docs/* firmados, NO tocó server.cfg founder (manual cleanup founder responsability).
+
+---
