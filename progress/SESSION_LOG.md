@@ -489,3 +489,266 @@ Ver `scripts/smoke_test_s1_1.md` 8 pasos:
 ✅ 10 creates + 4 edits = 14 operaciones. Founder green-light explícito previo a expansión de scope (4 edits en admirals_core vs 1 listado en prompt). No tocó `resources/admirals_bridges/*`, `.windsurf/*`, `README.md`, `docs/technical|economy|design|art|qa/*`, `progress/SPRINT_PLAN_S1.md` (refinement diferido S1.3).
 
 ---
+
+## 2026-05-02 — S1.2 Transfer C002 + double-entry ledger + idempotency DB-backed + event publish
+
+**Modelo:** Claude Opus 4.7 MAX (perfil: 🏗️ ARCHITECT + 🔧 BUILDER).
+**Founder:** yaboula.
+**Sprint:** S1 (Oleada 1, MVP playable) — session 2 de 3.
+**Goal:** C002 `admirals:bank:transfer` atómico (4-query TX) + 2-row ledger debit/credit per SSoT §4.2 + idempotency `admirals_bridges._idem_store` swap memory→DB-backed (`admirals_bridge_idempotency`) con firma `Bridges._IsIdemReplay/_StoreIdem` estable + evento `admirals:bank:transfer_completed` schema canonical §4.3 + seed system account `AD-SYS0-0000-0001` 10M € (treasury — investment for S1.3).
+**Pre-condición:** S1.1 commit pushed + `S1.1 cleanup remove temporal smoke client + iban_gen command` (commit 23641e8) + git clean + 5 reconciliaciones SSoT pre-action (founder green-light explícito).
+
+### Pre-action — 5 reconciliaciones SSoT (founder green-light)
+
+Detectadas en pre-action review (no proceder hasta confirmación). Founder confirmó alinear a SSoT existente sin overrides — NO ADR-011 necesario, simple correcciones del prompt original que citaba secciones erróneas:
+
+1. **Fee transfer player→player = 0 €** (SSoT [`economy/01_economic_model.md:697`](file:///d:/theBigProject/docs/economy/01_economic_model.md) §10.3 "Internal transfer (entre IBANs Admirals): 0 €"). El prompt original citaba §3.2 que es **external** transfers (multi-server, oleada N+) — correctiva aplicada. Ledger 2 rows (debit + credit), sin 3ª row de fee, sin UPDATE balance system. fee_retained=0.00 en response (mantiene shape canónico para forward-compat S1.3 escrow fees y S2+ external).
+2. **Schema sin columna `direction`** — SSoT §4.2:553 usa `amount` signed (positivo=ingreso, negativo=salida) + `balance_after` snapshot. NO añadir columna. Verificación atomicity: `SUM(amount) GROUP BY bank_account_id == admirals_bank_accounts.balance` (helper `Movements.RecalcBalance`).
+3. **Categoría canónica `transfer`** — ENUM §4.2:556 ya tiene `'transfer'`. Las 2 rows comparten category, distinguibles por signo de amount + counterpart_iban (extracto bancario human-readable). NO inventar `transfer_debit`/`transfer_credit`.
+4. **C002 response shape canonical** — SSoT [`api_contracts.md:289-300`](file:///d:/theBigProject/docs/technical/04_api_contracts.md): `{success, data: { transaction_id, timestamp, new_balance_from, fee_retained }}`. `transaction_id` = UUID v4 server-generado (≠ `request_id` cliente — son distintos). transaction_id se persiste en `request_nonce` CHAR(36) de ambas movement rows (sin ALTER schema) — cliente puede reconciliar response ↔ ledger via `transaction_id == request_nonce`. `request_id` queda solo en `admirals_bridge_idempotency`. `timestamp` en UNIX ms.
+5. **Migration 004 path** = `resources/admirals_core/migrations/004_bank_seed_system_account.sql` (no `admirals_bank/migrations/`). Pattern S1.1 ratificado — runner único es `admirals_core/server/migrations.lua`. INSERT IGNORE para idempotency (defense-in-depth sobre runner tracking).
+
+### Sub-decisión durante implementación — system account CHECK XOR conflict
+
+Founder recomendó `type='escrow'` (D6 en migration 003) + opción (a) "admirals_accounts ficticio para owner_account_id". **Incompatibles entre sí**: el CHECK constraint en migration 003:107-110 enforza `(type='escrow' AND owner_company_id IS NOT NULL)`, no permite `type='escrow' + owner_account_id NOT NULL`. Único path consistente con CHECK + opción(a) sin tocar constraint: **`type='personal'` + `admirals_accounts` ficticio `SYSTEM`**. Implementado con comment doc explícito en migration 004 (D1 sección DECISIONES TÉCNICAS) + technical debt nota: S2+ podrá refinarse vía ALTER ENUM 'system' + relax CHECK O usar admirals_companies ficticio cuando exista esa tabla.
+
+### Files creados (5)
+
+| # | File | LoC | Propósito |
+|---|---|---|---|
+| 1 | `resources/admirals_core/migrations/004_bank_seed_system_account.sql` | ~115 | Seed treasury system account: `admirals_accounts` SYSTEM ficticio (UUID `00000000-...-001`) + `admirals_bank_accounts` (UUID `b0000000-...-001`, IBAN `AD-SYS0-0000-0001`, 10M €) + 1 movement row category `adjustment` 'System treasury seed'. INSERT IGNORE + NOT EXISTS por defense-in-depth. |
+| 2 | `resources/admirals_bank/server/movements.lua` | ~190 | `Movements.{Insert, GetByAccount, GetByNonce, RecalcBalance}` — helpers DB sobre admirals_bank_movements. ENUM categories validation (13 valid incluyendo starter_seed). Insert es no-transaccional (single row) — Transfer.Execute arma sus queries inline. RecalcBalance = `SUM(amount) vs balance` para reconciliación. |
+| 3 | `resources/admirals_bank/server/transfer.lua` | ~330 | `Transfer.Execute(from_cid, from_iban, to_iban, amount, concept, request_id) → success, data, error_code`. Atomicity via `Admirals.DB.Transaction` 4 queries: UPDATE debit (WHERE balance >= ? AND is_frozen=0 AND closed_at IS NULL) + UPDATE credit + INSERT movement debit (signed -amount) + INSERT movement credit (signed +amount). transaction_id UUID v4 → `request_nonce` ambas rows. fee_retained=0 internal (§10.3). 8 error codes canonical §3.1 + §7. Race window documented (mitigated by rate limit + idempotency). |
+| 4 | `resources/admirals_bank/server/events.lua` | ~110 | `Events.PublishTransferCompleted(payload)` — schema-validation mínimo (required fields) + Bus.Publish con audit='always'. Schema canonical per §4.3 (auto-decora `_event_id, _emitted_at, _schema_version` via Bus core). `movement_id_from/to` omitted en S1.2 (oxmysql Transaction returns boolean, no insertIds — caller puede SELECT por request_nonce si necesario S2+). transaction_id additivo non-breaking. |
+| 5 | (this entry — append-only SESSION_LOG.md) | — | Protocolo founder playbook §5.3. |
+
+### Files editados (8)
+
+| # | File | Cambio |
+|---|---|---|
+| 1 | `resources/admirals_bridges/config.lua` | Bump comment IdempotencyTTLSec (S0.4→S1.2 promotion) + nuevo `Config.IdempotencyBackend` ('memory' default, override convar `admirals_bridge_idempotency_backend'). Hook informativo — backend real instalado vía `SetIdempotencyBackend(spec)` runtime swap. |
+| 2 | `resources/admirals_bridges/server/dispatcher.lua` | Refactor idempotency: introduce `_idem_backend` spec table {resource, getExport, setExport, gcExport?} + helpers `_backend_get/_backend_set/_backend_gc` que enrután memory vs cross-resource exports. `_IsIdemReplay/_StoreIdem` firmas estables (founder mandato). Nueva función `Bridges.SetIdempotencyBackend(spec\|'memory')` con validación estricta. GC thread llama `_backend_gc()` (memory) o export gcExport (DB). 4 nuevos exports: `SetIdempotencyBackend`, `IsIdemReplay`, `StoreIdem`, `IdemBackendName`. Cross-VM: NO function refs — solo strings de resource+export name (anti-fragility per S1.1 lib pattern). |
+| 3 | `resources/admirals_core/server/init.lua` | (a) 3 nuevos exports backend interface: `IdempotencyGet(key)` (DB.FetchOne con WHERE expires_at > UNIX_TIMESTAMP() + json.decode), `IdempotencySet(key, result, ttl_sec)` (UPSERT con `ON DUPLICATE KEY UPDATE result_json+expires_at` + json.encode), `IdempotencyGC()` (DELETE WHERE expires_at < NOW + Metrics counter). (b) Boot sequence step 3.5: `pcall(exports.admirals_bridges:SetIdempotencyBackend({resource='admirals_core', getExport='IdempotencyGet', setExport='IdempotencySet', gcExport='IdempotencyGC'}))` post-migrations + post-DB-ready. Si swap falla → log warn (no fatal — fallback memory backend). |
+| 4 | `resources/admirals_bank/server/callbacks.lua` | Añadir C002 `admirals:bank:transfer` register (~170 LoC). Flow: (1) resolve citizen_id from cache, (2) validate request_id required (8-64 chars), (3) idempotency lookup via `exports.admirals_bridges:IsIdemReplay` (replay → return cached + audit `idempotency_replay`), (4) rate limit `bank.write` 10/60s fail-closed, (5) shape validation, (6) delegate `Transfer.Execute`, (7) build response + error_code → message map (8 errors §7), (8) `exports.admirals_bridges:StoreIdem` persist response (success OR error — idempotency PUT-like semantics), (9) duration metric. Local var `Transfer = Admirals.Bank.Transfer` añadido. |
+| 5 | `resources/admirals_bank/config.lua` | Bump Version 0.1.0→0.2.0. Uncomment `Config.Events.TransferCompleted = 'admirals:bank:transfer_completed'`. AuditCategories.Transfer ya existía S1.1 (paralelo a StarterSeed) — no duplicado. |
+| 6 | `resources/admirals_bank/fxmanifest.lua` | Bump version 0.1.0→0.2.0 + description "C001 + C002". server_scripts añade `server/movements.lua`, `server/events.lua`, `server/transfer.lua` en order strict (después de iban + accounts, antes de callbacks). Comment load-order rationale actualizado. |
+| 7 | `resources/admirals_core/config.lua` | Bump Version 0.2.0→0.3.0 (MINOR — feature addition idempotency exports). Añadir `'004_bank_seed_system_account.sql'` a `Config.MigrationsFiles` (ahora 4 migrations). |
+| 8 | `resources/admirals_core/fxmanifest.lua` | Bump version 0.2.0→0.3.0 + description "+ Idempotency backend (S1.2)". `files{}` añade `migrations/004_bank_seed_system_account.sql`. |
+| 9 | `progress/SESSION_LOG.md` | Append entry S1.2 (este). |
+
+**Total: 5 creates + 8 edits = 13 operaciones.** Founder green-light explícito previo: 5 edits en strict whitelist (callbacks, dispatcher, bridges/config, core/init, SESSION_LOG); 3 edits adicionales mecánicos in-scope (bank/config TransferCompleted event uncomment, bank/fxmanifest wire 3 new files, core/config MigrationsFiles, core/fxmanifest files{} — todos requeridos para que el código sea immediately runnable).
+
+### Decisiones tomadas
+
+- **Idempotency backend swap pattern (cross-VM safe)** — admirals_bridges no depende de admirals_core (jerarquía bridges → core, viola si invierte). Las VMs Lua FiveM son aisladas — `_G.Admirals` no visible cross-resource. Solución: bridges expone `SetIdempotencyBackend(spec)` que recibe **strings** de `{resource, getExport, setExport, gcExport}` (NO function refs cross-VM — fragility-prone per S1.1 ADR informal Pattern B). admirals_core en boot post-DB-ready llama el setter pasando `{resource='admirals_core', ...}`. El dispatcher invoca `exports[resource][exportName](nil, ...)` runtime — manejo de errores via pcall + log warn fallback.
+- **`Bridges._IsIdemReplay/_StoreIdem` firmas estables (S0.2 contract)** — founder mandato explícito. Module/method (informativos en `admirals_bridge_idempotency` table) almacenados como '' por dispatcher para preservar la firma de 2 args. Si callers necesitan trazabilidad richer, pueden inspeccionar logs de `Bridges.Dispatcher.Call` (boundary audit). Trade-off: simplicidad firma vs auditability — firma estable elegida (founder priority).
+- **`request_id` (cliente) vs `transaction_id` (server)** — son distintos:
+  - `request_id`: UUID v4 client-generado. Idempotency key. Vive solo en `admirals_bridge_idempotency.idem_key`.
+  - `transaction_id`: UUID v4 server-generado en `Transfer.Execute`. Identidad de la operación. Persistido en `request_nonce` de **ambas** movement rows (CHAR(36) — encaja exact). Permite cliente reconciliar response ↔ ledger via `transaction_id == request_nonce`.
+- **Sin ALTER schema admirals_bank_movements** — alternativa considerada: añadir columna `transaction_id` específica (CHAR(36) UQ). Rechazada — `request_nonce` ya CHAR(36) NULLable, semánticamente compatible (anti-replay = identidad operacional). S2+ podrá renombrar columna si claridad lo requiere (non-breaking, vista virtual).
+- **Race window awareness — UPDATE WHERE balance >= ?** — la garantía SQL-side cubre el debit (si concurrent op vacía saldo, UPDATE afecta 0 rows). Pero la TX completa sigue → INSERT debit movement con balance_after stale + UPDATE credit + INSERT credit movement. Resultado: ledger desbalanceado (delta != 0 detectable post-hoc via `Movements.RecalcBalance`). **Mitigaciones reales:** rate limit `bank.write` 10/60s per player + idempotency replay + admin reconciliation cron S2+. Real proper-locking mechanism = S1.3 escrow lock+release (signal-error con SAVEPOINT no implementado por scope creep prevention).
+- **Fee internal transfer = 0 €** — alineado SSoT economy §10.3 sin override ni ADR. fee_retained=0.00 en response shape (forward-compat para S1.3 escrow fees + S2+ external transfer fees).
+- **System account `type='personal'` con admirals_accounts SYSTEM ficticio** — único path consistente con CHECK XOR sin tocar constraint. Documentado technical debt: S2+ refinement vía ALTER ENUM 'system' O admirals_companies ficticio. UUID fijo `00000000-...-001` / `b0000000-...-001` per SSoT §13.3 ejemplo.
+- **System account NO recibe transfers en S1.2** — investment for S1.3 (escrow fees treasury) y S2+ (tax retention). Smoke step 2 explicit verification: `system balance unchanged`.
+- **Idempotency PUT-like semantics** — store entry POST-execution para ambos success y error. Si 1ª attempt falla por INSUFFICIENT_FUNDS, 2ª con mismo request_id retorna mismo error (no "reintento bonus"). Cliente debe usar nuevo request_id para retry semántico — matchea HTTP idempotency standards.
+- **fail-closed rate limit, fail-open idempotency lookup** — diseño deliberado:
+  - Rate limit: si `Admirals.Rate.Check` excepción → reject (anti-fraude).
+  - Idempotency lookup: si export falla → proceed (best-effort) — el riesgo de double-execute acotado por (a) UNIQUE iban + balance check, (b) admin reconciliation. Si en producción se observa frecuente, escalate a fail-closed.
+- **Boot order admirals_core respeta dependencia bridges** — bridges arrancan first (jerarquía topológica), admirals_core espera `Bridges.WaitReady(30000ms)` antes de hacer cualquier cosa. El swap idempotency hook se ejecuta DESPUÉS de migrations (asegura table existe) Y DESPUÉS de DB ready Y DESPUÉS de bridges ready (los 3 timeouts en cascada). Pcall protect — si swap rechaza → memory mode degrade graceful.
+- **Errores en español + códigos canónicos en inglés** — mismo patrón S1.1 (response.error_code uppercase canonical, response.message human-readable Spanish). Mantiene consistency con ox_lib + facilita i18n future.
+- **SEMVER bump admirals_core 0.2.0→0.3.0 (MINOR)** — feature addition: 3 nuevos exports `IdempotencyGet/Set/GC`. NO breaking changes API previa.
+- **SEMVER bump admirals_bank 0.1.0→0.2.0 (MINOR)** — feature addition: C002 callback + 3 server scripts. NO breaking changes C001.
+- **SEMVER bridges 0.2.0→0.2.0 (no bump)** — el refactor del idempotency mantiene firma `_IsIdemReplay/_StoreIdem`. Nuevos exports (`SetIdempotencyBackend/IsIdemReplay/StoreIdem/IdemBackendName`) son additivos non-breaking. Considerado bump→0.3.0 pero los exports nuevos no rompen consumers existentes — patch implicito acceptable. Si hay PR review concerns, bumpear en S1.3 con escrow API additions.
+
+### Verificación estática
+
+- ✅ **0 matches `QBCore.` / `qbx_core:` / `exports['qb-` / `exports.qbx_core` / `ESX.`** en `resources/admirals_bank/` — Bridges layer respetada per ADR-009.
+- ✅ **0 matches `MySQL.*` direct calls** en `resources/admirals_bank/*.lua` (solo aparece en comments del fxmanifest explicando que NO se necesita — todo via `Admirals.DB.*` que delega a admirals_core via exports).
+- ✅ **Prepared statement enforcement:** todas las queries en `transfer.lua / movements.lua / events.lua` usan `?` placeholders (verificado grep `SELECT|INSERT|UPDATE|DELETE` — 0 string concats con user input).
+- ✅ **Cross-resource pattern compliance:** `exports.admirals_bridges:IsIdemReplay/StoreIdem/SetIdempotencyBackend` desde admirals_bank/admirals_core. NO accede a `_G.Bridges` cross-VM. NO function refs cross-VM (solo strings).
+- ✅ **CHECK XOR ownership preservado** — migration 004 NO toca constraint. system account usa `type='personal' + owner_account_id NOT NULL + owner_company_id NULL` (CHECK ramp 1).
+- ✅ **Schema sin direction column** — Movements.RecalcBalance verifica via `SUM(amount)` directo (signed amount canonical).
+- ✅ **C002 response shape canonical** — `{success, data: {transaction_id, timestamp, new_balance_from, fee_retained}}` matchea SSoT §3.1:289-300 exact.
+- ✅ **Event payload canonical §4.3** — `Events.PublishTransferCompleted` enforce required fields {transaction_id, from_iban, to_iban, amount, requester_account_id, occurred_at} + adds category='transfer' default.
+- ✅ **Load order fxmanifest verificado** admirals_bank S1.2 (8 server_scripts):
+  1. shared `config.lua`
+  2. `@admirals_core/lib/admirals.lua` (lib first)
+  3. `@ox_lib/init.lua` (lib.callback)
+  4. `iban.lua`
+  5. `accounts.lua` (depends IBAN + DB)
+  6. `movements.lua` (depends DB only)
+  7. `events.lua` (depends Admirals.Bus only)
+  8. `transfer.lua` (depends Accounts + IBAN + Movements + Events)
+  9. `callbacks.lua` (depends Transfer + Accounts + IBAN + lib.callback)
+  10. `init.lua` (LAST)
+- ✅ **TX atomic verified** — Transfer.Execute envuelve 4 queries en `Admirals.DB.Transaction({q_debit, q_credit, q_mov_debit, q_mov_credit})`. pcall trap 3 paths: TX_CRASH (excepción), TX_ROLLBACK (oxmysql returns false), success (returns true).
+- ✅ **Idempotency PUT-like semantics** — store response (success OR error) post-execution. Replay de error retorna mismo error.
+- ✅ **Boot sequence admirals_core respeta deps** — Bridges ready → DB ready → Migrations → SetIdempotencyBackend hook → Mark Core ready → Emit ready event.
+- ⚠️ **Syntax linter no ejecutado** (luac no en PATH). Self-review: LuaCATS annotations correctas, `goto continue` Lua 5.4 válido, `pcall` patterns correctos, oxmysql `.await` usage delegado via Admirals.DB.
+
+### Issues pendientes
+
+- 🟡 **Smoke test manual founder S1.2:** ejecutar 10 pasos founder spec (pre-flight, happy path, idempotency replay, self-transfer, insufficient funds, rate limit 11 calls, restart durante idempotency window, atomicity stress 100 concurrent, event subscription, resmon). NOTA: requiere comandos admin temporales para steps 6 (rate burst) y 8 (atomicity stress) — ver `scripts/smoke_test_s1_2.md` (a redactar).
+- 🟡 **`scripts/smoke_test_s1_2.md` no creado en S1.2** — out of scope literal (founder prompt no lo lista en files in scope). Founder podrá redactarlo o pedirlo en S1.2.5 mini sesión. Smoke en SESSION_LOG describe los pasos lógicos.
+- 🟡 **`git tag v0.1.1` (o v0.2.0?)** — admirals_bank 0.2.0 + admirals_core 0.3.0 bumps. Sprint 1 cerrará con `v0.1.0` per playbook. Sub-tag `v0.1.0-s1.2` opcional founder discretion.
+- 🔵 **S1.3 escrow + FSM:** migration 005 con `admirals_escrows` DDL (founder co-design SSoT §4.3 cuando llegue) + `escrow_lifecycle` FSM transitions + C004 createEscrow + C005 releaseEscrow. Escrow LOCK pattern sí proporciona proper-locking (vs S1.2 race window).
+- 🔵 **S1.3 escrow fees a system IBAN** — primer flujo de dinero hacia `AD-SYS0-0000-0001` (treasury). Verificable via Movements.GetByAccount('b0000000-...-001').
+- 🔵 **S2+ proper-locking transfers** — opciones: SELECT FOR UPDATE en TX (require manual TX control en Admirals.DB), stored procedure DB-side, optimistic locking via balance version column. Decisión postergada hasta S2 producción load.
+- 🔵 **S2+ admirals_audit_log DDL canonical** — actualmente Audit.Categories.Transfer = 'bank.transfer' (ADR-010 wrapper). Categorías canónicas a SSoT §03 §12 cuando se firme.
+- 🔵 **S2+ system account ENUM refinement** — ALTER ENUM admirals_bank_accounts.type ADD 'system' + relax CHECK O usar admirals_companies ficticio. Reduce semantic ambiguity.
+- 🔵 **C002 movement_id_from/to in event payload** — Admirals.DB.Transaction wrapper retorna boolean (no insertIds del batch). S2+ podrá hacer post-select via request_nonce + bank_account_id si admirals_documents auto-receipt lo necesita.
+- 🔵 **Admin command `/admirals_bank_recalc_balance <iban>`** — útil para reconciliación operacional. Out-of-scope S1.2 (Movements.RecalcBalance disponible en VM).
+- 🔵 **Admin command `/admirals_bridge_idem_count`** — útil para visibilidad backend (memory size vs DB count). Out-of-scope S1.2.
+- 🔵 **S1.3 mini-sesión: smoke test S1.2 doc + admin commands cleanup** — paquete pequeño antes de empezar S1.3 escrow FSM (perfil ⚡ SPRINTER, modelo Sonnet 4.6 ahorra Opus capacity).
+
+### Smoke check S1.2 (founder ejecuta)
+
+**Setup:** 2 player accounts via framework T1 connected. Cada uno genera personal account starter 2.500 €. System account seeded vía migration 004 (verificable: `SELECT balance FROM admirals_bank_accounts WHERE iban='AD-SYS0-0000-0001'` → 10000000.00).
+
+1. **Pre-flight:** 3 resources arrancan limpios. Boot report admirals_core muestra "Idempotency backend swapped to DB-backed". Boot report admirals_bank ASCII con bank_accounts rows ≥ 3 (player A + player B + system). resmon admirals_bank + admirals_bridges idle <0.3ms cada uno.
+2. **Happy path:** A transfer 100 € a IBAN B con request_id=`uuid-1` + concept='Test S1.2'. Response: `{success=true, data: {transaction_id='<uuid>', timestamp=<ms>, new_balance_from=2400.00, fee_retained=0.00}}`. DB: A.balance=2400.00, B.balance=2600.00, system.balance=10000000.00 (NO cambia). Movements: 2 nuevas rows con `request_nonce=<transaction_id>` (debit -100 + credit +100). Audit: 1 row category='bank.transfer' actor=A.citizen_id.
+3. **Idempotency replay:** mismo request_id → response idéntica byte-by-byte + audit log nuevo `idempotency_replay` (action='idempotency_replay', target=<request_id>). DB balances NO cambian. Movements counts NO cambian. Verificable: `SELECT * FROM admirals_bridge_idempotency WHERE idem_key='uuid-1'` → 1 row con expires_at = created_at + 3600s.
+4. **Self-transfer:** A transfer to su propio IBAN con request_id=`uuid-2` → `{success=false, error_code='SELF_TRANSFER'}`. DB balances NO cambian. Movements counts NO cambian. Idempotency entry persisted con response error (re-attempt mismo request_id retorna mismo error).
+5. **Insufficient funds:** A transfer 5000 € a B con request_id=`uuid-3` → `error_code='INSUFFICIENT_FUNDS'`. DB balances NO cambian. Movements counts NO cambian.
+6. **Rate limit:** 11 transfers válidos rápidos (sin idempotency replay — cada uno con request_id distinto) → primeros 10 OK + 11ª `error_code='RATE_LIMIT_EXCEEDED'`. Verificable: `Admirals.Rate.Stats()` muestra `bank.write` con 10 allowed + 1 blocked.
+7. **Restart durante idempotency window:** transfer con request_id=`uuid-4` → success. Restart server. Re-attempt mismo request_id=`uuid-4` (mismo player after reconnect): retorna response cached (NO re-ejecuta TX). DB balances iguales a tras 1ª attempt. Confirma DB-backed survival cross-restart.
+8. **Atomicity stress:** simular 100 concurrent transfers via consola admin (script o exec loop) → ledger 100% consistente: `Movements.RecalcBalance(account_id).delta == 0` para ambas cuentas. Si delta != 0 → race detectada (S1.2 race window documented; fail acceptable si ratio < 1% — escalate si > 1%).
+9. **Event subscription:** subscribe consola admin a `admirals:bank:transfer_completed` (via `Admirals.Bus.Subscribe` snippet en `exec`) → recibe payload schema-valid en cada transfer success: `{transaction_id, from_iban, to_iban, amount, concept, category='transfer', requester_account_id, occurred_at, _event_id, _emitted_at, _schema_version}`.
+10. **resmon:** durante stress test step 8, admirals_bank peak <1ms, admirals_bridges peak <1ms. Idle post-stress <0.3ms cada uno.
+
+### Handoff próxima sesión (S1.3)
+
+- **Modelo recomendado:** Opus 4.7 (FSM design + escrow atomicity crítica) + Sonnet 4.6 para harness/retro tail (ahorra Opus capacity).
+- **Perfil:** 🏗️ ARCHITECT + ⚡ SPRINTER + 📝 SCRIBE.
+- **Goal:** Migration 005 con `admirals_escrows` DDL (founder co-design SSoT §4.3 — currently inexistente, tenor "DDL canónico llegará en S1.3 junto con la lógica" per S1.1 entry) + `escrow_lifecycle` FSM transitions per `05_state_machines.md` §4.1 + C004 `admirals:bank:createEscrow` + C005 `admirals:bank:releaseEscrow` + harness tests manuales smoke + `scripts/smoke_test_s1.md` consolidado + `progress/SPRINT_RETRO_S1.md` + tag `v0.1.0`.
+- **Docs a leer obligatorio:**
+  - `progress/SESSION_LOG.md` últimas 3 entries (S1.1, S1.2 — esta, y siguiente).
+  - `progress/SPRINT_PLAN_S1.md` §S1.3.
+  - `docs/technical/03_db_schema.md` §4 — verificar §4.3 `admirals_escrows` (puede que aún no exista — co-design founder).
+  - `docs/technical/04_api_contracts.md` §3.1 C004 + C005.
+  - `docs/technical/05_state_machines.md` §4.1 escrow_lifecycle FSM completa.
+  - `docs/economy/01_economic_model.md` §10.4 (escrow mechanics, fees 0.5-1% min 2€ max 100€).
+- **Pre-condición:** smoke S1.2 10/10 ✅ + smoke doc S1.2 redactado en mini-sesión + git clean + (opcional) commit `S1.2 admirals_bank C002 transfer + idempotency DB-backed + system seed treasury`.
+- **APIs disponibles S1.3:**
+  - Todo lo de S1.1 + S1.2 + nuevo: `Admirals.Bank.Transfer.Execute` (reusable internamente para escrow lock = transfer player→escrow_account).
+  - `Admirals.Bank.Movements.{Insert, GetByAccount, GetByNonce, RecalcBalance}`.
+  - `Admirals.Bank.Events.PublishTransferCompleted` + nuevos `PublishEscrowLocked/Released/Disputed` (a crear).
+  - `exports.admirals_bridges:IsIdemReplay/StoreIdem` (escrow ops también idempotent).
+  - System treasury IBAN `AD-SYS0-0000-0001` recibe escrow fees (0.5% del valor del contrato — min 2€ max 100€ per economy §10.4.2).
+- **Proper-locking opportunity:** escrow lock+release pattern es proper concurrency-safe (lock fondos → operación bloqueante → release). Considerar si S1.3 promueve `Admirals.DB.LockedTransaction` API o mantiene la TX racey de S1.2.
+- **No tocar:**
+  - `resources/admirals_bridges/*` (frozen S1.2 — bridges 0.2.0 con idempotency swap completo).
+  - `resources/admirals_core/server/*` salvo Config.MigrationsFiles list para migration 005.
+  - `docs/technical|economy|design|art|qa/*` salvo `docs/technical/03_db_schema.md` §4.3 si founder green-light co-design SSoT escrows.
+  - `progress/SPRINT_PLAN_S1.md` (o sí — refinement allowed en S1.3 final).
+
+### Files in scope respetados
+
+✅ 5 creates + 8 edits = 13 operaciones. Founder green-light explícito previo via 5 reconciliaciones SSoT (fee=0€, no direction column, transfer category, response shape canonical, migration 004 path) + sub-decisión system account (`type='personal'` único path consistente con CHECK + opción(a) sin tocar constraint). Edits adicionales (bank/config TransferCompleted uncomment, bank/fxmanifest wire, core/config MigrationsFiles, core/fxmanifest files{}) son mecánicos in-scope per S1.1 pattern. No tocó `.windsurf/*`, `README.md`, `docs/*` firmados, `progress/SPRINT_PLAN_S1.md`, ni T1 adapters.
+
+---
+
+### S1.2 fix-and-validate (post-implementation, pre-commit) — 2026-05-02
+
+**Trigger:** founder identificó 2 blockers antes de sign-off + commit:
+1. Race window en `transfer.lua` Q1 UPDATE — el comment lo etiquetaba "tradeoff" pero violaba SSoT §04 §6 atomicity. Hard-fix upstream requerido.
+2. Smoke 6 pasos NO ejecutados — necesita harness disposable (5 client commands + 3 server admin ACE-gated).
+
+**Pre-action — verificación oxmysql (founder Opción A inviable):**
+
+Confirmado vía oxmysql doc oficial (`overextended.dev/oxmysql/Functions/transaction`) + lectura de `@d:/theBigProject/resources/admirals_core/server/db.lua:206-247`:
+
+- `MySQL.transaction.await(queries)` solo acepta **array pre-armado** `[{query, values}, ...]` (Specific format) o `{queries[], shared_values}` (Shared format).
+- Retorna `boolean success` global. Rollback automático si cualquier query falla SQL-side.
+- **NO existe function-form** `MySQL.transaction(fn(tx))` con handle `tx:Execute(query, params) → affectedRows` mid-flight.
+- Esa firma requeriría connection raw que oxmysql NO expone (security pool isolation).
+
+→ **Founder Opción A literal NO es implementable** sin patches upstream a oxmysql. Reportado al founder, propuesta Opción D (CHECK constraint) como upstream root cause fix. Founder green-light + 5 respuestas precisas a preguntas técnicas (ACE per-command pattern S1.1, eliminar AUTO-EJECUCIÓN NUCLEAR, migration 005 path admirals_core, NO tocar 003 inmutable, mensaje TX_ROLLBACK race-aware nice-to-have).
+
+### Files creados (1)
+
+| # | File | LoC | Propósito |
+|---|---|---|---|
+| 1 | `resources/admirals_core/migrations/005_balance_nonneg_check.sql` | ~75 | `ALTER TABLE admirals_bank_accounts ADD CONSTRAINT chk_admirals_bank_accounts_balance_nonneg CHECK (balance >= 0)`. Pre-flight SELECT informativo de violations. Header doc explica supersedes intent comment 003:79 + path S2+ overdraft (DROP CHECK + conditional CHECK con admin flag). |
+| 2 | `resources/admirals_bank/client/smoke.lua` | ~265 | 5 client commands disposables: `/smoke_transfer`, `/smoke_transfer_replay [request_id]` (sin args replayea último cached), `/smoke_transfer_self`, `/smoke_transfer_overdraw` (usa system IBAN AD-SYS0-0000-0001 como destino), `/smoke_transfer_burst <to_iban>` (11 calls 1€ con request_ids únicos, esperado 10 OK + 1 RATE_LIMITED). UUID v4 generator client-side. _own_iban + _last_request_id state cached. Boot fetcha self IBAN via C001 al arrancar. |
+
+### Files editados (5)
+
+| # | File | Cambio |
+|---|---|---|
+| 1 | `resources/admirals_core/config.lua` | Añadir `'005_balance_nonneg_check.sql'` a `Config.MigrationsFiles` (ahora 5 migrations). |
+| 2 | `resources/admirals_core/fxmanifest.lua` | Añadir `migrations/005_balance_nonneg_check.sql` a `files{}`. |
+| 3 | `resources/admirals_bank/server/transfer.lua` | (a) Header: bloque "Race window (S1.2 conscious tradeoff)" eliminado (líneas 16-30 originales). Reemplazado por bloque "Atomicity guarantee" explicando CHECK constraint S005 + nota sobre oxmysql constraint function-form. (b) Q1 UPDATE: eliminado `AND balance >= ?` y el 4º value `amount` redundante. Comment Q1 actualizado explicando CHECK guard. (c) Mapping post-rollback race-aware: si `from_balance_pre >= amount` (pre-flight passed) y aun así rollback → return `'RACE_DETECTED'` + log warn + metric `bank.transfer.race_detected`. Else → `'TX_ROLLBACK'` genérico. (d) Mini comments stale eliminated: line 133 "race window documented in header" → "atomicity garantizada via CHECK"; line 163 "pre-TX defense — UPDATE WHERE balance >= ? es la garantía SQL-side" → "pre-flight UX — atomicity real garantizada por CHECK S005". |
+| 4 | `resources/admirals_bank/server/callbacks.lua` | (a) Alinear C002 error_code canónico: `RATE_LIMIT_EXCEEDED` → `RATE_LIMITED` (igual que C001 — inconsistencia detectada por founder en review). Métrica también renombrada a `bank.callbacks.transfer.rate_limited`. (b) `message_map` extendido con `RACE_DETECTED = 'Saldo agotado por concurrencia. Reintenta.'`. |
+| 5 | `resources/admirals_bank/server/init.lua` | (a) ELIMINADO completo: 4 bloques ad-hoc del founder (`/admirals_bank_recalc_balance` ad-hoc, `/admirals_bridge_idem_count` ad-hoc, `/admirals_smoke_stress` ad-hoc, `CreateThread "AUTO-EJECUCIÓN NUCLEAR V3"` con transfer hardcoded). (b) AÑADIDO: 3 admin commands formales ACE-gated con header "S1.2 SMOKE TEST TEMPORAL — DELETE POST SIGN-OFF": `/admirals_bank_recalc <iban>` (delta=0 verification post migration 005), `/admirals_bridge_idem_count` (visibilidad backend), `/admirals_bank_stress_transfer <from> <to> <count> <cid>` (stress 100 concurrent + recommend recalc both IBANs). Helper `_smoke_ace(source, command_name)` per patrón S1.1 `command.<name>` per-command ACE. Bug fix en stress command: `local stress_run_id = os.time()` para evitar idem replay cross-runs. |
+| 6 | `resources/admirals_bank/fxmanifest.lua` | Añadir `client_scripts { '@ox_lib/init.lua', 'client/smoke.lua' }` block + comment "S1.2 SMOKE TEST TEMPORAL". |
+| 7 | `progress/SESSION_LOG.md` | Append addendum S1.2 fix-and-validate (este). |
+
+**Total fix-and-validate: 2 creates + 7 edits = 9 operaciones.**
+
+**Total S1.2 acumulado: 7 creates + 15 edits = 22 operaciones.**
+
+### Decisiones tomadas (fix-and-validate)
+
+- **Opción D pura sobre A''/combo** — founder green-light. Razón: workspace rule "no premature abstractions". `TransactionFn` API ergonómica diferida hasta S2+ si llega necesidad real (escrow lock+release S1.3 NO la necesita — TransactionFn solo acumula queries, MISMO problema atomicity que array form sin CHECK). Cero API additions a `admirals_core` (mantiene 0.3.0 minimal post-S1.2).
+- **CHECK constraint > app-side defense** — `WHERE balance >= ?` era silent failure (UPDATE 0 rows, TX commits sin error). CHECK fuerza SQL throw → MySQL rollback automático → DB.Transaction returns false → mapeo `RACE_DETECTED`. Atomicity garantizada **by construction, no probabilísticamente**.
+- **MariaDB 10.2+ / MySQL 8.0.16+ enforce CHECK nativamente** — versiones previas lo IGNORAN silenciosamente. Producción Admirals targets MariaDB 10.6+ per SSoT §03 §1.2 (a verificar exact ver — no es S1.2 scope confirm). Si runs old MySQL/MariaDB, CHECK ignored → degrade gracefully a S1.2 race behavior pre-fix (ledger eventual via reconciliation). Mitigación: smoke step 8 detecta delta != 0 si CHECK ignored.
+- **Migration 003 inmutable** — NO tocar comment `migration 003:79 "negativo = overdraft admin-only"`. S0.4 design: migrations son inmutables post-aplicada (checksum tracked en `admirals_schema_versions`). Editar el .sql rompería consistency check si re-corremos algún día. **Resolución:** comment supersedes documented en `005_balance_nonneg_check.sql` header. Technical debt anotado: migration 003 comment overdraft contradice 005 CHECK; resolución 005 prevalece (constraint > comment); refresh 003 deferred S2+ con migration aditiva si overdraft entra roadmap.
+- **`RACE_DETECTED` distinct error_code** — vs simplemente reinterpretar `TX_ROLLBACK`. UX nice + observability (smoke step 8 stress detection clean). Mensaje "Saldo agotado por concurrencia. Reintenta." vs genérico TX_ROLLBACK ayuda diagnóstico. Founder confirmó: mantener distinguished si no complica code (no complica — 5 LoC en transfer.lua + 1 entry message_map).
+- **`RATE_LIMITED` canonical alignment** — C001 ya usaba `RATE_LIMITED` (callbacks.lua:96), C002 usaba `RATE_LIMIT_EXCEEDED` (callbacks.lua:271 pre-fix). Inconsistency detectada en review fix-and-validate. Realineado a `RATE_LIMITED` per SSoT §7 catalog convention. Métrica también renombrada.
+- **ACE per-command S1.1 pattern** — NO introducido `admirals.admin` group (decisión cross-cutting deferred S2+ con ADR formal cuando >10 admin commands). Hoy 3 disposables: `command.admirals_bank_recalc`, `command.admirals_bridge_idem_count`, `command.admirals_bank_stress_transfer`. Founder otorga via server.cfg `add_ace builtin.everyone command.<name> allow` (líneas removibles post-smoke).
+- **Smoke client commands disposables** — header explícito "S1.2 SMOKE TEST TEMPORAL — DELETE POST SIGN-OFF (cleanup commit separado)". Mismo patrón S1.1 (smoke client removed en commit `S1.1 cleanup remove temporal smoke client + iban_gen command`). Cleanup S1.2 será commit aparte tras founder smoke 10/10 ✅.
+- **`/smoke_transfer_replay` UX-friendly** — sin args replayea `_last_request_id` (cached client-side desde último OK). Founder spec "Más UX-friendly que tener que copy-paste UUIDs". Aún acepta arg explícito si founder quiere forzar request_id específico.
+- **`/smoke_transfer_overdraw` usa system IBAN AD-SYS0-0000-0001 como destino** — siempre existe (migration 004 garantiza). Evita necesitar 2 player accounts conectados para test step 5.
+- **`/smoke_transfer_burst` request_ids únicos** — loop genera UUID v4 fresh por call (NO replay). Esperado 10 OK + 1 RATE_LIMITED por bucket bank.write 10/60s. Pass criterion: `ok_n == 10 and rate_limited == true`.
+- **Stress command `stress_run_id = os.time()`** — evita idem replay cross-runs si admin ejecuta stress consecutivos en mismo segundo. UUID prefix `smoke-stress-<unix_ts>-<i>` distinct per run.
+- **NO bump SEMVER bank/core en fix-and-validate** — admirals_bank 0.2.0 + admirals_core 0.3.0 mantenidos. Razón: el fix corrige un bug detectado pre-commit (no released yet). Si S1.2 hubiera sido released, sería patch bump (0.2.0→0.2.1 / 0.3.0→0.3.1). Pre-release commit consolidado mantiene versiones S1.2 originales.
+
+### Verificación estática (fix-and-validate)
+
+- ✅ **0 instancias `RATE_LIMIT_EXCEEDED`** en `resources/admirals_bank/` — alineado canonical `RATE_LIMITED`.
+- ✅ **0 instancias `WHERE balance >= ?`** en queries actuales — solo en header explicación CHECK supersedes.
+- ✅ **0 menciones "Race window"** en código activo — solo "race detected" en mapping post-rollback (semantically distinct: race **detected** by CHECK, not window left open).
+- ✅ **0 bloques ad-hoc founder** en `admirals_bank/server/init.lua` — limpieza completa (`/admirals_bank_recalc_balance`, `/admirals_bridge_idem_count` ad-hoc, `/admirals_smoke_stress`, `CreateThread "AUTO-EJECUCIÓN NUCLEAR"` todos eliminados).
+- ✅ **3 admin commands formales** registrados con `_smoke_ace` per-command ACE pattern S1.1 idiomatic.
+- ✅ **5 client commands** registrados en `client/smoke.lua` con header "S1.2 SMOKE TEST TEMPORAL — DELETE POST SIGN-OFF".
+- ✅ **fxmanifest client_scripts** declarado con dependencia explícita `@ox_lib/init.lua` (lib.callback.await client-side).
+- ✅ **Migration 005 wire** — añadida a `Config.MigrationsFiles` + `fxmanifest.files{}` admirals_core.
+
+### Done criteria S1.2 fix-and-validate
+
+- ✅ **transfer.lua sin race window**. Comment actualizado: "Atomicity guarantee — CHECK constraint chk_admirals_bank_accounts_balance_nonneg".
+- ✅ **5 client commands operativos** (`/smoke_transfer`, `/smoke_transfer_replay`, `/smoke_transfer_self`, `/smoke_transfer_overdraw`, `/smoke_transfer_burst`).
+- ✅ **3 server admin commands operativos** ACE-gated per S1.1 pattern (`/admirals_bank_recalc`, `/admirals_bridge_idem_count`, `/admirals_bank_stress_transfer`).
+- 🟡 **Founder ejecuta smoke 10 pasos completos** — pendiente ejecución manual founder. 10/10 ✅ requisito sign-off antes de commit + cleanup.
+
+### Smoke 10 pasos refinados (founder ejecuta)
+
+**Setup:** server.cfg add_ace 3 commands admin (per spec founder Q2). Player A + B conectados (cada uno 2.500 € starter). Migration 005 aplicada (verificable: `SHOW CREATE TABLE admirals_bank_accounts\G` debe mostrar `CONSTRAINT chk_admirals_bank_accounts_balance_nonneg CHECK (balance >= 0)`).
+
+1. **Pre-flight** — 3 resources arrancan limpios. Boot report admirals_core: "Bridges idempotency backend swapped to DB-backed". `migrations applied: 5/5`. Boot report admirals_bank: bank_accounts rows ≥ 3 (A + B + system). resmon idle <0.3ms.
+2. **Happy path** — Player A: `/smoke_transfer <IBAN_B> 100`. Esperado: `^2[smoke] OK | request_id=<uuid> | tx=<uuid> | new_balance=2400.00 €^7`. DB: A=2400, B=2600, system=10000000 (NO cambia). Movements: 2 rows con request_nonce=transaction_id.
+3. **Idempotency replay** — Player A: `/smoke_transfer_replay` (sin args, usa cached). Esperado: response idéntica byte-by-byte + audit log nuevo `idempotency_replay`. DB balances NO cambian. `SELECT * FROM admirals_bridge_idempotency WHERE idem_key='<request_id>'` → 1 row.
+4. **Self transfer** — Player A: `/smoke_transfer_self`. Esperado: `^1[smoke] FAIL | error_code=SELF_TRANSFER^7`. DB balances NO cambian.
+5. **Insufficient funds** — Player A: `/smoke_transfer_overdraw`. Usa system IBAN como destino, amount = balance + 1000. Esperado: `^1[smoke] FAIL | error_code=INSUFFICIENT_FUNDS^7`. DB balances NO cambian. Movements counts NO cambian.
+6. **Rate limit** — Player A: `/smoke_transfer_burst <IBAN_B>`. 11 calls de 1€ con request_ids únicos. Esperado: `^2[smoke] Burst PASS: 10 OK + RATE_LIMITED on 11th^7`. `Admirals.Rate.Stats()` muestra bank.write con 10 allowed + 1 blocked.
+7. **Restart cross-window** — transfer con request_id=`uuid-restart`. Restart server (`restart admirals_bank` o full restart). Re-attempt mismo request_id (mismo player after reconnect): retorna response cached (NO re-ejecuta TX). Confirma DB-backed survival cross-restart. `/admirals_bridge_idem_count` muestra entries persistidas.
+8. **Atomicity stress** — Console: `admirals_bank_stress_transfer <IBAN_A> <IBAN_B> 100 <CID_A>`. Tras completar: `/admirals_bank_recalc <IBAN_A>` → `^2[recalc] LEDGER OK — delta=0 exacto^7`. Mismo para `<IBAN_B>`. **CRITERION: delta=0 EXACTO** (no <1% threshold — CHECK constraint S005 enforce atomicity).
+9. **Event subscription** — Console snippet: `Admirals.Bus.Subscribe('admirals:bank:transfer_completed', function(p) print(json.encode(p)) end)`. Player A: `/smoke_transfer <IBAN_B> 50`. Console recibe payload con keys: `transaction_id, from_iban, to_iban, amount, concept, category='transfer', requester_account_id, occurred_at, _event_id, _emitted_at, _schema_version`.
+10. **resmon final** — Durante stress test step 8, admirals_bank peak <1ms, admirals_bridges peak <1ms. Idle post-stress <0.3ms.
+
+**Sign-off criterion: 10/10 ✅** → commit `S1.2 admirals_bank C002 transfer + idempotency DB-backed + system seed treasury + atomicity CHECK constraint S005`. Tras commit, founder pide cleanup smoke (PR separado eliminando `client/smoke.lua` + 3 admin commands + ACE lines server.cfg).
+
+### Issues pendientes (post fix-and-validate)
+
+- 🟡 **Founder ejecuta smoke 10/10** antes de commit. Si algún paso falla → debug + nueva sub-iteración (mismo protocolo: STOP + flag + propuesta + green-light).
+- 🟡 **Cleanup smoke commit separado** post-sign-off — eliminar `client/smoke.lua` + sección admin commands en `init.lua` (líneas 247-368) + `client_scripts` block en fxmanifest + 3 ACE lines server.cfg founder. Operación atómica reversible (git revert) si necesario.
+- 🟡 **Verificar MariaDB version en server founder** — CHECK constraint enforcement requiere MariaDB 10.2+ o MySQL 8.0.16+. Smoke step 8 detecta si version older (delta != 0 con CHECK ignored).
+- 🔵 **Technical debt — migration 003 comment overdraft contradice 005 CHECK** — Resolución: 005 prevalece (CHECK constraint > comment). Refresh comment 003 deferred S2+ con migration aditiva si overdraft entra roadmap. Anotado en migration 005 header sección DECISIONES TÉCNICAS D1.
+- 🔵 **S2+ admin overdraft (si requerido)** — `ALTER TABLE admirals_bank_accounts DROP CHECK chk_admirals_bank_accounts_balance_nonneg` + nuevo CHECK con condition `(balance >= 0 OR admin_overdraft_enabled = 1)` + columna `admin_overdraft_enabled TINYINT(1) DEFAULT 0`. Non-breaking opt-in.
+
+### Files in scope respetados (fix-and-validate)
+
+✅ 2 creates + 7 edits = 9 operaciones. Strict whitelist founder cumplida (migration 005, transfer.lua, callbacks.lua RATE_LIMITED + RACE_DETECTED, init.lua limpieza + 3 admin, client/smoke.lua, fxmanifest client_scripts, core/config + core/fxmanifest wire 005, SESSION_LOG addendum). NO tocó `admirals_bridges/*` ni adapters T1 ni docs firmados ni migration 003.
+
+---

@@ -23,7 +23,7 @@ local Config = Admirals.Bank.Config
 -- Version — SEMVER de admirals_bank. Bump MINOR si nueva callback, MAJOR si
 -- breaking change en firma C001-C005.
 -- -----------------------------------------------------------------------------
-Config.Version = '0.1.0'
+Config.Version = '0.2.0'
 
 -- =============================================================================
 -- IBAN generation (per docs/economy/01_economic_model.md §2.5)
@@ -130,7 +130,8 @@ Config.BankReadyEventName = 'admirals:bank:ready'
 Config.Events = {
   AccountCreated         = 'admirals:bank:account_created',
   StarterBalanceCredited = 'admirals:bank:starter_balance_credited',
-  -- S1.2+:
-  -- TransferCompleted = 'admirals:bank:transfer_completed',
+  -- S1.2:
+  TransferCompleted      = 'admirals:bank:transfer_completed',
+  -- S1.3+:
   -- EscrowCreated     = 'admirals:bank:escrow_created',
 }

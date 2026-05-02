@@ -243,3 +243,127 @@ CreateThread(function()
   -- ---------------------------------------------------------------------------
   _print_boot_report()
 end)
+
+-- =============================================================================
+-- S1.2 SMOKE TEST TEMPORAL — DELETE POST SIGN-OFF (cleanup commit separado).
+-- ACE-gated. Disposable infrastructure per workspace convention S1.x.
+--
+-- Founder otorga ACEs en server.cfg (líneas removibles post-smoke):
+--   add_ace builtin.everyone command.admirals_bank_stress_transfer allow
+--   add_ace builtin.everyone command.admirals_bank_recalc          allow
+--   add_ace builtin.everyone command.admirals_bridge_idem_count    allow
+--
+-- Sigue patrón _is_admin S1.1: source==0 (console) → true; else
+-- IsPlayerAceAllowed(source, 'command.<name>'). Per-command ACE.
+-- =============================================================================
+
+local function _smoke_ace(source, command_name)
+  if source == 0 then return true end
+  return IsPlayerAceAllowed(source, 'command.' .. command_name)
+end
+
+-- ----------------------------------------------------------------------------
+-- /admirals_bank_recalc <iban>
+-- Reconciliación: SUM(amount) over movements vs admirals_bank_accounts.balance.
+-- Smoke test step 8 verify (delta == 0 exacto post-migration 005 CHECK).
+-- ----------------------------------------------------------------------------
+RegisterCommand('admirals_bank_recalc', function(source, args)
+  if not _smoke_ace(source, 'admirals_bank_recalc') then return end
+  local iban = args[1]
+  if not iban then print('Usage: admirals_bank_recalc <IBAN>') return end
+
+  local acc = Accounts.GetByIban(iban)
+  if not acc then print('IBAN not found: ' .. iban) return end
+
+  local result = Admirals.Bank.Movements.RecalcBalance(acc.id)
+  if not result then print('RecalcBalance returned nil for ' .. iban) return end
+
+  local declared = result.balance
+  local sum_mov  = result.sum_movements
+  local delta    = result.delta
+  local abs_delta = math.abs(delta)
+  print(string.format(
+    '[recalc] %s | declared=%.2f | sum_movements=%.2f | delta=%.4f',
+    iban, declared, sum_mov, delta
+  ))
+  if abs_delta == 0.0 then
+    print('^2[recalc] LEDGER OK — delta=0 exacto (S1.2 fix-and-validate)^7')
+  else
+    print(string.format(
+      '^1[recalc] LEDGER INCONSISTENCY — delta=%.4f (escalate — CHECK constraint should prevent this)^7',
+      delta
+    ))
+  end
+end, true)
+
+-- ----------------------------------------------------------------------------
+-- /admirals_bridge_idem_count
+-- Visibilidad backend idempotency activo + entries count (DB mode).
+-- ----------------------------------------------------------------------------
+RegisterCommand('admirals_bridge_idem_count', function(source)
+  if not _smoke_ace(source, 'admirals_bridge_idem_count') then return end
+
+  local backend_name_ok, backend_name = pcall(function()
+    return exports.admirals_bridges:IdemBackendName()
+  end)
+  local name = backend_name_ok and tostring(backend_name) or 'unknown'
+
+  if name:sub(1, 2) == 'db' then
+    local cnt = Admirals.DB.Scalar(
+      'SELECT COUNT(*) FROM admirals_bridge_idempotency WHERE expires_at > UNIX_TIMESTAMP()', {}
+    ) or 'N/A'
+    print(string.format('[idem] backend=%s | active_entries=%s', name, tostring(cnt)))
+  else
+    print(string.format('[idem] backend=%s | (memory mode — entries N/A cross-VM)', name))
+  end
+end, true)
+
+-- ----------------------------------------------------------------------------
+-- /admirals_bank_stress_transfer <from_iban> <to_iban> <count> <from_citizen_id>
+-- Stress test paso 8: N concurrent Transfer.Execute con request_ids únicos.
+-- Tras stress, ejecutar /admirals_bank_recalc <from_iban> y <to_iban> para
+-- verificar delta=0 exacto (atomicity garantizada via CHECK constraint S005).
+-- ----------------------------------------------------------------------------
+RegisterCommand('admirals_bank_stress_transfer', function(source, args)
+  if not _smoke_ace(source, 'admirals_bank_stress_transfer') then return end
+
+  local from_iban = args[1]
+  local to_iban   = args[2]
+  local count     = tonumber(args[3]) or 10
+  local from_cid  = args[4]
+
+  if not from_iban or not to_iban or not from_cid then
+    print('Usage: admirals_bank_stress_transfer <from_iban> <to_iban> <count> <from_citizen_id>')
+    return
+  end
+
+  local ok_count, err_count = 0, 0
+  local err_breakdown = {}
+  local start_ms = GetGameTimer()
+  local stress_run_id = os.time()  -- distintivo por run para evitar idem replay cross-runs
+  for i = 1, count do
+    local tid = string.format('smoke-stress-%d-%04d', stress_run_id, i)
+    local s, _, ec = Admirals.Bank.Transfer.Execute(
+      from_cid, from_iban, to_iban, 1.00, 'Stress ' .. i, tid
+    )
+    if s then
+      ok_count = ok_count + 1
+    else
+      err_count = err_count + 1
+      err_breakdown[ec or 'NIL'] = (err_breakdown[ec or 'NIL'] or 0) + 1
+    end
+  end
+  local elapsed_ms = GetGameTimer() - start_ms
+
+  print(string.format('[stress] count=%d ok=%d errors=%d elapsed=%dms',
+    count, ok_count, err_count, elapsed_ms))
+  if err_count > 0 then
+    for ec, n in pairs(err_breakdown) do
+      print(string.format('  err[%s] = %d', ec, n))
+    end
+  end
+  print('[stress] Tras esto ejecuta:')
+  print(string.format('  admirals_bank_recalc %s', from_iban))
+  print(string.format('  admirals_bank_recalc %s', to_iban))
+  print('[stress] Esperado: delta=0 EXACTO en ambas (CHECK constraint S005 enforce).')
+end, true)

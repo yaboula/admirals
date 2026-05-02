@@ -3,8 +3,8 @@ game      'gta5'
 lua54     'yes'
 
 author      'Admirals'
-version     '0.1.0'
-description 'Admirals Bank — IBAN accounts, ledger movements, banking callbacks (C001-C005). Sprint S1.'
+version     '0.2.0'
+description 'Admirals Bank — IBAN accounts, ledger movements, banking callbacks (C001 + C002). Sprint S1.'
 
 dependencies {
   'oxmysql',
@@ -39,13 +39,17 @@ dependencies {
 --                                    no re-registramos).
 --                                 d. Mark Bank._ready + emit admirals:bank:ready.
 --
---   No client_scripts en S1.1 (callbacks via ox_lib server-side; client UI
---   llega S1.5+ con admirals_tablet).
+--   client_scripts (S1.2 SMOKE TEST TEMPORAL — DELETE post sign-off):
+--     - @ox_lib/init.lua    — lib.callback.await en client.
+--     - client/smoke.lua    — 5 commands /smoke_transfer* para harness manual
+--                             founder smoke 10 pasos. Disposable infrastructure.
+--                             Se elimina en cleanup commit S1.2 final.
 -- =============================================================================
 
 shared_scripts {
   'config.lua',
 }
+
 
 server_scripts {
   -- oxmysql global helper — necesario porque admirals_bank usa Admirals.DB
@@ -61,10 +65,30 @@ server_scripts {
   '@ox_lib/init.lua',
 
   -- Domain layer (depend on Admirals.* helper).
+  -- Order strict:
+  --   iban       — pure functions, no deps domain (DB only).
+  --   accounts   — depends on IBAN.
+  --   movements  — DB helpers sobre admirals_bank_movements (S1.2).
+  --   events     — Bus.Publish wrappers (S1.2). Depends Admirals.Bus only.
+  --   transfer   — Transfer.Execute. Depends Accounts + IBAN + DB + Events.
+  --   callbacks  — C001 (S1.1) + C002 (S1.2). Depends Transfer + Accounts.
   'server/iban.lua',
   'server/accounts.lua',
+  'server/movements.lua',
+  'server/events.lua',
+  'server/transfer.lua',
   'server/callbacks.lua',
 
   -- Boot orchestration (LAST).
   'server/init.lua',
+}
+
+-- =============================================================================
+-- S1.2 SMOKE TEST TEMPORAL — DELETE post sign-off (cleanup commit separado).
+-- 5 client commands: /smoke_transfer /smoke_transfer_replay /smoke_transfer_self
+-- /smoke_transfer_overdraw /smoke_transfer_burst.
+-- =============================================================================
+client_scripts {
+  '@ox_lib/init.lua',
+  'client/smoke.lua',
 }

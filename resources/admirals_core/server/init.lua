@@ -185,6 +185,84 @@ exports('MetricsSnapshot', function() return Metrics.Snapshot() end)
 exports('MetricsReset',    function() return Metrics.Reset() end)
 
 -- ----------------------------------------------------------------------------
+-- Idempotency backend (3 exports — S1.2).
+--
+-- Estos exports implementan el backend interface esperado por
+-- admirals_bridges/server/dispatcher.lua (`Bridges.SetIdempotencyBackend`).
+--
+-- Persisten en `admirals_bridge_idempotency` table (creada en migration 002,
+-- S0.4). El swap del backend se ejecuta abajo en el boot post-DB-ready.
+--
+-- TTL = Config.IdempotencyTTLSec (3600s default — bridges/config.lua:66).
+-- Cleanup vía export GC (admirals_bridges GC thread cada 5 min).
+-- ----------------------------------------------------------------------------
+
+-- IdempotencyGet — devuelve { result = lua_table, expires = unix_ts } | nil.
+-- Filter expires_at > NOW() en SQL — registros expirados no se devuelven.
+exports('IdempotencyGet', function(key)
+  if type(key) ~= 'string' or key == '' then return nil end
+  local row = DB.FetchOne([[
+    SELECT result_json, expires_at
+    FROM admirals_bridge_idempotency
+    WHERE idem_key = ? AND expires_at > UNIX_TIMESTAMP()
+    LIMIT 1
+  ]], { key })
+  if not row then return nil end
+  local ok, decoded = pcall(json.decode, row.result_json or '')
+  if not ok or decoded == nil then
+    -- result_json corruption (shouldn't happen — Set encodes valid JSON).
+    Log.Warn('IdempotencyGet: failed decode for key %s', key)
+    return nil
+  end
+  return {
+    result  = decoded,
+    expires = tonumber(row.expires_at) or 0,
+  }
+end)
+
+-- IdempotencySet — UPSERT entry con TTL (default 3600s).
+-- module/method = '' default — la firma estable de Bridges._StoreIdem(key, result)
+-- no expone esos campos (informativos en la tabla, no parte de correctness).
+exports('IdempotencySet', function(key, result_table, ttl_sec)
+  if type(key) ~= 'string' or key == '' then return false end
+  if type(result_table) == nil then return false end
+
+  local ok_enc, encoded = pcall(json.encode, result_table)
+  if not ok_enc or type(encoded) ~= 'string' then
+    Log.Warn('IdempotencySet: encode failed for key %s', key)
+    return false
+  end
+
+  local now = os.time()
+  local expires = now + (tonumber(ttl_sec) or 3600)
+
+  DB.Execute([[
+    INSERT INTO admirals_bridge_idempotency
+      (idem_key, module, method, result_json, created_at, expires_at)
+    VALUES (?, '', '', ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      result_json = VALUES(result_json),
+      expires_at  = VALUES(expires_at)
+  ]], { key, encoded, now, expires })
+
+  return true
+end)
+
+-- IdempotencyGC — purga rows expired. Devuelve número eliminado.
+exports('IdempotencyGC', function()
+  -- DB.Execute returns affectedRows en oxmysql.
+  local affected = DB.Execute(
+    'DELETE FROM admirals_bridge_idempotency WHERE expires_at < UNIX_TIMESTAMP()',
+    {}
+  )
+  local n = tonumber(affected) or 0
+  if n > 0 then
+    Metrics.Counter('idempotency.gc_purged', n)
+  end
+  return n
+end)
+
+-- ----------------------------------------------------------------------------
 -- Bus.Publish wrap — añade fanout server-wide cross-resource via TriggerEvent.
 --
 -- Comportamiento:
@@ -346,6 +424,30 @@ CreateThread(function()
     if Config.MigrationsFailFast then
       error('[admirals_core] Migrations reported errors', 0)
     end
+  end
+
+  -- -------------------------------------------------------------------------
+  -- 3.5. Swap admirals_bridges idempotency backend a DB-backed (S1.2).
+  --
+  -- Pre-condition: DB ready + migration 002 aplicada (admirals_bridge_idempotency
+  -- table existe). Si swap falla → log warn (no fatal — fallback memory backend
+  -- sigue funcional, pero pierde state cross-restart).
+  -- -------------------------------------------------------------------------
+  local idem_swap_ok, idem_swap_err = pcall(function()
+    return exports.admirals_bridges:SetIdempotencyBackend({
+      resource  = 'admirals_core',
+      getExport = 'IdempotencyGet',
+      setExport = 'IdempotencySet',
+      gcExport  = 'IdempotencyGC',
+    })
+  end)
+  if not idem_swap_ok then
+    Log.Warn('SetIdempotencyBackend swap call failed: %s — bridges remains in memory mode',
+      tostring(idem_swap_err))
+  elseif idem_swap_err == false then
+    Log.Warn('SetIdempotencyBackend rejected by bridges (invalid spec) — bridges remains in memory mode')
+  else
+    Log.Info('Bridges idempotency backend swapped to DB-backed (admirals_bridge_idempotency)')
   end
 
   -- -------------------------------------------------------------------------

@@ -60,9 +60,26 @@ Config.BankMode = GetConvar('admirals_bridge_bank_mode', 'standalone')
 -- -----------------------------------------------------------------------------
 -- Idempotency TTL — cuánto tiempo mantiene `Bridges._StoreIdem` un key antes
 -- de expirar. Per doc §4.3: 1h. S0.2 impl es in-memory (se pierde en reboot),
--- promovido a DB-backed en S0.4 junto con admirals_bridge_idempotency table.
+-- promovido a DB-backed en S1.2 junto con admirals_bridge_idempotency table
+-- (migration 002, ya creada en S0.4).
 -- -----------------------------------------------------------------------------
 Config.IdempotencyTTLSec = 3600
+
+-- -----------------------------------------------------------------------------
+-- Idempotency backend (S1.2):
+--   'memory' — in-memory store (default boot — sobrevive sin DB).
+--   'db'     — admirals_bridge_idempotency table (DB-backed, persiste cross-restart).
+--
+-- ESTE valor es informativo / fallback. El backend real se configura via
+-- `Bridges.SetIdempotencyBackend(spec)` exportado por dispatcher.lua —
+-- admirals_core lo invoca en su boot post-DB-ready apuntando a 'db'.
+--
+-- Razón cross-resource:
+--   `admirals_bridges` no puede usar `Admirals.DB` (no depende de admirals_core,
+--   y _G.Admirals no está en su VM). El swap llega vía hook con resource +
+--   export names (strings — NO function refs cross-VM, fragility-prone).
+-- -----------------------------------------------------------------------------
+Config.IdempotencyBackend = GetConvar('admirals_bridge_idempotency_backend', 'memory')
 
 -- -----------------------------------------------------------------------------
 -- Detection priority (per doc §10.1, líneas 688-695).
