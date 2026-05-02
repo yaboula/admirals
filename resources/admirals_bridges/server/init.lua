@@ -159,3 +159,20 @@ function Bridges.WaitReady(timeout_ms)
   end
   return Bridges._ready == true
 end
+
+-- -----------------------------------------------------------------------------
+-- Cross-resource exports — Lua VMs are isolated per FiveM resource, so
+-- consumers (admirals_core, future admirals_*) cannot read _G.Bridges.
+-- They must call:
+--   exports.admirals_bridges:IsReady()
+--   exports.admirals_bridges:WaitReady(timeout_ms)
+--   exports.admirals_bridges:GetActive()    -- { bank='qbox', ... }
+-- -----------------------------------------------------------------------------
+exports('IsReady', Bridges.IsReady)
+exports('WaitReady', Bridges.WaitReady)
+exports('GetActive', function()
+  -- Read-only snapshot of active adapter names per module.
+  local snap = {}
+  for k, v in pairs(Bridges._active or {}) do snap[k] = v end
+  return snap
+end)

@@ -23,4 +23,4 @@ CREATE TABLE IF NOT EXISTS admirals_schema_versions (
 
   PRIMARY KEY (version),
   UNIQUE KEY uq_admirals_schema_versions_filename (filename)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

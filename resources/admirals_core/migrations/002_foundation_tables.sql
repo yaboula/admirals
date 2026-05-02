@@ -38,14 +38,16 @@ CREATE TABLE IF NOT EXISTS admirals_accounts (
   framework_source  VARCHAR(32)   NOT NULL COMMENT 'qbox|qbcore|esx|native',
   alias             VARCHAR(64)   NOT NULL COMMENT 'nombre mostrado Admirals',
   created_at        INT UNSIGNED  NOT NULL DEFAULT (UNIX_TIMESTAMP()),
-  updated_at        INT UNSIGNED  NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
+  -- updated_at: app-managed (Admirals.DB.Execute sets on UPDATE).
+  -- ON UPDATE (UNIX_TIMESTAMP()) is MariaDB-illegal for non-TIMESTAMP columns.
+  updated_at        INT UNSIGNED  NOT NULL DEFAULT (UNIX_TIMESTAMP()),
   last_login_at     INT UNSIGNED  NULL,
 
   PRIMARY KEY (id),
   UNIQUE KEY uq_admirals_accounts_char_framework (char_id, framework_source),
   KEY idx_admirals_accounts_char_id (char_id),
   KEY idx_admirals_accounts_framework (framework_source)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- ----------------------------------------------------------------------------
@@ -87,7 +89,7 @@ CREATE TABLE IF NOT EXISTS admirals_audit_log (
   KEY idx_admirals_audit_log_target (target_type, target_id, ts DESC),
   KEY idx_admirals_audit_log_category (category, ts DESC),
   KEY idx_admirals_audit_log_request (request_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- ----------------------------------------------------------------------------
@@ -111,4 +113,4 @@ CREATE TABLE IF NOT EXISTS admirals_bridge_idempotency (
   PRIMARY KEY (idem_key),
   KEY idx_admirals_bridge_idempotency_expires (expires_at),
   KEY idx_admirals_bridge_idempotency_module_method (module, method, created_at DESC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

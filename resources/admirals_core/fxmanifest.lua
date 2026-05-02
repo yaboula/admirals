@@ -51,6 +51,10 @@ shared_scripts {
 }
 
 server_scripts {
+  -- oxmysql MySQL global helper — MUST be first; injects `MySQL.scalar/.query/.insert/.transaction.await`
+  -- (oxmysql does NOT expose this global cross-resource without including this file).
+  '@oxmysql/lib/MySQL.lua',
+
   -- Foundation (no cross-deps)
   'server/logger.lua',
   'server/metrics.lua',

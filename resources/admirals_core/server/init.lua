@@ -169,20 +169,15 @@ CreateThread(function()
     error('[admirals_core] admirals_bridges not started', 0)
   end
 
-  -- Use global Bridges.WaitReady si existe (mismo estado).
+  -- Cross-resource: each FiveM resource has its own Lua VM, so _G.Bridges
+  -- is NOT shared. Consumers MUST go through exports.admirals_bridges.
   local br_ready = false
-  if _G.Bridges and _G.Bridges.WaitReady then
-    br_ready = _G.Bridges.WaitReady(Config.BridgesWaitTimeoutMs)
-  else
-    -- Fallback: poll event.
-    local start = GetGameTimer()
-    while (GetGameTimer() - start) < Config.BridgesWaitTimeoutMs do
-      if _G.Bridges and _G.Bridges.IsReady and _G.Bridges.IsReady() then
-        br_ready = true
-        break
-      end
-      Wait(100)
-    end
+  local wait_ok, wait_err = pcall(function()
+    br_ready = exports.admirals_bridges:WaitReady(Config.BridgesWaitTimeoutMs) == true
+  end)
+  if not wait_ok then
+    Log.Error('exports.admirals_bridges:WaitReady call failed: %s', tostring(wait_err))
+    error('[admirals_core] Bridges export call failed', 0)
   end
 
   if not br_ready then
@@ -190,7 +185,18 @@ CreateThread(function()
       Config.BridgesWaitTimeoutMs)
     error('[admirals_core] Bridges not ready', 0)
   end
-  Log.Info('admirals_bridges ready (v%s)', _G.Config and _G.Config.Version or '?')
+
+  -- Snapshot active adapters for boot report.
+  local active_ok, active_snap = pcall(function()
+    return exports.admirals_bridges:GetActive()
+  end)
+  if active_ok and type(active_snap) == 'table' then
+    local parts = {}
+    for k, v in pairs(active_snap) do parts[#parts + 1] = k .. '=' .. tostring(v) end
+    Log.Info('admirals_bridges ready. Active: %s', table.concat(parts, ', '))
+  else
+    Log.Info('admirals_bridges ready')
+  end
 
   -- -------------------------------------------------------------------------
   -- 2. Wait DB ready (oxmysql conectado).
