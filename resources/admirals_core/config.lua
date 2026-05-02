@@ -23,7 +23,7 @@ local Config = Admirals.Config
 -- Version — SEMVER de la API pública Admirals.Core.
 -- Bump MAJOR si breaking change en firma. MINOR si añade método.
 -- -----------------------------------------------------------------------------
-Config.Version = '0.1.0'
+Config.Version = '0.2.0'
 
 -- -----------------------------------------------------------------------------
 -- Environment — convar `admirals_env` (development|staging|production).
@@ -165,6 +165,7 @@ Config.MigrationsChecksumCheck = true
 Config.MigrationsFiles = {
   '001_schema_versions.sql',
   '002_foundation_tables.sql',
+  '003_bank_schema.sql',
 }
 
 -- =============================================================================
@@ -173,7 +174,7 @@ Config.MigrationsFiles = {
 
 -- Timeout esperando que Bridges._ready = true antes de migrations.
 -- Si excede → hard-fail (server no puede arrancar sin bridges).
-Config.BridgesWaitTimeoutMs = 15000
+Config.BridgesWaitTimeoutMs = 30000
 
 -- Tras migrations OK, emitir admirals:core:ready → consumers arrancan.
 Config.CoreReadyEventName = 'admirals:core:ready'

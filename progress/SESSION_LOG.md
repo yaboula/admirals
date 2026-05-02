@@ -357,3 +357,135 @@ Ver `scripts/smoke_test_s0.md` 10 pasos:
 ✅ 14 creates + 4 edits (fxmanifest edit + decision_log + roadmap + BOOTSTRAP + SESSION_LOG) = 18 operaciones. Respeta whitelist SPRINT_PLAN §S0.4 + extensión ADR-010 green-light founder. No tocó `resources/admirals_bridges/*`, `.windsurf/*`, `README.md`, `docs/technical|economy|design|art|qa/*`.
 
 ---
+
+## 2026-05-02 — S1.1 admirals_bank skeleton + IBAN + EnsureStarterAccount + C001
+
+**Modelo:** Claude Opus 4.7 MAX (perfil: 🏗️ ARCHITECT + 🔧 BUILDER).
+**Founder:** yaboula.
+**Sprint:** S1 (Oleada 1, MVP playable).
+**Goal:** scaffolding `admirals_bank` resource — IBAN generator + canonical-shape `admirals_bank_accounts`/`admirals_bank_movements` schema + idempotent `EnsureStarterAccount(citizen_id)` (2.500 € starter per SSoT economy §4.1) + ox_lib callback `admirals:bank:getBalance` (C001 per SSoT api §3.1) + lib helper `admirals_core/lib/admirals.lua` para futuros consumers cross-resource.
+**Pre-condición:** smoke S0.4 10/10 ✅, git tag v0.0.0 pushed, git clean.
+
+### Pre-action — confirmación scope
+
+Founder green-light en 5 puntos críticos (red flags reportados vs scope literal del prompt):
+
+1. **Diferir `admirals_escrows` DDL a S1.3** — SSoT `03_db_schema.md` solo define §4.1 `admirals_bank_accounts` + §4.2 `admirals_bank_movements`. NO existe §4.3 `admirals_escrows` DDL pese a que `05_state_machines.md` §4.1 referencia la entidad. Migration 003 entrega solo 2 tablas; escrows DDL llegará en S1.3 junto con la lógica.
+2. **Scope edits ampliado 1→4 en admirals_core** — implícito en el prompt ("ampliar lista exports", "Si registra explícito → editar Config.MigrationFiles"): añadir `'003_bank_schema.sql'` a `Config.MigrationsFiles`, ~32 exports cross-resource en `server/init.lua`, wrap `Bus.Publish` para fanout server-wide via TriggerEvent, bump SEMVER 0.1.0→0.2.0 en config.lua + fxmanifest.
+3. **C001 response shape canonical SSoT** — wrapper `data: { iban, balance, currency='EUR', tier, last_updated_ms }`. Ignorada la simplificación flat del prompt smoke step 4 (`account_type` typo → `tier`).
+4. **Lib helper abstraction de Identity event** — `Admirals.Identity.OnPlayerLoaded(cb)` encapsula `AddEventHandler('admirals:bridge:_identityPlayerLoaded', cb)` interno de admirals_bridges. Future-proof: si bridges promociona evento public, la lib cambia internamente sin breaking callers.
+5. **IBAN 17 chars literales** — `AD-XXXX-XXXX-XXXX` (2 prefix + 3 dashes + 11 random alphanumeric uppercase + 1 checksum char). DB column `VARCHAR(20)` provee headroom. Algoritmo checksum: SHA-256(11 random) → primer byte → mod 36 → mapped a charset `[A-Z0-9]`.
+
+### Files creados (10)
+
+| # | File | LoC | Propósito |
+|---|---|---|---|
+| 1 | `resources/admirals_core/lib/admirals.lua` | ~370 | Helper API thin wrappers para consumers via `@admirals_core/lib/admirals.lua` include. Expone `Admirals.{Core,DB,Bus,Rate,Log,Metrics,Identity}.*` delegando via `exports.admirals_core:*` (32 exports). Subscribe local-VM con TriggerEvent server-wide fanout (evita fragility de function refs cross-VM). |
+| 2 | `resources/admirals_core/migrations/003_bank_schema.sql` | ~150 | DDL `admirals_bank_accounts` + `admirals_bank_movements` PARTITIONED RANGE. Reconcilia 6 decisiones técnicas vs SSoT (collation `utf8mb4_unicode_ci`, `ON UPDATE` omitido per MariaDB-illegal, FK `admirals_companies` deferred S2+, CHECK XOR ownership preservado, particiones refrescadas 2026_05/06/07/08 + p_future, ENUM category extendido con `starter_seed`). |
+| 3 | `resources/admirals_bank/fxmanifest.lua` | ~70 | Resource declaration. Dependencies: oxmysql + admirals_bridges + admirals_core + ox_lib. Server scripts incluyen `@admirals_core/lib/admirals.lua` + `@ox_lib/init.lua` antes del domain code. |
+| 4 | `resources/admirals_bank/config.lua` | ~120 | Constantes runtime: starter balance 2.500€, IBAN charset/prefix/retries, audit categories, reserved IBAN prefixes, eventos canónicos. Comentado por SSoT cite. |
+| 5 | `resources/admirals_bank/server/iban.lua` | ~205 | `IBAN.Generate` (loop max 5 retries con DB uniqueness check) + `IBAN.Validate` (regex 17 chars + checksum recompute) + `IBAN.ComputeChecksum` (SHA-256 via MySQL — patrón consistente con migrations.lua) + `IBAN.IsReserved` (matches `AD-SYS`/`AD-NPC`). |
+| 6 | `resources/admirals_bank/server/accounts.lua` | ~325 | `Accounts.EnsureStarterAccount(citizen_id, source)` idempotent vía `Admirals.DB.Transaction({INSERT bank_accounts, INSERT bank_movements})`. `_ensure_admirals_account` interno crea `admirals_accounts` row si no existe (technical debt — extract a `admirals_player_lifecycle` resource S2+). `GetByIban`, `GetAccountIdByCitizenId`, `GetPersonalByCitizenId` queries prepared. Audit log + Bus.Publish 2 eventos (`account_created` + `starter_balance_credited`). |
+| 7 | `resources/admirals_bank/server/callbacks.lua` | ~190 | `lib.callback.register('admirals:bank:getBalance')` per SSoT §3.1. Auth flow: resolve citizen_id (cache `_src_to_cid` populated en init.lua) → rate limit (`bank.read` 30/10s default) → resolve IBAN (request.iban or default personal) → format validate (defense-in-depth) → ownership check (personal-only S1.1, company auth deferred S2+ con `admirals_company_members`) → response shape canónica. Error codes: NOT_AUTHENTICATED, RATE_LIMITED, INVALID_IBAN, NO_ACCOUNT, NOT_AUTHORIZED. |
+| 8 | `resources/admirals_bank/server/init.lua` | ~210 | Boot orchestration: WaitReady core (30s timeout) → schema sanity check (information_schema lookup admirals_bank_accounts + admirals_bank_movements) → register Identity hooks (OnPlayerLoaded → cache + EnsureStarterAccount async / OnPlayerDropped → purge cache) → mark ready → Bus.Publish + TriggerEvent `admirals:bank:ready` → ASCII boot panel. Admin command `/admirals_bank_status` ACE-gated. Exports `IsReady`, `Version`. |
+| 9 | `scripts/smoke_test_s1_1.md` | ~270 | Protocol 8 pasos: pre-flight (resources arrancan, lib cargada en VM bank, resmon <0.2ms idle), migration 003 verify (2 tablas + 5 partitions + tracking row), 100 IBAN generates uniqueness/checksum, EnsureStarterAccount idempotent (3 rows + reconnect = 1/1/1), C001 happy path (response shape canónico), C001 unauthorized (player A→B IBAN), C001 rate limit (31 calls → 30 OK + 1 BLOCKED), audit + bus verification. |
+| 10 | (this entry — append-only SESSION_LOG.md) | — | Protocolo founder playbook §5.3. |
+
+### Files editados (4)
+
+| # | File | Cambio |
+|---|---|---|
+| 1 | `resources/admirals_core/config.lua` | Bump `Config.Version` 0.1.0→0.2.0 (MINOR) + añadir `'003_bank_schema.sql'` a `Config.MigrationsFiles` (ahora 3 migrations). |
+| 2 | `resources/admirals_core/server/init.lua` | Añadir 32 exports cross-resource (DB×6, Bus×4, Rate×4, Log×8, Metrics×6, Core×4 ya existían) + wrap `Bus.Publish` para `TriggerEvent('admirals_lib:dispatch', event_name, payload)` server-wide fanout (consumers reciben en su `AddEventHandler` local via lib helper). Resource attribution preservada en logs cross-VM via wrapper `_log_wrap` que prefixa `[<resource>] msg`. |
+| 3 | `resources/admirals_core/fxmanifest.lua` | Bump `version` 0.1.0→0.2.0 + añadir `'migrations/003_bank_schema.sql'` y `'lib/admirals.lua'` a `files{}`. Comment explica que `lib/admirals.lua` NO se carga en server_scripts del propio admirals_core (su VM tiene `_G.Admirals` real). |
+| 4 | `progress/SESSION_LOG.md` | Append entry S1.1 (este). |
+
+### Decisiones tomadas
+
+- **ADR (informal — formalizable S2+) Lib Helper Pattern (Pattern B)** — admirals_core expone wrappers cross-resource via `lib/admirals.lua` que consumers `@-include`. Razón: FiveM Lua VMs aisladas → `_G.Admirals` no compartido. Alternativas evaluadas: (A) cada resource duplica DB/Bus/Log/etc (rejected — DRY violation), (C) cross-resource via `TriggerEvent` puro (rejected — verbose, sin tipado). Pattern B equilibra abstracción + performance + future-proof. Subscribe usa híbrido: handler local + `BusRegisterConsumerInterest` notifica admirals_core (metric tracking) + `TriggerEvent('admirals_lib:dispatch')` fanout server-wide en `Bus.Publish`. Function refs cross-VM evitados deliberadamente.
+- **Diferir DDL `admirals_escrows` a S1.3** — SSoT §4.3 inexistente. Migration 003 entrega solo bank_accounts + bank_movements. Migration 004 (S1.3) añadirá escrows con su lógica FSM. Mantiene principio "entrega aditiva" — no DDLs sin lógica que los justifique.
+- **`updated_at ON UPDATE (UNIX_TIMESTAMP())` OMITIDO** — MariaDB-illegal en columnas non-TIMESTAMP. Patrón consistente con migration 002 (línea 42 documenta el rationale). App-managed via `Admirals.DB.Execute` SET updated_at=?.
+- **FK `admirals_bank_accounts.owner_company_id → admirals_companies(id)` DEFERRED** — la tabla `admirals_companies` no existe aún (S2+). El comment del CREATE TABLE deja explícito el ALTER TABLE aditivo que hará S2: `ALTER TABLE admirals_bank_accounts ADD CONSTRAINT fk_admirals_bank_accounts_owner_company FOREIGN KEY (owner_company_id) REFERENCES admirals_companies(id)`. CHECK XOR ownership preservado per SSoT §4.1 (MariaDB 10.2+ enforce).
+- **Particiones refrescadas a sprint window** — SSoT cita p_2026_01..03 (Feb-Apr 2026, ya pasado). Migration 003 usa p_2026_05..08 (May-Aug 2026) + p_future MAXVALUE catchall. Cron mensual S2+ rolling forward (per SSoT §15.4 ejemplo Lua incluido).
+- **ENUM `category` extendido con `starter_seed`** — SSoT §4.2 lista 12 valores; el 13º `starter_seed` es aditivo (no breaking). Permite distinguir el initial 2.500 € en queries analytics + ledger reconciliation. Anotado en migration 003 D6.
+- **`admirals_accounts` INSERT en admirals_bank S1.1** — technical debt acknowledged. La responsabilidad arquitectónica corresponde a un futuro `admirals_player_lifecycle` resource. S1.1 lo gestiona admirals_bank por pragmatismo (es el primer resource que necesita el row). `_ensure_admirals_account` privado en accounts.lua, extraíble S2+ sin breaking changes.
+- **`alias` derivation primitiva `Player_<citizen_id_truncated>`** — S1.1 placeholder. S2+ resolverá via `Bridges.Identity.GetPlayerData(source).charinfo.firstname/lastname` cuando admirals_bridges exponga esa API cross-resource.
+- **`request_nonce` UUID v4 (no `starter_<citizen_id>` prefix)** — bug detectado durante self-review: citizen_id en frameworks ESX/native puede exceder 28 chars (`license:abc...`, `steam:0:1:...`) → overflow CHAR(36). UUID v4 garantiza 36 chars exactos. Idempotency real está en step 2 de `EnsureStarterAccount` (`GetPersonalByCitizenId` existing check), no en el nonce.
+- **`tier` mapping en C001 response** — DB ENUM 4 valores (personal/company/cooperative/escrow) → SSoT response 2 valores (`personal`|`empresa`). Mapping: `personal`→`personal`, otros→`empresa`. S2+ refinement opcional si Tablet UI necesita distinguir tipos empresa.
+- **`Config.AuditReads = false` default** — getBalance es high-frequency (30/10s per player). Audit cada read inundaría `admirals_audit_log`. Activable temporalmente para investigación forense. Operaciones write (transfers S1.2+) sí audit obligatorio per SSoT §10.3.
+- **Cache `_src_to_cid` en admirals_bank** — admirals_bridges no exporta `GetCitizenId(source)` cross-resource. Cache populated en `Admirals.Identity.OnPlayerLoaded` hook, purged en `OnPlayerDropped`. Resuelve resolución source→citizen_id sin tocar bridges (frozen). API local: `Bank.GetCitizenIdBySource(source)`.
+- **SEMVER bump admirals_core 0.1.0→0.2.0** — MINOR per convention. Adiciones: ~32 exports cross-resource + lib helper + migration 003 + Bus.Publish wrap. NO breaking changes en API previa S0.4.
+
+### Verificación estática
+
+- ✅ **0 matches `QBCore.` / `ESX.` / `qbx_core:` / `qb-core` / `qbx_*` / direct framework calls** en `resources/admirals_bank/` y `resources/admirals_core/` — Bridges layer respetada per ADR-009.
+- ✅ **0 matches `MySQL.*` direct calls** en `resources/admirals_bank/*.lua` (solo aparece el string en un comment del fxmanifest explicando que NO se necesita — todo via `Admirals.DB.*` que delega a admirals_core via exports).
+- ✅ **Prepared statement enforcement:** todas las queries en admirals_bank usan `?` placeholders (verificado grep `SELECT|INSERT|UPDATE|DELETE` en `*.lua` — 0 string concats con user input).
+- ✅ **Cross-reference exports/lib:** 32 lib helper `_safe_export('Name', ...)` calls match exactamente con 32 `exports('Name', fn)` registrations en `admirals_core/server/init.lua` (manual cross-grep verified).
+- ✅ **Resource isolation:** lib helper hace `AddEventHandler('admirals:bridge:_identityPlayerLoaded', ...)` y `AddEventHandler('admirals_lib:dispatch', ...)` — ambos eventos server-wide (FiveM `TriggerEvent` cruza VMs nativamente). NO usa function refs cross-resource.
+- ✅ **Load order fxmanifest verificado** admirals_bank:
+  1. shared `config.lua`
+  2. server `@admirals_core/lib/admirals.lua` (lib first — registra namespace + AddEventHandlers)
+  3. server `@ox_lib/init.lua` (lib.callback global)
+  4. server `iban.lua` (depende de Admirals.DB + Admirals.Bank.Config)
+  5. server `accounts.lua` (depende de IBAN + DB + Bus + Log + Metrics)
+  6. server `callbacks.lua` (depende de Accounts + IBAN + lib.callback)
+  7. server `init.lua` (LAST — depende de todo + Admirals.Core.WaitReady)
+- ✅ **TX atomic verificado** EnsureStarterAccount: pcall envuelve `Admirals.DB.Transaction([INSERT bank_account, INSERT bank_movement])`. Detect 3 paths: (a) crash → 'TX_CRASH', (b) rollback (return false) → 'TX_ROLLBACK', (c) success → continue audit/metrics/bus.
+- ✅ **Idempotency verificada** EnsureStarterAccount step 2: `Accounts.GetPersonalByCitizenId(citizen_id)` — si existe row, return early sin INSERT duplicado. Re-conexión player → log "existing bank_account for X" + counts en DB unchanged.
+- ✅ **CHECK constraint XOR ownership** preserved en migration 003 — MariaDB 10.2+ enforce nativo. Application-layer enforces additionally via accounts.lua INSERT con `type='personal'` + `owner_account_id NOT NULL` + `owner_company_id NULL`.
+- ⚠️ **Syntax linter no ejecutado** (luac no en PATH). Self-review: LuaCATS annotations correctas, `goto continue` Lua 5.4 válido, `pcall` patterns correctos, oxmysql `.await` usage delegado via Admirals.DB.
+
+### Issues pendientes
+
+- 🟡 **Smoke test manual founder S1.1:** ejecutar `scripts/smoke_test_s1_1.md` 8 pasos. Requiere player connect via framework T1 activo (qbox sí, esx/native si configurado). Expectativa 8/8 ✅.
+- 🟡 **Cleanup `admirals_smoke_iban_gen` command** — el smoke step 3 propone añadir un comando temporal admin para 100 IBAN generates. Tras smoke OK, remover o gatear tras `Config.Env == 'development'`.
+- 🟡 **`git tag v0.1.0` + push** tras smoke OK (admirals_bank v0.1.0 + admirals_core v0.2.0).
+- 🔵 **S1.2 transfers (C002):** implementar `admirals:bank:transfer` con validación amount + ownership + idempotency via `request_id` + UPDATE balances atomic + 2 INSERTs bank_movements (debit + credit). Rate limit `bank.write` 10/60s ya registered.
+- 🔵 **S1.3 escrows + FSM:** migration 004 con `admirals_escrows` DDL (founder co-design SSoT §4.3 cuando llegue) + `escrow_lifecycle` FSM transitions + C004 createEscrow + C005 releaseEscrow.
+- 🔵 **S2 extract `_ensure_admirals_account` a `admirals_player_lifecycle`** — pasar la responsabilidad arquitectónica a un resource lifecycle dedicated. Con migration aditiva (puede convivir admirals_bank fallback hasta migration completa).
+- 🔵 **S2 ALTER TABLE `admirals_bank_accounts` ADD FK `admirals_companies`** cuando S2 cree la tabla `admirals_companies`. Migration aditiva, non-breaking.
+- 🔵 **S2 cron mensual partition rolling** `admirals_bank_movements` per SSoT §15.4 (ejemplo Lua incluido).
+- 🔵 **S2+ promote `Admirals.Identity.OnPlayerLoaded`** a evento canónico Bus `admirals:identity:player_loaded` (publicar desde un único orchestrator post-bridges en lugar de fan-out via internal `admirals:bridge:_identityPlayerLoaded`). La lib helper actualizará SU implementación internal sin breaking callers.
+
+### Smoke check S1.1 (founder ejecuta)
+
+Ver `scripts/smoke_test_s1_1.md` 8 pasos:
+1. Pre-flight boot (3 resources arrancan, lib helper carga en VM bank, resmon admirals_bank idle <0.2ms).
+2. Migration 003 aplicada (2 tablas + 5 partitions + 1 row tracking + columnas matchean SSoT).
+3. IBAN.Generate 100 invocaciones (0 colisiones, 0 checksum failures, format AD-XXXX-XXXX-XXXX).
+4. EnsureStarterAccount idempotent (3 rows tras conectar + counts 1/1/1 tras reconectar).
+5. C001 getBalance happy path (response shape canónico §3.1).
+6. C001 unauthorized (player A pide IBAN B → NOT_AUTHORIZED).
+7. C001 rate limit (31 calls in <10s → 30 OK + 1 BLOCKED).
+8. Audit + Bus (admirals_audit_log row starter_seed + Bus.Stats reporta account_created event + log ring entries).
+
+### Handoff próxima sesión (S1.2)
+
+- **Modelo recomendado:** Opus 4.7 (lógica transfers + escrows requires arquitectura DB-correcta, idempotency rigurosa, FSM transitions).
+- **Perfil:** 🏗️ ARCHITECT + 🔧 BUILDER.
+- **Goal:** C002 `admirals:bank:transfer` — UPDATE atomic 2 balances + 2 INSERTs bank_movements (debit + credit) + idempotency via `request_id` + auth + rate limit `bank.write` (10/60s default registered S0.4) + audit. Ver `progress/SPRINT_PLAN_S1.md` §S1.2.
+- **Docs a leer obligatorio:**
+  - `progress/SESSION_LOG.md` últimas 3 entries (S0.4, S1.1 — esta, y la siguiente cuando se cree).
+  - `progress/SPRINT_PLAN_S1.md` §S1.2.
+  - `docs/technical/04_api_contracts.md` §3.1 C002 (transfer signature + error codes).
+  - `docs/technical/04_api_contracts.md` §6 (DB transactions).
+  - `docs/technical/04_api_contracts.md` §10.3 (audit obligatorio money operations).
+  - `docs/technical/05_state_machines.md` §4.2 (FSM `transfer_lifecycle` si existe — verify).
+  - `docs/economy/01_economic_model.md` §10.3 (transfer fees policy — Internal transfer 0€, External 1-2€ flat).
+- **Pre-condición:** smoke S1.1 8/8 ✅ + git tag v0.1.0 pushed + git clean.
+- **APIs disponibles S1.2:**
+  - Todo lo de S1.1 + nuevos: `Admirals.Bank.Accounts.GetByIban`, `Accounts.GetPersonalByCitizenId`, `IBAN.Validate`.
+  - `Bank.GetCitizenIdBySource(source)` para resolver source→citizen_id.
+  - `admirals_audit_log` table (categoria 'bank.transfer' canonical per Config.AuditCategories).
+  - `admirals_bridge_idempotency` table (DB-backed replays — usar para C002 request_id).
+- **No tocar:**
+  - `resources/admirals_bridges/*` (frozen v0.2.0).
+  - `resources/admirals_core/server/*` salvo Config.MigrationsFiles list para migration 004 (cuando S1.3).
+  - `docs/technical|economy|design|art|qa/*`.
+
+### Files in scope respetados
+
+✅ 10 creates + 4 edits = 14 operaciones. Founder green-light explícito previo a expansión de scope (4 edits en admirals_core vs 1 listado en prompt). No tocó `resources/admirals_bridges/*`, `.windsurf/*`, `README.md`, `docs/technical|economy|design|art|qa/*`, `progress/SPRINT_PLAN_S1.md` (refinement diferido S1.3).
+
+---

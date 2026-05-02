@@ -87,6 +87,127 @@ exports('WaitReady', Core.WaitReady)
 exports('Version', Core.Version)
 exports('GetMigrationReport', Core.GetMigrationReport)
 
+-- =============================================================================
+-- Cross-resource exports — para consumers vía lib/admirals.lua (S1.1+).
+--
+-- Los consumers no pueden leer _G.Admirals (Lua VMs aisladas). Estos exports
+-- exponen las APIs de Logger / DB / Bus / Rate / Metrics como surface tipada
+-- thin que la lib helper consume. Resource attribution se preserva mediante
+-- prefijo `[<resource>]` en logs (LogInfo etc añaden el wrapper).
+--
+-- Naming convention: <Subsystem><Method>, e.g. DBFetchOne, BusPublish, etc.
+-- =============================================================================
+
+-- ----------------------------------------------------------------------------
+-- DB layer (6 exports — pass-through a Admirals.DB).
+-- ----------------------------------------------------------------------------
+exports('DBFetchOne',     function(query, params) return DB.FetchOne(query, params) end)
+exports('DBFetchAll',     function(query, params) return DB.FetchAll(query, params) end)
+exports('DBExecute',      function(query, params) return DB.Execute(query, params) end)
+exports('DBInsert',       function(query, params) return DB.Insert(query, params) end)
+exports('DBScalar',       function(query, params) return DB.Scalar(query, params) end)
+exports('DBTransaction',  function(queries)        return DB.Transaction(queries) end)
+
+-- ----------------------------------------------------------------------------
+-- Bus layer (4 exports).
+--
+-- BusPublish: dispatch a subscribers locales en admirals_core's VM + fanout
+--   server-wide via TriggerEvent('admirals_lib:dispatch', event, payload) para
+--   que consumers que cargan lib/admirals.lua reciban en sus AddEventHandler.
+--   Wrap del Bus.Publish original installed below (line ~155).
+--
+-- BusRegisterConsumerInterest: tracking ligero metric "qué resources subscriben
+--   a qué evento" — informativo (no bloquea dispatch).
+--
+-- BusRegisterSchemaByName: hook futuro S2+ para validators by name (no-op S1.1).
+--
+-- Bus.Subscribe / Unsubscribe NO se exportan — function refs cross-VM frágil.
+-- En su lugar, lib/admirals.lua mantiene _local_subs en VM consumer + escucha
+-- TriggerEvent fanout que Bus.Publish dispara below.
+-- ----------------------------------------------------------------------------
+exports('BusPublish',                  function(event_name, payload, opts) return Bus.Publish(event_name, payload, opts) end)
+exports('BusStats',                    function() return Bus.Stats() end)
+exports('BusRegisterConsumerInterest', function(event_name, resource_name)
+  -- Solo metric tracking — no impacta dispatch (que va via TriggerEvent fanout).
+  Metrics.Counter('bus.consumer_interest_registered')
+  Log.Debug('Bus consumer interest: %s ← %s', event_name, tostring(resource_name))
+end)
+exports('BusRegisterSchemaByName', function(event_name, validator_name)
+  -- Phase 1 no-op — S2+ implementará schema registry by name.
+  Log.Debug('BusRegisterSchemaByName ignored (no-op S1.1): %s ← %s',
+    event_name, tostring(validator_name))
+end)
+
+-- ----------------------------------------------------------------------------
+-- Rate limiter (4 exports).
+-- ----------------------------------------------------------------------------
+exports('RateCheck',          function(identity, bucket_key) return Admirals.Rate.Check(identity, bucket_key) end)
+exports('RateRegisterBucket', function(key, def)              return Admirals.Rate.RegisterBucket(key, def) end)
+exports('RateReset',          function(identity, bucket_key) return Admirals.Rate.Reset(identity, bucket_key) end)
+exports('RateStats',          function() return Admirals.Rate.Stats() end)
+
+-- ----------------------------------------------------------------------------
+-- Logger (8 exports).
+--
+-- Wrap añade prefijo [resource] para preservar atribución cross-VM. La lib
+-- helper pre-formatea con string.format y pasa msg literal — los exports NO
+-- aceptan varargs (FiveM Lua exports cross-VM no preservan vararg semántica
+-- de forma 100% fiable; mejor pasar string ya formateado).
+--
+-- Si el caller usa el _G.Log directo dentro de admirals_core, mantiene la
+-- API original con varargs (no afectado por estos wrappers).
+-- ----------------------------------------------------------------------------
+local function _log_wrap(level_fn)
+  return function(resource, msg)
+    level_fn('[%s] %s', tostring(resource or '?'), tostring(msg or ''))
+  end
+end
+exports('LogDebug', _log_wrap(Log.Debug))
+exports('LogInfo',  _log_wrap(Log.Info))
+exports('LogWarn',  _log_wrap(Log.Warn))
+exports('LogError', _log_wrap(Log.Error))
+
+-- LogAudit recibe un table {category, action, actor?, target?, payload?, resource?}
+-- Pass-through directo (la lib helper ya decora entry.resource).
+exports('LogAudit',    function(entry) return Log.Audit(entry) end)
+exports('LogSetLevel', function(level) return Log.SetLevel(level) end)
+exports('LogGetLevel', function() return Log.GetLevel() end)
+exports('LogSize',     function() return Log.Size() end)
+
+-- ----------------------------------------------------------------------------
+-- Metrics (6 exports).
+-- ----------------------------------------------------------------------------
+exports('MetricsCounter',  function(key, delta)  return Metrics.Counter(key, delta) end)
+exports('MetricsGauge',    function(key, value)  return Metrics.Gauge(key, value) end)
+exports('MetricsObserve',  function(key, value)  return Metrics.Observe(key, value) end)
+exports('MetricsGet',      function(key) return Metrics.Get(key) end)
+exports('MetricsSnapshot', function() return Metrics.Snapshot() end)
+exports('MetricsReset',    function() return Metrics.Reset() end)
+
+-- ----------------------------------------------------------------------------
+-- Bus.Publish wrap — añade fanout server-wide cross-resource via TriggerEvent.
+--
+-- Comportamiento:
+--   1. Llama Bus.Publish original (dispatch local + audit + metrics + decoración).
+--   2. Si OK, dispara TriggerEvent('admirals_lib:dispatch', event_name, payload)
+--      → todos los resources con lib/admirals.lua cargada reciben el dispatch
+--      en su AddEventHandler local y filtran por _local_subs[event_name].
+--
+-- Esto desacopla la pub/sub cross-resource del paso de function refs cross-VM
+-- (que es frágil en FiveM Lua). El payload está garantizado JSON-serializable
+-- per §02 §1.4 — TriggerEvent lo cruza VMs sin issues.
+-- ----------------------------------------------------------------------------
+local _bus_publish_original = Bus.Publish
+Bus.Publish = function(event_name, payload, opts)
+  local ok = _bus_publish_original(event_name, payload, opts)
+  if ok then
+    -- Server-wide fanout — atómico per FiveM event dispatch. Errors en handlers
+    -- consumer son contained en sus pcalls (lib/admirals.lua _local_subs handler).
+    TriggerEvent('admirals_lib:dispatch', event_name, payload)
+  end
+  return ok
+end
+
 -- -----------------------------------------------------------------------------
 -- Boot report — ASCII panel de cierre, coherente con admirals_bridges §10.4.
 -- -----------------------------------------------------------------------------

@@ -3,7 +3,7 @@ game      'gta5'
 lua54     'yes'
 
 author      'Admirals'
-version     '0.1.0'
+version     '0.2.0'
 description 'Admirals Core — EventBus + DB wrappers + RateLimiter + Logger + Metrics + Migrations runner'
 
 dependencies {
@@ -77,7 +77,14 @@ client_scripts {
 
 -- SQL migration files are read by server/migrations.lua via LoadResourceFile.
 -- Declared here so fxmanifest tracks them as resource files.
+--
+-- lib/admirals.lua: helper API consumido por OTROS resources via:
+--   server_scripts { '@admirals_core/lib/admirals.lua', 'server/...' }
+-- NO se carga en server_scripts de admirals_core mismo (admirals_core
+-- dispone del API _G real via Admirals.* desde sus propios scripts).
 files {
   'migrations/001_schema_versions.sql',
   'migrations/002_foundation_tables.sql',
+  'migrations/003_bank_schema.sql',
+  'lib/admirals.lua',
 }

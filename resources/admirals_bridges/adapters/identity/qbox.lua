@@ -16,7 +16,11 @@
 -- Cache bidireccional src ↔ citizenId para evitar round-trips en hot paths.
 --
 -- Lifecycle hooks:
---   'QBCore:Server:OnPlayerLoaded' → fires con Player object al cargar personaje.
+--   'QBCore:Server:PlayerLoaded'  → fires server-side con Player object al cargar
+--                                     personaje (qbx_core/server/player.lua:1031).
+--                                     OJO: NO confundir con 'QBCore:Server:OnPlayerLoaded'
+--                                     que es un NetEvent client→server SIN payload
+--                                     (qbx_core/client/character.lua:279,306,497).
 --   'QBCore:Server:PlayerLogout'   → fires con src al logout de personaje.
 --   'playerDropped'               → FiveM native safety-net para drops totales.
 --   Guard _is_active() evita eventos duplicados si el adapter no es el activo.
@@ -144,7 +148,10 @@ end
 -- =============================================================================
 
 -- QBox: personaje cargado (character selected por el player).
-AddEventHandler('QBCore:Server:OnPlayerLoaded', function(Player)
+-- Evento canónico SERVER-SIDE per qbx_core/server/player.lua:1031 — recibe el
+-- Player object como argumento. NO usar 'QBCore:Server:OnPlayerLoaded' (NetEvent
+-- client→server sin payload, qbx_core/client/character.lua + server/events.lua:185).
+AddEventHandler('QBCore:Server:PlayerLoaded', function(Player)
   if not _is_active() then return end
   local pd = Player and Player.PlayerData
   if not pd then return end

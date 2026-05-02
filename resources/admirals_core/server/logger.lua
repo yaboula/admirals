@@ -137,9 +137,69 @@ function Log.Error(fmt, ...) _log('error', fmt, ...) end
 -- -----------------------------------------------------------------------------
 -- Public — Audit entry structurado.
 -- Siempre persiste a ring buffer + console si LogLevel >= info.
+-- Adicional (S1.1+): persiste async a tabla admirals_audit_log via oxmysql
+-- — fire-and-forget, errores se loguean pero no propagan (audit nunca debe
+-- bloquear el path crítico per SSoT §10.3).
 --
--- @param entry table { category, action, actor?, target?, payload?, ... }
+-- @param entry table {
+--   category    string   — REQUIRED — e.g. 'bank.starter_seed'.
+--   action      string   — REQUIRED — e.g. 'credit', 'debit', 'create'.
+--   actor       string?  — citizen_id o account UUID del actor.
+--   actor_source number? — FiveM source id snapshot (debug).
+--   target_type string?  — 'account', 'bank_account', 'company', etc.
+--   target      string?  — id de la entity afectada.
+--   amount      number?  — si operación financiera.
+--   currency    string?  — default omitido (NULL en DB).
+--   request_id  string?  — idempotency key asociada.
+--   resource    string?  — origen (default GetCurrentResourceName).
+--   payload     table?   — metadata extra → JSON columna.
+-- }
 -- -----------------------------------------------------------------------------
+
+-- Async DB persistence — fire-and-forget. NUNCA bloquea caller.
+-- DB no-ready o INSERT fail → solo log Warn (NO Audit recursivo para evitar loop).
+local function _persist_audit_to_db(entry)
+  -- Cargado lazy — Admirals.DB puede no estar listo en boot temprano.
+  local DB = Admirals.DB
+  if not DB or type(DB.Insert) ~= 'function' then
+    return  -- DB layer no inicializado todavía; skip silently.
+  end
+
+  local payload_json = nil
+  if type(entry.payload) == 'table' then
+    local ok_enc, encoded = pcall(json.encode, entry.payload)
+    if ok_enc then payload_json = encoded end
+  end
+
+  local ok, err = pcall(DB.Insert, [[
+    INSERT INTO admirals_audit_log
+      (category, action, actor_account_id, actor_source,
+       target_type, target_id, amount, currency,
+       request_id, resource, metadata)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ]], {
+    entry.category or 'unknown',
+    entry.action   or 'unknown',
+    entry.actor,                -- nil → NULL OK
+    entry.actor_source,
+    entry.target_type,
+    entry.target,
+    entry.amount,
+    entry.currency,
+    entry.request_id,
+    entry.resource or _resource_name,
+    payload_json,
+  })
+
+  if not ok then
+    -- NO usar Log.Audit aquí (evitar loop). Direct console + ring.
+    _ring_append('warn', 'audit DB persist failed: ' .. tostring(err), nil)
+    if _should_emit('warn') then
+      _emit_console('warn', 'audit DB persist failed: ' .. tostring(err))
+    end
+  end
+end
+
 function Log.Audit(entry)
   if type(entry) ~= 'table' then
     Log.Warn('Log.Audit called with non-table arg: %s', tostring(entry))
@@ -157,6 +217,11 @@ function Log.Audit(entry)
     _emit_console('audit', string.format('%s/%s actor=%s target=%s',
       entry.category or '?', entry.action or '?', actor, target))
   end
+
+  -- Async DB persist — Citizen.CreateThread para no bloquear caller.
+  Citizen.CreateThread(function()
+    _persist_audit_to_db(entry)
+  end)
 end
 
 -- -----------------------------------------------------------------------------
