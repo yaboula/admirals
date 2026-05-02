@@ -1,6 +1,6 @@
 # 🗺️ Admirals — Master Roadmap
 
-> **Versión:** 1.2 (firmado — completo, 15 secciones, living document). 🏆 **OLEADA 0 CERRADA 100% (29/29 docs).** 1.1→1.2: `technical/07_bridges_compatibility.md` v1.0 firmado. ADR-008 (Granja pivot) + ADR-009 (Bridges Layer) registrados. READY TO CODE.
+> **Versión:** 1.4 (firmado — completo, 15 secciones, living document). 🏆 **SPRINT 1 CERRADO (2026-05-02).** `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008. Smoke S1.3 14/14 ✅. Tag `sprint-1-complete`. **Next: Sprint 2 — Tablet shell + Bank app (planning session dedicada pendiente).**
 > **Tipo:** Planning operacional. **Roadmap maestro del proyecto.** SSoT para fases, milestones, dependencias y criterios de "done".
 > **Documento padre:** `agents/00_BOOTSTRAP.md` v1.0 (firmado).
 > **Documento hermano:** `planning/02_decision_log.md` (próximo, ADRs).
@@ -240,21 +240,32 @@ Oleada 1 Sprint 8: Polish + balance + bridges testing matrix + closed beta
 
 **Risk original:** scope bridges skeleton puede inflarse. Resultado: **mitigado exitosamente** — bridges skeleton completo con 6 T1 adapters en 1 sprint, no escaló.
 
-#### Sprint 1 — Banco básico (2 semanas)
+#### Sprint 1 — Banco básico (✅ CERRADO 2026-05-02)
 
-**Goals:**
-- Tabla `admirals_bank_accounts` (ver `technical/03_db_schema.md` §6).
-- Tabla `admirals_bank_transactions`.
-- Sistema IBAN generator (`ES00 ADML XXXX`).
-- API básica: `getBalance`, `transfer`, `getTransactions`.
-- Auto-creación cuenta player on first connect (saldo 2.500 €).
+**Duración real:** 1 día intensivo (vs estimado 2 semanas).
+**Sessions ejecutadas:** 3 (S1.1, S1.2, S1.3) + phase2 finalize en S1.3.
 
-**Done criteria:**
-- ✅ Player conecta primera vez → IBAN único asignado + saldo 2.500 €.
-- ✅ Player A puede transferir X € a player B vía console command (UI viene Sprint 2).
-- ✅ Transactions inmutables (audit log).
+**Deliverables:**
+- `admirals_bank` v0.4.0 — resource completo con IBAN generator (`AD-XXXX-XXXX-XXXX` 17 chars checksum) + Accounts + Movements + Transfer + Events + Escrow FSM + Callbacks C001/C002/C004/C005.
+- Migrations 003 (bank_schema) + 004 (system treasury seed `AD-SYS0-0000-0001`) + 005 (balance NON-NEG check S005) + 006 (escrow schema) + 007 (FK fix transitional) + 008 (FK revert canonical a bank_accounts).
+- `admirals_core` v0.4.2 — bumped con 6 migrations nuevas + idempotency DB-backed promoted (`admirals_bridge_idempotency` table).
+- `admirals_bridges` v0.2.0 (mantenido) — Bridges.Bank expandido con escrow contracts, IdempotencyBackend='db'.
+- FSM `escrow_lifecycle` per `05_state_machines.md` §4.1 (5 estados + transitions whitelist + guards).
+- Smoke tests: S1.1 (6/6 ✅) + S1.2 (10/10 ✅) + S1.3 (14/14 ✅). Total: 30/30 pasos manuales verificados founder.
+- Audit DB persistence operativa (ADR-010 hybrid). Rate limiter `bank.write` 10/60s. Event bus schema v1.
 
-**Bloquea:** todo lo demás. **CRITICAL.**
+**Done criteria cumplidos:**
+- ✅ Player conecta primera vez → IBAN único asignado + saldo starter per `economy/01_economic_model.md`.
+- ✅ Player A puede transferir X € a player B vía console command (smoke S1.2 step 1). UI llega S2.
+- ✅ Transactions inmutables (admirals_bank_movements + audit log). Double-entry ledger (debit+credit rows).
+- ✅ Escrow lock/release funcional — Create con 2 movements (amount+fee separately) + Release atomic TX + auth matrix F3.
+- ✅ Idempotency DB-backed (promoted de memoria a `admirals_bridge_idempotency` en S1.2).
+- ✅ FSM double-release guard + FSM_INVALID_TRANSITION error mapping.
+- ✅ Tag `sprint-1-complete` + SPRINT_RETRO_S1.md redactado.
+
+**Risk retro:** 3 incidencias in-flight S1.3 (FK violation target identity vs bank_account, auth mismatch, `owner_account_id` Player B corrupto) — todas resueltas con migrations aditivas respetando ADR-010 immutability. Duración session S1.3 overrun ~6h vs 4-5h estimado. Velocity real S1 = 15× estimación inicial (1 día vs 2 semanas).
+
+**Bloquea S2.**
 
 #### Sprint 2 — Tablet shell + Bank app (3 semanas)
 
@@ -795,8 +806,8 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 
 ### 14.2 Estado del documento
 
-- **Versión:** 1.3 (firmado — completo, 14 secciones, Sprint 0 cerrado).
-- **Próxima revisión:** al cerrar Sprint 1 (`admirals_bank` core) → v1.4 con retro learnings.
+- **Versión:** 1.4 (firmado — completo, 15 secciones, Sprint 1 cerrado).
+- **Próxima revisión:** al cerrar Sprint 2 (Tablet shell + Bank app) → v1.5 con retro learnings.
 - **Documento padre:** `agents/00_BOOTSTRAP.md` v1.0.
 - **Documento hermano:** `planning/02_decision_log.md` (próximo).
 - **Documentos relacionados:**
@@ -811,6 +822,7 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 | 1.1 | 2026-05-01 | Founder + Cascade | **Pivot crítico MVP node:** Bakery → Granja (cross-vertical root, Bible §13.4). Justificación: Granja es nodo raíz, sistema calidad más natural, ritmo passive timer-friendly perf, Oleada 2 construye sobre wheat real. Reorganización Sprint 4+7 (Bakery → Granja). Oleada 2 reordenada (Molino → Bakery → Retail). **Añadido `technical/07_bridges_compatibility.md`** como último doc Oleada 0 (compat scripts custom: lb-phone, qs-inventory, custom banks, etc.). Sprint 0 ampliado con bridges skeleton. Risk register actualizado (bridges + scaling Granja). Critical path actualizado. Dependencies graph muestra bridges como foundational. |
 | 1.2 | 2026-05-01 | Founder + Cascade | 🏆 **OLEADA 0 CERRADA 100%.** `technical/07_bridges_compatibility.md` v1.0 firmado + ADR-008 (Granja pivot) + ADR-009 (Bridges Layer) registrados en decision_log. §2.1 tabla + §3.2 completadas. Done criteria Oleada 0 todos cumplidos. Estado "ready-to-code" confirmado. |
 | 1.3 | 2026-05-02 | Founder + Cascade | 🏆 **SPRINT 0 CERRADO.** §4.2 Sprint 0 marcado ✅ con fecha + sessions ejecutadas (S0.0-S0.4) + ADR-010 (hybrid audit_log) añadido. `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 operativos. Smoke test 10 pasos listo. Next: Sprint 1 — Banco core. |
+| 1.4 | 2026-05-02 | Founder + Cascade | 🏆 **SPRINT 1 CERRADO** (mismo día — velocity 15×). §4.2 Sprint 1 marcado ✅ con deliverables detallados: `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008 + smokes 30/30 pasos cumulative. Tag `sprint-1-complete`. §15 TL;DR punto 6 bumped. Next: Sprint 2 — Tablet shell + Bank app (planning session dedicada pendiente). |
 
 ---
 
@@ -823,7 +835,7 @@ Si lees solo este resumen:
 3. **Oleada 1 (MVP) = 4-6 meses, 9 sprints.** **Granja-only** (no Bakery — pivot v1.1) + Tablet 3 apps + Banco + Empresas básicas + Bridges layer.
 4. **Oleada 2 (multi-nodo) = 6-8 meses, 12 sprints.** Molino + Bakery + Retail construidos sobre wheat real de Granja + social.
 5. **Critical path Oleada 1:** Bridges → Banco → Tablet → Item → Granja NPC → Empresa → Workplace → Granja player → Polish.
-6. **Sprint 0 🏆 CERRADO** (2026-05-02). `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + 6 T1 adapters + migrations 001/002 + smoke test. **Next: Sprint 1** — `admirals_bank` core (IBAN + balance + transfer).
+6. **Sprint 1 🏆 CERRADO** (2026-05-02, mismo día — velocity 15×). `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008 + smokes 30/30. Tag `sprint-1-complete`. **Next: Sprint 2** — Tablet shell + Bank app (planning session dedicada).
 7. **Done criteria explícitos** por feature/sprint/oleada.
 8. **Sprint length:** 2 semanas. Solo dev: ✅ skip dailies, do retros.
 9. **Risk top 3:** founder burnout, bridges abstracción incorrecta, AI agent quality drop.
@@ -855,4 +867,4 @@ El **Master Roadmap** consolida toda la planificación dispersa:
 
 *"Plan B siempre listo. Plan A es solo lo más probable hoy."*
 
-**FIN DEL DOCUMENTO `planning/01_roadmap.md` v1.2**
+**FIN DEL DOCUMENTO `planning/01_roadmap.md` v1.4**
