@@ -820,3 +820,68 @@ Mensaje sigue convention `S{N}.{M} {imperative present}` per workspace rule + S1
 ✅ 1 delete + 3 edits = 4 operaciones. Strict scope cumplido (cleanup solo touches files que tenían smoke harness o reference a él). NO tocó admirals_core (3 admin commands eran solo en admirals_bank/server/init.lua), NO tocó admirals_bridges, NO tocó docs/* firmados, NO tocó server.cfg founder (manual cleanup founder responsability).
 
 ---
+
+### S1.3 — Escrow FSM + C004 createEscrow + C005 releaseEscrow + sprint close
+
+- **Fecha:** 2026-05-02
+- **Duración:** ~6h (estimado: 4-5h — overrun por 3 incidencias de schema/auth resueltas in-flight)
+- **Founder + Agent:** yaboula + Cascade
+- **Sprint:** S1 — Banco core + IBAN + balance + transferencias + escrow
+- **Perfil:** 🏗️ ARCHITECT + 🔧 BUILDER + 📝 SCRIBE
+- **Modelo:** Claude Sonnet 4.5
+- **Goal:** Escrow FSM + C004 createEscrow + C005 releaseEscrow + smoke 14 pasos + sprint close S1.
+- **Status:** ✅ Done — smoke 14/14 ✅, sign-off founder.
+
+### Cambios
+
+- **Created:**
+  - `resources/admirals_core/migrations/006_escrow_schema.sql` — DDL `admirals_escrows` (id, status, buyer_account_id, seller_account_id, escrow_account_id, amount, fee_charged, contract_id, release_condition, release_date, expires_at, request_nonce, released_to, released_by_account_id, released_at, timestamps) + relax CHECK ownership en `admirals_bank_accounts` para permitir branch escrow (owner_account_id NULL XOR escrow type).
+  - `resources/admirals_core/migrations/007_escrow_fks_to_accounts.sql` — fix FK target buyer/seller_account_id → `admirals_accounts(id)` (luego revertido por 008, ver decisiones).
+  - `resources/admirals_core/migrations/008_escrow_fks_revert_to_bank_accounts.sql` — TRUNCATE rows inconsistentes + DROP FKs 007 + ADD FKs canónicos → `admirals_bank_accounts(id)`. Final FK design.
+  - `resources/admirals_bank/server/fsm_escrow.lua` — FSM table-driven `escrow_lifecycle` per `05_state_machines.md` §4.1: estados {created, locked, released, refunded, disputed} + transitions whitelist + `Fsm.CanTransition` + `Fsm.AssertTransition`.
+  - `resources/admirals_bank/server/escrow.lua` — `Escrow.Create` (atomic TX 4-query: insert escrow row + create escrow bank account + UPDATE buyer balance debit (amount+fee) + 2 INSERTs movements amount/fee separately) + `Escrow.Release` (atomic TX 3-query: UPDATE escrow status→released/refunded + UPDATE recipient balance credit + 1 INSERT movement). Auth matrix F3 + fee compute (1% clamp 2/100€) + audit + events.
+  - `scripts/smoke_test_s1_3.md` — 14 pasos manuales: boot, happy path, idempotency, SELF_ESCROW, INSUFFICIENT_FUNDS, fee clamps 4/4, release seller, refund buyer, NOT_AUTHORIZED, NOT_IMPLEMENTED split, FSM double-release, rate limit, event subscription, resmon. Troubleshooting + DB queries verificación.
+- **Modified:**
+  - `resources/admirals_core/config.lua` — version 0.3.0→0.4.2, +3 migrations (006, 007, 008) en MigrationsFiles.
+  - `resources/admirals_core/fxmanifest.lua` — version 0.3.0→0.4.2, +3 migrations files{}, description ampliada.
+  - `resources/admirals_bank/config.lua` — escrow constants (EscrowFeeRate=0.01, EscrowFeeMin=2, EscrowFeeMax=100, EscrowAmountMin, EscrowAmountMax, EscrowFeeDestIban='AD-SYS0-0000-0001'), audit categories `escrow.*`, eventos `admirals:bank:escrow_*`.
+  - `resources/admirals_bank/server/events.lua` — `PublishEscrowCreated/Released/Refunded` con schema validation v1.
+  - `resources/admirals_bank/server/callbacks.lua` — C004 `admirals:bank:createEscrow` + C005 `admirals:bank:releaseEscrow` con idempotency (DB-backed via Bridges._IsIdemReplay), rate limiting `bank.write` 10/60s, error mapping completo, comment C003 placeholder.
+  - `resources/admirals_bank/fxmanifest.lua` — version 0.3.0→0.4.0 (post-cleanup), wired fsm_escrow.lua + escrow.lua antes de callbacks.lua.
+- **Deleted (cleanup post sign-off):**
+  - `resources/admirals_bank/client/smoke_s1_3.lua` — 6 client commands smoke disposables.
+  - `resources/admirals_bank/server/smoke_s1_3_sub.lua` — server-side EventBus subscription harness (step 13). Untracked → simply removed file.
+  - Directorio `resources/admirals_bank/client/` (vacío post-delete).
+  - Bloque `client_scripts{}` + comentarios "S1.3 SMOKE TEST TEMPORAL" en `admirals_bank/fxmanifest.lua`.
+
+### Decisiones tomadas
+
+- **`escrow.{buyer,seller}_account_id` referencia bank_account.id NO player identity** — root cause de FK violation step 2 + auth mismatch step 7. Migration 007 inicialmente apuntó FKs a `admirals_accounts` (identity) pero auth release tenía que volver a resolver bank account → desalineamiento. Fix definitivo: 008 revierte FK target a `admirals_bank_accounts(id)` + refactor `escrow.lua` para `INSERT (buyer_acc.id, seller_acc.id, ...)` + `_authorize_release` resuelve owner del bank_account stored via SQL lookup. Diseño homogéneo: las 3 columnas `*_account_id` en `admirals_escrows` referencian bank accounts.
+- **Migration immutability respetada (ADR-010)** — pese a que 007 fue redundante, NO se modificó ni borró: 008 cancela su efecto vía DROP FOREIGN KEY + ADD nuevas FKs. Cadena 006→007→008 queda en historial idempotente. Migration runner skip OK 2da run.
+- **Smoke step 13 con server-side harness paralelo, no `exec` cfx** — `exec` en server.cfg ejecuta archivos cfx commands no Lua. Patrón canonical es server_script disposable wired en fxmanifest, mismo paradigma que client smoke harness S1.1/S1.2.
+
+### Issues pendientes
+
+- 🟢 **Sprint S1 listo para retro + tag v0.1.0** — pendiente Fase B workflow `/sprint-retro`.
+- 🔵 **C003 `admirals:bank:listMovements`** — placeholder comment en callbacks.lua, scope S1.5 o S2 (consulta paginada).
+- 🔵 **Split release 50/50** — actualmente retorna NOT_IMPLEMENTED en C005. Scope S2+ junto con dispute resolution.
+- 🔵 **`resmon` budget escrow callbacks** — observado 0.00ms idle (step 14 ✅) pero no medido bajo carga sostenida. Spike S2 para load test escrow stress.
+- 🟡 **`scripts/smoke_test_s1_2.md` untracked** — opt-out founder commit S1.2. Mantener o gitignore — decisión founder.
+
+### Handoff próxima sesión (S2.1 — TBD planning)
+
+- **Modelo recomendado:** Opus 4.7 MAX (perfil 🏗️ ARCHITECT, scope S2 mayor — Tablet UI + Bridges adapters T2 ESX/QBCore + Empresas).
+- **Goal:** TBD — founder refina pre-S2.1 en planning dedicado (per `03_founder_playbook.md` §3.2). Roadmap §4.2 S2 outline candidate: admirals_tablet NUI (React) + Bank UI básico + admirals_companies DDL + ALTER TABLE FK admirals_bank_accounts.owner_company_id.
+- **Pre-requisitos:**
+  - `progress/SPRINT_RETRO_S1.md` (a redactar Fase B).
+  - `progress/SPRINT_PLAN_S2.md` (scaffold Fase C, refinable founder).
+  - `docs/design/02_admirals_tablet.md` re-read.
+  - `docs/technical/07_bridges_compatibility.md` §5 (T2 adapters spec).
+- **Files in scope:** TBD post planning. Probable: `resources/admirals_tablet/` (nuevo) + `resources/admirals_bridges/adapters/{esx,qbcore}/*` (expansión T2) + migration 009 admirals_companies.
+- **Notas especiales:** S1 cierra con escrow FSM funcional pero sin client UI — toda interacción vía consola. S2.1 introduce primera UI NUI player-facing. Considerar pair Opus arquitectura + Sonnet implementation.
+
+### Files in scope respetados
+
+✅ 6 creates + 7 modifications + 4 deletes (cleanup) = 17 file ops. Scope respetó SPRINT_PLAN_S1 §S1.3 + ampliación documentada (migrations 007/008 imprevistas por incidencia FK in-flight, founder green-light explícito). NO tocó `docs/*` firmados, NO tocó `admirals_bridges/*`, NO tocó `.windsurf/*`. Cleanup eliminó todo harness disposable conforme convention S1.1/S1.2.
+
+---

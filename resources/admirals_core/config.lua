@@ -23,7 +23,7 @@ local Config = Admirals.Config
 -- Version — SEMVER de la API pública Admirals.Core.
 -- Bump MAJOR si breaking change en firma. MINOR si añade método.
 -- -----------------------------------------------------------------------------
-Config.Version = '0.4.0'
+Config.Version = '0.4.2'
 
 -- -----------------------------------------------------------------------------
 -- Environment — convar `admirals_env` (development|staging|production).
@@ -169,6 +169,8 @@ Config.MigrationsFiles = {
   '004_bank_seed_system_account.sql',
   '005_balance_nonneg_check.sql',
   '006_escrow_schema.sql',
+  '007_escrow_fks_to_accounts.sql',
+  '008_escrow_fks_revert_to_bank_accounts.sql',
 }
 
 -- =============================================================================

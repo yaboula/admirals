@@ -1,4 +1,4 @@
-# Smoke Test S1.3 — Escrow + FSM (C004 + C005)
+4# Smoke Test S1.3 — Escrow + FSM (C004 + C005)
 
 **Sprint:** S1.3 — admirals_bank escrow lifecycle.
 **Target:** 14/14 ✅ para sign-off + cleanup + close sprint 1.

@@ -3,8 +3,8 @@ game      'gta5'
 lua54     'yes'
 
 author      'Admirals'
-version     '0.4.0'
-description 'Admirals Core — EventBus + DB wrappers + RateLimiter + Logger + Metrics + Migrations runner + Idempotency backend + Escrow schema (S1.3)'
+version     '0.4.2'
+description 'Admirals Core — EventBus + DB wrappers + RateLimiter + Logger + Metrics + Migrations runner + Idempotency backend + Escrow schema + FK design revert (S1.3)'
 
 dependencies {
   'oxmysql',
@@ -89,5 +89,7 @@ files {
   'migrations/004_bank_seed_system_account.sql',
   'migrations/005_balance_nonneg_check.sql',
   'migrations/006_escrow_schema.sql',
+  'migrations/007_escrow_fks_to_accounts.sql',
+  'migrations/008_escrow_fks_revert_to_bank_accounts.sql',
   'lib/admirals.lua',
 }

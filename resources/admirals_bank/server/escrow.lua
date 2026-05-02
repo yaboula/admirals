@@ -100,27 +100,43 @@ end
 -- =============================================================================
 -- Internal — authorize C005 release per F3 auth matrix.
 --
--- @param caller_account_id string — admirals_accounts.id del caller (C005).
--- @param escrow            table  — escrow row (must have buyer_account_id, seller_account_id).
--- @param direction         string — 'seller' | 'buyer' | 'split'.
+-- Post-008 design: `escrow.buyer_account_id` / `seller_account_id` almacenan
+-- **bank_account.id** (no player identity). Auth resuelve el owner del bank
+-- account stored via SQL lookup y compara contra caller identity.
+--
+-- @param caller_identity string — admirals_accounts.id del caller (C005).
+-- @param escrow          table  — escrow row (buyer/seller_account_id = bank_account.id).
+-- @param direction       string — 'seller' | 'buyer' | 'split'.
 -- @return ok:boolean, error_code:string|nil
 -- =============================================================================
-local function _authorize_release(caller_account_id, escrow, direction)
+local function _authorize_release(caller_identity, escrow, direction)
   if direction == 'split' then
     return false, 'NOT_IMPLEMENTED'
   end
-  if type(caller_account_id) ~= 'string' or caller_account_id == '' then
+  if type(caller_identity) ~= 'string' or caller_identity == '' then
     return false, 'NOT_AUTHORIZED'
   end
+
+  local relevant_bank_account_id
   if direction == 'seller' then
-    if caller_account_id == escrow.seller_account_id then return true, nil end
+    relevant_bank_account_id = escrow.seller_account_id
+  elseif direction == 'buyer' then
+    relevant_bank_account_id = escrow.buyer_account_id
+  else
+    return false, 'INVALID_REQUEST'
+  end
+
+  -- Resolver owner del bank_account stored. Si account no existe o no tiene
+  -- owner (escrow-type account sin owner, impossible para buyer/seller) → deny.
+  local owner_identity = Admirals.DB.Scalar([[
+    SELECT owner_account_id FROM admirals_bank_accounts WHERE id = ? LIMIT 1
+  ]], { relevant_bank_account_id })
+
+  if not owner_identity or owner_identity == '' then
     return false, 'NOT_AUTHORIZED'
   end
-  if direction == 'buyer' then
-    if caller_account_id == escrow.buyer_account_id then return true, nil end
-    return false, 'NOT_AUTHORIZED'
-  end
-  return false, 'INVALID_REQUEST'
+  if owner_identity == caller_identity then return true, nil end
+  return false, 'NOT_AUTHORIZED'
 end
 
 -- =============================================================================
@@ -477,7 +493,7 @@ function Escrow.Create(buyer_cid, buyer_iban, seller_iban, amount, contract_id, 
     ]],
     values = {
       escrow_id,
-      buyer_acc.owner_account_id, seller_acc.owner_account_id, escrow_account_id,
+      buyer_acc.id, seller_acc.id, escrow_account_id,
       amount, fee, contract_id, release_condition, release_date,
       expires_at, request_id,
       now, now,
@@ -659,11 +675,11 @@ function Escrow.Release(caller_cid, escrow_id, direction, split_ratio, request_i
   local recipient_account_id
   if direction == 'seller' then
     -- seller owner → seller's personal bank account
+    -- Post-008: escrow.seller_account_id ES el bank_account.id directo.
     local seller_bank = Admirals.DB.FetchOne([[
       SELECT id, balance, iban, is_frozen, closed_at
       FROM admirals_bank_accounts
-      WHERE owner_account_id = ?
-        AND type = 'personal'
+      WHERE id = ?
         AND closed_at IS NULL
       LIMIT 1
     ]], { escrow.seller_account_id })
@@ -674,11 +690,11 @@ function Escrow.Release(caller_cid, escrow_id, direction, split_ratio, request_i
     recipient_account_id = seller_bank.id
   else
     -- buyer refund → buyer's personal bank account
+    -- Post-008: escrow.buyer_account_id ES el bank_account.id directo.
     local buyer_bank = Admirals.DB.FetchOne([[
       SELECT id, balance, iban, is_frozen, closed_at
       FROM admirals_bank_accounts
-      WHERE owner_account_id = ?
-        AND type = 'personal'
+      WHERE id = ?
         AND closed_at IS NULL
       LIMIT 1
     ]], { escrow.buyer_account_id })

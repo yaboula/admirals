@@ -3,8 +3,8 @@ game      'gta5'
 lua54     'yes'
 
 author      'Admirals'
-version     '0.3.0'
-description 'Admirals Bank — IBAN accounts, ledger movements, banking callbacks (C001 + C002 + C004 + C005). Sprint S1.'
+version     '0.4.0'
+description 'Admirals Bank — IBAN accounts, ledger movements, escrow FSM, banking callbacks (C001 + C002 + C004 + C005). Sprint S1 closed.'
 
 dependencies {
   'oxmysql',
@@ -84,12 +84,5 @@ server_scripts {
   'server/init.lua',
 }
 
--- =============================================================================
--- S1.3 SMOKE TEST TEMPORAL — DELETE POST SIGN-OFF
--- Client harness con 6 comandos disposables para smoke test founder.
--- Eliminar en cleanup commit post-smoke 14/14 ✅ (mismo patrón S1.1/S1.2).
--- =============================================================================
-client_scripts {
-  '@ox_lib/init.lua',
-  'client/smoke_s1_3.lua',
-}
+-- No client_scripts (callbacks via ox_lib server-side; client UI llega
+-- S1.5+ con admirals_tablet).
