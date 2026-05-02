@@ -68,15 +68,3 @@ server_scripts {
   -- Boot orchestration (LAST).
   'server/init.lua',
 }
-
--- =============================================================================
--- S1.1 SMOKE TEST CLIENT (TEMPORAL — remover post-smoke).
---
--- 3 chat commands (/smoke_balance, /smoke_balance_iban, /smoke_balance_burst)
--- para ejecutar pasos 5-7 del smoke vía round-trip real ox_lib callback.
--- Requiere @ox_lib/init.lua client-side para lib.callback.await + json.
--- =============================================================================
-client_scripts {
-  '@ox_lib/init.lua',
-  'client/smoke.lua',
-}
