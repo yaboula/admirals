@@ -183,3 +183,73 @@
 ✅ Exactos 19 archivos dentro `resources/admirals_bridges/` matching SPRINT_PLAN_S0.md §S0.2 whitelist literal. 1 edit (`fxmanifest.lua`) + 18 creates. No tocó `docs/*`, ni otros resources, ni `.windsurf/*`, ni `progress/SPRINT_PLAN_S0.md`.
 
 ---
+
+## S0.3 — Bridges T1 adapters externos (QBox + ox_inventory + ox_target + ox_lib + lb-phone)
+
+- **Fecha:** 2026-05-02
+- **Duración:** ~2h
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6)
+- **Sprint:** S0 — Setup + Bridges Layer + admirals_core
+- **Perfil:** 🔧 BUILDER
+- **Modelo:** Sonnet 4.6 (patrón repetitivo — ahorra Opus per playbook §2.3)
+- **Goal:** 6 adapters T1 oficiales + test harness skeleton. Auto-detection prefiere T1 cuando scripts presentes.
+- **Status:** ✅ Done (code); 🟡 pendiente smoke test manual con stack T1 completo instalado.
+
+### Cambios
+- **Creado:** `resources/admirals_bridges/adapters/bank/qbox.lua` — `exports.qbx_core:GetPlayerByCitizenId` + `Player.Functions.AddMoney/RemoveMoney` + idempotency wrapper `_with_idem` idéntico al native + Transfer atómico con rollback automático si AddMoney falla. `IsAvailable` → `GetResourceState('qbx_core')`.
+- **Creado:** `resources/admirals_bridges/adapters/identity/qbox.lua` — `exports.qbx_core:GetPlayer/GetPlayerByCitizenId` + cache bidireccional src↔cid + `GetPlayerData` shape canónico (citizenId/source/firstname/lastname/charinfo) + `GetJob` framework-only. Lifecycle hooks: `QBCore:Server:OnPlayerLoaded` (character load), `QBCore:Server:PlayerLogout` (character logout), `playerDropped` (safety-net) — todos con `_is_active()` guard. Debug helpers `_DumpCache/_Reset`.
+- **Creado:** `resources/admirals_bridges/adapters/inventory/ox_inventory.lua` — `exports.ox_inventory:AddItem/RemoveItem/Search/GetInventoryItems/RegisterItem/GetWeight` + source lookup via `Bridges.Identity.GetSource(citizenId)` + `GetCapacity` con pcall para `GetMaxWeight` (fallback 30000g default ox_inventory) + `IsMetadataSupported=true`. `RegisterItem` pcall-protegido (item puede ya estar en `data/items.lua`).
+- **Creado:** `resources/admirals_bridges/adapters/target/ox_target.lua` — Almacena zones/entities/models server-side (mismo store que native) + `TriggerClientEvent('admirals:bridge:target:addBoxZone/addEntity/addModel/removeZone', -1, ...)` a clientes conectados. S0.4 client consumer (`admirals_bridges/client/target_ox_consumer.lua`) escuchará estos eventos y llamará `exports.ox_target` directamente. `IsAvailable` → `GetResourceState('ox_target')`.
+- **Creado:** `resources/admirals_bridges/adapters/notify/ox_lib.lua` — `exports.ox_lib:notify(source, opts)` + fallback a `TriggerClientEvent('ox_lib:notify', source, opts)` si export falla (cross-versión robustez). Mapeo de tipos Admirals→ox_lib: `'info'→'inform'`. `Broadcast` via loop `GetPlayers()`.
+- **Creado:** `resources/admirals_bridges/adapters/phone/lb_phone.lua` — `exports['lb-phone']:SendNotification(source, data)` para notificaciones + `SendSMS` como notificación enriquecida con `app='messages'` (lb-phone no expone API server-side de mensajes en todos builds v2.x — documentado en código). `GetPhoneNumber` vía `charinfo.phone` (QBox) → fallback `GetPlayerInfo`. `StartCall` retorna `UNSUPPORTED` (API no documentada públicamente — flaggeado para founder).
+- **Creado:** `resources/admirals_bridges/scripts/test_adapter.lua` — `RunTests(module, adapter_name)` + `_tests_bank/inventory/phone/identity/target/notify` (5/5/4/5/4/3 test placeholders respectivamente). `RegisterCommand('admirals_test_adapter')` solo desde consola server (src=0 guard). Tests son skeleton estructural S0.3 — todos marcados `TODO S0.4`.
+- **Editado:** `resources/admirals_bridges/fxmanifest.lua` — `server_scripts` añade 6 T1 adapters después de `native.lua` y antes de `detect.lua`. Load order comment actualizado (paso 7 nuevo). Version bump `0.1.0→0.2.0`.
+
+### Decisiones tomadas
+- **ox_target server-only con TriggerClientEvent:** ox_target es client-side. Adapter almacena zones server-side + notifica clientes conectados via evento `admirals:bridge:target:*`. S0.4 añade client consumer. Misma arquitectura que native (store + defer client) pero con propagación activa a clientes online.
+- **lb_phone SendSMS via notificación:** lb-phone v2.x no expone API server-side de mensajes en todos builds. Implementado como `SendNotification(app='messages')` — player ve notificación en app de mensajes. **Flag al founder:** si tu build de lb-phone expone export de mensajes directos, extender esta función.
+- **lb_phone StartCall UNSUPPORTED:** retorna `(false, 'UNSUPPORTED')`. Callers de admirals_core deben manejar este caso. Phone es canal nice-to-have, nunca crítico per doc §6.5.
+- **GetPhoneNumber vía charinfo:** número de teléfono en QBox+lb-phone vive en `Player.PlayerData.charinfo.phone`. Se accede via `Bridges.Identity.GetPlayerData(citizenId).charinfo.phone` — no require export adicional de lb-phone.
+- **ox_lib cross-versión:** se intenta `exports.ox_lib:notify` primero (v3+), fallback a `TriggerClientEvent('ox_lib:notify')` (v2+). Ambos mecanismos funcionan en oxlib instalaciones actuales.
+- **ox_inventory RegisterItem pcall-protegido:** item puede estar ya definido en `data/items.lua` del resource. Fallo no es fatal — log warning + return false. Boot continúa.
+- **Version bump 0.1.0→0.2.0:** minor bump por adición de 6 adapters T1 (feature additions, no breaking changes a interfaces).
+
+### Verificación estática
+- ✅ **0 matches `QBCore.`** en `resources/admirals_bridges/` — solo `qbx_core` como nombre de resource.
+- ✅ **0 matches `ESX.`** en `resources/admirals_bridges/`.
+- ✅ **0 matches `exports['qb-*']`** — solo `exports['lb-phone']` (lb-phone, no qb-fork).
+- ✅ **7 archivos exactos creados** (6 adapters T1 + test harness) matching whitelist SPRINT_PLAN §S0.3.
+- ✅ **fxmanifest.lua actualizado** — 6 entradas T1 en posición canonical (post-native, pre-detect).
+- ⚠️ **Syntax linter no ejecutado** — lua/luac no disponibles en PowerShell PATH. Self-review: LuaCATS annotations correctas, `goto continue` pattern válido Lua 5.4, `table.pack/unpack` correctos, `pcall` returns seguros.
+
+### Issues pendientes
+- 🟡 **Smoke test manual founder:** arrancar con stack T1 completo (qbx_core + ox_inventory + ox_target + ox_lib + lb-phone) → boot report debe mostrar `[T1 OFFICIAL] × 6` + `T1 OFFICIAL: 6 / Total: 6`.
+- 🔵 **lb-phone StartCall:** implementar si tu build expone export server-side `exports['lb-phone']:StartCall(src_to, src_from)`.
+- 🔵 **ox_target client consumer S0.4:** `admirals_bridges/client/target_ox_consumer.lua` escucha `admirals:bridge:target:*` events y llama `exports.ox_target` — scope S0.4.
+- 🔵 **test_adapter.lua S0.4:** implementar tests reales (TODO S0.4 markers) cuando admirals_core provee test players y DB mocks.
+
+### Smoke check S0.3 (founder ejecuta)
+1. Añadir a `server.cfg` (en orden): `ensure oxmysql`, `ensure ox_lib`, `ensure qbx_core`, `ensure ox_inventory`, `ensure ox_target`, `ensure lb-phone`, `ensure admirals_bridges`.
+2. Arrancar server → consola debe mostrar boot report con `[T1 OFFICIAL]` en los 6 módulos.
+3. Verificar `T1 OFFICIAL: 6 / Total: 6` en boot report.
+4. `resmon` consola → `admirals_bridges` idle <0.3ms.
+5. (Opcional) `exec resources/admirals_bridges/scripts/test_adapter.lua` → `admirals_test_adapter bank qbox` → output estructural (todos SKIP — S0.3 skeleton).
+
+### Handoff próxima sesión (S0.4)
+- **Modelo recomendado:** Opus 4.7 (ARCHITECT+SPRINTER — admirals_core es arquitectura foundational crítica).
+- **Perfil:** 🏗️ ARCHITECT + ⚡ SPRINTER.
+- **Goal:** `admirals_core` completo: EventBus + DB wrappers (oxmysql) + RateLimiter + Logger + Metrics + Migrations runner + 2 primeras migrations + smoke test 10 pasos + Sprint 0 sign-off + `git tag v0.0.0`.
+- **Docs a leer obligatorio:**
+  - `docs/technical/03_db_schema.md` (subset foundational tablas para migrations 001/002).
+  - `docs/technical/04_api_contracts.md` (EventBus patterns + exports admirals_core).
+  - `docs/technical/06_fivem_standards.md` (perf budgets + RateLimiter).
+  - `progress/SESSION_LOG.md` últimas 3 entries (S0.1/S0.2/S0.3).
+  - `progress/SPRINT_PLAN_S0.md` §S0.4 (11 done criteria).
+- **Pre-condición:** smoke S0.3 passing (boot report T1 × 6). Commit S0.3 pushed. Git clean.
+- **Files in scope S0.4:** `resources/admirals_core/` completo (fxmanifest + config + server/init + server/event_bus + server/db + server/rate_limiter + server/logger + server/metrics + server/migrations + migrations/001_*.sql + migrations/002_*.sql) + `scripts/smoke_test.md` + `progress/SPRINT_RETRO_S0.md`.
+- **No tocar:** `resources/admirals_bridges/*` (congelado S0.3), `docs/*`.
+
+### Files in scope respetados
+✅ Exactos 7 creates + 2 edits (fxmanifest + SESSION_LOG) = 9 operaciones, matching whitelist SPRINT_PLAN_S0.md §S0.3. No tocó `bridges/*.lua`, `server/*.lua`, `adapters/*/native.lua`, `docs/*`, `resources/admirals_core/*`, `README.md`, `SPRINT_PLAN_S0.md`.
+
+---

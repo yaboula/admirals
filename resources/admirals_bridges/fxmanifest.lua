@@ -3,7 +3,7 @@ game      'gta5'
 lua54     'yes'
 
 author      'Admirals'
-version     '0.1.0'
+version     '0.2.0'
 description 'Admirals Bridges Layer — multi-framework compatibility (Bank / Inventory / Phone / Identity / Target / Notify)'
 
 -- =============================================================================
@@ -19,8 +19,11 @@ description 'Admirals Bridges Layer — multi-framework compatibility (Bank / In
 --                                RegisterAdapter when adapters load).
 --   6. adapters/*/native.lua   — call Bridges.RegisterAdapter() at load.
 --                                MUST load AFTER bridges/*.lua.
---   7. server/detect.lua       — auto-detection + overrides logic.
---   8. server/init.lua         — boot orchestration (LAST). Validates all,
+--   7. adapters/*/<t1>.lua     — T1 external adapters. Load AFTER native.lua
+--                                so native is always the fallback registered
+--                                first; T1 overrides via SetActive detection.
+--   8. server/detect.lua       — auto-detection + overrides logic.
+--   9. server/init.lua         — boot orchestration (LAST). Validates all,
 --                                runs detection, activates, prints report.
 -- =============================================================================
 
@@ -42,13 +45,22 @@ server_scripts {
   'bridges/target.lua',
   'bridges/notify.lua',
 
-  -- Native adapters (register via Bridges.RegisterAdapter())
+  -- Native adapters (fallback — always registered, always available)
   'adapters/bank/native.lua',
   'adapters/inventory/native.lua',
   'adapters/phone/native.lua',
   'adapters/identity/native.lua',
   'adapters/target/native.lua',
   'adapters/notify/native.lua',
+
+  -- T1 external adapters (QBox + ox_* + lb-phone)
+  -- Load AFTER native so native is always registered as fallback.
+  'adapters/bank/qbox.lua',
+  'adapters/identity/qbox.lua',
+  'adapters/inventory/ox_inventory.lua',
+  'adapters/target/ox_target.lua',
+  'adapters/notify/ox_lib.lua',
+  'adapters/phone/lb_phone.lua',
 
   -- Detection + boot orchestration (LAST)
   'server/detect.lua',
