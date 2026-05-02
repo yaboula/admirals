@@ -115,6 +115,121 @@ function Events.PublishTransferCompleted(payload)
 end
 
 -- =============================================================================
+-- Public — PublishEscrowCreated.
+--
+-- Schema S1.3 (SSoT gap §02 — ADR formal S2+, current canonical per founder F3):
+--   {
+--     escrow_id, escrow_iban,
+--     buyer_iban, seller_iban,
+--     amount, fee_charged,
+--     contract_id, release_condition, release_date,
+--     expires_at,
+--     requester_account_id, occurred_at
+--   }
+-- Auto-decorated por Bus.Publish: _event_name, _event_id, _emitted_at, _schema_version.
+-- =============================================================================
+function Events.PublishEscrowCreated(payload)
+  local ok, missing = _validate_required(payload, {
+    'escrow_id', 'escrow_iban', 'buyer_iban', 'seller_iban',
+    'amount', 'fee_charged', 'requester_account_id', 'occurred_at',
+  })
+  if not ok then
+    Admirals.Log.Error('PublishEscrowCreated: missing field "%s"', tostring(missing))
+    Admirals.Metrics.Counter('bank.events.escrow_created.invalid_payload')
+    return false
+  end
+
+  Admirals.Bus.Publish(Config.Events.EscrowCreated, {
+    escrow_id            = payload.escrow_id,
+    escrow_iban          = payload.escrow_iban,
+    buyer_iban           = payload.buyer_iban,
+    seller_iban          = payload.seller_iban,
+    amount               = payload.amount,
+    fee_charged          = payload.fee_charged,
+    contract_id          = payload.contract_id,
+    release_condition    = payload.release_condition,
+    release_date         = payload.release_date,
+    expires_at           = payload.expires_at,
+    requester_account_id = payload.requester_account_id,
+    occurred_at          = payload.occurred_at,
+  }, { audit = 'always' })
+
+  Admirals.Metrics.Counter('bank.events.escrow_created.published')
+  return true
+end
+
+-- =============================================================================
+-- Public — PublishEscrowReleased (C005 direction='seller').
+--
+-- Schema S1.3:
+--   {
+--     escrow_id, seller_iban, amount,
+--     released_amount_seller, released_amount_buyer,
+--     transaction_id, requester_account_id, occurred_at
+--   }
+-- =============================================================================
+function Events.PublishEscrowReleased(payload)
+  local ok, missing = _validate_required(payload, {
+    'escrow_id', 'amount',
+    'released_amount_seller', 'released_amount_buyer',
+    'transaction_id', 'requester_account_id', 'occurred_at',
+  })
+  if not ok then
+    Admirals.Log.Error('PublishEscrowReleased: missing field "%s"', tostring(missing))
+    Admirals.Metrics.Counter('bank.events.escrow_released.invalid_payload')
+    return false
+  end
+
+  Admirals.Bus.Publish(Config.Events.EscrowReleased, {
+    escrow_id              = payload.escrow_id,
+    buyer_iban             = payload.buyer_iban,
+    seller_iban            = payload.seller_iban,
+    amount                 = payload.amount,
+    released_amount_seller = payload.released_amount_seller,
+    released_amount_buyer  = payload.released_amount_buyer,
+    transaction_id         = payload.transaction_id,
+    requester_account_id   = payload.requester_account_id,
+    occurred_at            = payload.occurred_at,
+  }, { audit = 'always' })
+
+  Admirals.Metrics.Counter('bank.events.escrow_released.published')
+  return true
+end
+
+-- =============================================================================
+-- Public — PublishEscrowRefunded (C005 direction='buyer').
+--
+-- Schema S1.3 idéntico a released, distinguible via _event_name.
+-- =============================================================================
+function Events.PublishEscrowRefunded(payload)
+  local ok, missing = _validate_required(payload, {
+    'escrow_id', 'amount',
+    'released_amount_seller', 'released_amount_buyer',
+    'transaction_id', 'requester_account_id', 'occurred_at',
+  })
+  if not ok then
+    Admirals.Log.Error('PublishEscrowRefunded: missing field "%s"', tostring(missing))
+    Admirals.Metrics.Counter('bank.events.escrow_refunded.invalid_payload')
+    return false
+  end
+
+  Admirals.Bus.Publish(Config.Events.EscrowRefunded, {
+    escrow_id              = payload.escrow_id,
+    buyer_iban             = payload.buyer_iban,
+    seller_iban            = payload.seller_iban,
+    amount                 = payload.amount,
+    released_amount_seller = payload.released_amount_seller,
+    released_amount_buyer  = payload.released_amount_buyer,
+    transaction_id         = payload.transaction_id,
+    requester_account_id   = payload.requester_account_id,
+    occurred_at            = payload.occurred_at,
+  }, { audit = 'always' })
+
+  Admirals.Metrics.Counter('bank.events.escrow_refunded.published')
+  return true
+end
+
+-- =============================================================================
 -- Boot announce.
 -- =============================================================================
-Admirals.Log.Info('Events module ready (transfer_completed schema §4.3 wired)')
+Admirals.Log.Info('Events module ready (transfer_completed §4.3 + escrow_created/released/refunded S1.3)')

@@ -46,6 +46,7 @@ local Config = Admirals.Bank.Config
 local IBAN = Admirals.Bank.IBAN
 local Accounts = Admirals.Bank.Accounts
 local Transfer = Admirals.Bank.Transfer
+local Escrow = Admirals.Bank.Escrow
 local Bank = Admirals.Bank
 local Callbacks = Admirals.Bank.Callbacks
 
@@ -357,6 +358,246 @@ lib.callback.register('admirals:bank:transfer', function(source, request)
 end)
 
 -- =============================================================================
+-- C003 reserved for admirals:bank:getTransactions (S2+ — Tablet history view per §3.1).
+-- =============================================================================
+
+-- =============================================================================
+-- C004 — admirals:bank:createEscrow
+--
+-- Request (per SSoT §3.1 C004):
+--   { buyer_iban, seller_iban, amount, contract_id?, release_condition,
+--     release_date?, request_id }
+-- Response (success): { success, data: { escrow_id, fee_charged, expires_at } }
+-- Error codes per SSoT §7 + S1.3 extensions.
+--
+-- Authorization: only buyer (caller citizen_id === owner_account_id of buyer_iban).
+-- Rate limit: bucket 'bank.write' (10/60s) — same as C002 (registered en
+-- admirals_core/config.lua:126).
+-- Idempotency: request_id via Bridges DB-backed admirals_bridge_idempotency table.
+-- =============================================================================
+lib.callback.register('admirals:bank:createEscrow', function(source, request)
+  request = request or {}
+  local start_ms = GetGameTimer()
+
+  -- 1. Resolve citizen_id from cache.
+  local citizen_id = Bank.GetCitizenIdBySource and Bank.GetCitizenIdBySource(source)
+  if not citizen_id then
+    Admirals.Metrics.Counter('bank.callbacks.create_escrow.not_authenticated')
+    return _err('NOT_AUTHENTICATED', 'Player session not loaded')
+  end
+
+  -- 2. Shape validation request_id first.
+  local request_id = request.request_id
+  if type(request_id) ~= 'string' or #request_id < 8 or #request_id > 64 then
+    Admirals.Metrics.Counter('bank.callbacks.create_escrow.missing_request_id')
+    return _err('MISSING_FIELD', 'request_id required (UUID v4 string)')
+  end
+
+  -- 3. Idempotency check (best-effort; failures proceed per S1.2 pattern).
+  local idem_ok, idem_ret = pcall(function()
+    return exports.admirals_bridges:IsIdemReplay(request_id)
+  end)
+  if not idem_ok then
+    Admirals.Log.Warn('Bridges:IsIdemReplay failed (create_escrow): %s', tostring(idem_ret))
+    Admirals.Metrics.Counter('bank.callbacks.create_escrow.idem_lookup_failed')
+  elseif type(idem_ret) == 'table' and idem_ret.is_replay == true then
+    Admirals.Metrics.Counter('bank.callbacks.create_escrow.idempotency_replay')
+    Admirals.Log.Audit({
+      category = Config.AuditCategories.EscrowCreated,
+      action   = 'idempotency_replay',
+      actor    = citizen_id,
+      target   = request_id,
+      payload  = { request_id = request_id },
+    })
+    return idem_ret.cached
+  end
+
+  -- 4. Rate limit (bucket 'bank.write' — fail-closed).
+  local rate_ok, rate_allowed = pcall(Admirals.Rate.Check, citizen_id, 'bank.write')
+  if not rate_ok or rate_allowed ~= true then
+    if not rate_ok then
+      Admirals.Log.Warn('Admirals.Rate.Check threw (create_escrow): %s — fail-closed', tostring(rate_allowed))
+    end
+    Admirals.Metrics.Counter('bank.callbacks.create_escrow.rate_limited')
+    return _err('RATE_LIMITED', 'Demasiadas operaciones. Espera un momento.')
+  end
+
+  -- 5. Shape validation basic fields (Escrow.Create does deep validation).
+  local buyer_iban = request.buyer_iban
+  local seller_iban = request.seller_iban
+  local amount = tonumber(request.amount)
+  local contract_id = request.contract_id
+  local release_condition = request.release_condition
+  local release_date = tonumber(request.release_date)
+
+  if type(buyer_iban) ~= 'string' or buyer_iban == '' then
+    return _err('MISSING_FIELD', 'buyer_iban required')
+  end
+  if type(seller_iban) ~= 'string' or seller_iban == '' then
+    return _err('MISSING_FIELD', 'seller_iban required')
+  end
+  if not amount then
+    return _err('MISSING_FIELD', 'amount required (number)')
+  end
+  if type(contract_id) ~= 'string' then contract_id = nil end
+  if type(release_condition) ~= 'string' then release_condition = 'manual' end
+
+  -- 6. Delegate to Escrow.Create.
+  local ok, data, error_code = Escrow.Create(
+    citizen_id, buyer_iban, seller_iban, amount,
+    contract_id, release_condition, release_date, request_id
+  )
+
+  -- 7. Build response + error mapping.
+  local response
+  if ok and data then
+    response = { success = true, data = data }
+  else
+    local message_map = {
+      AMOUNT_OUT_OF_RANGE      = 'Importe fuera de rango permitido.',
+      INVALID_IBAN             = 'IBAN inválido o cuenta inexistente.',
+      SELF_ESCROW              = 'No puedes crear un escrow contigo mismo.',
+      NOT_AUTHORIZED           = 'No estás autorizado para esta operación.',
+      ACCOUNT_FROZEN           = 'Una de las cuentas está congelada o cerrada.',
+      INSUFFICIENT_FUNDS       = 'Saldo insuficiente (monto + comisión).',
+      INVALID_RELEASE_CONDITION = 'Condición de liberación no válida.',
+      INVALID_REQUEST          = 'Parámetros de solicitud incorrectos.',
+      SYSTEM_ACCOUNT_NOT_FOUND = 'Cuenta de tesorería no disponible. Contacta admin.',
+      RACE_DETECTED            = 'Operación cancelada por concurrencia. Reintenta.',
+      TX_CRASH                 = 'Error transitorio del sistema. Reintenta.',
+      TX_ROLLBACK              = 'Operación abortada por integridad. Reintenta.',
+    }
+    response = _err(error_code or 'FAILED', message_map[error_code] or 'Creación de escrow fallida.')
+  end
+
+  -- 8. Persist idempotency (success OR error — PUT semantics).
+  local store_ok, store_err = pcall(function()
+    return exports.admirals_bridges:StoreIdem(request_id, response)
+  end)
+  if not store_ok then
+    Admirals.Log.Warn('Bridges:StoreIdem failed (create_escrow) %s: %s', request_id, tostring(store_err))
+    Admirals.Metrics.Counter('bank.callbacks.create_escrow.idem_store_failed')
+  end
+
+  -- 9. Metrics.
+  local duration_ms = GetGameTimer() - start_ms
+  Admirals.Metrics.Observe('bank.callbacks.create_escrow.duration_ms', duration_ms)
+
+  return response
+end)
+
+-- =============================================================================
+-- C005 — admirals:bank:releaseEscrow
+--
+-- Request (per SSoT §3.1 C005):
+--   { escrow_id, release_to, split_ratio?, request_id }
+--     release_to: 'seller' | 'buyer' | 'split'
+--     split_ratio: 0..1 (required if release_to='split' — NOT_IMPLEMENTED S1.3)
+--
+-- Response (success): { success, data: { released_amount_seller,
+--                       released_amount_buyer, timestamp } }
+--
+-- Auth matrix (F3 SSoT gap resolved S1.3):
+--   caller==seller + release_to='seller' → allowed (release)
+--   caller==buyer  + release_to='buyer'  → allowed (refund)
+--   any other combo                       → NOT_AUTHORIZED
+--   release_to='split'                    → NOT_IMPLEMENTED (deferred S3+)
+-- =============================================================================
+lib.callback.register('admirals:bank:releaseEscrow', function(source, request)
+  request = request or {}
+  local start_ms = GetGameTimer()
+
+  local citizen_id = Bank.GetCitizenIdBySource and Bank.GetCitizenIdBySource(source)
+  if not citizen_id then
+    Admirals.Metrics.Counter('bank.callbacks.release_escrow.not_authenticated')
+    return _err('NOT_AUTHENTICATED', 'Player session not loaded')
+  end
+
+  local request_id = request.request_id
+  if type(request_id) ~= 'string' or #request_id < 8 or #request_id > 64 then
+    Admirals.Metrics.Counter('bank.callbacks.release_escrow.missing_request_id')
+    return _err('MISSING_FIELD', 'request_id required (UUID v4 string)')
+  end
+
+  -- Idempotency.
+  local idem_ok, idem_ret = pcall(function()
+    return exports.admirals_bridges:IsIdemReplay(request_id)
+  end)
+  if not idem_ok then
+    Admirals.Log.Warn('Bridges:IsIdemReplay failed (release_escrow): %s', tostring(idem_ret))
+    Admirals.Metrics.Counter('bank.callbacks.release_escrow.idem_lookup_failed')
+  elseif type(idem_ret) == 'table' and idem_ret.is_replay == true then
+    Admirals.Metrics.Counter('bank.callbacks.release_escrow.idempotency_replay')
+    Admirals.Log.Audit({
+      category = Config.AuditCategories.EscrowReleased,
+      action   = 'idempotency_replay',
+      actor    = citizen_id,
+      target   = request_id,
+      payload  = { request_id = request_id },
+    })
+    return idem_ret.cached
+  end
+
+  -- Rate limit (fail-closed).
+  local rate_ok, rate_allowed = pcall(Admirals.Rate.Check, citizen_id, 'bank.write')
+  if not rate_ok or rate_allowed ~= true then
+    if not rate_ok then
+      Admirals.Log.Warn('Admirals.Rate.Check threw (release_escrow): %s — fail-closed', tostring(rate_allowed))
+    end
+    Admirals.Metrics.Counter('bank.callbacks.release_escrow.rate_limited')
+    return _err('RATE_LIMITED', 'Demasiadas operaciones. Espera un momento.')
+  end
+
+  -- Shape validation.
+  local escrow_id = request.escrow_id
+  local release_to = request.release_to
+  local split_ratio = tonumber(request.split_ratio)
+  if type(escrow_id) ~= 'string' or escrow_id == '' then
+    return _err('MISSING_FIELD', 'escrow_id required')
+  end
+  if type(release_to) ~= 'string' or release_to == '' then
+    return _err('MISSING_FIELD', 'release_to required')
+  end
+
+  -- Delegate.
+  local ok, data, error_code = Escrow.Release(
+    citizen_id, escrow_id, release_to, split_ratio, request_id
+  )
+
+  local response
+  if ok and data then
+    response = { success = true, data = data }
+  else
+    local message_map = {
+      NOT_AUTHENTICATED  = 'Sesión no iniciada.',
+      NOT_AUTHORIZED     = 'No estás autorizado para esta liberación.',
+      ESCROW_NOT_FOUND   = 'Escrow no encontrado.',
+      INVALID_STATE      = 'Escrow no está en estado liberable (locked requerido).',
+      NOT_IMPLEMENTED    = 'Modo split aún no implementado (S3+).',
+      INVALID_REQUEST    = 'Parámetros de solicitud incorrectos.',
+      ACCOUNT_FROZEN     = 'Cuenta destinataria congelada o cerrada.',
+      TX_CRASH           = 'Error transitorio del sistema. Reintenta.',
+      TX_ROLLBACK        = 'Operación abortada por integridad. Reintenta.',
+    }
+    response = _err(error_code or 'FAILED', message_map[error_code] or 'Liberación de escrow fallida.')
+  end
+
+  -- Persist idempotency.
+  local store_ok, store_err = pcall(function()
+    return exports.admirals_bridges:StoreIdem(request_id, response)
+  end)
+  if not store_ok then
+    Admirals.Log.Warn('Bridges:StoreIdem failed (release_escrow) %s: %s', request_id, tostring(store_err))
+    Admirals.Metrics.Counter('bank.callbacks.release_escrow.idem_store_failed')
+  end
+
+  local duration_ms = GetGameTimer() - start_ms
+  Admirals.Metrics.Observe('bank.callbacks.release_escrow.duration_ms', duration_ms)
+
+  return response
+end)
+
+-- =============================================================================
 -- Boot announce.
 -- =============================================================================
-Admirals.Log.Info('Callbacks registered: admirals:bank:getBalance (C001), admirals:bank:transfer (C002)')
+Admirals.Log.Info('Callbacks registered: getBalance (C001), transfer (C002), createEscrow (C004), releaseEscrow (C005)')
