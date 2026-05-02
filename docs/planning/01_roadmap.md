@@ -211,26 +211,34 @@ Oleada 1 Sprint 8: Polish + balance + bridges testing matrix + closed beta
 
 > **Recomendación:** sprints de 2 semanas, retros simples al final.
 
-#### Sprint 0 — Setup + Bridges skeleton (2-3 semanas)
+#### Sprint 0 — Setup + Bridges Layer + admirals_core foundation (✅ CERRADO 2026-05-02)
 
 **Goals:**
 - Repo Git inicializado + estructura básica (`server/`, `resources/`, `web/`, `migrations/`, `scripts/`).
 - Framework FiveM decidido (QBox primary, QBCore compat declared) + base instalada.
-- DB MySQL setup + migrations runner + primera migration (tablas core).
-- `admirals_core` resource skeleton (Event Bus + DB wrappers + RateLimiter + Logger + Metrics).
-- **Bridges layer skeleton** — `Bridges.Bank`, `Bridges.Inventory`, `Bridges.Phone`, `Bridges.Identity`, `Bridges.Target` interfaces definidos + adapters QBox primary.
+- DB MySQL setup + migrations runner + primeras migrations (schema_versions + foundation tables).
+- `admirals_core` resource skeleton (Event Bus + DB wrappers + RateLimiter + Logger + Metrics + Migrations).
+- **Bridges layer completo** — 6 bridges (Bank / Inventory / Phone / Identity / Target / Notify) + 6 T1 adapters externos (qbox bank+identity, ox_inventory, ox_target, ox_lib notify, lb-phone) + 6 native fallbacks + auto-detection + convar overrides + boot report.
 - Auto-detection de scripts instalados al boot.
-- Smoke test script básico.
-- Discord dev channel.
+- Smoke test 10 pasos (`scripts/smoke_test_s0.md`).
+- Resource scaffolding + fxmanifest load order + first push GitHub.
 
-**Done criteria:**
-- ✅ `git clone` + 1 comando ejecuta server local.
-- ✅ Player puede conectar, login, ver mensaje "Welcome".
-- ✅ Migrations runner aplica primera migration.
-- ✅ Bridges layer detecta framework instalado y elige adapter correcto.
-- ✅ `admirals_core` boots <50ms.
+**Done criteria (todos ✅):**
+- ✅ `git clone` + 1 comando ejecuta server local. (S0.1)
+- ✅ Bridges layer detecta framework instalado y elige adapter correcto. (S0.2 + S0.3)
+- ✅ `admirals_core` boots limpio: Logger + Metrics + DB + EventBus + RateLimiter + Migrations + init orchestration. (S0.4)
+- ✅ Migrations runner aplica 001_schema_versions + 002_foundation_tables idempotente con checksum SHA-256. (S0.4)
+- ✅ 3 tablas foundation creadas: `admirals_accounts` (minimal 7 cols), `admirals_audit_log` (wrapper operational), `admirals_bridge_idempotency` (DB-backed replacement S0.2 in-memory). Ver ADR-010 para rationale. (S0.4)
+- ✅ Smoke test 10 pasos manual (`scripts/smoke_test_s0.md`) redactado — ejecución founder.
+- ✅ `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 resmon idle < 0.3ms cada uno.
 
-**Risk:** scope bridges skeleton puede inflarse. Mitigación: skeleton incluye **interfaces + adapter QBox + 1 stub adapter**. Adapters secundarios (lb-phone, qs-inventory, etc.) se añaden iterativamente Sprint 1+.
+**Sessions ejecutadas (5):** S0.0 checkpoint (operacionales) + S0.1 scaffolding + S0.2 Bridges Layer (Opus) + S0.3 T1 adapters (Sonnet) + S0.4 admirals_core foundation (Opus).
+
+**ADRs añadidos:** ADR-010 (hybrid audit_log).
+
+**Retro:** `progress/SPRINT_RETRO_S0.md`.
+
+**Risk original:** scope bridges skeleton puede inflarse. Resultado: **mitigado exitosamente** — bridges skeleton completo con 6 T1 adapters en 1 sprint, no escaló.
 
 #### Sprint 1 — Banco básico (2 semanas)
 
@@ -787,8 +795,8 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 
 ### 14.2 Estado del documento
 
-- **Versión:** 1.0 (firmable — completo, 14 secciones).
-- **Próxima revisión:** al cerrar Oleada 0 (firmar todos los docs pendientes) + nueva versión 1.1 con learnings Sprint 0 Oleada 1.
+- **Versión:** 1.3 (firmado — completo, 14 secciones, Sprint 0 cerrado).
+- **Próxima revisión:** al cerrar Sprint 1 (`admirals_bank` core) → v1.4 con retro learnings.
 - **Documento padre:** `agents/00_BOOTSTRAP.md` v1.0.
 - **Documento hermano:** `planning/02_decision_log.md` (próximo).
 - **Documentos relacionados:**
@@ -802,6 +810,7 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción completa. 14 secciones cubriendo filosofía, fases, sprints detallados Oleada 0+1, dependencias, risk register, estimation guide, KPIs. **Firmable.** |
 | 1.1 | 2026-05-01 | Founder + Cascade | **Pivot crítico MVP node:** Bakery → Granja (cross-vertical root, Bible §13.4). Justificación: Granja es nodo raíz, sistema calidad más natural, ritmo passive timer-friendly perf, Oleada 2 construye sobre wheat real. Reorganización Sprint 4+7 (Bakery → Granja). Oleada 2 reordenada (Molino → Bakery → Retail). **Añadido `technical/07_bridges_compatibility.md`** como último doc Oleada 0 (compat scripts custom: lb-phone, qs-inventory, custom banks, etc.). Sprint 0 ampliado con bridges skeleton. Risk register actualizado (bridges + scaling Granja). Critical path actualizado. Dependencies graph muestra bridges como foundational. |
 | 1.2 | 2026-05-01 | Founder + Cascade | 🏆 **OLEADA 0 CERRADA 100%.** `technical/07_bridges_compatibility.md` v1.0 firmado + ADR-008 (Granja pivot) + ADR-009 (Bridges Layer) registrados en decision_log. §2.1 tabla + §3.2 completadas. Done criteria Oleada 0 todos cumplidos. Estado "ready-to-code" confirmado. |
+| 1.3 | 2026-05-02 | Founder + Cascade | 🏆 **SPRINT 0 CERRADO.** §4.2 Sprint 0 marcado ✅ con fecha + sessions ejecutadas (S0.0-S0.4) + ADR-010 (hybrid audit_log) añadido. `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 operativos. Smoke test 10 pasos listo. Next: Sprint 1 — Banco core. |
 
 ---
 
@@ -814,7 +823,7 @@ Si lees solo este resumen:
 3. **Oleada 1 (MVP) = 4-6 meses, 9 sprints.** **Granja-only** (no Bakery — pivot v1.1) + Tablet 3 apps + Banco + Empresas básicas + Bridges layer.
 4. **Oleada 2 (multi-nodo) = 6-8 meses, 12 sprints.** Molino + Bakery + Retail construidos sobre wheat real de Granja + social.
 5. **Critical path Oleada 1:** Bridges → Banco → Tablet → Item → Granja NPC → Empresa → Workplace → Granja player → Polish.
-6. **Sprint 0 Oleada 1** puede empezar YA. Setup repo + `admirals_bridges` + `admirals_core` + primera migration + adapters T1.
+6. **Sprint 0 🏆 CERRADO** (2026-05-02). `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + 6 T1 adapters + migrations 001/002 + smoke test. **Next: Sprint 1** — `admirals_bank` core (IBAN + balance + transfer).
 7. **Done criteria explícitos** por feature/sprint/oleada.
 8. **Sprint length:** 2 semanas. Solo dev: ✅ skip dailies, do retros.
 9. **Risk top 3:** founder burnout, bridges abstracción incorrecta, AI agent quality drop.

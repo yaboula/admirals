@@ -17,7 +17,7 @@ Config = Config or {}
 -- Version — SEMVER de la interfaz Bridges (per doc §15).
 -- Bump MAJOR si breaking change en firma. MINOR si añade método.
 -- -----------------------------------------------------------------------------
-Config.Version = '0.1.0'
+Config.Version = '0.2.0'
 
 -- -----------------------------------------------------------------------------
 -- Módulos canónicos. ORDEN importa para boot report.

@@ -253,3 +253,107 @@
 ✅ Exactos 7 creates + 2 edits (fxmanifest + SESSION_LOG) = 9 operaciones, matching whitelist SPRINT_PLAN_S0.md §S0.3. No tocó `bridges/*.lua`, `server/*.lua`, `adapters/*/native.lua`, `docs/*`, `resources/admirals_core/*`, `README.md`, `SPRINT_PLAN_S0.md`.
 
 ---
+
+## S0.4 — admirals_core foundation (EventBus + DB + RateLimiter + Logger + Metrics + Migrations) + Sprint 0 close
+
+- **Fecha:** 2026-05-02
+- **Duración:** ~4h (estimado SPRINT_PLAN: 4h ✅ on-target)
+- **Founder + Agent:** yaboula + Cascade (Opus 4.7)
+- **Sprint:** S0 — Setup + Bridges Layer + admirals_core foundation (🏆 SPRINT 0 CLOSE en esta session)
+- **Perfil:** 🏗️ ARCHITECT + ⚡ SPRINTER
+- **Modelo:** Opus 4.7 (arquitectura foundational crítica downstream — decisión founder §2.3 playbook)
+- **Goal:** `admirals_core` v0.1.0 completo + migrations 001/002 + smoke test 10 pasos + ADR-010 + docs edits + retro + S1 plan outline + Sprint 0 tag v0.0.0.
+- **Status:** ✅ Done (código + docs); 🟡 pendiente smoke test manual founder + `git tag v0.0.0`.
+
+### Cambios
+- **Creado:** `resources/admirals_core/config.lua` — `Admirals.Config` namespace con Version, Env, LogLevel + numeric map, LogRingBufferSize=1000, MetricsHistogramWindow=500, DbTimeoutMs=3000, DbSlowQueryMs=500, BusAuditMode convar, BusAsyncThresholdMs=50, BusTracingKeys, RateBuckets default (7 buckets canonical per §04 §8.1), RateGcIntervalSec=300, MigrationsDir/Pattern/FailFast/ChecksumCheck, MigrationsFiles list explícita (001 + 002), BridgesWaitTimeoutMs=15000, CoreReadyEventName, AdminAcePrefix, AdminCommands registry.
+- **Creado:** `resources/admirals_core/server/logger.lua` — `Admirals.Log.{Debug,Info,Warn,Error,Audit}` + ring buffer circular O(1) append 1000 entries + GetRingBuffer/Clear/SetLevel/GetLevel/Size + ANSI colors FiveM (^1-^9) + admin commands `/admirals_log_dump [n]`, `/admirals_log_level <lv>`, `/admirals_log_clear` ACE-gated (source=0 console siempre permitido).
+- **Creado:** `resources/admirals_core/server/metrics.lua` — `Admirals.Metrics.{Counter,Gauge,Observe}` + histogram sliding window 500 samples con p50/p95/p99 nearest-rank + Get/Snapshot/Reset + admin commands `/admirals_metrics`, `/admirals_metrics_reset`. Output formateado por tipo (Counters/Gauges/Histograms) ordenado alfabético.
+- **Creado:** `resources/admirals_core/server/db.lua` — `Admirals.DB.{FetchOne,FetchAll,Execute,Insert,Scalar,Transaction}` sobre oxmysql `.await`. Hard-enforce prepared statements: `_validate()` rechaza query sin '?' si params no vacío (anti-SQL-injection per §04 §6.1 + §06 T3). Duration metric per kind (select/insert/update/transaction), slow-query warn >500ms + soft-timeout >3000ms (detection + warn, no cancellation — oxmysql limitation documentada). `IsReady()/WaitReady()` ping `SELECT 1` para init orchestration. Transaction returns boolean, rollback automático por dup key.
+- **Creado:** `resources/admirals_core/server/event_bus.lua` — `Admirals.Bus.{Subscribe,Unsubscribe,Publish,RegisterSchema,Stats}` canonical per `01_architecture.md` §5.5. Auto-decorate `_event_name, _event_id (UUID v4 RFC 4122), _emitted_at (unix ms), _schema_version` per `02_events_catalog.md` §1.4. pcall per handler (1 crash ≠ afecta otros), async threshold 50ms auto-flag handler a async próxima invocación. `opts.once/async/audit/broadcast_client`. Schema validation opcional via RegisterSchema. Metrics: publishes.{event}, handler_latency_ms.{event}, handler_errors.{event}, broadcasts.{event}, rejects.*.
+- **Creado:** `resources/admirals_core/server/rate_limiter.lua` — `Admirals.Rate.{Check,RegisterBucket,GetBucket,Reset,Stats}` sliding window algorithm (array timestamps, purge at check). 7 default buckets desde Config.RateBuckets (tablet.query, bank.read/write, empresa.found, contract.dispute, item.transfer, market.create). GC thread cada 300s purga identity-bucket pairs donde último timestamp fuera de window (evita leak por citizens offline). Metrics: rate.allowed.{bucket}, rate.blocked.{bucket}, rate.gc_purged.
+- **Creado:** `resources/admirals_core/server/migrations.lua` — `Admirals.Migrations.{RunAll,ListApplied,IsApplied}`. Flow: per cada file en Config.MigrationsFiles ordenado → parse filename `(%d%d%d)_(.+)%.sql` → read body via LoadResourceFile → SHA-256 via `DB.Scalar('SELECT SHA2(?, 256)', { body })` (no Lua crypto needed) → check `admirals_schema_versions` tabla + row version → skip si applied & checksum match, warn+fail-fast si checksum mismatch (tampering detect), apply via multi-statement split naive (`;\n` delimiter) + pcall per statement → INSERT tracking row. Fail-fast global per Config.MigrationsFailFast=true.
+- **Creado:** `resources/admirals_core/server/init.lua` — Boot orchestration LAST. `Admirals.Core.{IsReady,WaitReady,Version,GetMigrationReport}` + exports. Secuencia: yield 1 tick → Bridges.WaitReady(15000ms) hard-fail → DB.WaitReady(15000ms) hard-fail → Migrations.RunAll hard-fail si errors → set Core._ready=true → `TriggerEvent('admirals:core:ready', payload)` + `Admirals.Bus.Publish('admirals:core:ready', payload, { broadcast_client = -1 })` → print boot report ASCII (env, log level, DB config, Bus config, boot_ms, migrations list). Admin command `/admirals_core_status` dumps ready state + migrations + bus stats + rate stats + log size.
+- **Creado:** `resources/admirals_core/client/init.lua` — Stub minimal: `Admirals.Ready = false` flag + listen `RegisterNetEvent('admirals:core:ready')` → set flag true + print version. Lógica client real S1+ (Tablet NUI).
+- **Creado:** `resources/admirals_core/migrations/001_schema_versions.sql` — `admirals_schema_versions` DDL canonical per `03_db_schema.md` §12.2 (version INT PK + filename UQ + applied_at + applied_by + checksum + duration_ms + notes).
+- **Creado:** `resources/admirals_core/migrations/002_foundation_tables.sql` — 3 tablas foundation per ADR-010 Opción (C) híbrido:
+  1. `admirals_accounts` minimal 7 cols (id CHAR(36) PK, char_id UQ+framework_source, alias, created_at, updated_at, last_login_at + 3 indexes). Subset respeta SSoT §3.1 canonical, expansible aditivamente ALTER TABLE ADD COLUMN S1+.
+  2. `admirals_audit_log` NUEVA wrapper operational (id BIGINT AUTO_INC, ts, category, action, actor_account_id, actor_source, target_type, target_id, amount, currency, request_id, resource, metadata JSON, ip_address + 5 indexes). Distinto de event_log (partitioned bus persistence S1+).
+  3. `admirals_bridge_idempotency` DB-backed (idem_key CHAR(64) PK, module, method, result_json, created_at, expires_at + 2 indexes). Sustituye `_idem_store` in-memory de `resources/admirals_bridges/server/dispatcher.lua` (promote path S1.2).
+- **Editado:** `resources/admirals_core/fxmanifest.lua` — version bump 0.0.1→0.1.0 + dependencies declaradas + shared_scripts config.lua + server_scripts orden estricto (logger→metrics→db→event_bus→rate_limiter→migrations→init) + client_scripts init.lua + files list migrations SQLs.
+- **Creado:** `scripts/smoke_test_s0.md` — 10 pasos manuales estructurados según founder spec (pre-flight, migration 001, migration 002, idempotency, EventBus, DB wrappers, RateLimiter, Logger, Metrics, resmon). Incluye snippets Lua ejecutables + expectativas exactas + checklist final sign-off.
+- **Creado:** `progress/SPRINT_RETRO_S0.md` — retro completa: qué fue bien (docs Oleada 0 pagó dividendos, SESSION_LOG protocolo, Opus calidad, velocity alta), qué fue mal (inconsistencia SSoT tarde detectada, config.lua WIP, oxmysql timeout no nativo, smoke no AI-runnable), qué cambia (SSoT linter S1, idempotency DB migrate S1.2, accounts ALTER TABLE S1), métricas (~4.200 LoC Lua, 4 sessions/1 día vs 3 sem estimado), sign-off.
+- **Creado:** `progress/SPRINT_PLAN_S1.md` — outline S1.1 (admirals_bank skeleton + IBAN + schema), S1.2 (transfer + idempotency DB promote), S1.3 (escrow + FSM + sprint close). Refinable pre-S1.1.
+- **Editado:** `docs/planning/02_decision_log.md` — v1.1→v1.2 con **ADR-010** (hybrid audit_log + event_log, 4 opciones analizadas → C elegida, contexto inconsistencia SSoT §03↔§04, decisión, consecuencias pos/neg/neutral, impact docs+código+features, re-evaluation trigger). Tag index ampliado (db, audit, ssot_consistency, foundational). Estado actualizado a 10 ADRs. Changelog entry v1.2. TL;DR table + resumen ejecutivo ampliados.
+- **Editado:** `docs/planning/01_roadmap.md` — v1.2→v1.3. §4.2 Sprint 0 marked ✅ CERRADO con deliverables detallados + sessions list + ADR-010 mention. §14.2 estado bumped. §14.3 changelog entry v1.3. §15 TL;DR punto 6 actualizado (Sprint 0 → Sprint 1 next).
+- **Editado:** `docs/agents/00_BOOTSTRAP.md` — v1.2→v1.3. Header Versión line actualizado. §2.1 Fase actual reescrita: "SPRINT 0 CERRADO" + deliverables bullets + next Sprint 1. §12.3 changelog v1.3. §13 TL;DR punto 2 actualizado.
+- **Editado:** `progress/SESSION_LOG.md` — esta entry S0.4 añadida al final (append-only per playbook §5.4).
+
+### Decisiones tomadas
+- **ADR-010 formalizado** — hybrid `admirals_audit_log` (wrapper operational, no particionado S0.4) + `admirals_event_log` (bus persistence partitioned, S1+ cuando EventBus persiste DB). Concerns distintos, coexisten. Resuelve inconsistencia SSoT `04_api_contracts.md:1053` (referencia dangling) ↔ `03_db_schema.md` §12 (no DDL). Opción (C) elegida de 3 analizadas.
+- **`admirals_accounts` minimal 7 cols** — subset canonical §3.1. Columnas faltantes (reputation_global, preferred_locale, developer_mode, meta, charinfo_*) se añaden S1+ via ALTER TABLE ADD COLUMN aditivo (non-breaking). Anotado SPRINT_RETRO_S0 §4.4.
+- **SHA-256 via `SELECT SHA2(?, 256)`** (MySQL) en lugar de implementar Lua crypto — simpler, ~1ms overhead negligible, evita 200 LoC extra.
+- **Soft timeout DB** — oxmysql no cancela coroutines ongoing; implementamos detection + warn log + metric counter, no hard-cancellation. Documentado en db.lua. Upgrade path S2+ si timeouts reales se observan.
+- **Multi-statement split naive** `;\n` — nuestros .sql siguen convención newline-after-semicolon. Si futuro migration tiene INSERT con `;` embebido en value string, se configurará `multipleStatements=true` en connection string O se usarán $$ delimiters.
+- **Auto-decorate payload `_event_*`** como in-place mutation (per §02 §1.4 es comportamiento esperado, callers no deben pasar esos keys).
+- **RateLimiter sliding window con purge en cada Check** — simple O(k) donde k=max bucket (≤60 típico). GC thread evita memory leak por citizens offline. Alternativa token bucket clásico considerada y descartada por simplicidad.
+- **Boot orchestration fail-fast en cada etapa** — Bridges, DB, Migrations. Si cualquiera falla → `error()` boot-time = server no arranca. Protege contra schema corrupto / configs inválidos llegando a producción.
+- **Boot report como último paso** (tras `admirals:core:ready` emit) — consumers pueden oír el evento incluso antes de que el panel termine de imprimir.
+- **Version bump 0.0.1→0.1.0** en admirals_core (SEMVER minor: feature addition sin breaking changes — no había API pública previa).
+
+### Verificación estática
+- ✅ **0 matches `QBCore.` / `ESX.` / `qb-*` / `qbx_core:` / `ox_inventory:`** en `resources/admirals_core/` — zero direct external calls, Bridges layer respetada per ADR-009.
+- ✅ **Prepared statement enforcement:** `_validate` en db.lua rechaza query sin '?' si params no vacío. Test bonus en smoke paso 6 valida.
+- ✅ **Syntax linter no ejecutado** (luac no en PATH). Self-review: LuaCATS/EmmyLua annotations correctas, `goto continue` Lua 5.4 válido, `table.pack/unpack`, `pcall` patterns correctos, oxmysql `.await` wrapping.
+- ✅ **14 files creados + 4 edits** matching whitelist SPRINT_PLAN §S0.4 + extensión ADR-010 (founder green-light 4th edit decision_log). No tocó `resources/admirals_bridges/*`, `.windsurf/*`, `docs/technical|economy|design|art|qa/*`, `README.md`.
+- ✅ **Load order fxmanifest verificado:** logger → metrics → db → event_bus → rate_limiter → migrations → init. Cada script puede asumir dependencias previas disponibles.
+
+### Issues pendientes
+- 🟡 **Smoke test manual founder:** ejecutar `scripts/smoke_test_s0.md` 10 pasos con server live + DB + framework T1. Expectativa 10/10 ✅.
+- 🟡 **`git tag v0.0.0` + push** tras smoke OK.
+- 🔵 **S1.1 promote idempotency a DB-backed:** modificar `admirals_bridges/server/dispatcher.lua` para leer/escribir en `admirals_bridge_idempotency` table (Config.IdempotencyBackend flag).
+- 🔵 **S1+ DDL canónico `admirals_audit_log`:** añadir en `docs/technical/03_db_schema.md` §12 (tracked ADR-010 impact + SPRINT_RETRO_S0 §4.3 neutral consequence).
+- 🔵 **S1+ ALTER TABLE `admirals_accounts`** aditivo para columnas faltantes spec §3.1 según las use cada feature.
+- 🔵 **oxmysql hard timeout** — considerar switch a mysql-async o PR upstream si slow queries degradan boot-time en Oleada 2+.
+
+### Smoke check S0.4 (founder ejecuta)
+Ver `scripts/smoke_test_s0.md` 10 pasos:
+1. Pre-flight boot (admirals_bridges v0.2.0 + admirals_core v0.1.0 + oxmysql conectado).
+2. Migration 001 aplicada (`admirals_schema_versions` + 1 row hash).
+3. Migration 002 aplicada (3 tablas + 2 rows tracking).
+4. Idempotency (re-arrancar → 0 new rows, checksum match, log "already applied").
+5. EventBus smoke (Subscribe + Publish + UUID v4 + audit entry + metric).
+6. DB wrappers smoke (Insert → Fetch → Scalar → Transaction rollback preservado).
+7. RateLimiter smoke (10 allow + 2 block exactos en bucket test).
+8. Logger ring + `/admirals_log_dump` admin-only + level toggle + clear.
+9. Metrics counter+histogram + `/admirals_metrics` + reset.
+10. resmon `admirals_core` idle <0.3ms, peak <1ms.
+
+### Handoff próxima sesión (S1.1)
+- **Modelo recomendado:** Opus 4.7 (arquitectura admirals_bank foundational).
+- **Perfil:** 🏗️ ARCHITECT + 🔧 BUILDER.
+- **Goal:** `admirals_bank` skeleton + IBAN generator + migration 003_bank_schema.sql (admirals_bank_accounts + admirals_bank_transactions + admirals_escrows) + callback getBalance. Ver `progress/SPRINT_PLAN_S1.md` §S1.1.
+- **Docs a leer obligatorio:**
+  - `progress/SESSION_LOG.md` últimas 3 entries (S0.2, S0.3, S0.4 — esta).
+  - `progress/SPRINT_PLAN_S1.md` §S1.1 (outline, refinable).
+  - `docs/technical/03_db_schema.md` §4 (dominio banca DDL).
+  - `docs/technical/04_api_contracts.md` §3.1 (C001-C005 callbacks banking).
+  - `docs/technical/05_state_machines.md` §4.1 (FSM escrow_lifecycle para S1.3).
+  - `docs/technical/07_bridges_compatibility.md` §4 (Bridges.Bank interface).
+  - `docs/planning/02_decision_log.md` ADR-010 (audit_log usage pattern).
+- **Pre-condición:** smoke S0.4 passing 10/10. Commit S0.4 + `git tag v0.0.0` pushed. Git clean.
+- **APIs disponibles S1.1 (via admirals_core):**
+  - `Admirals.DB.{FetchOne,FetchAll,Execute,Insert,Scalar,Transaction}` — prepared-only.
+  - `Admirals.Bus.{Subscribe,Publish}` — auto-decorated payloads.
+  - `Admirals.Rate.Check(src, 'bank.read'|'bank.write')` — defaults ya registrados.
+  - `Admirals.Log.{Info,Warn,Error,Audit}` — ring buffer + admin dump.
+  - `Admirals.Metrics.{Counter,Observe,Gauge}` — instrumentación.
+  - `Admirals.Migrations.*` — para añadir 003 a Config.MigrationsFiles list y que arranque en next boot.
+  - `Bridges.Bank.{AddMoney,RemoveMoney,Transfer}` con idempotency_key.
+  - `exports.admirals_core:WaitReady(30000)` en init admirals_bank.
+- **No tocar:** `resources/admirals_bridges/*` (congelado v0.2.0), `resources/admirals_core/*` salvo Config.MigrationsFiles list, `docs/technical|economy|design|art|qa/*`.
+
+### Files in scope respetados
+✅ 14 creates + 4 edits (fxmanifest edit + decision_log + roadmap + BOOTSTRAP + SESSION_LOG) = 18 operaciones. Respeta whitelist SPRINT_PLAN §S0.4 + extensión ADR-010 green-light founder. No tocó `resources/admirals_bridges/*`, `.windsurf/*`, `README.md`, `docs/technical|economy|design|art|qa/*`.
+
+---

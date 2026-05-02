@@ -574,6 +574,89 @@ Core tenets:
 
 ---
 
+## ADR-010 — Hybrid audit_log + event_log (resuelve inconsistencia SSoT §03 ↔ §04)
+
+- **Fecha:** 2026-05-02
+- **Autor:** Founder + Cascade
+- **Estado:** accepted
+- **Tags:** architecture, db, audit, ssot_consistency, foundational
+
+### Contexto
+
+Durante la planificación de S0.4 (`admirals_core foundation`) se detectó una inconsistencia entre dos SSoTs firmados Oleada 0:
+
+- `docs/technical/04_api_contracts.md` §6.4 (línea 1053) referencia literalmente `"→ tabla admirals_audit_log (ver technical/03_db_schema.md)"` como destino canónico de `AuditLog({ category, action, actor, ... })` para operaciones financieras / ownership-change / admin actions.
+- `docs/technical/03_db_schema.md` §12 (infraestructura) **NO define DDL de `admirals_audit_log`**. Solo define `admirals_event_log` (particionado mensual, audit trail del bus de eventos).
+
+S0.4 requiere crear `002_foundation_tables.sql`. Founder propuso tablas `players + audit_log + bridge_idempotency`. Cascade flaggeó el conflict contra SSoT §03 (canonical es `admirals_accounts`, no `admirals_players`; y `admirals_event_log`, no `admirals_audit_log`).
+
+Tres opciones analizadas:
+- **(A)** Renombrar todo a los nombres canónicos §03 y forzar `admirals_event_log` partitioned como destino del wrapper operational.
+- **(B)** Usar nombres founder literales (`admirals_players + admirals_audit_log`) como tablas staging separadas de las canónicas.
+- **(C)** Híbrido: usar nombre canónico `admirals_accounts` (SSoT §3.1) con columnas minimal 7-subset, y crear `admirals_audit_log` como tabla **nueva** infrastructure wrapper operational, **distinta** de `admirals_event_log` (structured bus persistence partitioned).
+
+### Decisión
+
+**Adoptar Opción (C) Híbrido.** Formalizar que `admirals_audit_log` y `admirals_event_log` son **tablas con concerns distintos**, complementarias no solapantes:
+
+1. **`admirals_audit_log`** — wrapper operational append-only.
+   - **Concern:** "quién hizo qué acción sobre qué entidad y cuándo" para flows financieros, ownership-change, admin actions.
+   - **Pattern de query:** dado `actor_account_id` o `(target_type, target_id)`, listar historial.
+   - **Destino de:** `Admirals.Log.Audit({ category, action, actor, target, ... })` wrapper desde `admirals_core/server/logger.lua` + callers en `admirals_bank`, `admirals_empresa`, admin commands.
+   - **No particionado** en S0.4 (bajo volumen esperado: ~5K rows/día @ 200 players). Particionado condicional si crece en Oleada 2+.
+   - **DDL:** ver `resources/admirals_core/migrations/002_foundation_tables.sql`.
+
+2. **`admirals_event_log`** — bus persistence structured.
+   - **Concern:** persistencia de TODOS los eventos del bus (`Admirals.Bus.Publish`) cuando `BusAuditMode=always` O evento individual marcado `audit: always` en su schema catalog.
+   - **Pattern de query:** event tracing cross-resource, debugging race conditions, event replay forense.
+   - **Destino de:** `Admirals.Bus.Publish` si audit=always — INSERT automático con payload JSON completo + `_event_id`, `_emitted_at`, `_schema_version`, indexable refs extraídos (related_account_id, etc.).
+   - **Particionado mensual** desde día 1 (volumen alto esperado: ~500K eventos/día server busy).
+   - **DDL:** definido en `03_db_schema.md` §12.1, se crea en migration S1.3+ cuando EventBus arranque con persistencia DB.
+
+3. **Consequencia ordering:** `admirals_audit_log` (S0.4) pre-existente a `admirals_event_log` (S1+). No conflicto.
+
+### Alternativas consideradas
+
+- **(A) Renombrar todo a canonical §03:** rechazado — forzaría el wrapper operational a escribir en tabla partitioned (overhead innecesario S0.4) y mezclaría concerns distintos en misma tabla (anti-pattern §5.3.x + `agents/02_working_conventions.md` SRP).
+- **(B) Nombres founder literales (`admirals_players`, `admirals_audit_log`):** rechazado — `admirals_players` contradice SSoT §3.1 directamente (nombre canónico es `admirals_accounts`, con 21 columnas spec). Crear tabla staging duplicada crearía migración dolorosa en S1+ cuando se expanda.
+- **(C) Híbrido — elegida:** respeta SSoT `admirals_accounts` canonical (columnas 7-minimal, expandibles aditivamente), cierra la referencia dangling del §04 creando `admirals_audit_log` con propósito distinto de `admirals_event_log`. Zero breaking change. Documentación queda consistente.
+
+### Consecuencias
+
+**Positivas:**
+- **Resuelve inconsistencia SSoT firmada** sin romper nada. `docs/technical/04_api_contracts.md:1053` queda coherente con DDL existente.
+- **SRP respetado:** audit_log = operational wrapper; event_log = bus persistence. No solape.
+- **S0.4 puede cerrar hoy** sin bloqueos de diseño.
+- **`admirals_accounts` minimal (7 cols)** permite expansión aditiva via ALTER TABLE ADD COLUMN (no breaking). Facilita migración progresiva.
+- **`admirals_bridge_idempotency`** cierra TODO de S0.2 (in-memory `_idem_store` promovido a DB-backed en S1.2).
+
+**Negativas:**
+- **2 tablas de audit en el sistema** — dev nuevo podría confundirse sobre dónde escribir. Mitigación: §§ 6.4 de `04_api_contracts.md` (a ampliar en S1 SSoT lint) documenta claramente.
+- **Duplicate storage potencial** si mismo evento cae en ambas (improbable — bus audit es opt-in per schema, wrapper operational es llamada explícita).
+- **`admirals_accounts` minimal temporal** — desde S1+ habrá que añadir columnas progresivamente. Riesgo: olvidar añadir `reputation_global` antes de que algún callback lo requiera → ADD COLUMN aditivo resuelve sin breaking.
+
+**Neutrales:**
+- SSoT `03_db_schema.md` §12 **futura revisión** deberá añadir DDL canónico de `admirals_audit_log` (acción capturada en `SPRINT_RETRO_S0.md` §4.3 como SSoT consistency linter spike).
+- `04_api_contracts.md:1053` referencia queda validada con la creación de la tabla.
+
+### Impact
+
+- **Docs afectados:**
+  - `docs/planning/02_decision_log.md` v1.2 (este ADR añadido + index actualizado).
+  - `docs/planning/01_roadmap.md` §4.2 S0 marcado ✅ con fecha 2026-05-02.
+  - `docs/agents/00_BOOTSTRAP.md` v1.3 (estado post-Sprint 0 + mención ADR-010).
+  - `docs/technical/03_db_schema.md` — **pendiente S1+** añadir DDL canónico `admirals_audit_log` en §12 (tracked en SPRINT_RETRO_S0 §4.3).
+- **Código afectado:**
+  - `resources/admirals_core/migrations/002_foundation_tables.sql` creado con las 3 tablas (accounts minimal, audit_log, bridge_idempotency).
+  - `resources/admirals_core/server/migrations.lua` runner aplica ambas migrations 001+002 idempotente.
+  - `resources/admirals_core/server/logger.lua` `Log.Audit()` wrapper listo para callers S1+ que persistan a DB.
+- **Features bloqueadas/desbloqueadas:**
+  - **Desbloquea:** S0.4 close + Sprint 0 tag v0.0.0 + S1.1 (admirals_bank usa DB.Transaction + audit_log + bus).
+  - **Bloquea:** nada.
+- **Re-evaluation trigger:** si en Oleada 2+ se detecta que `admirals_event_log` (partitioned) es sobre-engineered para volumen real (< 50K eventos/día), considerar consolidar en `admirals_audit_log` + deprecar event_log. Decisión post-telemetry Oleada 1.
+
+---
+
 ## 3. Cómo añadir nuevo ADR
 
 ### 3.1 Workflow
@@ -656,12 +739,16 @@ Core tenets:
 | `architecture` | ADR-009 |
 | `compat` | ADR-009 |
 | `bridges` | ADR-009 |
+| `db` | ADR-010 |
+| `audit` | ADR-010 |
+| `ssot_consistency` | ADR-010 |
+| `foundational` | ADR-002, ADR-003, ADR-009, ADR-010 |
 
 ### 5.2 Por estado
 
 | Estado | ADRs |
 |---|---|
-| accepted | ADR-001 a ADR-004, ADR-006 a ADR-009 |
+| accepted | ADR-001 a ADR-004, ADR-006 a ADR-010 |
 | proposed | — |
 | deprecated | — |
 | superseded | ADR-005 (por ADR-008) |
@@ -687,8 +774,8 @@ Core tenets:
 
 ### 6.2 Estado del documento
 
-- **Versión:** 1.1 (firmado — completo, 6 secciones, 9 ADRs).
-- **Próxima revisión:** al añadir ADR-010 (próxima decisión importante, probablemente durante Sprint 0 Oleada 1).
+- **Versión:** 1.2 (firmado — completo, 6 secciones, 10 ADRs).
+- **Próxima revisión:** al añadir ADR-011 (próxima decisión importante Sprint 1+).
 - **Documento padre:** `planning/01_roadmap.md`.
 - **Documento hermano:** `agents/00_BOOTSTRAP.md`.
 
@@ -698,6 +785,7 @@ Core tenets:
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción. Formato ADR + 7 ADRs iniciales (subagents archived, FiveM platform, tax 8%, no XP genérico, Oleada 1 Bakery-only, discard ops/minimize qa, doc signing system). **Firmable, living document.** |
 | 1.1 | 2026-05-01 | Founder + Cascade | **+2 ADRs** cerrando Oleada 0: ADR-008 (pivot MVP Granja, supersedes ADR-005) y ADR-009 (Bridges Layer compat multi-framework, foundational). Tag index actualizado (`pivot`, `architecture`, `compat`, `bridges`). ADR-005 marcado superseded. |
+| 1.2 | 2026-05-02 | Founder + Cascade | **+1 ADR** cerrando Sprint 0: ADR-010 (hybrid `admirals_audit_log` + `admirals_event_log` — resuelve inconsistencia SSoT §03 ↔ §04 firmada Oleada 0). Tag index actualizado (`db`, `audit`, `ssot_consistency`). Tracked acción S1 en SPRINT_RETRO §4.3 para añadir DDL canónico en `03_db_schema.md`. |
 
 ---
 
@@ -714,6 +802,7 @@ Core tenets:
 | **ADR-007** | Sistema firma docs con versiones y living documents | ✅ accepted | documentation, governance |
 | **ADR-008** | Pivot MVP Oleada 1: Bakery → Granja (cross-vertical root) | ✅ accepted | roadmap, scope, mvp, pivot |
 | **ADR-009** | Bridges Layer: abstracción compat multi-framework + custom scripts | ✅ accepted | architecture, compat, foundational, bridges |
+| **ADR-010** | Hybrid `admirals_audit_log` + `admirals_event_log` (resuelve inconsistencia SSoT §03 ↔ §04) | ✅ accepted | architecture, db, audit, ssot_consistency, foundational |
 
 ---
 
@@ -724,7 +813,7 @@ El **Decision Log** es la memoria institucional de Admirals:
 - **Formato ADR estándar** con contexto + decisión + alternativas + consecuencias + impact + re-evaluation trigger.
 - **Lifecycle:** proposed → accepted → deprecated / superseded.
 - **Inmutables** tras accepted — cambios = nuevo ADR con superseded link.
-- **9 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**.
+- **10 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**.
 - **Protocol claro** para añadir nuevos + anti-patterns.
 - **Tag index** facilita búsqueda por tema.
 
@@ -734,4 +823,4 @@ El **Decision Log** es la memoria institucional de Admirals:
 
 *"Decisiones sin registro son decisiones perdidas. El log es memoria permanente."*
 
-**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.1**
+**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.2**

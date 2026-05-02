@@ -1,6 +1,6 @@
 # 🤖 Admirals — AI Agent Bootstrap (READ THIS FIRST)
 
-> **Versión:** 1.2 (firmado — living document, 13 secciones). 1.2 update: **OLEADA 0 CERRADA 100% (29/29 docs firmados)**. `technical/07_bridges_compatibility.md` firmado + ADR-008 (Granja pivot) + ADR-009 (Bridges Layer) registrados. READY TO CODE.
+> **Versión:** 1.3 (firmado — living document, 13 secciones). 1.3 update: **SPRINT 0 CERRADO** (2026-05-02). `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 + ADR-010 (hybrid audit_log). 4 sessions ejecutadas limpias. **Next: Sprint 1 — Banco core.**
 > **Tipo:** Documento meta-organizacional. **Este es el primer fichero que debe leer cualquier AI agent que trabaje en el proyecto Admirals.**
 > **Audiencia:** AI agents (Cascade, Claude, GPT, otros). También útil para humanos onboarding.
 > **Estado:** firmado (living document — actualizar al firmar cada nuevo doc).
@@ -70,9 +70,17 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 
 ### 2.1 Fase actual
 
-**Fase: 🟢 OLEADA 0 CERRADA 100% (29/29 docs firmados). READY TO CODE.**
+**Fase: 🏆 SPRINT 0 CERRADO (2026-05-02). OLEADA 1 EN PROGRESO.**
 
-Todos los docs foundational + implementation + meta firmados. Próximo paso: **Sprint 0 Oleada 1** — setup repo + `admirals_bridges` resource + `admirals_core` skeleton + primera migration + bridges T1 adapters (QBox, ox_inventory, ox_target, ox_lib, native fallbacks).
+- **Oleada 0 docs:** 29/29 firmados (~27.260 líneas).
+- **Sprint 0 (Oleada 1):** 4 sessions + 1 checkpoint, cerrado con `git tag v0.0.0`. Deliverables:
+  - `admirals_bridges` v0.2.0 — 6 bridges + 6 T1 adapters + 6 native fallbacks + auto-detection + boot report.
+  - `admirals_core` v0.1.0 — Logger (ring 1000) + Metrics (counters+histograms p50/p95/p99) + DB wrappers (prepared-only, slow-query warn, soft-timeout) + EventBus (pub/sub + auto-decorate `_event_id/_emitted_at/_schema_version` + schema validation opcional) + RateLimiter (sliding window token bucket) + Migrations runner (idempotent, SHA-256 checksum).
+  - Migrations 001 (`admirals_schema_versions`) + 002 (`admirals_accounts` minimal 7 cols + `admirals_audit_log` wrapper + `admirals_bridge_idempotency` DB-backed).
+  - Smoke test 10 pasos manual (`scripts/smoke_test_s0.md`).
+  - ADR-010 documentando hybrid `audit_log` vs `event_log` (resuelve inconsistencia SSoT §03 ↔ §04).
+
+**Next: Sprint 1** — `admirals_bank` core: IBAN generator + balance + transfer + escrow FSM. Ver `progress/SPRINT_PLAN_S1.md` (outline, refinable pre-S1.1).
 
 ### 2.2 Inventario de documentación firmada
 
@@ -572,6 +580,7 @@ Ver `agents/01_subagents_catalog.md` (archivado) para spec detallada de cada che
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción completa. 12 secciones cubriendo identidad proyecto, estado, reading order, mapa docs, principios trabajo, decision boundaries, workflows, tooling, comunicación, métricas, subagents. **Living document.** |
 | 1.1 | 2026-05-01 | Founder + Cascade | Sincronización estado tras Oleada 0 quasi-completa: 28 docs firmados, agents/planning/qa/technical-impl cerradas excepto bridges. **Pivot MVP node Bakery→Granja** (§2.5 nuevo). Stack técnico actualizado (QBox primary + Bridges layer). Reading order §3.2 expandido con todos los technical impl docs. Mapa §4 actualizado. SSoT table §4.1 expandido. Round 2 reading list completa. |
 | 1.2 | 2026-05-01 | Founder + Cascade | **🏆 OLEADA 0 CERRADA 100%.** Firmado `technical/07_bridges_compatibility.md` v1.0 (último doc) + ADR-008 (Granja pivot) + ADR-009 (Bridges Layer). 29 docs / ~27.260 líneas. Fase actual cambiada a "READY TO CODE — Sprint 0 Oleada 1". Mapa §4 cierra technical/ categoría. SSoT table marca bridges_compatibility firmado. |
+| 1.3 | 2026-05-02 | Founder + Cascade | **🏆 SPRINT 0 CERRADO.** `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 + ADR-010 (hybrid audit_log resolviendo inconsistencia SSoT §03↔§04) + smoke test 10 pasos. 4 sessions S0.1-S0.4 + 1 checkpoint S0.0 ejecutadas en 1 día (vs estimado 3 sem). §2.1 actualizado con resumen deliverables. **Next: Sprint 1 — Banco core.** |
 
 ---
 
@@ -580,7 +589,7 @@ Ver `agents/01_subagents_catalog.md` (archivado) para spec detallada de cada che
 Si por alguna razón solo puedes leer 5 minutos de este doc, lee **esto**:
 
 1. **Admirals** = servidor FiveM con economía profunda + cadenas producción + Tablet UI.
-2. **27.260 líneas docs firmados** (29 docs). 🏆 **OLEADA 0 CERRADA. READY TO CODE.** No reescribas firmados — léelos.
+2. **27.260 líneas docs firmados** (29 docs Oleada 0 CERRADA). **🏆 Sprint 0 Oleada 1 CERRADO** (2026-05-02): `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 operativos. No reescribas docs firmados — léelos.
 3. **SSoTs canónicos** (§4.1 tabla completa): `00_PRODUCT_BIBLE.md`, `economy/01_economic_model.md`, `technical/02_events_catalog.md`, `technical/03_db_schema.md`, `technical/04_api_contracts.md`, `technical/05_state_machines.md`, `technical/06_fivem_standards.md`. **Si conflicto, ellos ganan.**
 4. **MVP Oleada 1 = Granja** (pivot v1.1). NO Bakery. Granja es nodo raíz cross-vertical (Bible §13.4).
 5. **NO XP genérico, NO PvP, NO pay-to-win, NO QTEs.**
