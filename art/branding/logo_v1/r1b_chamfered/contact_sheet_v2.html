@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SONAR Logo — R1b Contact Sheet v2 (Chamfered Direction)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* SONAR — R1b contact sheet styles
+     Bug fix v1→v2: replaced <object> with <img> for reliable file:// loading.
+     Direction: chamfered geometric slab (post-founder feedback 2026-05-03). */
+  :root {
+    --abyss-black: #03070A;
+    --depth-900: #061116;
+    --depth-800: #0B1D24;
+    --crew-100: #F0F4F4;
+    --crew-300: #B8C5C5;
+    --crew-500: #6B7878;
+    --crew-700: #2A3438;
+    --sonar-bright: #2DD4BF;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--abyss-black);
+    color: var(--crew-100);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "tnum" 1;
+  }
+
+  body { padding: 32px 48px 96px; }
+
+  header {
+    border-bottom: 1px solid var(--crew-700);
+    padding-bottom: 16px;
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: 28px; line-height: 36px; margin: 0 0 8px;
+    letter-spacing: -0.02em; font-weight: 600;
+  }
+
+  h1 .v2 {
+    display: inline-block;
+    font-size: 12px;
+    line-height: 1;
+    padding: 4px 8px;
+    background: var(--sonar-bright);
+    color: var(--abyss-black);
+    border-radius: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    margin-left: 12px;
+  }
+
+  .meta {
+    font-size: 14px; line-height: 20px;
+    color: var(--crew-300);
+  }
+
+  .meta strong { color: var(--crew-100); }
+
+  .feature-banner {
+    margin: 24px 0 16px;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, rgba(45,212,191,0.10), rgba(45,212,191,0.02));
+    border-left: 3px solid var(--sonar-bright);
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .feature-banner strong { color: var(--sonar-bright); letter-spacing: -0.01em; }
+
+  h2 {
+    font-size: 22px; line-height: 32px;
+    margin: 56px 0 8px;
+    letter-spacing: -0.02em; font-weight: 600;
+  }
+
+  h2 .sub {
+    font-size: 13px; color: var(--crew-300);
+    font-weight: 400;
+    margin-left: 12px;
+    letter-spacing: 0;
+  }
+
+  h3 {
+    font-size: 16px;
+    line-height: 22px;
+    margin: 24px 0 12px;
+    color: var(--crew-100);
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
+  /* Concept card — generic */
+  .concept-grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+
+  .concept-card {
+    background: var(--depth-900);
+    border: 1px solid var(--crew-700);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .concept-card .label {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--crew-300);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .concept-card.featured {
+    border-color: var(--sonar-bright);
+    border-width: 2px;
+    background: linear-gradient(180deg, rgba(45,212,191,0.06), var(--depth-900) 32px);
+  }
+
+  .concept-card.featured .label {
+    color: var(--sonar-bright);
+  }
+
+  .swatches { display: flex; flex-direction: column; gap: 12px; }
+
+  .swatch {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+  }
+
+  .swatch.dark  { background: var(--abyss-black); border-color: var(--crew-700); }
+  .swatch.light { background: var(--crew-100); }
+
+  .swatch img {
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  .swatch .size-tag {
+    font-size: 11px;
+    color: var(--crew-500);
+    letter-spacing: 0.03em;
+  }
+
+  /* Multi-size row */
+  .size-row {
+    display: flex;
+    gap: 24px;
+    align-items: end;
+    padding: 16px;
+    background: var(--abyss-black);
+    border: 1px solid var(--crew-700);
+    border-radius: 6px;
+  }
+
+  .size-row.light {
+    background: var(--crew-100);
+    border-color: var(--crew-300);
+  }
+
+  .size-row .size-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+
+  .size-row .size-cell .label-tag {
+    font-size: 10px;
+    color: var(--crew-500);
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  /* Wordmark + lockup display rows */
+  .wordmark-display {
+    margin-top: 16px;
+    padding: 24px;
+    background: var(--abyss-black);
+    border: 1px solid var(--crew-700);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .wordmark-display.light {
+    background: var(--crew-100);
+    border-color: var(--crew-300);
+  }
+
+  .wordmark-display img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Two-side comparison panels */
+  .compare-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  /* Construction diagram */
+  .construction-display {
+    margin-top: 24px;
+    padding: 16px;
+    background: #0a0d10;
+    border: 1px solid var(--crew-700);
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  /* Reference (de-emphasized) section */
+  .reference-section {
+    margin-top: 64px;
+    padding: 24px;
+    background: rgba(11, 29, 36, 0.4);
+    border: 1px dashed var(--crew-700);
+    border-radius: 10px;
+    opacity: 0.85;
+  }
+
+  .reference-section h2 {
+    margin-top: 0;
+    color: var(--crew-300);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .reference-section .sub-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .reference-card {
+    background: var(--depth-900);
+    border: 1px solid var(--crew-700);
+    border-radius: 6px;
+    padding: 10px;
+  }
+
+  .reference-card .label {
+    font-size: 10px;
+    color: var(--crew-500);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .reference-card .name {
+    font-size: 12px;
+    color: var(--crew-300);
+    margin-bottom: 8px;
+  }
+
+  .reference-card .ref-swatches {
+    display: flex; gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reference-card .ref-swatches > div {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+  }
+
+  .reference-card .ref-swatches .dark { background: var(--abyss-black); }
+  .reference-card .ref-swatches .light { background: var(--crew-100); }
+
+  /* Amendment / decision section */
+  .decision-block {
+    margin-top: 48px;
+    padding: 32px;
+    background: linear-gradient(135deg, rgba(45,212,191,0.08), rgba(45,212,191,0.02));
+    border: 2px solid var(--sonar-bright);
+    border-radius: 12px;
+  }
+
+  .decision-block h2 {
+    margin-top: 0;
+    color: var(--sonar-bright);
+    font-size: 22px;
+  }
+
+  .decision-block .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .decision-block .option {
+    padding: 16px;
+    background: var(--depth-900);
+    border: 1px solid var(--crew-700);
+    border-radius: 8px;
+  }
+
+  .decision-block .option .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    background: var(--sonar-bright);
+    color: var(--abyss-black);
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .decision-block .option.recommended {
+    border-color: var(--sonar-bright);
+    border-width: 2px;
+  }
+
+  .decision-block .option strong {
+    display: block;
+    font-size: 14px;
+    color: var(--crew-100);
+    margin-bottom: 6px;
+  }
+
+  .decision-block .option p {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--crew-300);
+    margin: 0;
+  }
+
+  .decision-block .option code {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 8px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    background: var(--abyss-black);
+    color: var(--sonar-bright);
+    border-radius: 3px;
+    border: 1px solid var(--crew-700);
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--crew-700);
+    font-size: 13px;
+    color: var(--crew-500);
+  }
+
+  footer code {
+    color: var(--crew-300);
+  }
+
+  @media (max-width: 1100px) {
+    .grid-5 { grid-template-columns: 1fr 1fr; }
+    .reference-section .sub-grid { grid-template-columns: 1fr 1fr; }
+    .decision-block .options { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .grid-5 { grid-template-columns: 1fr; }
+    .reference-section .sub-grid { grid-template-columns: 1fr; }
+    .compare-panels { grid-template-columns: 1fr; }
+    body { padding: 24px 16px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SONAR Logo — R1b Contact Sheet <span class="v2">v2 CHAMFERED</span></h1>
+  <div class="meta">
+    <strong>Brief:</strong> BRIEF-LOGO-001 v2 (post-ADR-012, post-founder feedback 2026-05-03) ·
+    <strong>Ronda:</strong> R1b chamfered geometric slab direction ·
+    <strong>Designer:</strong> Opus 4.7 MAX (AI executor) ·
+    <strong>Fecha:</strong> 2026-05-03
+  </div>
+  <div class="feature-banner">
+    <strong>R1b post-founder feedback:</strong> founder seleccionó "chamfered geometric slab" como dirección base
+    (fotos referencia 2026-05-03 chat). C6 = nueva dirección canonical featured.
+    Bug v1 corregido (<code>&lt;object&gt;</code> → <code>&lt;img&gt;</code>): SVGs ahora renderizan en
+    <code>file://</code> sin issues. Conceptos C1-C5 originales preservados al final como referencia
+    de exploration anterior.
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- C6 FEATURED — chamfered direction -->
+<!-- ============================================================ -->
+
+<h2>C6 Monogram <span class="sub">— chamfered geometric slab — featured direction post-founder feedback</span></h2>
+
+<div class="concept-grid grid-2">
+
+  <div class="concept-card featured">
+    <div class="label">C6a · FEATURED · solid letterform</div>
+    <h3>Chamfered solid S</h3>
+    <p style="font-size:13px;line-height:20px;color:var(--crew-300);margin:0 0 16px">
+      Solid filled letterform S with 12 chamfered corners (8px @ 45° each). 7×9 modular cell grid (cell=16px).
+      Coherente con wordmark filled chamfered slab. Optimizado favicon @16px.
+    </p>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c6a_monogram_solid.svg" width="160" height="160" alt="C6a 160px on dark"><span class="size-tag">160 · ABYSS</span></div>
+      <div class="swatch light"><img src="c6a_monogram_solid.svg" width="160" height="160" alt="C6a 160px on light"><span class="size-tag">160 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card featured">
+    <div class="label">C6b · ALTERNATE · outlined petals</div>
+    <h3>Chamfered outlined petals</h3>
+    <p style="font-size:13px;line-height:20px;color:var(--crew-300);margin:0 0 16px">
+      Two outlined chamfered octagonal slabs ("petals") crossing at center forming abstract S.
+      Direct interpretation founder photo monogram. Higher distinctiveness, slightly higher favicon risk @16px.
+    </p>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c6b_monogram_petals.svg" width="160" height="160" alt="C6b 160px on dark"><span class="size-tag">160 · ABYSS</span></div>
+      <div class="swatch light"><img src="c6b_monogram_petals.svg" width="160" height="160" alt="C6b 160px on light"><span class="size-tag">160 · CREW 100</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- Multi-size validation -->
+<!-- ============================================================ -->
+
+<h2>C6 Multi-size validation <span class="sub">— 256 / 128 / 64 / 32 / 24 / 16 px</span></h2>
+
+<h3>C6a — solid letterform</h3>
+<div class="size-row">
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="256" height="256" alt="C6a 256"><span class="label-tag">256 PX HERO</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="128" height="128" alt="C6a 128"><span class="label-tag">128 PX</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="64" height="64" alt="C6a 64"><span class="label-tag">64 TEBEX</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="32" height="32" alt="C6a 32"><span class="label-tag">32 NAV</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="24" height="24" alt="C6a 24"><span class="label-tag">24 TABLET</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="16" height="16" alt="C6a 16"><span class="label-tag">16 FAVICON</span></div>
+</div>
+
+<div style="height:8px"></div>
+
+<div class="size-row light">
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="256" height="256" alt="C6a 256 light"><span class="label-tag" style="color:var(--crew-500)">256 LIGHT</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="128" height="128" alt="C6a 128 light"><span class="label-tag" style="color:var(--crew-500)">128</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="64" height="64" alt="C6a 64 light"><span class="label-tag" style="color:var(--crew-500)">64</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="32" height="32" alt="C6a 32 light"><span class="label-tag" style="color:var(--crew-500)">32</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="24" height="24" alt="C6a 24 light"><span class="label-tag" style="color:var(--crew-500)">24</span></div>
+  <div class="size-cell"><img src="c6a_monogram_solid.svg" width="16" height="16" alt="C6a 16 light"><span class="label-tag" style="color:var(--crew-500)">16</span></div>
+</div>
+
+<h3 style="margin-top:32px">C6b — outlined petals</h3>
+<div class="size-row">
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="256" height="256" alt="C6b 256"><span class="label-tag">256 PX HERO</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="128" height="128" alt="C6b 128"><span class="label-tag">128 PX</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="64" height="64" alt="C6b 64"><span class="label-tag">64 TEBEX</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="32" height="32" alt="C6b 32"><span class="label-tag">32 NAV</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="24" height="24" alt="C6b 24"><span class="label-tag">24 TABLET</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="16" height="16" alt="C6b 16"><span class="label-tag">16 FAVICON</span></div>
+</div>
+
+<div style="height:8px"></div>
+
+<div class="size-row light">
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="256" height="256" alt="C6b 256 light"><span class="label-tag" style="color:var(--crew-500)">256 LIGHT</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="128" height="128" alt="C6b 128 light"><span class="label-tag" style="color:var(--crew-500)">128</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="64" height="64" alt="C6b 64 light"><span class="label-tag" style="color:var(--crew-500)">64</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="32" height="32" alt="C6b 32 light"><span class="label-tag" style="color:var(--crew-500)">32</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="24" height="24" alt="C6b 24 light"><span class="label-tag" style="color:var(--crew-500)">24</span></div>
+  <div class="size-cell"><img src="c6b_monogram_petals.svg" width="16" height="16" alt="C6b 16 light"><span class="label-tag" style="color:var(--crew-500)">16</span></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Wordmark -->
+<!-- ============================================================ -->
+
+<h2>Wordmark "SONAR" <span class="sub">— custom chamfered slab logotype (ver amendment_logotype.md)</span></h2>
+
+<div class="feature-banner" style="margin-top:8px">
+  <strong>Amendment activo:</strong> custom logotype "SONAR" reemplaza Geist Sans para LOGO institucional únicamente.
+  Geist Sans <strong>preservado canonical</strong> para body / UI / dashboards / docs / marketing copy
+  (per <code>docs/art/01_art_direction.md</code> §4.1.1). Práctica industria estándar
+  (Vercel/Linear/Stripe/Apple/Notion/Figma todos siguen este patrón).
+  Founder approval pendiente — ver <code>amendment_logotype.md</code>.
+</div>
+
+<div class="wordmark-display">
+  <img src="wordmark_sonar.svg" width="448" height="176" alt="Wordmark SONAR on dark">
+</div>
+
+<div class="wordmark-display light">
+  <img src="wordmark_sonar.svg" width="448" height="176" alt="Wordmark SONAR on light">
+</div>
+
+<h3 style="margin-top:32px">Wordmark multi-size</h3>
+<div class="size-row">
+  <div class="size-cell"><img src="wordmark_sonar.svg" width="448" height="176" alt="Wordmark 448"><span class="label-tag">100% NATIVE</span></div>
+</div>
+<div style="height:8px"></div>
+<div class="size-row">
+  <div class="size-cell"><img src="wordmark_sonar.svg" width="320" height="125" alt="Wordmark 320"><span class="label-tag">320 px</span></div>
+  <div class="size-cell"><img src="wordmark_sonar.svg" width="224" height="88" alt="Wordmark 224"><span class="label-tag">224 px</span></div>
+  <div class="size-cell"><img src="wordmark_sonar.svg" width="160" height="63" alt="Wordmark 160"><span class="label-tag">160 NAV</span></div>
+  <div class="size-cell"><img src="wordmark_sonar.svg" width="112" height="44" alt="Wordmark 112"><span class="label-tag">112 px</span></div>
+  <div class="size-cell"><img src="wordmark_sonar.svg" width="80" height="31" alt="Wordmark 80"><span class="label-tag">80 px</span></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Lockups -->
+<!-- ============================================================ -->
+
+<h2>Lockups <span class="sub">— horizontal + vertical, brief §4.4 spec</span></h2>
+
+<h3>Horizontal lockup (gap = 0.5× monograma)</h3>
+
+<div class="wordmark-display">
+  <img src="lockup_horizontal.svg" width="632" height="176" alt="Lockup horizontal on dark">
+</div>
+
+<div class="wordmark-display light">
+  <img src="lockup_horizontal.svg" width="632" height="176" alt="Lockup horizontal on light">
+</div>
+
+<h3 style="margin-top:32px">Lockup horizontal multi-size</h3>
+<div class="size-row">
+  <div class="size-cell"><img src="lockup_horizontal.svg" width="500" height="139" alt="Lockup H 500"><span class="label-tag">500 PX HERO</span></div>
+  <div class="size-cell"><img src="lockup_horizontal.svg" width="320" height="89" alt="Lockup H 320"><span class="label-tag">320 NAV</span></div>
+  <div class="size-cell"><img src="lockup_horizontal.svg" width="200" height="56" alt="Lockup H 200"><span class="label-tag">200 PX</span></div>
+</div>
+
+<h3 style="margin-top:32px">Vertical lockup (gap = 0.3× monograma)</h3>
+
+<div class="compare-panels">
+  <div class="wordmark-display">
+    <img src="lockup_vertical.svg" width="280" height="225" alt="Lockup vertical on dark">
+  </div>
+  <div class="wordmark-display light">
+    <img src="lockup_vertical.svg" width="280" height="225" alt="Lockup vertical on light">
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Construction -->
+<!-- ============================================================ -->
+
+<h2>C6a Construction <span class="sub">— modular grid 16×16, chamfer 8px @ 45°</span></h2>
+
+<div class="construction-display">
+  <img src="construction_diagram.svg" width="640" height="640" alt="C6a construction diagram" style="max-width:100%">
+</div>
+
+<!-- ============================================================ -->
+<!-- Reference C1-C5 (de-emphasized) -->
+<!-- ============================================================ -->
+
+<div class="reference-section">
+
+  <h2>Reference: C1-C5 R1 originales <span class="sub">— pre-founder feedback exploration (preserved for context)</span></h2>
+
+  <p style="font-size:13px;line-height:20px;color:var(--crew-300);margin:8px 0 16px">
+    Estos 5 conceptos fueron entregados en R1 pre-founder-feedback. Founder revisó y comunicó preferencia
+    por dirección "chamfered geometric slab" (C6 ahora featured). Los 5 originales se preservan para historial
+    pero NO son la dirección activa post-feedback. Bug rendering v1 también corregido aquí.
+  </p>
+
+  <div class="sub-grid">
+
+    <div class="reference-card">
+      <div class="label">C1</div>
+      <div class="name">Descent-layers</div>
+      <div class="ref-swatches">
+        <div class="dark"><img src="../r1_concepts/c1_descent_layers.svg" width="48" height="48" alt="C1 dark"></div>
+        <div class="light"><img src="../r1_concepts/c1_descent_layers.svg" width="48" height="48" alt="C1 light"></div>
+      </div>
+    </div>
+
+    <div class="reference-card">
+      <div class="label">C2</div>
+      <div class="name">Prisma profundidad</div>
+      <div class="ref-swatches">
+        <div class="dark"><img src="../r1_concepts/c2_prisma_profundidad.svg" width="48" height="48" alt="C2 dark"></div>
+        <div class="light"><img src="../r1_concepts/c2_prisma_profundidad.svg" width="48" height="48" alt="C2 light"></div>
+      </div>
+    </div>
+
+    <div class="reference-card">
+      <div class="label">C3</div>
+      <div class="name">Gradient depth</div>
+      <div class="ref-swatches">
+        <div class="dark"><img src="../r1_concepts/c3_gradient_depth.svg" width="48" height="48" alt="C3 dark"></div>
+        <div class="light"><img src="../r1_concepts/c3_gradient_depth.svg" width="48" height="48" alt="C3 light"></div>
+      </div>
+    </div>
+
+    <div class="reference-card">
+      <div class="label">C4</div>
+      <div class="name">Geometric depth-grid</div>
+      <div class="ref-swatches">
+        <div class="dark"><img src="../r1_concepts/c4_geometric_depth_grid.svg" width="48" height="48" alt="C4 dark"></div>
+        <div class="light"><img src="../r1_concepts/c4_geometric_depth_grid.svg" width="48" height="48" alt="C4 light"></div>
+      </div>
+    </div>
+
+    <div class="reference-card">
+      <div class="label">C5</div>
+      <div class="name">Geometric S-descent</div>
+      <div class="ref-swatches">
+        <div class="dark"><img src="../r1_concepts/c5_geometric_s_descent.svg" width="48" height="48" alt="C5 dark"></div>
+        <div class="light"><img src="../r1_concepts/c5_geometric_s_descent.svg" width="48" height="48" alt="C5 light"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- Decision block -->
+<!-- ============================================================ -->
+
+<div class="decision-block">
+  <h2>Decisión founder pendiente</h2>
+  <p style="font-size:14px;line-height:22px;color:var(--crew-300);margin:0">
+    Tres opciones para avanzar a R2 (color real Sonar Bright + Tebex hero + favicon ICO + app-icon Tablet
+    + hybrid theme white panel test). Opción A es default sugerido Opus.
+  </p>
+
+  <div class="options">
+
+    <div class="option recommended">
+      <span class="badge">RECOMENDADO</span>
+      <strong>A · Aprobar C6a + amendment</strong>
+      <p>
+        C6a (solid chamfered S) como monogram canonical, wordmark custom chamfered slab (per amendment),
+        Geist Sans preservado UI/body/dashboards/docs. R2 procede con polish + color + favicon + lockup tests.
+      </p>
+      <code>OK C6a + amendment</code>
+    </div>
+
+    <div class="option">
+      <span class="badge">ALT</span>
+      <strong>B · C6b outlined petals</strong>
+      <p>
+        Igual que A pero con C6b (outlined petals) como monogram canonical en lugar de C6a.
+        Más fiel a foto founder, mayor distintividad, mayor riesgo favicon @16px.
+      </p>
+      <code>OK C6b + amendment</code>
+    </div>
+
+    <div class="option">
+      <span class="badge">REVISIÓN</span>
+      <strong>C · Híbrido / modificar</strong>
+      <p>
+        E.g., monogram chamfered pero wordmark sigue Geist Sans (rechazar amendment parcial). O ajustes
+        específicos al chamfer size, proporciones, weight. Indicar lo que modificar.
+      </p>
+      <code>Modificar: ...</code>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<footer>
+  <div>SONAR — Logo R1b chamfered direction · BRIEF-LOGO-001 v2 · Opus 4.7 MAX path § 9 brief.</div>
+  <div style="margin-top:6px">SVGs en <code>r1b_chamfered/c6a_monogram_solid.svg</code>, <code>c6b_monogram_petals.svg</code>, <code>wordmark_sonar.svg</code>, <code>lockup_horizontal.svg</code>, <code>lockup_vertical.svg</code>, <code>construction_diagram.svg</code>.</div>
+  <div style="margin-top:6px">Amendment doc: <code>amendment_logotype.md</code> · Originales R1: <code>../r1_concepts/c1..c5_*.svg</code> (preservados como referencia).</div>
+  <div style="margin-top:6px">Bug fix v1→v2: <code>&lt;object&gt;</code> reemplazado por <code>&lt;img&gt;</code> en todos los swatches. Rendering ahora funciona en file:// sin issues CORS.</div>
+</footer>
+
+</body>
+</html>

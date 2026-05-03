@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SONAR Monogram — concept A solid variant (all waves opacity 1)
+  Use case: small sizes (favicon 16/32px), stamps, low-rendering contexts where
+  opacity fade may wash out. All 3 arcs at full strength for max legibility.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"
+     role="img" aria-label="SONAR — S-curl monogram solid">
+  <title>SONAR — S-curl monogram solid (concept A, no opacity fade)</title>
+  <rect x="0" y="0" width="256" height="256" fill="#03070A"/>
+  <g fill="none" stroke="#2DD4BF" stroke-width="13.5"
+     stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 113 44 Q 215 44 215 116 Q 215 188 113 188"/>
+    <path d="M 113 86 Q 185 86 185 128 Q 185 170 113 170"/>
+    <path d="M 41 128 Q 71 86 113 86 Q 155 86 155 128 Q 155 170 113 170 Q 65 170 41 212"/>
+  </g>
+</svg>

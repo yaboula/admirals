@@ -95,22 +95,24 @@ Memoria founder (pre-pivot) dice: *"UI es ~50-60% del valor percibido pero S2 ta
 
 ### D2. Diseño creativo — designer externo SÍ/NO ANTES de S2
 
-5 briefs v2 listos en `docs/art/briefs/` post-ADR-012:
+5 briefs v2 en `docs/art/briefs/` post-ADR-012. **Status update post-S1.7 (2026-05-03):**
 
-| Brief | Budget estimado | Delivery time | Bloquea S2? |
+| Brief | Budget estimado | Delivery time | Status / Bloquea S2? |
 |---|---|---|---|
-| `01_brief_logo.md` v2 | €1.5-3.5k | 3-6 semanas | 🟡 Suave — S2 puede usar placeholder wordmark `"SONAR"` Geist SemiBold Sonar Bright. Logo real mejor pre-trailer. |
-| `02_brief_icons.md` v2 | €1.2-2.5k | 2-4 semanas | 🟡 Suave — S2 usa Lucide puro para Tablet UI S2. Custom 8 icons pueden llegar S3 Storybook. |
+| `01_brief_logo.md` v2 | €1.5-3.5k | 3-6 semanas | � **RESUELTO IN-HOUSE S1.7** — logo v2 concept A "S-curl open" working canonical en `art/branding/logo_v2/` (8 SVGs + 27 PNG exports + favicon). Adopted founder 2026-05-03. **NO firmado ADR** — período uso real ~2-4 semanas, después decisión: hold (formalizar ADR-013 + sync docs) o re-iterar (designer pro per brief §7 R0-R4, budget €1.5-3.5k). |
+| `02_brief_icons.md` v2 | €1.2-2.5k | 2-4 semanas | 🟡 Suave — S2 usa Lucide puro para Tablet UI. Custom 8 icons pueden llegar S3 Storybook. **Decisión pendiente:** in-house (founder Figma) vs externo. |
 | `03_brief_sound.md` v1 | €500-1.5k | 1-2 semanas | 🟢 Defer S3 sin problema. |
 | `04_brief_motion.md` v1 | €500-2k (si externo; si in-house `framer-motion` gratis) | 1-2 semanas | 🟢 Defer S3 sin problema. |
 | `05_brief_marketing.md` v1 | €2-5k trailer | Pre-launch only | 🟢 Defer Oleada 1 close. |
 
-**Opciones:**
-- **A) Contratar logo + icons AHORA (paralelo a B1-B2 ~4-6 semanas):** Tablet S2 nace con identidad real. Budget ratificado ~€3-6k.
-- **B) S2 con placeholders → contratar post-S2:** velocity founder-only dev preserved. Riesgo: Tablet S2 nace genérica, refactor post.
-- **C) Híbrido:** founder intenta logo+icons in-house (Figma + bibliotecas) → externo solo si falla. €0 coste.
+**Opciones residuales (post-logo-resuelto):**
+- **A) Contratar icons AHORA (paralelo a B1-B2 ~2-4 semanas):** Tablet S2 nace con identidad icon completa. Budget ~€1.2-2.5k.
+- **B) S2 con Lucide puro → custom icons post-S2 (default):** velocity dev preservada, alineado con resolución logo in-house. Refactor S3 cuando custom icons delivered.
+- **C) Híbrido in-house:** founder intenta 3-5 icons custom críticos in-house (Figma) + Lucide resto. €0 coste.
 
-**Decisión pendiente founder.**
+**Decisión pendiente founder (icons only).** Logo ya resuelto S1.7.
+
+**Hard constraint S1.7 founder decision:** durante período uso real ~2-4 semanas del logo v2 working canonical, **NO se firma ADR-013 ni se sync `01_art_direction.md` §3.3 / `01_brief_logo.md` v2 § status**. Si AI agent futura detecta conflict entre `art/branding/logo_v2/` realidad y `docs/*` firmados, debe leer `art/branding/logo_v2/README.md` §"NO es pivot" + SESSION_LOG S1.7 entry primero — founder override está documentado, NO arreglar unilateralmente.
 
 ---
 
@@ -189,9 +191,10 @@ ADR-011 §4 execution plan listó Phase 8 (code refactor) + Phase 9 (DB migratio
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-05-03 | Founder + Cascade (S1.6 close) | Documento creado. 5 hard blockers + 3 decisiones founder + 5 soft-opcionales. Ruta mínima estimada 12-18h founder time / ~1 semana calendario. |
+| 1.1 | 2026-05-03 | Founder + Cascade (S1.7 close partial → S1.8 hygiene) | **D2 status update fact-only post logo v2 working canonical S1.7.** Logo `01_brief_logo.md` v2 🟢 RESUELTO IN-HOUSE (concept A "S-curl open" en `art/branding/logo_v2/` 8 SVGs + 27 PNG + favicon). Decisión founder S1.7: NO firma ADR-013 ni sync `01_art_direction.md` §3.3 / brief status durante período uso real ~2-4 semanas. Hard constraint añadido para futuras AI agents (NO arreglar unilateralmente conflict logo realidad vs docs firmados). Icons/sound/motion/marketing pendientes. Resto blockers B1-B5 + D1 + D3 + soft-opcionales sin cambio. |
 
 ---
 
 *"Antes de zarpar, verifica el casco."* — meta-regla S1 → S2.
 
-**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.0.**
+**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.1.**

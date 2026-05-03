@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SONAR Lockup HORIZONTAL — monogram + wordmark side by side
+  Heights matched to wordmark cap (144). Monogram 224 native scaled 0.643 -> 144 tall.
+  Gap = 0.5 x wordmark S height = 72.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" width="720" height="200"
+     role="img" aria-label="SONAR — lockup horizontal">
+  <title>SONAR — lockup horizontal</title>
+  <!-- Monogram scaled to 103 wide x 144 tall -->
+  <g transform="translate(28 28) scale(0.643)" fill="#03070A">
+    <path d="M 8 0 L 152 0 A 8 8 0 0 1 160 8 L 160 120 A 8 8 0 0 1 152 128
+             L 40 128 L 32 136 L 32 184 L 40 192 L 152 192 A 8 8 0 0 1 160 200
+             L 160 216 A 8 8 0 0 1 152 224 L 8 224 A 8 8 0 0 1 0 216 L 0 104
+             A 8 8 0 0 1 8 96 L 120 96 L 128 88 L 128 40 L 120 32 L 8 32
+             A 8 8 0 0 1 0 24 L 0 8 A 8 8 0 0 1 8 0 Z"/>
+    <g transform="translate(64 64) rotate(-22)"><path d="M -40 0 C -28 -16 28 -16 40 0 C 28 16 -28 16 -40 0 Z"/></g>
+    <g transform="translate(96 160) rotate(-22)"><path d="M -40 0 C -28 -16 28 -16 40 0 C 28 16 -28 16 -40 0 Z"/></g>
+  </g>
+  <!-- Wordmark at native scale (464 wide x 144 tall), gap 72 from monogram -->
+  <g transform="translate(203 28)" fill="#03070A" fill-rule="evenodd">
+    <!-- S -->
+    <path d="M 8 0 L 72 0 A 8 8 0 0 1 80 8 L 80 56 A 8 8 0 0 1 72 64
+             L 24 64 L 16 72 L 16 120 L 24 128 L 72 128 A 8 8 0 0 1 80 136
+             A 8 8 0 0 1 72 144 L 8 144 A 8 8 0 0 1 0 136 L 0 88
+             A 8 8 0 0 1 8 80 L 56 80 L 64 72 L 64 24 L 56 16 L 8 16
+             A 8 8 0 0 1 0 8 A 8 8 0 0 1 8 0 Z"/>
+    <!-- O (offset +96) -->
+    <path d="M 104 0 L 168 0 A 8 8 0 0 1 176 8 L 176 136 A 8 8 0 0 1 168 144
+             L 104 144 A 8 8 0 0 1 96 136 L 96 8 A 8 8 0 0 1 104 0 Z
+             M 112 24 L 120 16 L 152 16 L 160 24 L 160 120 L 152 128 L 120 128 L 112 120 Z"/>
+    <!-- N (offset +192) -->
+    <path d="M 214 0 L 256 116 L 256 0 L 264 0 A 8 8 0 0 1 272 8 L 272 136
+             A 8 8 0 0 1 264 144 L 256 144 L 208 28 L 208 144 L 200 144
+             A 8 8 0 0 1 192 136 L 192 8 A 8 8 0 0 1 200 0 L 214 0 Z"/>
+    <!-- A (offset +288) -->
+    <path d="M 328 0 L 368 144 L 352 144 L 344 104 L 312 104 L 304 144 L 288 144 Z
+             M 320 24 L 324 8 L 332 8 L 336 24 L 340 88 L 316 88 Z"/>
+    <!-- R (offset +384) -->
+    <path d="M 392 0 L 456 0 A 8 8 0 0 1 464 8 L 464 56 A 8 8 0 0 1 456 64
+             L 422 64 L 464 136 L 464 144 L 448 144 L 406 72 L 400 72 L 400 144
+             L 392 144 A 8 8 0 0 1 384 136 L 384 8 A 8 8 0 0 1 392 0 Z
+             M 400 16 L 440 16 L 448 24 L 448 40 L 440 48 L 400 48 Z"/>
+  </g>
+</svg>

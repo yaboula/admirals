@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>SONAR · Proyecto C6 · Identity Sheet preview</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; background: #1a1f1f; color: #f0f4f4;
+         font-family: 'Geist Sans', system-ui, sans-serif; }
+  header { padding: 20px 32px; border-bottom: 1px solid #2a3438;
+           display: flex; justify-content: space-between; align-items: baseline; }
+  header h1 { font-size: 14px; font-weight: 600; letter-spacing: 1.5px; margin: 0; }
+  header span { font-size: 11px; color: #b8c5c5; font-family: 'Geist Mono', monospace; }
+  main { display: grid; gap: 24px; padding: 32px; max-width: 1700px; margin: 0 auto; }
+  section { background: #f0f4f4; border-radius: 8px; padding: 16px; }
+  section.dark { background: #03070a; }
+  section h2 { margin: 0 0 12px; font-size: 11px; font-weight: 600;
+                letter-spacing: 1.2px; color: #175a5f; }
+  section.dark h2 { color: #2dd4bf; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .row img { width: 100%; height: auto; display: block; }
+  .full img { width: 100%; height: auto; display: block; }
+  .mini { display: flex; align-items: center; gap: 24px; padding: 16px; background: #f0f4f4; border-radius: 6px; }
+  .mini.dark { background: #03070a; }
+  .mini img { height: 48px; }
+  .mini span { font-size: 11px; color: #6b7878; font-family: 'Geist Mono', monospace; }
+  .mini.dark span { color: #b8c5c5; }
+  footer { padding: 16px 32px; font-size: 10px; color: #6b7878;
+           font-family: 'Geist Mono', monospace; text-align: center; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>SISTEMA DE IDENTIDAD VISUAL — SONAR</h1>
+    <span>PROYECTO C6 · BRIEF-LOGO-001 v2 · R2</span>
+  </header>
+
+  <main>
+    <section class="dark full">
+      <h2>HOJA COMPLETA · BLUEPRINT CLASSIC (CANONICAL)</h2>
+      <img src="identity_sheet_c6_blueprint_classic.svg" alt="SONAR identity sheet blueprint classic"/>
+    </section>
+
+    <section class="dark full">
+      <h2>BLUEPRINT v1 · DARK TEAL (alternativa)</h2>
+      <img src="identity_sheet_c6_blueprint.svg" alt="SONAR identity sheet blueprint v1"/>
+    </section>
+
+    <section class="full">
+      <h2>LIGHT VARIANT (referencia técnica)</h2>
+      <img src="identity_sheet_c6.svg" alt="SONAR identity sheet light"/>
+    </section>
+
+    <section>
+      <h2>DELIVERABLES INDIVIDUALES</h2>
+      <div class="row">
+        <div>
+          <img src="monogram_s.svg" alt="Monogram S"/>
+          <p style="font-size:11px;color:#6b7878;text-align:center;margin:8px 0;font-family:'Geist Mono',monospace">monogram_s.svg</p>
+        </div>
+        <div>
+          <img src="wordmark_sonar.svg" alt="Wordmark SONAR"/>
+          <p style="font-size:11px;color:#6b7878;text-align:center;margin:8px 0;font-family:'Geist Mono',monospace">wordmark_sonar.svg</p>
+        </div>
+        <div>
+          <img src="lockup_vertical.svg" alt="Lockup vertical"/>
+          <p style="font-size:11px;color:#6b7878;text-align:center;margin:8px 0;font-family:'Geist Mono',monospace">lockup_vertical.svg</p>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <img src="lockup_horizontal.svg" alt="Lockup horizontal" style="width:100%;height:auto;"/>
+        <p style="font-size:11px;color:#6b7878;text-align:center;margin:8px 0;font-family:'Geist Mono',monospace">lockup_horizontal.svg</p>
+      </div>
+    </section>
+
+    <section class="dark">
+      <h2>BRAND COLOR · SONAR BRIGHT SOBRE ABYSS BLACK</h2>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+        <img src="monogram_s_brand.svg" alt="Brand monogram" style="width:100%;height:auto"/>
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:8px;font-family:'Geist Mono',monospace;font-size:11px;color:#b8c5c5">
+          <div>Sonar Bright · <span style="color:#2dd4bf">#2DD4BF</span></div>
+          <div>Abyss Black · #03070A</div>
+          <div>Contraste · 9.8 : 1 ✅ AAA</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>FAVICON / APP-ICON DENSITY TEST</h2>
+      <div class="mini">
+        <img src="monogram_s.svg" style="height:128px"/>
+        <img src="monogram_s.svg" style="height:64px"/>
+        <img src="monogram_s.svg" style="height:32px"/>
+        <img src="monogram_s.svg" style="height:24px"/>
+        <img src="monogram_s.svg" style="height:16px"/>
+        <span>128 · 64 · 32 · 24 · 16 px</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    SONAR · Proyecto C6 · ADR-011 + ADR-012 compliant ·
+    grid 16×16 · chamfer 8px @ 45° · BRIEF-LOGO-001 v2
+  </footer>
+</body>
+</html>

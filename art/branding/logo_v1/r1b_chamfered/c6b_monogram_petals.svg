@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1b Concept C6b (post-founder feedback): SONAR monogram
+  Direction: chamfered geometric slab  TWO outlined petals forming abstract S
+  Source feedback: founder photo monogram S (2026-05-03 chat)  direct interpretation
+
+  Construction:
+    Canvas:        256 × 256 (modular grid 16×16)
+    Each petal:    144 × 48 chamfered octagonal slab (4 chamfered corners 12px each)
+    Top petal:     center (148, 96), rotated +25° (slants "\"  left high, right low)
+    Bottom petal:  center (108, 160), rotated -25° (slants "/"  left low, right high)
+    Crossing zone: ~(80-180, 120-135) where the two petals overlap forming S center
+
+  Stroke:          6px Abyss Black, linejoin miter (preserves chamfer angles sharp)
+  Fill:            none (outlined only  matches founder photo style)
+
+  Color: #03070A Abyss Black on transparent (canonical primary identity)
+         R2 swap: #2DD4BF Sonar Bright on Abyss canvas (Tier B identity)
+
+  Anti-pattern check:
+     NO concentric waves (purga ADR-012 D1)
+     NO submarine silhouette
+     NO compass / anchor / wheel
+     NO bevel / drop-shadow / emboss
+     NO holographic gradient
+     Two distinct chamfered slabs forming S  distinctive abstract metaphor of layered depth
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C6b chamfered outlined petals S monogram">
+  <title>SONAR  C6b Chamfered outlined petals</title>
+  <desc>Two outlined chamfered octagonal slabs (petals) crossing at center to form abstract S silhouette. Direct interpretation of founder reference photo. Higher distinctiveness than C6a, slightly higher favicon risk at @16px.</desc>
+  <g fill="none" stroke="#03070A" stroke-width="6" stroke-linejoin="miter" stroke-miterlimit="4">
+    <g transform="translate(148 96) rotate(25)">
+      <path d="M -60 -24 L 60 -24 L 72 -12 L 72 12 L 60 24 L -60 24 L -72 12 L -72 -12 Z"/>
+    </g>
+    <g transform="translate(108 160) rotate(-25)">
+      <path d="M -60 -24 L 60 -24 L 72 -12 L 72 12 L 60 24 L -60 24 L -72 12 L -72 -12 Z"/>
+    </g>
+  </g>
+</svg>

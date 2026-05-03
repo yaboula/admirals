@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1b Concept C6a (post-founder feedback): SONAR monogram
+  Direction: chamfered geometric slab letterform, FILLED (solid)
+  Source feedback: founder photo wordmark "SONAR" + photo monogram S (2026-05-03 chat)
+  Status: R1b draft  coherente con wordmark filled chamfered slab, optimizado favicon @16px
+
+  Construction:
+    Canvas:           256 × 256 (modular grid 16×16)
+    Letter cell grid: 7 wide × 9 tall = 112 × 144 (W:H H 0.78, taller than wide)
+    Letter bounds:    x = 72-184 (centered, margin 72 each side)
+                      y = 56-200 (centered, margin 56 each side)
+    Cell size:        16 px
+    Chamfer size:     8 px (50% of cell  substantial visible chamfer per founder photo style)
+    Chamfer angle:    45° (perfect diagonal cut at every corner)
+    Total corners:    12 (8 convex outer + 4 concave inner transitions)
+
+  S anatomy (8×7 ’ here 7×9 grid taller version):
+    Row 0:        full top bar (cells 0-6)
+    Rows 1-3:     right-vert-top column 6
+    Row 4:        full middle bar (cells 0-6)
+    Rows 5-7:     left-vert-bottom column 0
+    Row 8:        full bottom bar (cells 0-6)
+
+  Color: #03070A Abyss Black on transparent (canonical primary identity per brief §4.1)
+         R2 swap: #2DD4BF Sonar Bright on Abyss canvas (Tier B identity)
+
+  Anti-pattern check:
+     NO concentric waves (purga ADR-012 D1)
+     NO submarine silhouette
+     NO compass / anchor / wheel
+     NO bevel / drop-shadow / emboss (chamfers = geometric cuts, NOT skeumorphic shading)
+     NO holographic gradient
+     Reads "S" explicitly + chamfered geometric slab signature distinctive
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C6a chamfered solid S monogram">
+  <title>SONAR  C6a Chamfered solid S</title>
+  <desc>Solid letterform S with 8px chamfered corners (12 corners total). 7×9 modular cell grid, cell=16px, taller-than-wide proportion. Coherent with wordmark filled chamfered slab style.</desc>
+  <path d="M 80 56
+           L 176 56
+           L 184 64
+           L 184 112
+           L 176 120
+           L 96 120
+           L 88 128
+           L 88 176
+           L 96 184
+           L 176 184
+           L 184 192
+           L 176 200
+           L 80 200
+           L 72 192
+           L 72 128
+           L 80 120
+           L 160 120
+           L 168 112
+           L 168 80
+           L 160 72
+           L 80 72
+           L 72 64
+           Z"
+        fill="#03070A" stroke="none"/>
+</svg>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1b Lockup vertical (post-founder feedback)
+  Composition: monograma C6a (top) + wordmark "SONAR" (bottom)
+
+  Layout per brief §4.4 (gap = 0.3× altura monograma = ~40 px):
+    Padding:    16 each side
+    Monogram:   letter at x=168-280 (centered in 448 wide), y=16-160 (width 112, height 144)
+    Gap:        40
+    Wordmark:   letters at x=16-432 (centered, full 416 wide), y=200-344
+    Total:      16+416+16 = 448 wide, 16+144+40+144+16 = 360 tall
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 360" width="448" height="360" role="img" aria-label="SONAR vertical lockup chamfered">
+  <title>SONAR  Lockup vertical</title>
+  <desc>Vertical lockup: monogram C6a (top) + wordmark SONAR (bottom). Per brief §4.4 vertical lockup spec.</desc>
+
+  <g fill="#03070A" fill-rule="evenodd">
+
+    <g transform="translate(96 -40)">
+      <path d="M 80 56 L 176 56 L 184 64 L 184 112 L 176 120 L 96 120 L 88 128 L 88 176 L 96 184 L 176 184 L 184 192 L 176 200 L 80 200 L 72 192 L 72 128 L 80 120 L 160 120 L 168 112 L 168 80 L 160 72 L 80 72 L 72 64 Z"/>
+    </g>
+
+    <g transform="translate(0 184)">
+
+      <g transform="translate(16 16)">
+        <path d="M 8 0 L 72 0 L 80 8 L 80 56 L 72 64 L 24 64 L 16 72 L 16 120 L 24 128 L 72 128 L 80 136 L 72 144 L 8 144 L 0 136 L 0 72 L 8 64 L 56 64 L 64 56 L 64 24 L 56 16 L 8 16 L 0 8 Z"/>
+      </g>
+
+      <g transform="translate(100 16)">
+        <path d="M 8 0 L 72 0 L 80 8 L 80 136 L 72 144 L 8 144 L 0 136 L 0 8 Z M 24 16 L 56 16 L 64 24 L 64 120 L 56 128 L 24 128 L 16 120 L 16 24 Z"/>
+      </g>
+
+      <g transform="translate(184 16)">
+        <path d="M 8 0 L 19 7 L 61 121 L 64 120 L 64 8 L 72 0 L 80 8 L 80 136 L 72 144 L 61 137 L 19 23 L 16 24 L 16 136 L 8 144 L 0 136 L 0 8 Z"/>
+      </g>
+
+      <g transform="translate(268 16)">
+        <path d="M 2 136 L 26 8 L 36 0 L 44 0 L 54 8 L 78 136 L 72 144 L 68 144 L 60 136 L 60 104 L 52 96 L 28 96 L 20 104 L 20 136 L 12 144 L 8 144 Z M 32 24 L 48 24 L 56 32 L 56 72 L 48 80 L 32 80 L 24 72 L 24 32 Z"/>
+      </g>
+
+      <g transform="translate(352 16)">
+        <path d="M 8 0 L 72 0 L 80 8 L 80 56 L 72 64 L 24 64 L 21 70 L 75 138 L 72 144 L 8 144 L 0 136 L 0 8 Z M 32 16 L 56 16 L 64 24 L 64 40 L 56 48 L 32 48 L 24 40 L 24 24 Z"/>
+      </g>
+
+    </g>
+
+  </g>
+</svg>

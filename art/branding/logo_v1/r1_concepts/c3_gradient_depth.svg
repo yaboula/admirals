@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1 Concept C3: Gradient depth
+  Status: R1 thumbnail (B&W tonal evaluation only)
+  Construction: Single S-path stroked with vertical gradient (light gray top ’ black bottom)
+  Grid: 256×256 viewBox, 16-unit modular
+  S-path canonical: M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206
+  Stroke-width 36, linecap/linejoin round
+  Color (R1 B&W tonal): linear gradient top #B8C5C5 (Crew 300 light) ’ bottom #03070A (Abyss Black)
+  R2 future swap: Sonar Bright #2DD4BF (top) ’ Sonar Pulse #14E5DD (bottom). Note: real version may need shift.
+  Risk: highest favicon test risk (16px loses gradient detail). Validate carefully R2 against monochrome fallback.
+  Anti-pattern check:  NO concentric waves, NO submarine, NO holographic/rainbow gradient (pure 2-stop tonal)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C3 Gradient depth">
+  <title>SONAR  C3 Gradient depth</title>
+  <desc>S monogram with vertical tonal gradient suggesting descent of light into depth. Highest favicon risk (16px loses gradient). Most commercial visual. Requires monochrome fallback.</desc>
+  <defs>
+    <linearGradient id="depthGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#B8C5C5"/>
+      <stop offset="1" stop-color="#03070A"/>
+    </linearGradient>
+  </defs>
+  <path d="M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206"
+        fill="none" stroke="url(#depthGradient)" stroke-width="36"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

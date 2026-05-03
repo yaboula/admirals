@@ -1128,3 +1128,75 @@ Post-Bible, founder expressó sentirse perdido respecto al avance pivot. Archite
 > **Founder guidance institutional:** *"DEJAMOS EL DESIGN TRABAJANDO Y SEGUIMOS"* (repetido 3× — mantra sesión C+B combo). *"ok perfecto y deja un parte de obligatorios qeu tengo que tener antes de empezar s2"* (cierre S1.6 — request directo parte pre-S2).
 
 ---
+
+### S1.7 — Logo v2 finalization (Concept A "S-curl open" canonical + PNG exports + brief audit)
+
+- **Fecha:** 2026-05-03
+- **Duración:** ~2h estimado.
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6).
+- **Sprint:** S1 (pivot phase post-sprint-1-complete) — design execution continuation.
+- **Perfil:** 🎨 Design + 🛠️ Tooling.
+- **Modelo:** Sonnet 4.6.
+- **Goal:** Finalizar logo v2 a partir de fuente founder (`sonar_logo_concept_explorations.svg` 5 variantes A-E), adoptar Concept A "S-curl open" como canonical visual preference, limpiar fuente para mantener solo variante A, alinear paleta a brief §4.1, generar PNG exports + favicon.ico per brief §2.1 deliverables, audit final vs brief §2.1/§4, clarificar que es **preferencia visual NO pivot de marca** (briefs v2 + ADR-012 metáfora abstract siguen vigentes).
+- **Status:** ✅ Done (logo v2 working canonical + 26 PNGs + favicon.ico + README v1.1 + audit complete; **NO commit yet — pending founder review**).
+
+### Cambios
+
+- **Created:**
+  - `art/branding/logo_v2/exports/` (27 archivos):
+    - `monogram_{16,32,64,128,256,512,1024}.png` (canonical opacity-fade variant).
+    - `monogram_solid_{16,32,64,128,256}.png` (solid variant para small/stamp use).
+    - `monogram_light_{64,128,256,512}.png` (Crew 100 canvas variant).
+    - `wordmark_{256,512,1024,2048}.png`.
+    - `lockup_horizontal_{512,1024,2048}.png`.
+    - `lockup_vertical_{256,512,1024}.png`.
+    - `favicon.ico` (multi-resolution 16+32+48 from `monogram_s_solid.svg`).
+  - `art/tools/logo_export/package.json` (Node project + deps `sharp@0.33` + `png-to-ico@2`).
+  - `art/tools/logo_export/export.mjs` (~142 líneas — pipeline SVG→PNG sharp@384dpi + favicon multi-res).
+  - `art/tools/logo_export/README.md` (~40 líneas — uso, deliverables, stack).
+- **Modified:**
+  - `art/branding/logo_v2/monogram_s.svg` — rewrite a Concept A (3 arcs Q-bezier opacity-fade 0.35/0.65/1.0, viewBox 256×256, paths escalados 3× desde fuente founder centrada en 128,128).
+  - `art/branding/logo_v2/monogram_s_solid.svg` — rewrite a Concept A solid (todas arcs opacity 1.0, para favicon/small sizes).
+  - `art/branding/logo_v2/monogram_s_light.svg` — rewrite a Concept A light + **fix paleta `#0F766E` → `#1FB39E`** per brief `01_brief_logo.md` v2 §4.1 token `--sonar-bright-shifted`.
+  - `art/branding/logo_v2/wordmark_sonar.svg` — rewrite a `<text>` Geist SemiBold tracking −3.5% (substituye custom slab letterforms previas chamfered).
+  - `art/branding/logo_v2/lockup_horizontal.svg` — rewrite con monogram Concept A inline + wordmark Geist alineado.
+  - `art/branding/logo_v2/lockup_vertical.svg` — rewrite con monogram Concept A inline + wordmark Geist centered.
+  - `art/branding/logo_v2/source_exploration_sheet.svg` — limpiado de 5 variantes (A-E) a solo Concept A + nota semántica founder reinterpretation (capas profundidad ≠ ondas concéntricas radio).
+  - `art/branding/logo_v2/preview.html` — actualizado para mostrar variantes Concept A (canonical/solid/light) + lockups.
+  - `art/branding/logo_v2/README.md` — full rewrite v1.1: status WORKING CANONICAL, metáfora founder sign-off (profundidad/trabajar a fondo NO ping radio), anatomía 3 arcos, paleta verificada vs brief §4.1, anatomy + lockups + clear-space + audit completo §2.1 deliverables (5/5) + §4 specs (paleta ✅ + tipo ✅ + geometría ⚠️ excepción documentada) + §3 anti-patterns (5/6 ✅ + 1 ⚠️ founder-overridden) + **disclaimer NO-PIVOT explícito**.
+- **Deleted:** ninguno (variants B-E removidas via rewrite source_exploration_sheet, no archivos físicos borrados).
+
+### Decisiones tomadas
+
+- **Concept A "S-curl open" = visual preference NO pivot de marca:** founder explícito que ADR-012 (metáfora abstract profundidad) sigue vigente; brief v2 5 candidatos sigue firmable; este logo v2 es **una expresión específica del candidato "preferida hoy"**, no reemplaza spec doctrinal. Documentado en `README.md` §"NO es pivot" + `source_exploration_sheet.svg` nota semántica.
+- **Reinterpretación semántica formal:** founder asume que arcos abiertos NO = ondas concéntricas radio/freq prohibidas por ADR-012 §D1, sino = **capas profundidad / trabajar a fondo / valor emergiendo bajo estratos**. Decisión founder-level overrideando lectura literal del anti-pattern. Reinterpretación documentada en `README.md` §Metáfora + `source_exploration_sheet.svg` line 145.
+- **NO ADR-013 todavía:** founder explícito que se mantiene WORKING canonical sin formalizar ADR (logo no-locked per brief §3 / art_direction §3.3 sigue vigente). Si después de uso real (~2-4 weeks) se mantiene preferencia, entonces ADR-013 + brief §4 lock + art_direction §3.3 lock.
+- **NO update docs firmados:** `docs/art/01_art_direction.md`, `docs/art/briefs/01_brief_logo.md`, `docs/planning/02_decision_log.md` NO se tocan en S1.7 — founder explícito ("dejamos design trabajando y seguimos"). Logo v2 vive aislado en `art/branding/logo_v2/` + README local + audit local.
+- **Color shift Crew 100:** brief §4.1 especifica `--sonar-bright-shifted #1FB39E` para canvases claros (3.2:1 AA Large ✓). Cambio inicial usaba `#0F766E` (Tailwind teal-700, NO en token system) — corregido a `#1FB39E` per spec firmada.
+- **`source_exploration_sheet.svg` purge variants B-E:** decisión limpieza para evitar futuro AI agent re-leer y proponer concepts purgados. Solo variante A queda como "concept seleccionado" + nota semántica.
+- **Wordmark Geist `<text>` element vs custom paths:** founder source usa Geist SemiBold tracking −3.5% via `<text>` runtime — preserva flexibility (font swap fácil) pero requiere fallback stack (`'Geist', 'Geist Sans', 'Inter Tight', Inter, system-ui`). Trade-off aceptado: rendering depende cliente font availability, OK para web/preview, eventualmente outline-to-paths para print/embed.
+
+### Issues pendientes
+
+- 🟡 **NO commit pushed S1.7** — pending founder review visual de exports antes commit.
+- 🟡 **Geometría brief §4.4 vs Concept A:** brief specifica geometría chamfered slab; Concept A es stroke-arcs. Audit README marca esto como ⚠️ excepción documentada (founder override). Si ADR-013 firmado eventualmente, brief §4.4 requerirá update.
+- 🟡 **Anti-pattern §3 "ondas concéntricas":** brief §3 explícito prohibe; founder reinterpretation override válido pero **debe quedar trazable** vía README disclaimer + source_exploration_sheet nota. Si externo (ej. brand audit, contractor) lee brief sin contexto, conflicto detectable.
+- 🟢 **ADR-013 logo lock:** deferred ~2-4 weeks post uso real. Si holds, formalizar via ADR + brief §4 §3.3 update + art_direction §3.3 update.
+- 🟢 **Outline-to-paths wordmark:** para print/embed donde Geist no disponible runtime. Tarea opcional pre-S2.
+- 🔴 **Issues S1.6 todos pendientes:** Phase 6 mass-purge docs operacionales, SPRINT_PLAN_S2.md, decisiones D1+D2+D3, smoke regression, tag `sonar-identity-canonical`. Ver `PRE_S2_CHECKLIST.md`.
+
+### Handoff próxima sesión (S1.8 o S2.0)
+
+- **Modelo recomendado:** Sonnet 4.6 si Phase 6 surgical doc o tooling. Opus 4.7 / Gemini 3.1 Pro si planning S2 o decisión arquitectónica D1-D3.
+- **Goal candidatos:** (a) commit + push S1.7 logo v2 deliverables post founder review. (b) Phase 6 surgical `02_admirals_tablet.md` → `02_sonar_tablet.md`. (c) Decisiones founder D1+D2+D3 + tag + smoke regression. (d) S2.0 planning (solo si B1 done).
+- **Pre-requisitos LECTURA OBLIGATORIA:** `progress/PRE_S2_CHECKLIST.md` v1.0 + `docs/agents/00_BOOTSTRAP.md` v1.5 + ADR-011 + ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 + Bible v1.4 §1 + SESSION_LOG S1.4-S1.7 entries + `art/branding/logo_v2/README.md` (si toca logo).
+- **Files in scope:** depende goal.
+- **Notas especiales:** **Logo v2 = WORKING CANONICAL no LOCKED.** Briefs v2 siguen SSoT spec doctrinal. Si AI futura lee brief §3 anti-patterns y detecta conflict con logo v2 visualmente, **NO arreglar unilateralmente** — leer `art/branding/logo_v2/README.md` §"NO es pivot" primero, founder override está documentado. **Memoria SONAR Identity r2 sigue vigente** — ADR-012 metáfora abstract no cambió.
+
+### Files in scope respetados
+
+✅ Scope strict: `art/branding/logo_v2/` (8 mods) + `art/tools/logo_export/` (3 creates) + `art/branding/logo_v2/exports/` (27 generated) + `progress/SESSION_LOG.md` (1 append). **NO tocó `docs/*` (briefs, art_direction, decision_log intactos), NO tocó code/DB/`.windsurf/*`** — founder explícito mantener separación logo v2 working ↔ docs firmados.
+
+> **Founder guidance institutional:** *"esto NO es un pivot, es preferencia visual hoy"* (S1.7 framing crítico — protege coherencia ADR-012 + briefs v2 sin romper agency founder sobre output visual concreto). *"limpia las otras variantes y deja solo A"* (purge B-E del source). *"genera los PNGs y el favicon"* (deliverables §2.1).
+
+---

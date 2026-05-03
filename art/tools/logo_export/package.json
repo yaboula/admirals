@@ -1,0 +1,14 @@
+{
+  "name": "sonar-logo-export",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Render SONAR logo SVG sources to PNG raster exports + favicon.ico. Run with: npm install && npm run build.",
+  "type": "module",
+  "scripts": {
+    "build": "node export.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5",
+    "png-to-ico": "^2.1.8"
+  }
+}

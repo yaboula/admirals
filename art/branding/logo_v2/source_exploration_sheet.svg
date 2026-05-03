@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SONAR — Logo concept source sheet (CLEANED · variant A only)
+
+  ORIGIN: derivado de exploration sheet original de 5 variantes (A-E). Founder
+  seleccionó variant A "S-curl open" el 2026-05-03. Variants B (Radial ping),
+  C (Wave stack), D (Concentric S pure), E (Oscilloscope) fueron descartadas
+  y removidas de este archivo para clarity.
+
+  ACLARACIÓN CANONICAL (founder):
+    - Concept A es preferencia VISUAL por forma arc-based sobre letter-based.
+    - NO es un pivote de identidad de marca. Metáfora, voz, paleta, tipografía
+      permanecen idénticas a 01_brief_logo.md v2.
+    - Lectura canonical de los 3 arcos: CAPAS DE PROFUNDIDAD (trabajar a fondo)
+      alineada con brief §1 "profundidad simbólica + exploración paciente".
+    - Lectura rechazada: ❌ ondas sonar / ping radio / frecuencia acústica.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 560" width="480" height="560"
+     role="img" aria-label="SONAR — concept A source sheet">
+  <title>SONAR — Concept A "S-curl open" source reference</title>
+
+  <!-- Background -->
+  <rect width="480" height="560" fill="#0a0f12"/>
+
+  <!-- Header -->
+  <text x="24" y="28" fill="#2DD4BF"
+        font-family="-apple-system, Inter, sans-serif" font-size="10" font-weight="400">
+    SONAR · Logo source · Concept A (selected canonical)
+  </text>
+  <line x1="24" y1="38" x2="456" y2="38" stroke="#1a2530" stroke-width="0.5"/>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- VARIANT A — "S curl" 3 arcos abiertos (CHOSEN)       -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <rect x="156" y="56" width="168" height="168" rx="12" fill="#03070A"/>
+  <rect x="156" y="56" width="168" height="168" rx="12"
+        fill="none" stroke="#2DD4BF" stroke-width="1" opacity="0.4"/>
+
+  <!-- Wave 1 (outer echo) -->
+  <path d="M240 92 Q274 92 274 116 Q274 140 240 140"
+        fill="none" stroke="#2DD4BF" stroke-width="4.5" stroke-linecap="round" opacity="0.35"/>
+  <!-- Wave 2 (mid echo) -->
+  <path d="M240 106 Q264 106 264 120 Q264 134 240 134"
+        fill="none" stroke="#2DD4BF" stroke-width="4.5" stroke-linecap="round" opacity="0.65"/>
+  <!-- Wave 3 (main S) -->
+  <path d="M216 120 Q226 106 240 106 Q254 106 254 120 Q254 134 240 134 Q224 134 216 148"
+        fill="none" stroke="#2DD4BF" stroke-width="4.5" stroke-linecap="round" opacity="1"/>
+
+  <!-- Label -->
+  <text x="240" y="198" font-size="13" text-anchor="middle"
+        font-family="-apple-system, 'Inter Tight', Inter, sans-serif"
+        font-weight="600" fill="#F0F4F4">SONAR</text>
+  <text x="240" y="212" font-size="9" text-anchor="middle"
+        font-family="-apple-system, Inter, sans-serif" fill="#2DD4BF">
+    A · S-curl open · CANONICAL
+  </text>
+
+  <!-- Separator -->
+  <line x1="24" y1="256" x2="456" y2="256" stroke="#1a2530" stroke-width="0.5"/>
+  <text x="24" y="280" fill="#4a6070"
+        font-family="-apple-system, Inter, sans-serif" font-size="10">
+    Lockup horizontal — concept A
+  </text>
+
+  <!-- Lockup frame -->
+  <rect x="24" y="298" width="432" height="88" rx="10" fill="#03070A"/>
+  <rect x="24" y="298" width="432" height="88" rx="10"
+        fill="none" stroke="#1a2530" stroke-width="0.5"/>
+
+  <!-- Mini monograma for lockup -->
+  <g transform="translate(72 342) scale(0.72)">
+    <path d="M0 -18 Q34 -18 34 -4 Q34 10 0 10" fill="none" stroke="#2DD4BF"
+          stroke-width="5.5" stroke-linecap="round" opacity="0.35"/>
+    <path d="M0 -8 Q24 -8 24 2 Q24 12 0 12" fill="none" stroke="#2DD4BF"
+          stroke-width="5.5" stroke-linecap="round" opacity="0.65"/>
+    <path d="M-22 4 Q-12 -18 0 -18 Q14 -18 14 -4 Q14 10 0 10 Q-16 10 -22 32"
+          fill="none" stroke="#2DD4BF" stroke-width="5.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark in lockup -->
+  <text x="138" y="352" font-family="-apple-system, 'Inter Tight', Inter, sans-serif"
+        font-size="30" font-weight="600" fill="#F0F4F4" letter-spacing="-0.035em">SONAR</text>
+
+  <!-- Specs sidebar -->
+  <text x="280" y="328" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">Geist SemiBold · tracking −3.5%</text>
+  <text x="280" y="344" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">Gap: 0.5× monogram height</text>
+  <text x="280" y="360" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">Contraste: 9.8:1 · AAA ✓</text>
+  <text x="280" y="376" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#2DD4BF on #03070A canvas</text>
+
+  <!-- Separator -->
+  <line x1="24" y1="416" x2="456" y2="416" stroke="#1a2530" stroke-width="0.5"/>
+  <text x="24" y="436" fill="#4a6070"
+        font-family="-apple-system, Inter, sans-serif" font-size="10">
+    Paleta canonical (per brief §4.1)
+  </text>
+
+  <!-- Swatches -->
+  <rect x="24" y="448" width="44" height="24" rx="4" fill="#2DD4BF"/>
+  <text x="46" y="488" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#2DD4BF</text>
+  <text x="46" y="500" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#4a6070">Sonar Bright</text>
+
+  <rect x="84" y="448" width="44" height="24" rx="4" fill="#1FB39E"/>
+  <text x="106" y="488" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#1FB39E</text>
+  <text x="106" y="500" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#4a6070">Shifted (light)</text>
+
+  <rect x="144" y="448" width="44" height="24" rx="4" fill="#5EEAD4"/>
+  <text x="166" y="488" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#5EEAD4</text>
+  <text x="166" y="500" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#4a6070">Glow sister</text>
+
+  <rect x="204" y="448" width="44" height="24" rx="4" fill="#03070A"
+        stroke="#1a2530" stroke-width="0.5"/>
+  <text x="226" y="488" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#03070A</text>
+  <text x="226" y="500" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#4a6070">Abyss Black</text>
+
+  <rect x="264" y="448" width="44" height="24" rx="4" fill="#F0F4F4"/>
+  <text x="286" y="488" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#F0F4F4</text>
+  <text x="286" y="500" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#4a6070">Crew 100</text>
+
+  <rect x="324" y="448" width="44" height="24" rx="4" fill="#175A5F"
+        stroke="#1a2530" stroke-width="0.5"/>
+  <text x="346" y="488" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="11" fill="#718096">#175A5F</text>
+  <text x="346" y="500" text-anchor="middle" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#E24B4A">Coloro ✗ logo</text>
+
+  <!-- Footer -->
+  <text x="456" y="540" text-anchor="end" font-family="-apple-system, Inter, sans-serif"
+        font-size="10" fill="#4a6070">
+    SONAR · BRIEF-LOGO-001 v2 · concept A canonical source
+  </text>
+</svg>

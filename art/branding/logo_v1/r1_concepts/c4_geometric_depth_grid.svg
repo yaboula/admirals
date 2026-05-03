@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1 Concept C4: Geometric depth-grid
+  Status: R1 thumbnail (B&W silhouette evaluation only)
+  Construction: S-shape mask filled with horizontal contour-style lines evoking bathymetric/topographic depth maps.
+  Grid: 256×256 viewBox, 16-unit modular
+  S-path canonical: M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206
+  Stroke-width 36 (S region), filled with parallel horizontal lines stroke 2.5px spaced 10px y-step
+  Color (R1 B&W): #03070A Abyss Black lines on transparent
+  Risk: highest complexity at small sizes (16/24px loses contour detail). Validate carefully favicon.
+  Anti-pattern check:  NO concentric waves (lines are parallel horizontal NOT concentric), NO submarine, NO compass
+  Reference vocabulary: bathymetric depth maps + geological strata (cross-section diagrams)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C4 Geometric depth-grid">
+  <title>SONAR  C4 Geometric depth-grid</title>
+  <desc>S monogram filled with horizontal contour lines evoking bathymetric depth maps. Highest complexity at small sizes. Most distinctive conceptually but riskiest at 16px favicon.</desc>
+  <defs>
+    <mask id="sShape" maskUnits="userSpaceOnUse">
+      <rect width="256" height="256" fill="black"/>
+      <path d="M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206"
+            fill="none" stroke="white" stroke-width="36"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g mask="url(#sShape)" stroke="#03070A" stroke-width="2.5" stroke-linecap="round">
+    <line x1="0" y1="32"  x2="256" y2="32"/>
+    <line x1="0" y1="42"  x2="256" y2="42"/>
+    <line x1="0" y1="52"  x2="256" y2="52"/>
+    <line x1="0" y1="62"  x2="256" y2="62"/>
+    <line x1="0" y1="72"  x2="256" y2="72"/>
+    <line x1="0" y1="82"  x2="256" y2="82"/>
+    <line x1="0" y1="92"  x2="256" y2="92"/>
+    <line x1="0" y1="102" x2="256" y2="102"/>
+    <line x1="0" y1="112" x2="256" y2="112"/>
+    <line x1="0" y1="122" x2="256" y2="122"/>
+    <line x1="0" y1="132" x2="256" y2="132"/>
+    <line x1="0" y1="142" x2="256" y2="142"/>
+    <line x1="0" y1="152" x2="256" y2="152"/>
+    <line x1="0" y1="162" x2="256" y2="162"/>
+    <line x1="0" y1="172" x2="256" y2="172"/>
+    <line x1="0" y1="182" x2="256" y2="182"/>
+    <line x1="0" y1="192" x2="256" y2="192"/>
+    <line x1="0" y1="202" x2="256" y2="202"/>
+    <line x1="0" y1="212" x2="256" y2="212"/>
+    <line x1="0" y1="222" x2="256" y2="222"/>
+  </g>
+</svg>

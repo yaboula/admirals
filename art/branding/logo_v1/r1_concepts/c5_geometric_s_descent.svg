@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1 Concept C5: Geometric S-descent
+  Status: R1 thumbnail (B&W silhouette evaluation only)
+  Construction: S-path SPLIT into 2 halves at midpoint (128,128).
+    Top half (surface): thin stroke 12px  sugiere "surface" / superficie ligera
+    Bottom half (depth): thick stroke 40px  sugiere "depth" / masa descendente
+  Grid: 256×256 viewBox, 16-unit modular
+  Stroke linecap/linejoin: round (per brief §4.3 + canonical SONAR Lucide round style)
+  Color (R1 B&W): #03070A Abyss Black both halves
+  Anti-pattern check:
+     NO concentric waves
+     NO submarine silhouette
+     Most timeless and simplest baseline of the 5 candidates
+     Reads as S clearly + binary contrast = "surface above + depth below"
+  Most conservative direction. Lowest implementation risk. Highest atemporality score.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C5 Geometric S-descent">
+  <title>SONAR  C5 Geometric S-descent</title>
+  <desc>S monogram with weight-differentiated halves: thin top (surface) + thick bottom (depth). Most timeless and minimal. Lowest favicon risk.</desc>
+  <g fill="none" stroke="#03070A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 218 50 C 38 50, 38 128, 128 128"
+          stroke-width="12"/>
+    <path d="M 128 128 C 218 128, 218 206, 38 206"
+          stroke-width="40"/>
+  </g>
+</svg>

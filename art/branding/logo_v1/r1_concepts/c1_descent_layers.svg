@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1 Concept C1: Descent-layers
+  Status: R1 thumbnail (B&W silhouette evaluation only  no color, no glow, no wordmark)
+  Construction: 4 horizontal rectangular bands forming S silhouette through zigzag offset
+  Grid: 256×256 viewBox, 16-unit modular grid, 32px clear-space top/bottom/left/right
+  Active area: 32’224 (192×192 inner)
+  Color: #03070A Abyss Black on transparent (canonical primary identity per brief §4.1)
+  Linecap/linejoin: N/A (rectangular fills, intentional crisp rx=0 evokes geological strata)
+  Anti-pattern check:
+     NO concentric waves (radio/freq purga ADR-012 D1)
+     NO submarine silhouette
+     NO acoustic waveform
+     NO compass / anchor / wheel
+     Reads as S without forcing pure letterform
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C1 Descent-layers">
+  <title>SONAR  C1 Descent-layers</title>
+  <desc>Four horizontal bands at progressive offset, forming an S silhouette through zigzag descent. Geological strata vocabulary. Most timeless and distinctive of the 5 candidates.</desc>
+  <g fill="#03070A">
+    <rect x="60"  y="32"  width="164" height="30"/>
+    <rect x="32"  y="86"  width="78"  height="30"/>
+    <rect x="146" y="140" width="78"  height="30"/>
+    <rect x="32"  y="194" width="164" height="30"/>
+  </g>
+</svg>

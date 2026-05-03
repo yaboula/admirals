@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SONAR Monogram — concept A "S-curl open" (canonical, from founder source)
+  Construction: 3 sonar-wave arcs forming S, concentric echo on right side
+  Source: sonar_logo_concept_explorations.svg · variant A
+  Palette: Sonar Bright #2DD4BF on Abyss Black #03070A
+  Paths scaled 3× from source (center 129,136 → 128,128). Stroke 4.5 → 13.5.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"
+     role="img" aria-label="SONAR — S-curl monogram">
+  <title>SONAR — S-curl monogram (concept A)</title>
+  <rect x="0" y="0" width="256" height="256" fill="#03070A"/>
+  <g fill="none" stroke="#2DD4BF" stroke-width="13.5"
+     stroke-linecap="round" stroke-linejoin="round">
+    <!-- Wave 1 — outer echo -->
+    <path d="M 113 44 Q 215 44 215 116 Q 215 188 113 188" opacity="0.35"/>
+    <!-- Wave 2 — mid echo -->
+    <path d="M 113 86 Q 185 86 185 128 Q 185 170 113 170" opacity="0.65"/>
+    <!-- Wave 3 — main S (inner, crosses to form S) -->
+    <path d="M 41 128 Q 71 86 113 86 Q 155 86 155 128 Q 155 170 113 170 Q 65 170 41 212" opacity="1"/>
+  </g>
+</svg>

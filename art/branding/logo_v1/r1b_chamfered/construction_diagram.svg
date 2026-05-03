@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1b Construction diagram
+  Documents the modular geometry of C6a monogram for designer / developer reference.
+  NOT for production use  diagram only.
+
+  Shows:
+    1. 16×16 modular grid overlay (light teal lines, major every 64 px)
+    2. C6a monogram outlined (stroked, not filled) for path inspection
+    3. Chamfer dimension annotations (8 px @ 45°)
+    4. Clear-space dashed indicator (S width = 112 px on each side of monogram)
+    5. Cell dimensions ruler (16 px modular unit)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-128 -128 512 512" width="512" height="512" role="img" aria-label="SONAR C6a construction diagram">
+  <title>SONAR  C6a Construction Diagram</title>
+  <desc>Modular grid 16×16, chamfer 8px at 45°, letter cells 7×9 = 112×144, clear-space e 112 px each side (= S width).</desc>
+
+  <defs>
+    <pattern id="minorGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M 16 0 L 0 0 0 16" fill="none" stroke="#2DD4BF" stroke-width="0.5" stroke-opacity="0.18"/>
+    </pattern>
+    <pattern id="majorGrid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M 64 0 L 0 0 0 64" fill="none" stroke="#2DD4BF" stroke-width="1" stroke-opacity="0.32"/>
+    </pattern>
+  </defs>
+
+  <rect x="-128" y="-128" width="512" height="512" fill="#03070A"/>
+
+  <rect x="0" y="0" width="256" height="256" fill="url(#minorGrid)"/>
+  <rect x="0" y="0" width="256" height="256" fill="url(#majorGrid)"/>
+  <rect x="0" y="0" width="256" height="256" fill="none" stroke="#2DD4BF" stroke-width="1.5" stroke-opacity="0.5"/>
+
+  <rect x="-112" y="-112" width="480" height="480" fill="none" stroke="#F0F4F4" stroke-width="1" stroke-opacity="0.35" stroke-dasharray="4 6"/>
+
+  <rect x="72" y="56" width="112" height="144" fill="none" stroke="#FBBF24" stroke-width="1" stroke-opacity="0.7" stroke-dasharray="2 4"/>
+
+  <path d="M 80 56 L 176 56 L 184 64 L 184 112 L 176 120 L 96 120 L 88 128 L 88 176 L 96 184 L 176 184 L 184 192 L 176 200 L 80 200 L 72 192 L 72 128 L 80 120 L 160 120 L 168 112 L 168 80 L 160 72 L 80 72 L 72 64 Z"
+        fill="none" stroke="#F0F4F4" stroke-width="1.5"/>
+
+  <g fill="#2DD4BF" stroke="#03070A" stroke-width="1">
+    <circle cx="80"  cy="56"  r="2.5"/>
+    <circle cx="176" cy="56"  r="2.5"/>
+    <circle cx="184" cy="64"  r="2.5"/>
+    <circle cx="184" cy="112" r="2.5"/>
+    <circle cx="176" cy="120" r="2.5"/>
+    <circle cx="96"  cy="120" r="2.5"/>
+    <circle cx="88"  cy="128" r="2.5"/>
+    <circle cx="88"  cy="176" r="2.5"/>
+    <circle cx="96"  cy="184" r="2.5"/>
+    <circle cx="176" cy="184" r="2.5"/>
+    <circle cx="184" cy="192" r="2.5"/>
+    <circle cx="176" cy="200" r="2.5"/>
+    <circle cx="80"  cy="200" r="2.5"/>
+    <circle cx="72"  cy="192" r="2.5"/>
+    <circle cx="72"  cy="128" r="2.5"/>
+    <circle cx="80"  cy="120" r="2.5"/>
+    <circle cx="160" cy="120" r="2.5"/>
+    <circle cx="168" cy="112" r="2.5"/>
+    <circle cx="168" cy="80"  r="2.5"/>
+    <circle cx="160" cy="72"  r="2.5"/>
+    <circle cx="80"  cy="72"  r="2.5"/>
+    <circle cx="72"  cy="64"  r="2.5"/>
+  </g>
+
+  <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="9" fill="#B8C5C5">
+
+    <text x="128" y="-12" text-anchor="middle" fill="#F0F4F4" font-size="11" font-weight="600">SONAR  C6a CONSTRUCTION DIAGRAM</text>
+    <text x="128" y="-2"  text-anchor="middle">canvas 256×256 · modular grid 16×16 · chamfer 8 px @ 45°</text>
+
+    <line x1="-100" y1="56"  x2="-30" y2="56"  stroke="#FBBF24" stroke-width="0.75" stroke-opacity="0.7"/>
+    <line x1="-100" y1="200" x2="-30" y2="200" stroke="#FBBF24" stroke-width="0.75" stroke-opacity="0.7"/>
+    <line x1="-65"  y1="56"  x2="-65" y2="200" stroke="#FBBF24" stroke-width="0.75" stroke-opacity="0.7"/>
+    <text x="-72" y="132" text-anchor="end" fill="#FBBF24">letter
+      <tspan x="-72" dy="11">144 px</tspan>
+      <tspan x="-72" dy="11">(9 cells)</tspan>
+    </text>
+
+    <line x1="72"  y1="220" x2="72"  y2="240" stroke="#FBBF24" stroke-width="0.75" stroke-opacity="0.7"/>
+    <line x1="184" y1="220" x2="184" y2="240" stroke="#FBBF24" stroke-width="0.75" stroke-opacity="0.7"/>
+    <line x1="72"  y1="232" x2="184" y2="232" stroke="#FBBF24" stroke-width="0.75" stroke-opacity="0.7"/>
+    <text x="128" y="252" text-anchor="middle" fill="#FBBF24">letter 112 px (7 cells)</text>
+
+    <line x1="184" y1="56"  x2="220" y2="34"  stroke="#2DD4BF" stroke-width="0.75"/>
+    <text x="222" y="32"  fill="#2DD4BF">chamfer 8 px @ 45° (every corner)</text>
+
+    <line x1="184" y1="120" x2="220" y2="130" stroke="#2DD4BF" stroke-width="0.75"/>
+    <text x="222" y="132" fill="#2DD4BF">12 corners total: 8 convex outer + 4 concave inner</text>
+
+    <line x1="-128" y1="-112" x2="-100" y2="-112" stroke="#F0F4F4" stroke-width="0.5" stroke-dasharray="2 3" stroke-opacity="0.5"/>
+    <text x="-94" y="-108" fill="#F0F4F4" fill-opacity="0.7">clear-space e 112 px (= S width  brief §4.3)</text>
+
+    <line x1="0"   y1="280" x2="16"  y2="280" stroke="#2DD4BF" stroke-width="0.75" stroke-opacity="0.6"/>
+    <line x1="0"   y1="277" x2="0"   y2="283" stroke="#2DD4BF" stroke-width="0.75" stroke-opacity="0.6"/>
+    <line x1="16"  y1="277" x2="16"  y2="283" stroke="#2DD4BF" stroke-width="0.75" stroke-opacity="0.6"/>
+    <text x="22" y="283" fill="#2DD4BF" fill-opacity="0.85">cell = 16 px (modular unit)</text>
+
+    <text x="0"   y="312" fill="#6B7878">grid 16×16 · letter cells 7w × 9h · chamfer 50% of cell · stroke-linejoin miter</text>
+
+  </g>
+
+  <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="7" fill="#2DD4BF" fill-opacity="0.7">
+    <text x="80"  y="50" text-anchor="middle">V1</text>
+    <text x="184" y="60" text-anchor="start">V2</text>
+    <text x="184" y="116" text-anchor="start">V4</text>
+    <text x="96"  y="135" text-anchor="end">V5</text>
+    <text x="184" y="196" text-anchor="start">V8</text>
+    <text x="80"  y="212" text-anchor="middle">V9</text>
+    <text x="72"  y="125" text-anchor="end">V11</text>
+    <text x="168" y="80"  text-anchor="start">V13</text>
+  </g>
+
+</svg>

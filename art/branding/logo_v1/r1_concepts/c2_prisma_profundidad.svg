@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BRIEF-LOGO-001 v2  R1 Concept C2: Prisma profundidad
+  Status: R1 thumbnail (B&W silhouette evaluation only)
+  Construction: Same S-path twice  back face offset (10,10) in mid-gray suggesting isometric extrusion + front face solid Abyss Black on top.
+  Grid: 256×256 viewBox, 16-unit modular grid
+  S-path canonical (shared with C3/C4/C5):
+    M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206
+  Stroke-width 36, linecap round, linejoin round
+  Color (R1 B&W): front #03070A Abyss Black, back #6B7878 Crew 500 mid-gray
+  Anti-pattern check:  NO concentric waves, NO submarine, NO bevel/emboss (depth via isometric offset NOT skeumorph)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SONAR concept C2 Prisma profundidad">
+  <title>SONAR  C2 Prisma profundidad</title>
+  <desc>S monogram with isometric extrusion suggested by back-face offset. Abstract dimensional depth vocabulary (Notion 3D minimal class). Riskier at 16px favicon.</desc>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="36">
+    <path d="M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206"
+          stroke="#6B7878" transform="translate(10 10)"/>
+    <path d="M 218 50 C 38 50, 38 128, 128 128 C 218 128, 218 206, 38 206"
+          stroke="#03070A"/>
+  </g>
+</svg>

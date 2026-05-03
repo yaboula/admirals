@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SONAR Logo — R1 Contact Sheet (BRIEF-LOGO-001 v2)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* SONAR — R1 contact sheet styles
+     Hybrid theme test: dark canvas (Abyss Black) AND white surface (Crew 100)
+     Multi-size validation: 256 / 64 / 24 / 16 px (favicon test) */
+  :root {
+    --abyss-black: #03070A;
+    --depth-900: #061116;
+    --crew-100: #F0F4F4;
+    --crew-300: #B8C5C5;
+    --crew-500: #6B7878;
+    --crew-700: #2A3438;
+    --sonar-bright: #2DD4BF;
+    --grid-line: rgba(45, 212, 191, 0.18);
+    --grid-line-major: rgba(45, 212, 191, 0.32);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--abyss-black);
+    color: var(--crew-100);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "tnum" 1;
+  }
+
+  body { padding: 32px 48px 96px; }
+
+  header {
+    border-bottom: 1px solid var(--crew-700);
+    padding-bottom: 16px;
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: 28px; line-height: 36px; margin: 0 0 8px;
+    letter-spacing: -0.02em; font-weight: 600;
+  }
+
+  .meta {
+    font-size: 14px; line-height: 20px;
+    color: var(--crew-300);
+  }
+
+  .meta strong { color: var(--crew-100); }
+
+  .controls {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin: 24px 0 8px;
+    font-size: 14px;
+  }
+
+  .controls label {
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    padding: 8px 12px;
+    border: 1px solid var(--crew-700);
+    border-radius: 6px;
+    background: var(--depth-900);
+  }
+
+  .controls label:hover { border-color: var(--sonar-bright); }
+  .controls input { accent-color: var(--sonar-bright); }
+
+  h2 {
+    font-size: 22px; line-height: 32px;
+    margin: 48px 0 8px;
+    letter-spacing: -0.02em; font-weight: 600;
+  }
+
+  h2 .sub {
+    font-size: 13px; color: var(--crew-300);
+    font-weight: 400;
+    margin-left: 12px;
+    letter-spacing: 0;
+  }
+
+  /* Grid for the 5 concepts */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+
+  .concept-card {
+    background: var(--depth-900);
+    border: 1px solid var(--crew-700);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .concept-card .label {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--crew-300);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .concept-card h3 {
+    font-size: 16px;
+    line-height: 22px;
+    margin: 0 0 16px;
+    color: var(--crew-100);
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
+  .swatches {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .swatch {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+  }
+
+  .swatch.dark  { background: var(--abyss-black); border-color: var(--crew-700); }
+  .swatch.light { background: var(--crew-100); }
+
+  .swatch img,
+  .swatch object {
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  .swatch.light img,
+  .swatch.light object {
+    /* No filter on white canvas; SVGs are already #03070A on transparent */
+  }
+
+  /* Light canvas swatch shows monogram in Abyss Black (no inversion needed) */
+  .swatch .size-tag {
+    font-size: 11px;
+    color: var(--crew-500);
+    letter-spacing: 0.03em;
+  }
+
+  .swatch.light .size-tag { color: var(--crew-500); }
+
+  /* Construction grid overlay — toggleable */
+  .grid-on .with-grid {
+    background-image:
+      linear-gradient(to right,  var(--grid-line)       1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line)       1px, transparent 1px),
+      linear-gradient(to right,  var(--grid-line-major) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line-major) 1px, transparent 1px);
+    background-size:
+      16px 16px,    /* minor vertical */
+      16px 16px,    /* minor horizontal */
+      64px 64px,    /* major vertical (every 4 cells) */
+      64px 64px;    /* major horizontal */
+  }
+
+  /* Anti-pattern guards section */
+  .guards {
+    margin-top: 48px;
+    padding: 24px;
+    background: var(--depth-900);
+    border: 1px solid var(--crew-700);
+    border-radius: 10px;
+  }
+
+  .guards h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: var(--sonar-bright);
+    letter-spacing: -0.01em;
+  }
+
+  .guards ul {
+    margin: 0; padding-left: 20px;
+    font-size: 14px; line-height: 22px;
+    color: var(--crew-300);
+  }
+
+  .guards li code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--crew-100);
+    background: var(--abyss-black);
+    padding: 1px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--crew-700);
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--crew-700);
+    font-size: 13px;
+    color: var(--crew-500);
+  }
+
+  footer code {
+    color: var(--crew-300);
+  }
+
+  /* Mobile fallback — stacked single column */
+  @media (max-width: 1100px) {
+    .concept-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .concept-grid { grid-template-columns: 1fr; }
+    body { padding: 24px 16px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SONAR Logo — R1 Contact Sheet</h1>
+  <div class="meta">
+    <strong>Brief:</strong> BRIEF-LOGO-001 v2 (post-ADR-012) ·
+    <strong>Ronda:</strong> R1 Conceptos B&amp;W ·
+    <strong>Designer:</strong> Opus 4.7 MAX (AI executor) ·
+    <strong>Fecha:</strong> 2026-05-03
+  </div>
+  <div class="meta" style="margin-top:6px">
+    <strong>Cómo leer:</strong> 5 conceptos × 4 tamaños (256/64/24/16 px) × 2 canvases (Abyss dark + Crew 100 white).
+    El test favicon @16px es <em>el</em> filtro crítico del brief §4.3 + §7 R2 row.
+  </div>
+</header>
+
+<div class="controls" id="controls">
+  <label><input type="checkbox" id="gridToggle"> Mostrar grid construcción 16×16 (cells 16px, mayor cada 64px)</label>
+</div>
+
+<!-- ========================================== -->
+<!-- 256 px — full identity scale -->
+<!-- ========================================== -->
+<h2>@256 px <span class="sub">— hero / Tebex 256+ / packaging</span></h2>
+<div class="concept-grid">
+
+  <div class="concept-card">
+    <div class="label">C1</div>
+    <h3>Descent-layers</h3>
+    <div class="swatches">
+      <div class="swatch dark">
+        <img class="with-grid" src="c1_descent_layers.svg" width="224" height="224" aria-label="C1 256px on dark canvas">
+        <span class="size-tag">256 · ABYSS</span>
+      </div>
+      <div class="swatch light">
+        <img class="with-grid" src="c1_descent_layers.svg" width="224" height="224" aria-label="C1 256px on white canvas">
+        <span class="size-tag">256 · CREW 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C2</div>
+    <h3>Prisma profundidad</h3>
+    <div class="swatches">
+      <div class="swatch dark">
+        <img class="with-grid" src="c2_prisma_profundidad.svg" width="224" height="224" aria-label="C2 256px on dark canvas">
+        <span class="size-tag">256 · ABYSS</span>
+      </div>
+      <div class="swatch light">
+        <img class="with-grid" src="c2_prisma_profundidad.svg" width="224" height="224" aria-label="C2 256px on white canvas">
+        <span class="size-tag">256 · CREW 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C3</div>
+    <h3>Gradient depth</h3>
+    <div class="swatches">
+      <div class="swatch dark">
+        <img class="with-grid" src="c3_gradient_depth.svg" width="224" height="224" aria-label="C3 256px on dark canvas">
+        <span class="size-tag">256 · ABYSS</span>
+      </div>
+      <div class="swatch light">
+        <img class="with-grid" src="c3_gradient_depth.svg" width="224" height="224" aria-label="C3 256px on white canvas">
+        <span class="size-tag">256 · CREW 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C4</div>
+    <h3>Geometric depth-grid</h3>
+    <div class="swatches">
+      <div class="swatch dark">
+        <img class="with-grid" src="c4_geometric_depth_grid.svg" width="224" height="224" aria-label="C4 256px on dark canvas">
+        <span class="size-tag">256 · ABYSS</span>
+      </div>
+      <div class="swatch light">
+        <img class="with-grid" src="c4_geometric_depth_grid.svg" width="224" height="224" aria-label="C4 256px on white canvas">
+        <span class="size-tag">256 · CREW 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C5</div>
+    <h3>Geometric S-descent</h3>
+    <div class="swatches">
+      <div class="swatch dark">
+        <img class="with-grid" src="c5_geometric_s_descent.svg" width="224" height="224" aria-label="C5 256px on dark canvas">
+        <span class="size-tag">256 · ABYSS</span>
+      </div>
+      <div class="swatch light">
+        <img class="with-grid" src="c5_geometric_s_descent.svg" width="224" height="224" aria-label="C5 256px on white canvas">
+        <span class="size-tag">256 · CREW 100</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- 64 px — Tebex / app-icon Tablet -->
+<!-- ========================================== -->
+<h2>@64 px <span class="sub">— Tebex thumbnail / app-icon Tablet / website nav</span></h2>
+<div class="concept-grid">
+
+  <div class="concept-card">
+    <div class="label">C1</div>
+    <h3>Descent-layers</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c1_descent_layers.svg" width="64" height="64"><span class="size-tag">64 · ABYSS</span></div>
+      <div class="swatch light"><img src="c1_descent_layers.svg" width="64" height="64"><span class="size-tag">64 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C2</div>
+    <h3>Prisma profundidad</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c2_prisma_profundidad.svg" width="64" height="64"><span class="size-tag">64 · ABYSS</span></div>
+      <div class="swatch light"><img src="c2_prisma_profundidad.svg" width="64" height="64"><span class="size-tag">64 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C3</div>
+    <h3>Gradient depth</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c3_gradient_depth.svg" width="64" height="64"><span class="size-tag">64 · ABYSS</span></div>
+      <div class="swatch light"><img src="c3_gradient_depth.svg" width="64" height="64"><span class="size-tag">64 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C4</div>
+    <h3>Geometric depth-grid</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c4_geometric_depth_grid.svg" width="64" height="64"><span class="size-tag">64 · ABYSS</span></div>
+      <div class="swatch light"><img src="c4_geometric_depth_grid.svg" width="64" height="64"><span class="size-tag">64 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C5</div>
+    <h3>Geometric S-descent</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c5_geometric_s_descent.svg" width="64" height="64"><span class="size-tag">64 · ABYSS</span></div>
+      <div class="swatch light"><img src="c5_geometric_s_descent.svg" width="64" height="64"><span class="size-tag">64 · CREW 100</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- 24 px — Tablet small icon / nav favicon HD -->
+<!-- ========================================== -->
+<h2>@24 px <span class="sub">— Tablet small icon / nav favicon HD (brief §4.3 size mínimo pantalla)</span></h2>
+<div class="concept-grid">
+
+  <div class="concept-card">
+    <div class="label">C1</div>
+    <h3>Descent-layers</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c1_descent_layers.svg" width="24" height="24"><span class="size-tag">24 · ABYSS</span></div>
+      <div class="swatch light"><img src="c1_descent_layers.svg" width="24" height="24"><span class="size-tag">24 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C2</div>
+    <h3>Prisma profundidad</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c2_prisma_profundidad.svg" width="24" height="24"><span class="size-tag">24 · ABYSS</span></div>
+      <div class="swatch light"><img src="c2_prisma_profundidad.svg" width="24" height="24"><span class="size-tag">24 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C3</div>
+    <h3>Gradient depth</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c3_gradient_depth.svg" width="24" height="24"><span class="size-tag">24 · ABYSS</span></div>
+      <div class="swatch light"><img src="c3_gradient_depth.svg" width="24" height="24"><span class="size-tag">24 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C4</div>
+    <h3>Geometric depth-grid</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c4_geometric_depth_grid.svg" width="24" height="24"><span class="size-tag">24 · ABYSS</span></div>
+      <div class="swatch light"><img src="c4_geometric_depth_grid.svg" width="24" height="24"><span class="size-tag">24 · CREW 100</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C5</div>
+    <h3>Geometric S-descent</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c5_geometric_s_descent.svg" width="24" height="24"><span class="size-tag">24 · ABYSS</span></div>
+      <div class="swatch light"><img src="c5_geometric_s_descent.svg" width="24" height="24"><span class="size-tag">24 · CREW 100</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- 16 px — favicon CRITICAL TEST -->
+<!-- ========================================== -->
+<h2>@16 px <span class="sub">— favicon Chrome tab — TEST CRÍTICO brief §4.3 + §7 R2</span></h2>
+<div class="concept-grid">
+
+  <div class="concept-card">
+    <div class="label">C1</div>
+    <h3>Descent-layers</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c1_descent_layers.svg" width="16" height="16"><span class="size-tag">16 · FAVICON DARK</span></div>
+      <div class="swatch light"><img src="c1_descent_layers.svg" width="16" height="16"><span class="size-tag">16 · FAVICON LIGHT</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C2</div>
+    <h3>Prisma profundidad</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c2_prisma_profundidad.svg" width="16" height="16"><span class="size-tag">16 · FAVICON DARK</span></div>
+      <div class="swatch light"><img src="c2_prisma_profundidad.svg" width="16" height="16"><span class="size-tag">16 · FAVICON LIGHT</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C3</div>
+    <h3>Gradient depth</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c3_gradient_depth.svg" width="16" height="16"><span class="size-tag">16 · FAVICON DARK</span></div>
+      <div class="swatch light"><img src="c3_gradient_depth.svg" width="16" height="16"><span class="size-tag">16 · FAVICON LIGHT</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C4</div>
+    <h3>Geometric depth-grid</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c4_geometric_depth_grid.svg" width="16" height="16"><span class="size-tag">16 · FAVICON DARK</span></div>
+      <div class="swatch light"><img src="c4_geometric_depth_grid.svg" width="16" height="16"><span class="size-tag">16 · FAVICON LIGHT</span></div>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <div class="label">C5</div>
+    <h3>Geometric S-descent</h3>
+    <div class="swatches">
+      <div class="swatch dark"><img src="c5_geometric_s_descent.svg" width="16" height="16"><span class="size-tag">16 · FAVICON DARK</span></div>
+      <div class="swatch light"><img src="c5_geometric_s_descent.svg" width="16" height="16"><span class="size-tag">16 · FAVICON LIGHT</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- Anti-patterns auto-check -->
+<!-- ========================================== -->
+<div class="guards">
+  <h3>Anti-patterns auto-check (todos los 5 conceptos pasan)</h3>
+  <ul>
+    <li>Concentric waves (radio/freq purga ADR-012 D1) → <code>NO</code> en C1·C2·C3·C4·C5</li>
+    <li>Submarine silhouette literal → <code>NO</code> en todos</li>
+    <li>Periscope · hydrophone · torpedo · anchor · wheel · compass → <code>NO</code> en todos</li>
+    <li>Eye-with-rays "ver escuchando" literal → <code>NO</code> en todos</li>
+    <li>Cyberpunk neón · military tacticool · gaming RGB · cartoon mascot → <code>NO</code> en todos</li>
+    <li>Gradient holográfico mercurio rainbow → <code>NO</code> en C3 (pure 2-stop tonal)</li>
+    <li>Bevel · drop-shadow gamer · emboss → <code>NO</code> en todos · <strong>C2 isometric offset bajo supervisión R2</strong></li>
+    <li>Outline stroke decorative → <code>NO</code> en todos</li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<footer>
+  <div>SONAR — Logo R1 contact sheet · BRIEF-LOGO-001 v2 · Opus 4.7 MAX path § 9 brief.</div>
+  <div style="margin-top:6px">SVGs en <code>/r1_concepts/c1..c5_*.svg</code> · rationale en <code>rationale.md</code> · cuestionario founder en <code>../r0_kickoff/cuestionario_founder.md</code>.</div>
+  <div style="margin-top:6px">Próximo paso: founder elige <strong>2/5 conceptos</strong> para R2 (color + favicon real + app-icon Tablet + hero dark + hero white tests).</div>
+</footer>
+
+<script>
+  // Toggle construction grid overlay (only affects @256 px swatches via .with-grid class)
+  document.getElementById('gridToggle').addEventListener('change', function(e) {
+    document.body.classList.toggle('grid-on', e.target.checked);
+  });
+</script>
+
+</body>
+</html>

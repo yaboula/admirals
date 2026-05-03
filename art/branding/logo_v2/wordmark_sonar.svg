@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SONAR Wordmark — Geist SemiBold con tracking −3.5% (per founder source)
+  Font-stack fallback: Geist → Inter Tight → Inter → system-ui
+  Color: Crew 100 #F0F4F4 sobre Abyss #03070A (canonical A)
+  Reference: source_exploration_sheet.svg line 129
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120"
+     role="img" aria-label="SONAR — wordmark">
+  <title>SONAR — wordmark (Geist SemiBold, tracking −3.5%)</title>
+  <rect x="0" y="0" width="400" height="120" fill="#03070A"/>
+  <text x="200" y="78" text-anchor="middle"
+        font-family="'Geist', 'Geist Sans', 'Inter Tight', Inter, system-ui, -apple-system, sans-serif"
+        font-size="72" font-weight="600" letter-spacing="-0.035em"
+        fill="#F0F4F4">SONAR</text>
+</svg>

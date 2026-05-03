@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SONAR Lockup VERTICAL — concept A monogram stacked sobre SONAR wordmark
+  Composition: monogram top, wordmark below, gap ~0.25× monogram height
+  Monogram 256 native. Gap 48. Wordmark text 72pt centered.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480"
+     role="img" aria-label="SONAR — lockup vertical">
+  <title>SONAR — lockup vertical (concept A)</title>
+  <rect x="0" y="0" width="480" height="480" fill="#03070A"/>
+
+  <!-- Monogram centered horizontally: (480-256)/2 = 112, y=40 -->
+  <g transform="translate(112 40)" fill="none" stroke="#2DD4BF"
+     stroke-width="13.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 113 44 Q 215 44 215 116 Q 215 188 113 188" opacity="0.35"/>
+    <path d="M 113 86 Q 185 86 185 128 Q 185 170 113 170" opacity="0.65"/>
+    <path d="M 41 128 Q 71 86 113 86 Q 155 86 155 128 Q 155 170 113 170 Q 65 170 41 212" opacity="1"/>
+  </g>
+
+  <!-- Wordmark SONAR centered below monogram (y = 40 + 256 + 48 = 344 top, baseline ~408) -->
+  <text x="240" y="408" text-anchor="middle"
+        font-family="'Geist', 'Geist Sans', 'Inter Tight', Inter, system-ui, -apple-system, sans-serif"
+        font-size="72" font-weight="600" letter-spacing="-0.035em"
+        fill="#F0F4F4">SONAR</text>
+</svg>
