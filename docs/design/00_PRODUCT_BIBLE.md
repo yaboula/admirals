@@ -1,14 +1,15 @@
-# 📕 Admirals — Product Bible
+# 📕 SONAR — Product Bible
 
-> **Versión:** 1.2
+> **Versión:** 1.3 (post-pivot SONAR, surgical rewrite — ADR-011)
 > **Estado:** documento vivo — se edita siempre que tomamos una decisión estratégica, con changelog en §17
 > **Regla de oro:** si algo no está aquí, no es parte del producto. Si quieres añadir algo al producto, primero se añade aquí.
+> **Pivot referencia:** v1.0-v1.2 escritos como Admirals/Almirantazgo naval; post-2026-05-03 la marca es **SONAR** (submarino nuclear exploración abisal + silent service). Ver ADR-011 en `docs/planning/02_decision_log.md` y `docs/art/01_art_direction.md` v2.0-scaffold-r4 para detalle foundational.
 
 ---
 
 ## 0. Cómo se usa este documento
 
-Este es **el contrato fundacional** de Admirals. Antes de programar, modelar, vender o prometer algo, se consulta esta Bible.
+Este es **el contrato fundacional** de SONAR. Antes de programar, modelar, vender o prometer algo, se consulta esta Bible.
 
 - Cualquier feature propuesto se mide contra los **Pilares** (sección 3) y los **Anti-features** (sección 5).
 - Cualquier decisión técnica se mide contra las **Fundaciones técnicas** (sección 10).
@@ -23,19 +24,28 @@ Si surge una decisión nueva que contradice este documento, **se discute, se dec
 
 | Campo | Valor |
 |---|---|
-| **Nombre del estudio** | **Admirals** |
-| **Tagline interno** | *Where every detail commands respect.* (provisional, iterar) |
-| **Tagline comercial (1 frase)** | *El primer ecosistema económico físico end-to-end para FiveM.* |
-| **Tono de marca** | Élite, militar/naval, preciso, sobrio, profesional. Cero emojis en UI in-game. Cero "swag". |
-| **Inspiración visual** | 17 Movement (calidad), Rockstar UI (limpieza), Apple (minimalismo), buques de guerra y arquitectura naval (la metáfora "Admirals"). |
-| **Paleta tentativa** | Negro mate, oro/latón viejo, blanco hueso, azul marino profundo. *(a definir con el director de arte)* |
+| **Nombre del estudio** | **SONAR** |
+| **Acrónimo** | SOund Navigation And Ranging — instrumento que *"ve por escuchar"*. |
+| **Tagline principal** | *Hear the depth.* |
+| **Tagline comercial ES** | *La economía RP que escucha cada movimiento.* |
+| **Tagline operacional** | *Tactical-grade roleplay infrastructure.* |
+| **Tono de marca** | **Silent service.** Preciso, terse, deliberado. Como capitán submarino nuclear: pocas palabras, cada una mide. Cero "amigo", cero exclamaciones, cero gen-Z, cero "swag". Autoridad institucional sin gritar. |
+| **Inspiración visual** | Apple / Linear / Vercel (tech precision minimalism), submarine bridge command centers modernos, silent service military discipline, exploración abisal (la metáfora **SONAR**). |
+| **Paleta (canonical)** | Abyss-black canvas `#03070A` + **Sonar Bright `#2DD4BF` bioluminescent teal (PRIMARY IDENTITY)** + Crew 100 off-white `#F0F4F4` + Coloro `#175A5F` structural support + glassmorphism panes signature. Detalle completo en `docs/art/01_art_direction.md` v2.0-scaffold-r4 §3.4. |
+| **Tipografía** | Display: **Geist Sans** (Vercel). Body: **Inter Tight** (Rasmus Andersson). Mono: **Geist Mono** / JetBrains Mono fallback. Cero italic UI, cero Light en UI. |
+| **Sound signature** | 5 SFX firma: `sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch` (-15dB normalized). Detalle `docs/art/01_art_direction.md` §7. |
 
-### 1.1 La metáfora "Admirals"
+### 1.1 La metáfora "SONAR"
 
 No es decoración. Es identidad operativa:
-- Un **almirante** comanda flotas, no barcas.
-- Cada producto Admirals es **una flota completa** (ecosistema vertical), no un barco suelto (script aislado).
-- Disciplina, precisión, jerarquía clara — eso transmite la marca.
+
+- Un **sonar** *ve por escuchar*. Registra cada eco transaccional de la economía RP — silencioso pero exhaustivo.
+- Cada producto SONAR es **un node detectado en el sonar grid abisal** — una surface con su propia identidad cultural (color + sound + icon) pero bajo **protocolo SONAR común** (eco IDs + lineage + signals).
+- **Silent service** — autoridad sin exclamaciones. Profundidad técnica sin gritar. Registro forense meticuloso de cada manifiesto, cada transacción, cada handshake.
+- **Submarine bridge aesthetic** — abyss-black canvas (dark-mode-first, sesiones largas sin cansar vista) + bioluminescent teal brillo (firma en mercado) + glassmorphism instrument panes (signature modales/drawers) + iconografía instrumental técnica.
+- **Vocabulario instrumental:** Bridge (command center), Bitácora (audit trail), Console (UI activa), Depth (tier/profundidad), Eco (tx identifier), Hatch (modal open/close), Manifiesto (contrato firmado), Periscope (vista observacional), Ping (notif atómica), Signal (evento bus). Glossary completo 55+ términos en `docs/art/01_art_direction.md` §15.
+
+**Origen pivot:** v1.0-v1.2 Admirals/Almirantazgo heritage naval deprecated por **ADR-011 (2026-05-03)** — divergencia con marca moderna tech pretendida + demografía target + no diferenciación real en mercado FiveM. **SONAR** (submarino abisal + silent service) nueva identidad firmada. Ver `docs/art/01_art_direction.md` v2.0-scaffold-r4 para detalle foundational + ADR-011 para razones + risks accepted.
 
 ---
 
@@ -43,19 +53,19 @@ No es decoración. Es identidad operativa:
 
 ### 2.1 Visión (a 3 años)
 
-> Ser **la referencia de calidad absoluta** en scripts FiveM. Cuando alguien diga "esto está hecho a nivel Admirals", que signifique *imposible de superar*.
+> Ser **la referencia de calidad absoluta** en infrastructure FiveM. Cuando alguien diga *"esto está hecho a nivel SONAR"*, que signifique **imposible de superar**. Cuando un operador vea el Tablet bioluminescent teal sobre abyss-black por primera vez, que sepa que está ante el servidor top del mercado.
 
 ### 2.2 Misión (lo que hacemos cada día)
 
-> Diseñar y construir **ecosistemas verticales completos** donde cada acción es física, cada asset es propio, y cada detalle hace al jugador decir "wooow".
+> Diseñar y construir **sonar grid nodes completos** donde cada acción es física, cada asset es propio, y cada detalle hace al operador decir *"wooow, esto es otro nivel."* Silent service precision from first keystroke to final shipping.
 
 ### 2.3 La promesa al cliente (servidor)
 
-> *"Compras un Admirals y te llevas la cadena entera funcionando como un solo organismo. No vas a integrar 5 scripts de 5 vendedores. No vas a debuggear conflictos. Lo enchufas, lo configuras, y tu servidor sube de liga."*
+> *"Compras un SONAR y te llevas la cadena entera funcionando como un solo organismo. Cero integración de 5 scripts de 5 vendedores. Cero debugging de conflictos. Infrastructure tactical-grade: lo enchufas, lo configuras, y tu servidor sube de tier."*
 
-### 2.4 La promesa al jugador final
+### 2.4 La promesa al operador (jugador final)
 
-> *"Cada vez que entras a una experiencia Admirals, vas a vivir algo que no has visto en FiveM. Algo tan real, tan detallado y tan satisfactorio que te vas a olvidar que es un script."*
+> *"Cada vez que el Tablet SONAR se enciende en tus manos, vas a ver algo que no has visto en FiveM. Silent service interface. Bioluminescent precision. Economía RP que registra cada eco de cada movimiento — manifiestos, bitácoras, lineages. Va a tener sentido. Va a tener profundidad. Va a tener el peso del detalle bien hecho."*
 
 ---
 
@@ -93,14 +103,14 @@ Cualquier feature, asset o decisión que viole uno de estos pilares se descarta.
 - Aprovechamos lo nativo de GTA V de forma creativa (montacargas, contenedores, props industriales) — pero siempre tuneados, nunca tal cual.
 - Cero asset robado, cero asset comprado a terceros que también vendan a la competencia.
 
-### Pilar 5 — La Tablet, interfaz universal
-> **Toda interacción administrativa, de gestión y de información del ecosistema Admirals pasa por la Admirals Tablet — un dispositivo físico, no un menú flotante.**
+### Pilar 5 — El Tablet SONAR, interfaz universal
+> **Toda interacción administrativa, de gestión y de información del sonar grid SONAR pasa por el Tablet SONAR — un dispositivo físico, no un menú flotante.**
 
-- Cada producto Admirals que un servidor instala añade apps a la Tablet del jugador.
-- La Tablet es el **único "menú" aceptable** del ecosistema, porque es un objeto físico que se saca, se sostiene, se guarda. Cumple el Pilar 1.
-- Es la firma visible de Admirals: cuando un jugador la ve por primera vez, sabe que está jugando algo distinto.
-- Sustituye a: HUDs flotantes, paneles de jefe genéricos, menús de contexto, pantallas de banco, etc.
-- **Sin Tablet no hay producto Admirals.** Es la columna vertebral del ecosistema.
+- Cada producto SONAR que un servidor instala añade apps al Tablet del operador.
+- El Tablet es el **único "menú" aceptable** del ecosystem, porque es objeto físico que se saca, se sostiene, se guarda. Cumple el Pilar 1.
+- Es la **firma visible de SONAR**: cuando un operador lo ve por primera vez, sabe que está jugando algo distinto. Abyss-black canvas + Sonar Bright bioluminescent teal + glassmorphism instrument panes = identity immediate.
+- Sustituye a: HUDs flotantes, paneles de jefe genéricos, menús de contexto, pantallas de banco, Discord ops commands, etc.
+- **Sin Tablet no hay producto SONAR.** Es el **bridge command center** del operador — el centro nervioso del ecosystem.
 
 ---
 
@@ -126,7 +136,7 @@ Una feature está lista cuando:
 - [ ] El sonido refuerza la acción (no es genérico).
 - [ ] La animación es específica (no es la genérica de QB).
 - [ ] Hay al menos un detalle que el jugador descubre la 5ª vez (recompensa de descubrimiento).
-- [ ] La UI asociada (si la hay) sigue el design system de Admirals.
+- [ ] La UI asociada (si la hay) sigue el design system de SONAR (paleta + tipografía + motion per `docs/art/01_art_direction.md`).
 
 ---
 
@@ -135,7 +145,7 @@ Una feature está lista cuando:
 Esta lista evita que el producto se diluya con el tiempo.
 
 - ❌ **Menús flotantes genéricos que reemplazan acciones físicas posibles.**
-  - **Excepción única:** la **Admirals Tablet** (item físico, animación de sacarla/guardarla, modelo 3D propio) NO es un menú flotante. Es un dispositivo. Toda gestión administrativa, contabilidad, mensajería y planificación pasa por ella.
+  - **Excepción única:** el **Tablet SONAR** (item físico, animación de sacarlo/guardarlo, modelo 3D propio) NO es un menú flotante. Es un dispositivo. Toda gestión administrativa, contabilidad, mensajería y planificación pasa por él.
 - ❌ **Items que aparecen "mágicamente" en el inventario sin un proceso físico.**
 - ❌ **Assets comprados a terceros revendibles** (rompe el pilar 4).
 - ❌ **Features "porque la competencia las tiene"** sin pasar el test Wooow.
@@ -144,7 +154,7 @@ Esta lista evita que el producto se diluya con el tiempo.
 - ❌ **"Modo arcade" simplificado.** No bajamos la complejidad para atraer servers casuales — atraemos a los servers que quieren contenido pro.
 - ❌ **Soporte multi-framework infinito.** QBCore + QBox. ESX no. vRP no. Frameworks custom de servidor X no.
 - ❌ **Assets sin lore-friendly.** Nada que rompa la coherencia de Los Santos / San Andreas.
-- ❌ **Dependencias de pago de terceros.** El cliente compra Admirals y todo lo que necesita está en la caja (excepto los gratuitos universales: ox_lib, ox_target, ox_inventory).
+- ❌ **Dependencias de pago de terceros.** El cliente compra SONAR y todo lo que necesita está en la caja (excepto los gratuitos universales: ox_lib, ox_target, ox_inventory).
 
 ---
 
@@ -168,7 +178,7 @@ Servidores pequeños ambiciosos que quieren subir de liga comprando contenido pr
 
 - Servidores piratas / crackeados.
 - Servidores que solo quieren "lo más barato".
-- Servidores que mezclan 50 scripts random — su jugador final no va a notar la calidad de Admirals porque ya está saturado.
+- Servidores que mezclan 50 scripts random — su operador final no va a notar la calidad de SONAR porque ya está saturado.
 
 ---
 
@@ -176,7 +186,7 @@ Servidores pequeños ambiciosos que quieren subir de liga comprando contenido pr
 
 ### 7.1 Concepto: cadena vertical completa
 
-Cada producto Admirals es una **cadena vertical industrial completa**, donde cada nodo es jugable y los nodos se conectan físicamente.
+Cada producto SONAR es una **cadena vertical industrial completa**, donde cada node es jugable y los nodes se conectan físicamente.
 
 **Ejemplo (vertical alimentaria, primera línea):**
 
@@ -204,10 +214,10 @@ Cada cadena se puede ejecutar de dos modos:
 
 ### 7.3 Líneas de producto planificadas
 
-**Decisión estratégica clave:** la **Granja Admirals** no es propiedad de una sola vertical — es la **plataforma agrícola raíz** que alimenta a todas las verticales alimentarias. Se construye una sola vez, completa, y cada vertical posterior añade demanda y nodos downstream sin tocarla.
+**Decisión estratégica clave:** la **Granja SONAR** no es propiedad de una sola vertical — es la **plataforma agrícola raíz** que alimenta a todas las verticales alimentarias. Se construye una sola vez, completa, y cada vertical posterior añade demanda y nodes downstream sin tocarla.
 
 ```
-                       🌾🥬🍅🥔  GRANJA ADMIRALS  (plataforma raíz)
+                       🌾🥬🍅🥔  GRANJA SONAR  (plataforma raíz)
                                        │
              ┌─────────────────┬───────┴───────┬─────────────────┐
              ▼                 ▼               ▼                 ▼
@@ -217,7 +227,7 @@ Cada cadena se puede ejecutar de dos modos:
 
 | # | Producto comercial | Cadena que cierra | Estado |
 |---|---|---|---|
-| **0** | **Admirals Tablet + Granja Admirals** | Plataforma raíz transversal | 🎯 **Primera entrega — incluida en cualquier producto Admirals** |
+| **0** | **Tablet SONAR + Granja SONAR** | Plataforma raíz transversal | 🎯 **Primera entrega — incluida en cualquier producto SONAR** |
 | 1 | **Cadena del Pan** | Granja → Molino → Panadería → Retail | 🎯 **Primer producto comercial completo** |
 | 2 | Cadena Hortícola | Granja → Distribución → Mercados/Tiendas | Backlog cercano |
 | 3 | Cadena Fast Food | Granja + (futuras ganaderías) → Procesado → Restaurantes | Backlog |
@@ -226,28 +236,28 @@ Cada cadena se puede ejecutar de dos modos:
 | 6 | Caza | Cacería → Procesado → Restaurante/Tienda | Backlog |
 | ∞ | Energía (gasolina) | *Reservado para cuando dominemos alimentación* | Visión |
 
-### 7.4 La Admirals Tablet — pilar transversal del producto
+### 7.4 El Tablet SONAR — pilar transversal del producto
 
-La Tablet es **el dispositivo de mando** del jugador en el ecosistema Admirals. No es accesoria — es el corazón.
+El Tablet SONAR es **el bridge command center** del operador en el sonar grid SONAR. No es accesorio — es el corazón nervioso del ecosystem.
 
-**Modelo 3D propio**, varias variantes (básica → pro → enterprise) que reflejan el progreso económico del jugador. Sonido de boot propio. Animaciones de sacar/guardar. Notificaciones in-game con audio.
+**Modelo 3D propio**, varias variantes (básica → pro → enterprise) que reflejan el progreso económico del operador. **Brushed steel tech accent frame** + display abyss-black canvas + **bioluminescent active states** (Sonar Bright `#2DD4BF`). Boot sound `sonar_ping` signature 1.8s. Animaciones sacar/guardar deliberate. Notificaciones in-game con SFX firma (`sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch`).
 
-**Apps incluidas en el lanzamiento (Tablet Core):**
+**Apps incluidas en el lanzamiento (Tablet Core — naming aligned con Glossary `docs/art/01_art_direction.md` §15):**
 
 | App | Función |
 |---|---|
-| **Empresa** | Mis empresas: empleados, salarios, finanzas, libro contable, contratos. |
-| **Manager Panel** ⭐ | *Panel avanzado de gestión.* Estadísticas detalladas (producción, ingresos, costes, eficiencia por empleado, tendencias), asignación de tareas a empleados, planificación de turnos, objetivos, alertas. **Es el "boss menu" elevado a nivel ERP.** |
-| **Mercado** | Precios en tiempo real, demanda por nodo, oportunidades, contratos abiertos. |
-| **Logística** | Mapa de entregas, rutas activas, contratos de transporte. |
-| **Mensajes** | Chat empresarial: privado / equipo / contrato. |
-| **Banca** | Saldos personal y de cada empresa, transferencias, préstamos. |
-| **Notas & Contratos** | Documentos firmados, recibos, escrituras de propiedades. |
-| **Tienda Admirals** | Mejoras de personaje, certificaciones (licencias para conducir cosechadora, manipular alimentos, etc.), formaciones. |
+| **Bridge (Empresa)** | Mis squadrons: empleados, salarios, finanzas, bitácora, manifiestos. |
+| **Manager Panel** ⭐ | *ERP de gestión avanzada.* Estadísticas detalladas (producción, ingresos, costes, eficiencia por empleado, tendencias), asignación tareas, planificación turnos, objetivos, alertas. **Bridge command center elevated** — el "boss menu" a nivel ERP. |
+| **Mercado** | Precios real-time, demanda por node, oportunidades, manifiestos abiertos. |
+| **Logística** | Periscope view: mapa entregas, rutas activas, manifiestos transporte. |
+| **Mensajes** | Chat squadron: privado / equipo / manifiesto. |
+| **Banca SONAR** | Saldos personal + squadron, transferencias, préstamos, bitácora forense, ecos trackeables. |
+| **Manifiestos & Signatures** | Documentos firmados, recibos, escrituras propiedades. Digital signatures bilateral + timestamp. |
+| **Tienda SONAR** | Mejoras operador, certificaciones (licencias manipulación: cosechadora, alimentos, etc.), formaciones. |
 
-**Reglas de extensibilidad:** cada vertical futura añade 1-N apps a la Tablet. La Tablet **es el bundle**: cuanto más Admirals tiene un servidor, más apps tiene el jugador.
+**Reglas de extensibilidad:** cada vertical futura añade 1-N apps al Tablet. El Tablet **es el bundle**: cuanto más SONAR tiene un servidor, más apps tiene el operador.
 
-**Diseño detallado:** ver `docs/design/02_admirals_tablet.md` (a redactar).
+**Diseño detallado:** ver `docs/design/02_sonar_tablet.md` (rename pendiente Phase 5 + rewrite pendiente desde `02_admirals_tablet.md`).
 
 ---
 
@@ -255,23 +265,23 @@ La Tablet es **el dispositivo de mando** del jugador en el ecosistema Admirals. 
 
 ### 8.1 Composición del primer lanzamiento
 
-El primer producto Admirals que sale a Tebex es un paquete de 3 piezas, todas pulidas al 100%:
+El primer producto SONAR que sale a Tebex es un paquete de 3 piezas, todas pulidas al 100%:
 
-1. **Admirals Tablet** (núcleo + apps de lanzamiento).
-2. **Granja Admirals** — plataforma agrícola completa (cereales + hortalizas + tubérculos + hojas + bulbos en arquitectura modular; oleada 1 de cultivos jugables).
+1. **Tablet SONAR** (núcleo + apps de lanzamiento).
+2. **Granja SONAR** — plataforma agrícola completa (cereales + hortalizas + tubérculos + hojas + bulbos en arquitectura modular; oleada 1 de cultivos jugables).
 3. **Cadena del Pan** — Molino + Panadería + integración con Retail.
 
-> **Importante:** la Granja se entrega **arquitectónicamente completa para todas las verticales futuras**, aunque solo la cadena del pan esté cerrada en este lanzamiento. El resto de cultivos (tomate, lechuga, etc.) se cosechan y son comerciables aunque sus nodos downstream (restaurantes, distribución hortícola) lleguen en productos posteriores.
+> **Importante:** la Granja se entrega **arquitectónicamente completa para todas las verticales futuras**, aunque solo la cadena del pan esté cerrada en este lanzamiento. El resto de cultivos (tomate, lechuga, etc.) se cosechan y son comerciables aunque sus nodes downstream (restaurantes, distribución hortícola) lleguen en productos posteriores.
 
 ### 8.2 Por qué empezamos aquí
 
 - Cadena visualmente potente (campos amarillos, tractores, sacos, hornos, vitrinas de pan).
-- Suficientemente larga para demostrar el ecosistema entero (4 nodos).
-- Tiene picos de wow visual claros: cosecha con cosechadora, montacargas con palets, horno con pan humeante, escaparate de panadería.
-- Es la metáfora perfecta de la marca Admirals: **del campo al pan, comandando la flota entera.**
-- Y desbloquea la Granja Admirals como base sobre la que construiremos todo lo demás.
+- Suficientemente larga para demostrar el sonar grid entero (4 nodes).
+- Tiene picos de wow visual claros: cosecha con cosechadora, montacargas con palets, horno con pan humeando, escaparate de panadería.
+- Es la metáfora perfecta de la marca SONAR: **del campo al pan, cada eco registrado.** Lineage completo FARM → MILL → BAKE → SALE en la bitácora SONAR.
+- Y desbloquea la Granja SONAR como plataforma raíz sobre la que construiremos todo lo demás.
 
-### 8.3 Catálogo de cultivos de la Granja Admirals
+### 8.3 Catálogo de cultivos de la Granja SONAR
 
 La Granja produce todas las materias primas vegetales necesarias para fast food, RP gastronómico y la cadena del pan. **Arquitectura modular:** añadir un cultivo es añadir un archivo de config + assets. Sin tocar código.
 
@@ -306,7 +316,7 @@ Filosofía: **pocos roles, amplios.**
 - Cada nodo de la cadena (granja, molino, panadería, tienda) es **una empresa propietaria** que puede ser:
   - Del servidor (NPC) — modo Standalone.
   - De un jugador o grupo de jugadores — modo Ecosistema.
-- Sistema de **Empresa Admirals** unificado:
+- Sistema de **Squadron SONAR / Empresa SONAR** unificado:
   - Roles internos (dueño, gerente, empleado, temporal).
   - Permisos granulares (quién puede vender, quién puede comprar stock, quién accede a caja, quién asigna tareas).
   - **Toda la gestión vive en la Tablet** (app Empresa + Manager Panel).
@@ -361,8 +371,8 @@ Esa narración **debe** ser jugable de extremo a extremo en el MVP. Si un paso n
 
 ### 10.2 Principios arquitectónicos
 
-1. **Modular por diseño, integrado por defecto.** Cada nodo es un recurso FiveM independiente, pero todos hablan un protocolo Admirals común.
-2. **Ecosistema event-driven.** Los nodos publican eventos en un bus interno (`admirals:event:...`). Los demás nodos suscriben. Sin acoplamiento directo.
+1. **Modular por diseño, integrado por defecto.** Cada node es un recurso FiveM independiente, pero todos hablan un **protocolo SONAR común**.
+2. **Ecosystem event-driven.** Los nodes publican eventos en un bus interno (`admirals:event:...` — namespace code pendiente rename a `sonar:event:*` Phase 8 code refactor). Los demás nodes suscriben. Sin acoplamiento directo.
 3. **Schema único de "Item Físico".** Todos los items productivos heredan un esquema común: `{ id, weight, volume, quality, freshness, origin, batch_id, created_at }`.
 4. **NPC Bridges como ciudadanos de primera clase.** Cualquier nodo se puede sustituir por NPC sin tocar código del nodo vecino.
 5. **Configurable, no hardcoded.** Recetas, tiempos, precios, ubicaciones — todo en config, nada en código.
@@ -416,20 +426,20 @@ Los números concretos viven en `docs/economy/01_economic_model.md` (a redactar)
 |---|---|---|
 | **Tebex one-time** | Servidores que prefieren pago único | Producto con licencia perpetua sobre la versión vendida. |
 | **Licencia anual** | Servidores grandes que quieren updates | Pago anual, updates incluidos, soporte prioritario. |
-| **Suscripción mensual** | Servidores que quieren probar / flexibilidad | Mensual, cancelable, todos los productos Admirals incluidos. |
+| **Suscripción mensual** | Servidores que quieren probar / flexibilidad | Mensual, cancelable, todos los productos SONAR incluidos. |
 
 ### 12.2 Estrategia de precios
 
 - **Premium positioning.** No competimos en precio. Competimos en calidad.
 - Precio definido **al final del proceso de diseño**, una vez sepamos el valor real del producto.
-- Comparativa mental: si Quasar vende un farming a 50€, Admirals vende **el ecosistema entero** a 200-400€.
+- Comparativa mental: si Quasar vende un farming a 50€, SONAR vende **el sonar grid entero** a 200-400€.
 
 ### 12.3 Bundles
 
 - Cada vertical se puede comprar:
   - Como **ecosistema completo** (los 4 nodos).
   - **Por nodo individual** (con NPC Bridges para los nodos no comprados).
-- Cuando salgan múltiples verticales: **Admirals Suite** = todas las verticales con descuento.
+- Cuando salgan múltiples verticales: **SONAR Suite** = todas las verticales con descuento.
 
 ### 12.4 Showcase: nuestro propio servidor
 
@@ -465,7 +475,7 @@ Las fechas se estiman cuando estemos en el milestone anterior, no antes.
 
 ### 13.3 Arquitectura completa, contenido en oleadas
 
-> **Regla de desarrollo Admirals:** la arquitectura del producto se construye completa desde el día 1. El contenido se entrega en oleadas, cada una pulida al 100%.
+> **Regla de desarrollo SONAR:** la arquitectura del producto se construye completa desde el día 1. El contenido se entrega en oleadas, cada una pulida al 100%.
 
 - **Arquitectura completa = NO es MVP.** El sistema soporta todos los cultivos, todas las variedades, todas las estaciones, toda la profundidad económica desde el primer commit. Añadir contenido es añadir config + assets, no rediseñar.
 - **Contenido en oleadas = NO es "escopetazo".** No intentamos publicar 12 cultivos × 4 nodos × N animaciones a la vez. Lanzamos una oleada compacta, perfectamente pulida, y ampliamos después.
@@ -501,23 +511,30 @@ Cada documento de diseño de nodo (Granja, Molino, Panadería, etc.) **debe segu
 
 ---
 
-## 15. Glosario Admirals
+## 15. Glosario SONAR (producto Bible)
 
-Términos internos. Todo el equipo (presente y futuro) usa este vocabulario.
+> **Cross-ref canonical:** vocabulario meta-brand completo en `docs/art/01_art_direction.md` §15 (55+ términos en 8 categorías: meta-brand core, UI elements, actions & operations, data & tracking, social & contracts, status & signals, deprecated v1.0 Admirals, uso cross-language). Esta Bible lista sólo términos producto-específicos.
 
-- **Ecosistema:** una cadena vertical completa (granja→...→retail).
-- **Nodo:** una etapa de la cadena (granja, molino, panadería, tienda).
-- **NPC Bridge:** sustituto NPC de un nodo para modo standalone.
+Términos producto SONAR. Todo el equipo (presente y futuro) usa este vocabulario.
+
+- **Ecosystem / Sonar grid:** una cadena vertical completa (granja→...→retail). Lenguaje interno: *"sonar grid node chain"*.
+- **Node:** una etapa de la cadena (granja, molino, panadería, tienda). En Glossary art_direction §15.A: **surface node**.
+- **NPC Bridge:** sustituto NPC de un node para modo standalone.
 - **Test Wooow:** validación obligatoria antes de cerrar una feature.
-- **Item Físico:** ítem productivo con esquema Admirals (peso, volumen, calidad, frescura, origen, lote).
-- **Empresa Admirals:** entidad de propiedad común entre nodos (granja, molino, etc.).
+- **Item Físico:** ítem productivo con esquema SONAR (peso, volumen, calidad, frescura, origen, lote).
+- **Empresa SONAR / Squadron:** entidad de propiedad común entre nodes (granja, molino, etc.). Glossary art_direction §15.E = **squadron**.
 - **Vertical:** una familia económica (alimentación, energía, etc.).
 - **Suite:** bundle comercial multi-vertical.
-- **Tablet / Admirals Tablet:** dispositivo físico universal del ecosistema. Modelo 3D propio. Único "menú" aceptable.
-- **App:** módulo de software dentro de la Tablet. Cada producto Admirals añade apps.
-- **Manager Panel:** app insignia de la Tablet — ERP de gestión empresarial avanzada (estadísticas, tareas, planificación).
-- **Plataforma raíz:** producto base sobre el que se construyen verticales (la Granja Admirals es la primera plataforma raíz; la Tablet es la otra).
-- **Oleada:** entrega de contenido pulido sobre arquitectura ya completa. Una oleada nunca es "medio funcional".
+- **Tablet SONAR (Bridge):** dispositivo físico universal del ecosystem. Modelo 3D propio. Único "menú" aceptable. **Bridge command center** del operador.
+- **App:** módulo de software dentro del Tablet. Cada producto SONAR añade apps.
+- **Manager Panel:** app insignia del Tablet — ERP de gestión avanzada (estadísticas, tareas, planificación).
+- **Plataforma raíz:** producto base sobre el que se construyen verticales (Granja SONAR primera plataforma raíz; Tablet SONAR la otra).
+- **Oleada:** entrega contenido pulido sobre arquitectura ya completa. Una oleada nunca es *"medio funcional"*.
+- **Operador:** el jugador en copy player-facing (UI strings, marketing, trailer narration, tooltips). **Preserva** "jugador" en copy estructural (roles empresa, ejemplos narrativos técnicos). Regla cross-language §15.H art_direction.
+- **Eco:** identifier inmutable de transacción/evento (ej. `FARM-2026-0042`). Formato IBAN-like. Cross-ref art_direction §15.D.
+- **Lineage:** trail origen→destino de un batch (granja→molino→panadería→retail). Supply chain traceability.
+- **Manifiesto:** contrato firmado entre dos contactos con cláusulas y eco de registro. Bilateral + timestamp.
+- **Bitácora:** audit trail / log forense. Registro inmutable de acciones (DB: `sonar_bank_audit_log` + event_log, post-Phase 8 rename desde `admirals_*`).
 
 ---
 
@@ -525,8 +542,8 @@ Términos internos. Todo el equipo (presente y futuro) usa este vocabulario.
 
 Cuando esta Bible esté firmada (v1.0), se derivan los siguientes:
 
-1. `docs/design/01_node_farm.md` — diseño detallado de la Granja Admirals (cereales + hortalizas + maquinaria + MLO + ciclo agrícola).
-2. `docs/design/02_admirals_tablet.md` — diseño completo de la Tablet (modelo 3D, OS, apps, animaciones, sonido).
+1. `docs/design/01_node_farm.md` — diseño detallado de la Granja SONAR (cereales + hortalizas + maquinaria + MLO + ciclo agrícola).
+2. `docs/design/02_sonar_tablet.md` — diseño completo del Tablet SONAR (modelo 3D, OS, apps, animaciones, sonido). *(rename pendiente Phase 5 desde `02_admirals_tablet.md`.)*
 3. `docs/design/03_node_mill.md` — diseño del Molino.
 4. `docs/design/04_node_bakery.md` — diseño de la Panadería.
 5. `docs/design/05_node_retail.md` — diseño del Retail/Tienda.
@@ -546,7 +563,8 @@ Cuando esta Bible esté firmada (v1.0), se derivan los siguientes:
 | 1.0 | 2026-04-30 | Bible revisada línea por línea y firmada por el fundador. Sin cambios respecto a 0.1. Documento oficialmente fundacional. | Cascade + fundador |
 | 1.1 | 2026-04-30 | Hallazgos sesión 2: (a) 5º Pilar — Admirals Tablet como interfaz universal del ecosistema. (b) Granja redefinida como plataforma agrícola raíz cross-vertical (no solo cereales). (c) Catálogo de cultivos expandido a todas las materias primas vegetales para fast food. (d) Manager Panel añadido como app insignia. (e) Regla §13.3 "Arquitectura completa, contenido en oleadas". (f) Reestructuración §7.3 líneas de producto. (g) Glosario ampliado. | Cascade + fundador |
 | 1.2 | 2026-04-30 | Sesión 3 (post-Granja v1.0): nueva regla global §13.4 — División de responsabilidades 3D vs Código. El 3D entrega asset funcional con idea wooow CORE; el código añade el shimmer (shaders, partículas, post, lighting). Preferencia GTA V nativo reforzada. Anti-patrón añadido: sobrecargar 3D con micro-detalles. Regla aplicable a TODOS los nodos. | Cascade + fundador |
+| 1.3 | 2026-05-03 | Sesión 4 (post-pivot SONAR): **Surgical rewrite metáfora + voz + Tablet identity** tras ADR-011 (Admirals → SONAR strategic pivot aceptado con 7 risks documentados). **Preservado intact (pivot-agnostic):** §4 Wooow + §6 target + §8.3-8.4 cultivos + §9 gameplay + §10 técnico + §11 economía + §12 comercial + §13 timeline + §14 riesgos + §16 próximos docs. **Tocado:** título doc (Admirals → SONAR), §1 identidad (nueva tabla con acrónimo + 3 taglines + tono silent service + inspiración submarine bridge + paleta/tipografía/sound canonical cross-ref art_direction), §1.1 metáfora SONAR (submarine abisal + silent service + vocabulario instrumental), §2 visión/misión/promesas (voz silent service + operador term en promise player), §3 Pilar 5 Tablet SONAR (bridge command center + naming update), §5 anti-features (Admirals Tablet → Tablet SONAR excepción), §7.3 Granja Admirals → Granja SONAR + diagrama actualizado + tabla productos renamed, §7.4 Tablet transversal rewrite completo (apps aligned Glossary §15 art_direction: Bridge/Manager Panel/Mercado/Logística/Mensajes/Banca SONAR/Manifiestos & Signatures/Tienda SONAR + brushed steel aesthetic + 5 SFX firma), §8.1-8.2 primer producto renamed + metáfora lineage FARM→MILL→BAKE→SALE, §15 glossary cross-ref canonical art_direction + términos producto-specific (operador, eco, lineage, manifiesto, bitácora añadidos), final tagline "Hear the depth. Below the surface, every signal counts." **Pendiente Phase 7-8:** namespace `admirals:event:*` → `sonar:event:*` (hard-coupled Phase 8 code refactor) + `02_admirals_tablet.md` rename → `02_sonar_tablet.md` + rewrite Phase 5. Referencias ADR-011 + `docs/art/01_art_direction.md` v2.0-scaffold-r4. | Founder + Cascade |
 
 ---
 
-*"An Admiral does not command barges. An Admiral commands fleets."*
+*"Hear the depth. Below the surface, every signal counts."*
