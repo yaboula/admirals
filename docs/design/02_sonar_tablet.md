@@ -74,7 +74,7 @@ Per `art/branding/logo_v2/README.md` + decisión founder S1.7:
 2. **Funcionalidad/arquitectura/UX flows §1-§29 siguen válidos** — Tablet 5º Pilar + dispositivo físico + 4 estados + 8 apps base + dock despacho + multi-cuenta + permisos. La FUNCIÓN no cambia con el pivot.
 3. **Lo que cambia es el "wrapping" identidad/visual/voz/sound:** naming SONAR + paleta hybrid + tipografía Geist + voz neutral + iconografía abstract + sound canonical 5 SFX + logo v2 concept A.
 4. **Refs literales pre-pivot SUPERSEDED:** "Admirals" en cualquier forma → SONAR; "azul marino + dorado" → Sonar Bright + Tier A/B/C; "Inter/Manrope" → Geist Sans; "campana naval" → tonal premium-tech; "señal naval" → capas profundidad / signal abstract; "navales/militares/cinematográficos wallpapers" → wallpapers abstract depth/bioluminescence per moodboard `01_brief_marketing.md` v1.
-5. **Pass 1 ejecutado S1.8:** bulk identity purge (Admirals→SONAR + AdmiralsOS→SonarOS) + key sections inline (§2.4 + §3 + §4.1 + §4.2 + §4.3 + §29). **Pass 2 pendiente:** §6-§19 apps detail-pass + §26 sounds canonical full + §27 anti-patterns post-pivot.
+5. **Pass 1 + Pass 2 ejecutados S1.8:** (Pass 1) bulk identity purge + key sections §2.4/§3/§4.1/§4.2/§4.3/§29. (Pass 2) apps detail-pass §5.2 + §6.4/§6.5 + §10.5 + §11.4/§11.6 + §15.2 notif table canonical SFX mapping + §21.4 docking + §22.4 Costa Naval flag + §26 sounds canonical full rewrite (tablas) + §27 anti-patrones NEW post-pivot §27.2. Doc 1/8 Phase 6 **100% Pass done**.
 6. **Si duda interpretación → ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 mandan.**
 
 ---
@@ -448,12 +448,12 @@ Estos no son detalles internos — son cosas que **el jugador percibe**:
 
 - **Header** estándar: nombre de app a la izquierda, acciones contextuales a la derecha, badge de notificación si aplica.
 - **Tab bar** lateral izquierda (rara) o superior (común) para sub-secciones.
-- **Tipografía**: la misma del OS (sans-serif corporativa).
-- **Colores**: cada app puede tener un color de acento, pero todas comparten la paleta base.
-- **Botones primarios**: estilo SONAR (azul marino + dorado al hover).
-- **Tablas**: estilo dashboard, filas alternadas, sortable, filtrable.
-- **Modales**: con fade + slight scale-in (200ms).
-- **Toasts**: arriba a la derecha, fade out en 4s.
+- **Tipografía**: **Geist Sans** canonical (300/500/600) per NOTICE r1.1. DEPRECATED v1.0: "sans-serif corporativa" generic.
+- **Colores**: cada app puede tener un **color de acento** tomado de Tier B Sonar Bright `#2DD4BF` o Tier C Coloro `#175A5F`, pero todas comparten paleta hybrid post-ADR-012 (Tier A canvas + Tier B identity + signals).
+- **Botones primarios**: estilo SONAR (Sonar Bright `#2DD4BF` fill + Sonar Pulse `#14E5DD` glow al hover per `01_art_direction.md` §3.4 + §16 motion). DEPRECATED v1.0: "azul marino + dorado al hover".
+- **Tablas**: estilo dashboard Crew 100 panels, filas alternadas, sortable, filtrable.
+- **Modales**: con fade + slight scale-in `motion-base` 200ms `ease-depth-descent` + `panel_open` SFX canonical.
+- **Toasts**: arriba a la derecha, fade-out 4s `ease-deliberate`.
 
 ---
 
@@ -512,14 +512,14 @@ Botón **[+ Nueva]** → wizard:
 2. **Nombre comercial** + **logo** (subir o elegir entre presets).
 3. **Sede física** (selección en mapa — solo lugares disponibles que el servidor permita).
 4. **Pago de licencia** (tarifa única configurable por servidor — sink económico).
-5. **Confirmar.** Animación de "registrando empresa" + sonido de sello (~3s).
+5. **Confirmar.** Animación de "registrando empresa" + `depth_press` ceremonial (~800ms peso settle) + fade-in certificado generated (~2s total animation).
 6. Aparece en la lista. Acceso al Manager Panel desbloqueado.
 
 ### 6.5 Wooow específicos
 
-- **Animación de sello al fundar** la empresa (el sistema "imprime" un certificado virtual + lo añade a Notas & Contratos).
+- **Animación ceremonial al fundar** la empresa (`depth_press` + fade-in certificado: el sistema genera certificado virtual + lo añade a Notas & Contratos). DEPRECATED v1.0: "sello al fundar" metáfora física preserve, sound canonical post-ADR-012.
 - **Logo de empresa visible en TODOS los lugares** del ecosistema donde aparece esa empresa (saco con logo, camión con livery del logo, contrato firmado con el logo, Tablet de empleados con el logo en su Empresa app).
-- **Reputación visible** como una insignia con estrella dorada/plateada/bronce según rango.
+- **Reputación visible** como insignia con icono `bioluminescence` (active/premium) o `depth-gauge` (standard) + tier color metal (dorado/plateado/bronce) solo para rank visual, NO brand paleta.
 
 ---
 
@@ -742,7 +742,7 @@ Comunicación profesional entre jugadores y empresas. **Mensajes 1-a-1**, **grup
 ### 10.5 Wooow específicos
 
 - **Notificación cuando contacto importante escribe** — los jugadores VIP del jugador (ej. su jefe, sus empleados) tienen prioridad alta y notifican incluso en modo silencio (configurable).
-- **Sticker pack SONAR**: 12 stickers con motivos navales / agricolas (futuro) — el lado humano del profesionalismo.
+- **Sticker pack SONAR**: 12 stickers con motivos abstractos SONAR (profundidad/capas/bioluminescence) + sector-specific (agrícolas, logística, contractual) (futuro) — el lado humano del profesionalismo. DEPRECATED v1.0: "motivos navales" literal.
 
 ---
 
@@ -780,7 +780,7 @@ Wizard simple:
 2. Cuenta destino (IBAN o nombre — autocompleta de contactos).
 3. Cantidad.
 4. Concepto (texto libre).
-5. **Confirmar.** Animación de transferencia + sonido satisfactorio (moneda).
+5. **Confirmar.** Animación de transferencia Sonar Bright pulse + `depth_press` canonical (Apple Touch ID success class 200-400ms) + micro-particle trail Sonar Glow hacia destino.
 6. Recibo digital aparece en Notas & Contratos automáticamente.
 
 ### 11.5 Caja física (si tengo permiso)
@@ -793,9 +793,9 @@ Vista del estado de la caja fuerte de mi empresa:
 
 ### 11.6 Wooow específicos
 
-- **Animación de moneda al transferir** — sutil, no festiva.
-- **Recibos auto-archivados** en Notas & Contratos. Cada transferencia genera un PDF con el sello SONAR.
-- **Alertas anti-fraude** (RP): si hay un pago grande inesperado, el sistema pregunta confirmación adicional. Detalle de profesionalismo.
+- **Animación de transferencia** — sutil Sonar Bright pulse + `depth_press` canonical, no festiva. DEPRECATED v1.0: "animación de moneda" literal monetaria.
+- **Recibos auto-archivados** en Notas & Contratos. Cada transferencia genera un PDF con timestamp + firma digital SONAR (DEPRECATED v1.0: "sello" metáfora física sigue válida conceptualmente pero implementación digital canonical).
+- **Alertas anti-fraude** (RP): si hay un pago grande inesperado, el sistema pregunta confirmación adicional + `signal_emerge` warning variant. Detalle de profesionalismo.
 
 ---
 
@@ -978,20 +978,24 @@ Reglas SONAR:
 
 ### 15.2 Tipología de notificaciones (espectro completo)
 
-| Tipo | Color | Sonido | Cuándo | Ejemplo |
-|---|---|---|---|---|
-| **Crítica operativa** | 🔴 Rojo | Alerta urgente | Algo en mi negocio se rompe ahora | "Plaga detectada en parcela 3" |
-| **Crítica financiera** | 🔴 Rojo | Alarma grave | Dinero en riesgo | "Caja insuficiente para nóminas" |
-| **Importante** | 🟡 Amarillo | Bip medio | Decisión próxima necesaria | "Riego fuera de ventana" |
-| **Informativa** | 🟢 Verde | Bip suave | Algo bueno pasó | "Cosecha lista — Calidad A" |
-| **Financiera positiva** | 💰 Dorado | Moneda | Ingreso recibido | "Pago recibido — 1,200$" |
-| **Contractual** | 📋 Azul | Sello/papel | Contrato implicado | "Contrato propuesto por Molino" |
-| **Mensajería** | 💬 Azul claro | Pop | Comunicación humana | "Pedro: ¿Cuándo entregas?" |
-| **Meteorológica** | 🌦️ Cian | Viento | Clima va a cambiar | "Tormenta entrante en 30 min" |
-| **Sistema** | ⚙ Gris | Click | Eventos OS | "App actualizada" |
-| **Mercado** | 🏷️ Naranja | Cha-ching suave | Marketplace | "Nueva oferta cerca de ti" |
-| **Logística** | 🚚 Lila | Camión | Envíos / recogidas | "Tu camión llegó a destino" |
-| **Reputación** | ⭐ Dorado | Estrella | Cambio de status | "Subiste a reputación 90 — Premium Vendor" |
+> **Sound column mapping canonical post-ADR-012:** cada tipo usa variante del set de 5 SFX (`signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open`) + parameters (pitch/volume/decay) per tipo. **DEPRECATED v1.0:** vernaculares literales ("Alerta urgente", "Moneda", "Sello/papel", "Viento", "Camión", "Cha-ching", "Estrella") — son nombres conceptuales pre-canonical, sustituidos por `signal_emerge` variants per `01_art_direction.md` §7.2 + `01_brief_sound.md` v1.
+
+| Tipo | Color | Sound canonical | DEPRECATED v1.0 | Cuándo | Ejemplo |
+|---|---|---|---|---|---|
+| **Crítica operativa** | 🔴 `critical` | `signal_emerge` urgency variant (higher pitch + 2-pulse) | Alerta urgente | Algo en mi negocio se rompe ahora | "Plaga detectada en parcela 3" |
+| **Crítica financiera** | 🔴 `critical` | `signal_emerge` critical variant (deeper tone + longer decay) | Alarma grave | Dinero en riesgo | "Caja insuficiente para nóminas" |
+| **Importante** | 🟡 `warn` | `signal_emerge` medium variant | Bip medio | Decisión próxima necesaria | "Riego fuera de ventana" |
+| **Informativa** | 🟢 `ok` | `signal_emerge` soft variant | Bip suave | Algo bueno pasó | "Cosecha lista — Calidad A" |
+| **Financiera positiva** | � `ok` Sonar Bright | `depth_press` Apple Touch ID success class | Moneda | Ingreso recibido | "Pago recibido — 1,200$" |
+| **Contractual** | � `info` | `depth_press` (firma metaphor preservada) | Sello/papel | Contrato implicado | "Contrato propuesto por Molino" |
+| **Mensajería** | � `info` Sonar Pulse | `console_tap` light variant | Pop | Comunicación humana | "Pedro: ¿Cuándo entregas?" |
+| **Meteorológica** | 🟦 `info` cyan | `signal_emerge` ambient soft variant | Viento | Clima va a cambiar | "Tormenta entrante en 30 min" |
+| **Sistema** | ⚪ `neutral` Coloro | `console_tap` neutral variant | Click | Eventos OS | "App actualizada" |
+| **Mercado** | 🟠 `accent` | `console_tap` soft variant | Cha-ching suave | Marketplace | "Nueva oferta cerca de ti" |
+| **Logística** | � `accent` | `signal_emerge` soft variant | Camión | Envíos / recogidas | "Tu camión llegó a destino" |
+| **Reputación** | 🟢 `ok` Sonar Bright | `signal_emerge` positive variant (pitch-rise emerging) | Estrella | Cambio de status | "Subiste a reputación 90 — Premium Vendor" |
+
+> **Color column:** DEPRECATED v1.0 emoji refs (🔴/🟡/🟢/💰/📋/💬/🌦️/⚙/🏷️/🚚/⭐) → canonical functional color tokens Signal tier (`critical`/`warn`/`ok`/`info`/`neutral`/`accent`) per `01_art_direction.md` §3.4 signal palette. Emojis preservados como visual shorthand pero token names = SSoT canonical.
 
 ### 15.3 Anatomía visual de una notificación
 
@@ -1263,10 +1267,10 @@ Vendidos en Tienda SONAR.
 1. Personaje se acerca al dock.
 2. Saca Tablet (anim §3.1).
 3. **Acerca la Tablet al dock — los imanes la atraen visiblemente** (los últimos cm la Tablet "salta" al dock).
-4. **Click magnético** + sonido de conexión.
-5. El monitor del despacho se enciende con un fade desde negro al wallpaper de la Tablet.
-6. Aparece sonido de "conexión periférica" (~0.5s).
-7. La UI de la Tablet se redibuja en el monitor con layout expandido.
+4. **Click magnético** + `console_tap` canonical (50-150ms Apple trackpad haptic class).
+5. El monitor del despacho se enciende con fade desde negro al wallpaper de la Tablet + `panel_open` canonical (200-400ms breath-like reveal).
+6. DEPRECATED v1.0: "sonido de conexión periférica" genérico — reemplazado por `panel_open` canonical post-ADR-012.
+7. La UI de la Tablet se redibuja en el monitor con layout expandido (`ease-deliberate` 480ms).
 8. Personaje se sienta en la silla.
 9. Listo para trabajar.
 
@@ -1324,18 +1328,20 @@ Vendidos en Tienda SONAR.
 >
 > Cosecha la parcela. Al terminar, recibe push: "Pago de 500$ recibido. Reputación temporal: +1." Vuelve al servidor a hacer otra oferta o a desconectar.
 
-### 22.4 Caso D — Servidor "Costa Naval" personalizando
+### 22.4 Caso D — Servidor temático personalizando (ejemplo genérico)
 
-> Server "Costa Naval" tiene tema marino-portuario. Compran SONAR.
+> **NOTA post-pivot:** ejemplo v1.0 usó "Costa Naval" (tema marino-portuario) — preserved como EJEMPLO de server temático que personaliza, pero **el server personaliza SU marca sin imponer metáfora naval sobre SONAR**. Otros ejemplos válidos: server medieval, server cyberpunk, server rural. Key: server-branding ortogonal a SONAR-identity. **Si un servidor quiere tema literal naval/militar para su experiencia RP, puede — pero el logo SONAR + boot sound + paleta SONAR + voz neutral premium-tech se preservan**. Ver §18.2 "Qué NO pueden personalizar".
+
+> Server "Puerto de los Vientos" tiene tema marino-portuario RP (ejemplo histórico v1.0 "Costa Naval"). Compran SONAR.
 >
 > Configuran:
-> - Wallpapers default: añaden 5 imágenes de barcos del puerto.
-> - Boot splash: muestra "Costa Naval" antes del logo SONAR (~0.5s).
+> - Wallpapers default: añaden 5 imágenes de barcos del puerto **al pack de wallpapers server-specific** (coexist con wallpapers SONAR abstractos canonical).
+> - Boot splash: muestra "Puerto de los Vientos" antes del logo SONAR (~0.5s). Logo SONAR concept A "S-curl open" sigue apareciendo canonical post-split.
 > - Idiomas: español + portugués (la comunidad es ibérica).
 > - Apps disponibles: solo Granja oleada 1 + Cadena Pan.
 > - Coste Tablet básica: gratis (la entregan con el contrato de personaje).
 >
-> El branding se siente personal para sus jugadores, sin destruir la identidad SONAR.
+> El branding server se siente personal para sus jugadores, sin destruir la identidad SONAR canonical (logo + boot sound + paleta hybrid + voz neutral).
 
 ---
 
@@ -1512,56 +1518,53 @@ SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...
 - Toast (slide-in derecha + fade-out 4s).
 - Cambio entre vistas Manager Panel (cross-fade 300ms).
 - Animación de firma digital (línea siendo dibujada).
-- Animación de transferencia bancaria (moneda + check).
+- Animación de transferencia bancaria (Sonar Bright pulse + `depth_press` + check; DEPRECATED v1.0 "moneda + check" literal monetaria).
 - Animación de impresión (impresora trabajando dentro de la app + impresora física en mundo).
 
 ---
 
 ## 26. Lista de sonidos requeridos
 
-### 26.1 Sonidos del dispositivo
+> **Canonical post-ADR-012:** todos los sonidos UI se mapean al set de 5 SFX firma (`signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open`) con variantes de pitch/volume/decay per contexto. Sound ambient/físico del mundo puede ser material-specific (impresora, lector tarjeta, vehículo) — NO son SFX UI. Ver `01_art_direction.md` §7.2 + `01_brief_sound.md` v1 SSoT canonical. **DEPRECATED v1.0 terminology** ("campana naval", "whoosh", "bip", "pop", "cha-ching", "moneda", "estrella mágica", etc.) preserved en tabla DEPRECATED column — reemplazo canonical en uso.
 
-- **Boot sound** (~1.2s) — campana naval suavizada + acorde sintético + click final.
-- **Boot sound Pro** (variante con más capas).
-- **Boot sound Enterprise** (variante premium).
-- **Pantalla encendiéndose** — click discreto.
-- **Pantalla apagándose** — click más suave.
-- **Tap en UI** — click ultra-discreto, feedback táctil sonoro.
-- **Swipe** — whoosh muy sutil.
-- **Vibración bolsillo** (Tablet guardada) — buzz amortiguado.
-- **Vibración mesa** (Tablet sobre superficie) — buzz tableteando contra superficie.
+### 26.1 Sonidos del dispositivo (SFX UI canonical)
+
+| Event | Canonical SFX | Variant | DEPRECATED v1.0 |
+|---|---|---|---|
+| **Boot sequence** | Premium-tech tonal rise + `console_tap` final | 1.2s ceremonial | "campana naval suavizada + acorde sintético" |
+| **Boot Pro variant** | Premium-tech tonal rise + harmonic layers | 1.2s richer mix | "más capas" |
+| **Boot Enterprise variant** | Premium-tech tonal rise + full harmonic layers | 1.2s premium mix | "variante premium" |
+| **Pantalla enciende** | `console_tap` | 50ms light | "click discreto" |
+| **Pantalla apaga** | `console_tap` | 50ms softer | "click más suave" |
+| **Tap en UI** | `console_tap` | 50-80ms haptic class | "click ultra-discreto" |
+| **Swipe** | `layer_dive` soft | 150-200ms transition | "whoosh muy sutil" |
+| **Vibración bolsillo** | buzz amortiguado (físico, NO SFX UI) | ambient | "buzz amortiguado" |
+| **Vibración mesa** | buzz contra superficie (físico, NO SFX UI) | ambient | "buzz tableteando" |
 
 ### 26.2 Sonidos de notificación
 
-(Ver tabla §15.2 — uno por tipo).
-
-- Crítica operativa.
-- Crítica financiera.
-- Importante.
-- Informativa.
-- Financiera positiva (moneda).
-- Contractual (sello/papel).
-- Mensajería (pop).
-- Meteorológica (viento sutil).
-- Sistema (click).
-- Mercado (cha-ching suave).
-- Logística (camión sutil).
-- Reputación (estrella mágica).
+> Ver tabla §15.2 — mapping canonical completo por tipo notif con variantes `signal_emerge` + `depth_press` + `console_tap` per contexto. DEPRECATED v1.0 vernacular column preserved para trazabilidad.
 
 ### 26.3 Sonidos de docking
 
-- **Click magnético** al introducir Tablet en dock.
-- **Sonido de conexión periférica** (~0.5s).
-- **Pantalla del monitor encendiéndose** (zumbido eléctrico breve).
-- **Eject** del dock (click suave).
+| Event | Canonical SFX | Duration | DEPRECATED v1.0 |
+|---|---|---|---|
+| **Tablet to dock (magnet click)** | `console_tap` haptic | 50-150ms | "click magnético" |
+| **Monitor enciende + UI redibuja** | `panel_open` breath-like reveal | 200-400ms | "sonido de conexión periférica" |
+| **Zumbido monitor on** | buzz eléctrico (físico, NO SFX UI) | ambient | "zumbido eléctrico breve" |
+| **Eject del dock** | `console_tap` softer variant | 50ms | "click suave" |
 
 ### 26.4 Sonidos de inter-tablet
 
-- **Acercar dos Tablets** (acoplamiento detectado — bip discreto).
-- **Compartir contacto / archivo** — whoosh + check.
-- **Pago cara a cara** — moneda + check verde.
+| Event | Canonical SFX | DEPRECATED v1.0 |
+|---|---|---|
+| **Acercar 2 Tablets (acoplamiento detected)** | `console_tap` | "bip discreto" |
+| **Compartir contacto / archivo** | `layer_dive` + `console_tap` check | "whoosh + check" |
+| **Pago cara a cara** | `depth_press` Apple Touch ID success class | "moneda + check verde" |
 
-### 26.5 Sonidos ambiente del entorno
+### 26.5 Sonidos ambiente del entorno (físico, NO SFX UI)
+
+> **Nota:** estos sonidos son del MUNDO FÍSICO (Pilar 1), NO sonidos UI Tablet. No se mapean a los 5 SFX canonical.
 
 - **Impresora trabajando** (motor + papel saliendo).
 - **Lector de tarjeta bip** (al fichar).
@@ -1571,6 +1574,8 @@ SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...
 ## 27. Anti-patrones específicos de la Tablet
 
 > Lo que **JAMÁS** vamos a hacer en este producto.
+
+### 27.1 Anti-patrones estructurales/UX (preserved v1.0)
 
 - ❌ **UI flotante sobre HUD** que no esté contenida en el modelo 3D del dispositivo.
 - ❌ **Comando `/menu`** que abre la Tablet sin animación de saque.
@@ -1588,6 +1593,20 @@ SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...
 - ❌ **Dock que es solo decorativo** (debe transformar la experiencia).
 - ❌ **Sin sincronización cloud** (perder datos al cambiar de Tablet sería frustrante).
 - ❌ **Sin SDK pensado para apps de terceros** (mata la visión de plataforma).
+
+### 27.2 Anti-patrones identidad SONAR post-pivot (NEW post-ADR-011 + ADR-012)
+
+> Lo que **JAMÁS** vamos a hacer en la capa identidad/voz/visual/sound post-pivot SONAR. Estos son NEW anti-patrones vigentes desde 2026-05-03 per NOTICE r1.1.
+
+- ❌ **Voz naval/militar/capitán** en copy UI ("Bienvenido a bordo", "Console SONAR activada, Profundidad operativa", "Almirante", "Tripulación", "Capitán", "Comandante", "Silent service", "Tactical-grade"). Voz canonical = neutral premium-tech (Vercel/Linear/Stripe/Apple Pro apps class).
+- ❌ **Boot sound "campana naval" literal** o cualquier metáfora militar/submarino. Canonical = premium-tech tonal class (Apple chime moderno).
+- ❌ **Iconografía sonar-ping/periscope/submarine/hydrophone/torpedo literal**. Canonical = abstract profundidad/capas (`descent-layers`, `signal-clarity`, `depth-grid`, `observation-field`, `lineage-trace`, `bioluminescence`, `pressure-hull` reconceptualizado, `depth-gauge`).
+- ❌ **Paleta azul marino + dorado** como brand identity. Canonical = hybrid theme Tier A canvas (Abyss Black + Crew 100) + Tier B identity (Sonar Bright + Sonar Pulse) + Tier C structural (Coloro).
+- ❌ **Tipografía Inter / Manrope / SF Pro** como primary. Canonical = Geist Sans (300/500/600). Inter Tight solo fallback.
+- ❌ **Sound naming literal radio/acoustic** (`sonar_ping`, `sonar_sweep`, `sonar_dive`, `sonar_hatch`, `sonar_console`, `sonar_pressure`). Canonical = 5 SFX neutral premium-tech (`signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open`).
+- ❌ **Wallpapers oficiales con motivos navales/militares/cinematográficos literales**. Canonical = abstract depth/bioluminescence/descent-layers per `01_brief_marketing.md` v1 moodboard.
+- ❌ **Metáfora "submarino tech" literal** (hulls con remaches, periscopios, bridge-as-command-center militar, crew submarino, hatches físicas). Canonical = abstracción simbólica de profundidad / exploración paciente.
+- ❌ **Logo alternativo propuesto por AI agent** sin consultar `art/branding/logo_v2/` working canonical. Logo concept A "S-curl open" adopted founder 2026-05-03 — NO proponer re-diseño unilateralmente.
 
 ---
 
@@ -1655,9 +1674,9 @@ SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...
 
 ## 29. Estado del documento
 
-- **Versión:** 1.1 (Pass 1 surgical post-pivot SONAR — NOTICE r1.1 top + bulk identity purge Admirals→SONAR + AdmiralsOS→SonarOS + key sections inline §2.4 + §3 + §3.2 + §4.1 + §4.2; Pass 2 pendiente para apps detail-pass §6-§19).
+- **Versión:** 1.2 (Pass 1 + Pass 2 surgical completos post-pivot SONAR — doc 1/8 Phase 6 **100% Pass done**).
 - **v1.0 firmada original:** archivada en commit history pre-S1.8 (Admirals heritage 1185 líneas, naval/militar identity pre-pivot).
-- **Próxima revisión:** Pass 2 surgical apps detail-pass §6-§19 (Bank, Manager Panel, Mensajes, Banca, etc. con identidad SONAR + 5 SFX canonical inline + iconografía abstract refs) + §26 sounds canonical full + §27 anti-patterns post-pivot. Estimación ~2h Sonnet 4.6 próxima sesión.
+- **Próxima revisión:** (a) firma v2.0 post uso real S2 Tablet shell implementación, o (b) refactor si founder decide replan iconografía/sound assets con designer pro post briefs v2. Este doc está **ready-to-read para S2.0 planning** — Tablet shell + Bank app + Map app pueden leer este spec con identidad SONAR canonical coherente.
 - **Documentos derivados pendientes:**
   - `technical/01_architecture.md` — arquitectura técnica completa (NUI, render target, bus de eventos, schema DB).
   - `art/01_art_direction.md` v2.0-scaffold-r7 — **YA FIRMADO post-pivot.** SSoT canonical visual.
@@ -1672,10 +1691,11 @@ SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026 (varias) | Founder + Cascade | v1.0 firmada Admirals/Almirantazgo (1185 líneas, 29 secciones). Identidad: Tablet 5º Pilar + dispositivo físico + 4 estados + 8 apps base + AdmiralsOS + voz naval/militar + paleta azul marino+dorado + Inter/Manrope tipografía + boot sound "campana naval". Archivado por ADR-011 + ADR-012. |
-| 1.1 | 2026-05-03 | Founder + Cascade (S1.8) | **Pass 1 surgical post-pivot SONAR.** (a) **File rename** `02_admirals_tablet.md` → `02_sonar_tablet.md` (git mv preserva history). (b) **NOTICE r1.1 top-level** establecida (~70 líneas) con NEW CANONICAL: naming SONAR + paleta hybrid Tier A/B/C + tipografía Geist Sans + voz neutral premium-tech + iconografía abstract + sound canonical 5 SFX + logo v2 working canonical concept A. (c) **Bulk identity purge** PowerShell (Admirals→SONAR + AdmiralsOS→SonarOS + Tablet Admirals→Tablet SONAR + Tienda Admirals→Tienda SONAR + cuenta Admirals→cuenta SONAR + producto/s Admirals→producto/s SONAR + logo/marca/ecosistema/apps Admirals → SONAR + ADMIRALS uppercase → SONAR) — 126 instances replaced. (d) **Surgical inline edits secciones críticas:** §2.4 Identidad visual (5 bullets refactored: wallpapers abstract + Geist Sans canonical + paleta hybrid + 5 SFX canonical + splash logo v2 ref); §3.2 Boot sound (premium-tech tonal class, deprecated "campana naval"); §4.1 Filosofía OS (voz neutral premium-tech + paleta hybrid + motion §16 + sounds canonical); §4.2 Boot sequence (Fase 1+2: logo v2 concept A reveal por capas 3 arcs + glow halation, deprecated "ondas señal naval"; Fase 3: Geist Sans + Geist Mono; Fase 4: ease-depth-descent + console_tap). (e) **§29 footer + changelog** bumped. **Pass 2 pendiente:** §6-§19 apps detail-pass + §26 sounds full + §27 anti-patterns. **Cross-refs:** ADR-011 + ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 + `01_brief_logo.md` v2 + `01_brief_motion.md` v1 + `01_brief_sound.md` v1 + `01_brief_marketing.md` v1 + `art/branding/logo_v2/README.md` + Bible v1.4. |
+| 1.1 | 2026-05-03 | Founder + Cascade (S1.8 Pass 1) | **Pass 1 surgical post-pivot SONAR.** (a) **File rename** `02_admirals_tablet.md` → `02_sonar_tablet.md` (git mv preserva history). (b) **NOTICE r1.1 top-level** establecida (~70 líneas) con NEW CANONICAL: naming SONAR + paleta hybrid Tier A/B/C + tipografía Geist Sans + voz neutral premium-tech + iconografía abstract + sound canonical 5 SFX + logo v2 working canonical concept A. (c) **Bulk identity purge** PowerShell (Admirals→SONAR + AdmiralsOS→SonarOS + Tablet Admirals→Tablet SONAR + Tienda Admirals→Tienda SONAR + cuenta Admirals→cuenta SONAR + producto/s Admirals→producto/s SONAR + logo/marca/ecosistema/apps Admirals → SONAR + ADMIRALS uppercase → SONAR) — 126 instances replaced. (d) **Surgical inline edits secciones críticas:** §2.4 Identidad visual (5 bullets refactored: wallpapers abstract + Geist Sans canonical + paleta hybrid + 5 SFX canonical + splash logo v2 ref); §3.2 Boot sound (premium-tech tonal class, deprecated "campana naval"); §4.1 Filosofía OS (voz neutral premium-tech + paleta hybrid + motion §16 + sounds canonical); §4.2 Boot sequence (Fase 1+2: logo v2 concept A reveal por capas 3 arcs + glow halation, deprecated "ondas señal naval"; Fase 3: Geist Sans + Geist Mono; Fase 4: ease-depth-descent + console_tap). (e) **§29 footer + changelog** bumped. **Pass 2 pendiente:** §6-§19 apps detail-pass + §26 sounds full + §27 anti-patterns. **Cross-refs:** ADR-011 + ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 + `01_brief_logo.md` v2 + `01_brief_motion.md` v1 + `01_brief_sound.md` v1 + `01_brief_marketing.md` v1 + `art/branding/logo_v2/README.md` + Bible v1.4. |
+| 1.2 | 2026-05-03 | Founder + Cascade (S1.8 Pass 2) | **Pass 2 surgical apps detail-pass post-pivot SONAR.** (a) **§5.2 Lenguaje visual común** — Geist Sans canonical + Tier B Sonar Bright accent + panel_open modales + ease-deliberate toasts (DEPRECATED azul marino + dorado hover). (b) **§6.4 + §6.5 Empresa** — depth_press ceremonial al fundar empresa (DEPRECATED "sello" literal) + iconografía bioluminescence/depth-gauge para reputación insignia. (c) **§10.5 Mensajes sticker pack** — motivos abstractos SONAR (profundidad/capas/bioluminescence) + sector-specific (DEPRECATED "navales"). (d) **§11.4 + §11.6 Banca** — Sonar Bright pulse + depth_press canonical + signal_emerge warning anti-fraude (DEPRECATED "moneda" literal monetaria). (e) **§15.2 Tipología notif table** — mapping canonical completo 12 tipos a 5 SFX canonical variants (signal_emerge urgency/critical/medium/soft/ambient/positive + depth_press success/firma + console_tap light/neutral/soft) + DEPRECATED v1.0 column preserved + color tokens functional Signal tier. (f) **§21.4 Animación docking** — console_tap magnet click + panel_open monitor reveal + ease-deliberate UI redraw (DEPRECATED "conexión periférica" genérica). (g) **§22.4 Costa Naval** — flag ejemplo v1.0 como server-branding ortogonal a SONAR canonical (server temático NO impone metáfora naval sobre SONAR). Ejemplo renombrado a "Puerto de los Vientos" neutral. (h) **§26 Sonidos requeridos** — rewrite completo con tablas canonical 4 tablas (§26.1 dispositivo + §26.3 docking + §26.4 inter-tablet + §26.5 ambient). Mapping 5 SFX + DEPRECATED v1.0 vernacular preserved. (i) **§27 Anti-patrones** — split en §27.1 structural/UX (preserved v1.0) + §27.2 identidad SONAR NEW post-pivot (9 anti-patrones: voz naval/militar, boot campana naval, iconografía sonar-ping/periscope, paleta azul marino+dorado, tipografía Inter/Manrope, sound naming radio, wallpapers navales, metáfora submarino literal, logo alternativo unilateral). (j) **§25.3 + NOTICE r1.1 line 77** minor status updates. **Doc 1/8 Phase 6 100% Pass done**, ready-to-read para S2.0 planning. |
 
 ---
 
 *"Hear the depth. Understand the patterns."*
 
-**FIN DEL DOCUMENTO `docs/design/02_sonar_tablet.md` v1.1 (Pass 1 surgical post-pivot SONAR — Pass 2 pendiente).**
+**FIN DEL DOCUMENTO `docs/design/02_sonar_tablet.md` v1.2 (Pass 1 + Pass 2 surgical completos post-pivot SONAR — doc 1/8 Phase 6 ready-to-read para S2.0 planning).**
