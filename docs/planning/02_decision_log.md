@@ -861,6 +861,122 @@ Each phase reversible until commit + push:
 
 ---
 
+## ADR-012 — SONAR identity refinement: abstract metaphor + hybrid theme + neutral voice (amends ADR-011)
+
+- **Fecha:** 2026-05-03
+- **Autor:** Founder (strategic refinement post-Bible v1.3 + Phase 4.5 partial briefs review) + Cascade (architect, surgical execution)
+- **Estado:** ✅ accepted
+- **Tags:** identity, branding, aesthetic, refinement, amendment, ssot_invalidation
+- **Relación:** **amends ADR-011** (no supersede — ADR-011 sigue válido en lo foundational SONAR vs Admirals; este ADR refina interpretación metáfora + theme + voz). Append-only inmutable per ADR-007.
+
+### Contexto
+
+Tras 5 commits S1.4+S1.5 ejecutando Phase 1-5 light de ADR-011 (`art_direction.md` v2.0-scaffold-r5 + Bible v1.3 + 2/5 specialist briefs), founder revisó scaffold final + ambos briefs (BRIEF-LOGO-001 + BRIEF-ICONS-001) y detectó **3 desviaciones interpretativas** del intent original:
+
+1. **Metáfora literal-militar excesiva.** Iconografía `submarine`/`periscope`/`torpedo-bay`/`hydrophone` + voz "capitán submarino nuclear silent service" + sound `sonar_ping` (ondas concéntricas radio/frecuencia) llevaron la metáfora hacia hardware militar concreto. Founder original intent: SONAR = símbolo metafórico simple de **profundidad + exploración** (valor oculto, capas, claridad bajo presión, calma metódica). NO submarino militar literal, NO radios/frecuencias/instrumentación de señal acústica.
+2. **Dark mode extremo (~60% abyss canvas).** Founder evaluó scaffold final y considera el balance demasiado oscuro. Apps premium 2026 referenciadas (Apple, Linear, Vercel, Stripe Dashboard, Arc, Notion) hacen **balance dark+blanco**, no dark-extremo puro.
+3. **Voz arquetipo militar.** "Silent service capitán submarino nuclear" como voz de marca limita copywriting cross-channel y suena sobre-construido para un servidor RP infraestructura. Premium-tech moderno (Vercel/Linear copy style) es más apropiado y atemporal.
+
+Founder hizo 4 decisiones explícitas en sync 2026-05-03 ~07:00 UTC+02 vía 4 ask-options pattern:
+
+### Decisión
+
+**Refinement post-Phase 5 light, antes de continuar Phase 4.5 briefs / Phase 4 ejecución creativa.** Foundational SONAR (ADR-011) sigue válido; cambia la **interpretación visual + voz**.
+
+#### D1 — Metáfora: ABSTRACTA PURA — profundidad + exploración
+
+- **Lo que SONAR ES (metaforicamente):** profundidad como fuerza simbólica. Valor oculto bajo capas. Calma bajo presión. Claridad metódica al descender. Exploración paciente. **Cero hardware militar.** Cero radios. Cero frecuencias acústicas literales.
+- **Lo que SONAR NO ES (purga explícita):** submarino militar, periscopio, torpedo, hydrophone, sonar ping radio, ondas concéntricas radio/freq, navegación tactical, command bridge militar, depth charge, anti-ship warfare.
+- **Iconografía resultante:** purga `submarine` + `periscope` + `torpedo-bay` + `hydrophone` + `sonar-ping` (ondas concéntricas). **Conservados:** `depth-gauge` (medidor profundidad concept), `pressure-hull` (re-conceptualizado: capas de profundidad/contención abstract), `bioluminescence` (luz bajo presión, valor emergiendo). **A redefinir Phase 4.5+:** 5 nuevos iconos abstractos profundidad-themed (descent-layers, signal-clarity, depth-grid, observation-field, lineage-trace candidatos preliminares).
+
+#### D2 — Theme: SINGLE HYBRID DARK + WHITE SURFACES MIXED (Notion/Arc/Stripe Dashboard)
+
+- **NO dual theme** (light + dark separate). NO light-primary flip. **Single hybrid:** un único theme con balance interior canvas oscuro + paneles/cards/surfaces blancos o off-white.
+- **Nueva proporción meta:** ~30-40% deep surfaces (canvas dark) + ~30-40% white/off-white surfaces (panels, cards, content areas) + ~10-15% Sonar Bright identity + ~10% structural support + <5% signals. **Reemplaza ratio 60/25/10/5/<3 de scaffold-r1** que ahora queda obsoleta.
+- **Refs convergentes:** Notion (dark canvas + white content panes), Arc Browser (dark chrome + light content), Stripe Dashboard (dark sidebar + white workspace), Linear (dark canvas + white modal/cards selectivos), GitHub dark mode (mixed surfaces).
+- **Sonar Bright #2DD4BF identity preservado:** funciona en ambos surfaces (contraste AAA sobre abyss-black + AA+ sobre off-white).
+- **Glassmorphism re-evaluado:** sigue signature pero pierde exclusividad dark — puede aplicar tintado sutil sobre surfaces blancos también (tinte teal opacity bajo).
+
+#### D3 — Voz: NEUTRAL PREMIUM-TECH (Vercel/Linear/Stripe copy)
+
+- **Eliminar TODO arquetipo:** "silent service", "capitán submarino nuclear", "comandante", "almirante", "a bordo", "tripulación", "tactical", "operación naval".
+- **Tono retenido:** preciso, confiado, terse, calmo, professional. Cero gen-Z/exclamaciones/vibes/emojis-en-producto. Pero **sin personaje fictício detrás**.
+- **Estilo referencia:** Vercel docs ("Deploy. Iterate. Scale."), Linear copy ("Project tracking for fast-moving teams"), Stripe ("Payments infrastructure for the internet"), Apple Pro apps copy.
+- **Ejemplos voz refinada:**
+  - ✅ *"SONAR maps your economy. Every transaction logged."*
+  - ✅ *"Hear the depth. Understand the patterns."*
+  - ✅ *"Console activated. Ready."*
+  - ✅ *"Transfer received: 1,240€ — entry FARM-2026-0042."*
+  - ❌ *"Console SONAR activada. Profundidad operativa."* (era voz capitán)
+  - ❌ *"Bienvenido a bordo, almirante."* (deprecated v1.0 Admirals — sigue ❌).
+  - ❌ *"Contacto detectado: transferencia 1,240€ recibida en eco SONAR."* (literal sub-acoustic — ya NO).
+
+#### D4 — Timing: PROCESAR TODO EN S1.5
+
+- ADR-012 inmediato (este).
+- art_direction.md v2.0-scaffold-r5 → r6 surgical (paleta hybrid + iconografía purgada + voz refinada + glossary cleanup).
+- Bible v1.3 → v1.4 surgical (limpieza términos literales metáfora vieja).
+- Briefs uncommitted descartados (locked en metáfora vieja — re-escribir en Phase 4.5 nueva sesión con scope refinado).
+- SESSION_LOG amend.
+
+### Alternativas consideradas
+
+- **A1 — Mantener metáfora literal submarino + dark-extremo + voz capitán** (status quo post-r5). **Rechazada por founder:** demasiado costume-driven, riesgo "FiveM gaming server" perception en lugar de "premium economic infrastructure".
+- **A2 — Pivot total a Light Mode primary** (Stripe-default style). Considerado y rechazado: pérdida de la firma bioluminiscente que sí funciona perfecto en hybrid. Demasiado disruptivo post-5 commits.
+- **A3 — Discard y empezar de cero.** Rechazado: 90% del scaffold actual (paleta tokens + tipografía + glossary abstract terms + voz tone + metaphor abstract core) es válido. Refinement quirúrgico es eficiente.
+
+### Consecuencias
+
+#### Positivas
+- **Metáfora más durable:** abstracta vs literal-militar tiene shelf-life mayor (10+ años vs 3-5 de costume metaphors).
+- **Theme más enterprise-grade:** hybrid alineado con apps premium 2026 referencias (Notion/Arc/Stripe/Linear).
+- **Voz menos sobre-construida:** copy más fácil de escribir consistentemente cross-channel sin entrenar a colaboradores en un personaje.
+- **Diferencial vs FiveM mainstream:** competidores hacen dark-extremo gaming. Hybrid + voz neutral premium-tech = enterprise tool feel = diferencial fuerte.
+- **Iconografía más reusable:** abstract icons (depth-gauge/grid/observation/lineage) sirven cross-vertical sin repintar metaphor por nodo.
+
+#### Negativas
+- **Trabajo extra surgical S1.5 ~2-3h:** ADR-012 + art_direction r6 + Bible v1.4 + briefs discard + SESSION_LOG.
+- **Briefs Phase 4.5 reset:** los 2 briefs (logo + icons) escritos esta sesión se descartan. ~580 líneas de trabajo Sonnet a redo en próxima sesión con scope refinado.
+- **Memoria SONAR identity persistente requiere update r2** post-este-ADR.
+- **Posible founder fatigue por re-iteración:** después de 3.5h sesión, refinement adicional carga.
+
+#### Neutrales
+- ADR-011 sigue accepted, no superseded — mantiene risks documented + execution plan vigente.
+- Roadmap general 12-phases sin cambios en cantidad/secuencia, solo en interpretación contenido.
+
+### Risks accepted by founder (documented per workspace red-flags protocol)
+
+- 🟡 **R1 — Refinement-fatigue.** Founder reconoce que iterar identidad 3 veces en una sola sesión (Admirals → SONAR-radical → SONAR-refined) tiene riesgo de "fatigue paralysis" sobre dirección final. Mitigación: este ADR-012 cierra refinement window. **No más cambios identity hasta re-evaluation trigger 3 meses post-pivot.**
+- 🟡 **R2 — Hybrid theme implementation cost.** Hybrid dark+white es más complejo técnicamente que dark-only (más tokens, más testing contraste, más a11y validation). Mitigación: tokens ya base disponibles (crew-100 off-white existe en paleta). Designer brief Phase 4.5 incluye explicit hybrid spec.
+- 🟢 **R3 — Brief discard cost.** ~580 líneas (logo + icons briefs) descartadas. Mitigación: contenido SSoT aprovechable como template (estructura review gates, licensing, formato deliverables) — solo cambia concepto + iconografía + paleta refs.
+- 🟢 **R4 — ADR-011 vs ADR-012 confusion.** Riesgo lectura futura mezclar. Mitigación: ADR-012 explicitamente "amends" ADR-011 (no supersede), ambos accepted, lectura conjunta. SSoT cross-ref en BOOTSTRAP Phase 5 update.
+
+### Impact
+
+#### Docs (esta sesión)
+- ✅ `docs/planning/02_decision_log.md` — ADR-012 (este) + §5.1 tag index extension + §6.2 v1.4 + §6.3 changelog + §7 TL;DR row.
+- ✅ `docs/art/01_art_direction.md` r5 → r6 — paleta hybrid + iconografía purgada (3 conservados + TBD 5 nuevos abstract) + voz neutral + glossary cleanup términos literales (Periscope, Hatch, Hydrophone, Bridge-as-command-center → Bridge-as-tablet-app abstract).
+- ✅ `docs/design/00_PRODUCT_BIBLE.md` v1.3 → v1.4 — §1 voz line update + §1.1 metáfora purga vocabulario literal + glossary §15 cleanup.
+- ✅ `docs/art/briefs/` — descartado completo (2 briefs + README) — re-escritura próxima sesión con scope D1+D2+D3.
+- ✅ `progress/SESSION_LOG.md` — S1.5 entry amend con ADR-012 execution.
+
+#### Docs (próxima sesión Phase 4.5 v2)
+- 🔴 BRIEF-LOGO-001 v2 (concepto NO ondas concéntricas — alternativas: letra S descendiendo, prisma capas profundidad, gradient depth, geometric depth-grid).
+- 🔴 BRIEF-ICONS-001 v2 (8 iconos abstract: depth-gauge ✅ + pressure-hull (reconceptualizado capas) ✅ + bioluminescence ✅ + 5 nuevos TBD).
+- 🔴 BRIEF-SOUND-001 (5 SFX neutral: nombres re-pensados sin sonar-radio literal).
+- 🔴 BRIEF-MOTION-001 (sin "sonar ping animation" — replace por "depth descent" o "layer reveal" pattern).
+- 🔴 BRIEF-MARKETING-001 (voz neutral premium-tech samples).
+
+#### Memoria persistente AI
+- 🔴 Update `SONAR Identity Direction` memoria r1 → r2 — paleta hybrid ratios + iconografía abstract + voz neutral + lo que NO es SONAR (purga literal).
+
+### Re-evaluation trigger
+
+- **Cierre Phase 4 firm (post-briefs ejecución):** validar que outputs creativos (logo + icons + sounds + motion + marketing) reflejan abstract pure + hybrid + neutral. Si designer humano interpreta diferente y founder OK con desviación → micro-amendment pero NO ADR-013.
+- **3 meses post-pivot SONAR (compartido con ADR-011 trigger):** measure engagement. Si hybrid theme + abstract metaphor + neutral voice no genera lift detectable, considerar ADR-013 con escope ajustado (ej. más light, más metáfora).
+
+---
+
 ## 3. Cómo añadir nuevo ADR
 
 ### 3.1 Workflow
@@ -947,18 +1063,20 @@ Each phase reversible until commit + push:
 | `audit` | ADR-010 |
 | `ssot_consistency` | ADR-010 |
 | `foundational` | ADR-002, ADR-003, ADR-009, ADR-010, ADR-011 |
-| `identity` | ADR-011 |
-| `branding` | ADR-011 |
-| `aesthetic` | ADR-011 |
-| `ssot_invalidation` | ADR-011 |
+| `identity` | ADR-011, ADR-012 |
+| `branding` | ADR-011, ADR-012 |
+| `aesthetic` | ADR-011, ADR-012 |
+| `ssot_invalidation` | ADR-011, ADR-012 |
 | `risk_accepted` | ADR-011 |
 | `pivot` | ADR-008, ADR-011 |
+| `refinement` | ADR-012 |
+| `amendment` | ADR-012 |
 
 ### 5.2 Por estado
 
 | Estado | ADRs |
 |---|---|
-| accepted | ADR-001 a ADR-004, ADR-006 a ADR-011 |
+| accepted | ADR-001 a ADR-004, ADR-006 a ADR-012 |
 | proposed | — |
 | deprecated | — |
 | superseded | ADR-005 (por ADR-008) |
@@ -984,8 +1102,8 @@ Each phase reversible until commit + push:
 
 ### 6.2 Estado del documento
 
-- **Versión:** 1.3 (firmado — completo, 6 secciones, 11 ADRs).
-- **Próxima revisión:** al añadir ADR-012 (próxima decisión importante post-SONAR-pivot).
+- **Versión:** 1.4 (firmado — completo, 6 secciones, 12 ADRs).
+- **Próxima revisión:** al añadir ADR-013 (próxima decisión importante post-SONAR-refinement).
 - **Documento padre:** `planning/01_roadmap.md`.
 - **Documento hermano:** `agents/00_BOOTSTRAP.md`.
 
@@ -997,6 +1115,7 @@ Each phase reversible until commit + push:
 | 1.1 | 2026-05-01 | Founder + Cascade | **+2 ADRs** cerrando Oleada 0: ADR-008 (pivot MVP Granja, supersedes ADR-005) y ADR-009 (Bridges Layer compat multi-framework, foundational). Tag index actualizado (`pivot`, `architecture`, `compat`, `bridges`). ADR-005 marcado superseded. |
 | 1.2 | 2026-05-02 | Founder + Cascade | **+1 ADR** cerrando Sprint 0: ADR-010 (hybrid `admirals_audit_log` + `admirals_event_log` — resuelve inconsistencia SSoT §03 ↔ §04 firmada Oleada 0). Tag index actualizado (`db`, `audit`, `ssot_consistency`). Tracked acción S1 en SPRINT_RETRO §4.3 para añadir DDL canónico en `03_db_schema.md`. |
 | 1.3 | 2026-05-03 | Founder (executive decision) + Cascade (architect, risks documented) | **+1 ADR foundational + risk_accepted**: ADR-011 strategic identity pivot Admirals → SONAR (radical rebrand + aesthetic overhaul, naval Almirantazgo → submarino nuclear / abyssal exploration). Founder explicit override of architect risk concerns documented per workspace red-flags protocol. 7 risks accepted. ~30 docs invalidados, ~200 code call sites refactor pendiente, 6 DB tables migration pendiente, git tags fossils. Tags `identity`, `branding`, `aesthetic`, `ssot_invalidation`, `risk_accepted` añadidos. **`pivot` tag now ADR-008 + ADR-011**. |
+| 1.4 | 2026-05-03 | Founder + Cascade | **+1 ADR** refinement post-Phase 5 light: ADR-012 (SONAR identity refinement — abstract metaphor + hybrid theme + neutral voice, **amends ADR-011** no supersede). Founder evaluation post-Bible v1.3 + briefs detectó 3 desviaciones interpretativas (metaphórica literal-militar excesiva, dark-extremo 60% canvas, voz arquetipo capitán submarino). 4 decisiones founder D1-D4 + 4 risks accepted documented. Tag index extended (`refinement`, `amendment`). |
 
 ---
 
@@ -1015,6 +1134,7 @@ Each phase reversible until commit + push:
 | **ADR-009** | Bridges Layer: abstracción compat multi-framework + custom scripts | ✅ accepted | architecture, compat, foundational, bridges |
 | **ADR-010** | Hybrid `admirals_audit_log` + `admirals_event_log` (resuelve inconsistencia SSoT §03 ↔ §04) | ✅ accepted | architecture, db, audit, ssot_consistency, foundational |
 | **ADR-011** | Strategic Identity Pivot: Admirals → SONAR (radical rebrand + aesthetic overhaul, naval → nuclear submarine) | ✅ accepted (founder override + risks documented) | identity, branding, pivot, foundational, aesthetic, ssot_invalidation, risk_accepted |
+| **ADR-012** | SONAR identity refinement: abstract metaphor + hybrid theme + neutral voice (amends ADR-011) | ✅ accepted | identity, branding, aesthetic, refinement, amendment, ssot_invalidation |
 
 ---
 
@@ -1025,7 +1145,7 @@ El **Decision Log** es la memoria institucional de Admirals:
 - **Formato ADR estándar** con contexto + decisión + alternativas + consecuencias + impact + re-evaluation trigger.
 - **Lifecycle:** proposed → accepted → deprecated / superseded.
 - **Inmutables** tras accepted — cambios = nuevo ADR con superseded link.
-- **11 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**, **🚨 strategic identity pivot Admirals → SONAR (ADR-011, founder override + risks documented)**.
+- **12 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**, **🚨 strategic identity pivot Admirals → SONAR (ADR-011, founder override + risks documented)**, **🔄 SONAR identity refinement abstract+hybrid+neutral (ADR-012, amends ADR-011)**.
 - **Protocol claro** para añadir nuevos + anti-patterns.
 - **Tag index** facilita búsqueda por tema.
 
@@ -1035,4 +1155,4 @@ El **Decision Log** es la memoria institucional de Admirals:
 
 *"Decisiones sin registro son decisiones perdidas. El log es memoria permanente."*
 
-**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.3**
+**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.4**
