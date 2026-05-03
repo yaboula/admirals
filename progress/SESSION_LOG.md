@@ -1069,3 +1069,62 @@ Post-Bible, founder expressó sentirse perdido respecto al avance pivot. Archite
 > **Founder mood quote (institutional memory):** *"vamoooooooooooooos , estoy muy felis esto es una locura wooooooow seguimooooooos"* — 2026-05-03 mid-session post-r2.
 
 ---
+
+### S1.6 — Phase 4.5 v2 briefs + BOOTSTRAP v1.5 + art_direction scaffold-r7 surgical (C+B combo)
+
+- **Fecha:** 2026-05-03
+- **Duración:** ~4h estimado (founder total sesión combinada S1.4+S1.5+S1.6 ~10-11h mismo día).
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6).
+- **Sprint:** S1 (pivot phase post-sprint-1-complete) — no-sprint doc work continuation.
+- **Perfil:** 🎨 Design + 📝 Docs.
+- **Modelo:** Sonnet 4.6.
+- **Goal:** Ejecutar C+B combo post-ADR-012: (C) BOOTSTRAP v1.4 → v1.5 surgical rewrite pivot-aware + (B) art_direction v2.0-scaffold-r6 NOTICE → v2.0-scaffold-r7 surgical full inline §1-§20 cleanup. Plus Phase 4.5 v2 briefs clean (5/5 delivered).
+- **Status:** ✅ Done (C+B combo completo, 3 commits pushed `5838a79` + `a879c45` + `611a4f9`).
+
+### Cambios
+
+- **Created:**
+  - `docs/art/briefs/README.md` (index 5 briefs v2 + v1 discarded notes).
+  - `docs/art/briefs/01_brief_logo.md` v2 (~302 líneas — 5 candidatos abstract preliminares post-ADR-012, NO S-onda concéntrica literal).
+  - `docs/art/briefs/02_brief_icons.md` v2 (~360 líneas — 3 conservados + 5 abstract nuevos `descent-layers`/`signal-clarity`/`depth-grid`/`observation-field`/`lineage-trace`).
+  - `docs/art/briefs/03_brief_sound.md` v1 (~340 líneas — 5 SFX canonical `signal_emerge`/`depth_press`/`layer_dive`/`console_tap`/`panel_open`).
+  - `docs/art/briefs/04_brief_motion.md` v1 (~379 líneas — 12 tokens + 5 signature animations `logo_descent_reveal`/`layer_reveal`/`depth_drill_down`/`signal_emerge_pulse`/`bioluminescence_breathe`).
+  - `docs/art/briefs/05_brief_marketing.md` v1 (~410 líneas — Tebex + trailer 60/30/15s + moodboard + social assets neutral voice).
+  - `progress/PRE_S2_CHECKLIST.md` v1.0 (parte obligatorios pre-S2: 5 hard blockers B1-B5 + 3 decisiones founder D1-D3 + 5 soft-opcionales S1-S5 + orden ejecución + ETA ~12-18h founder time).
+- **Modified:**
+  - `docs/agents/00_BOOTSTRAP.md` v1.4 → v1.5 (title rebrand + §1 header pivot-aware + §2 project status ADR-011/012 phases + §3 reading order ampliado ~75→110min con ADR-011+ADR-012+NOTICE+Bible v1.4 obligatorios + §4.1 SSoT jerarquía 18-row + §5.5 NEW 8-section SONAR Identity hard rules + §5.4.7 NEW anti-pattern re-confundir metáfora + §13 TL;DR rewrite).
+  - `docs/art/01_art_direction.md` v2.0-scaffold-r6 → v2.0-scaffold-r7 (surgical full inline §1-§20 cleanup post-ADR-012: §0.1 tesis + §1.2 anti-refs 4 NEW rows + §1.3 competitors SONAR row + §2 metáfora central full rewrite + §3.1 tagline Production-grade + §3.2 voz de marca + §3.3 logo NO-LOCKED 5 candidatos + §3.4 paleta ratios hybrid 30-40/30-40/10-15/10/<5 + §4.3 type rules + §7.1-§7.2 sound filosofía + 5 SFX descriptions canonical + §15 glossary Bridge re-interpretado + Silent service/Hatch/Periscope/Porthole deprecated + §15.G/H mappings + §16 motion easing curves rebrand abstract + §19.5 shader anti-pattern + footer r7 + tagline + FIN).
+  - `progress/SESSION_LOG.md` (entry S1.6 appended — esta misma).
+- **Deleted:** ninguno (briefs v1 ya deleted en S1.5).
+
+### Decisiones tomadas
+
+- **Phase 4.5 v2 ≠ Phase 4 surgical:** se ejecutaron ambas en S1.6 (5 briefs v2 + full §1-§20 inline cleanup) — founder green-light C+B combo.
+- **NOTICE r6 preserved top-level a pesar del surgical r7:** NOTICE sigue siendo canonical vigente, r7 NO la reemplaza sino que pone contenido inline también alineado. Belt-and-suspenders discipline.
+- **Changelog r6 corruption fix contained in-session:** PowerShell bulk-replace afectó tabla de mapping + changelog r6 text; restoración manual ejecutada antes commit — per workspace rule "append-only retroactive edits" justificable porque error mismo-session pre-commit (no se alteró entry ya commited).
+
+### Issues pendientes
+
+- 🔴 **Phase 6 mass-purge operational docs** — `02_admirals_tablet.md` (más crítico), `02_events_catalog.md`, `03_db_schema.md`, `04_api_contracts.md`, `05_state_machines.md`, `06_fivem_standards.md`, `07_bridges_compatibility.md`, `01_roadmap.md` v1.4 → v1.5. Ver `PRE_S2_CHECKLIST.md` §B1.
+- 🔴 **SPRINT_PLAN_S2.md no existe** — planning session dedicada pendiente. Ver §B2.
+- 🔴 **Decisiones founder pendientes:** D1 scope S2 (UI-heavy vs tech-balanced) + D2 creative outsourcing SÍ/NO + D3 namespace migration timing. Ver `PRE_S2_CHECKLIST.md` §D1-D3.
+- 🟡 **Smoke regression `admirals_bank`** pendiente ejecutar pre-S2. Ver §B4.
+- 🟡 **Tag `sonar-identity-canonical`** pendiente sobre `611a4f9`. Ver §B5.
+- 🟢 **Phase 8+9 code/DB migration** — ejecución depende D3.
+- 🟢 **Creative delivery** (logo SVG + icons set + sounds + motion + marketing) — ejecución depende D2. Briefs v2 ya firmables.
+
+### Handoff próxima sesión (S1.7 o S2.0)
+
+- **Modelo recomendado:** si S1.7 = Sonnet 4.6 (Phase 6 surgical doc-por-doc, velocity); si S2.0 planning = Opus 4.7 o Gemini 3.1 Pro (density analítica).
+- **Goal:** (a) S1.7 Phase 6 surgical `02_admirals_tablet.md` → `02_sonar_tablet.md` + `01_roadmap.md` v1.5. OR (b) S1.7 decisiones founder D1+D2+D3 + tag + smoke regression. OR (c) S2.0 planning (solo si B1 done).
+- **Pre-requisitos LECTURA OBLIGATORIA:** `progress/PRE_S2_CHECKLIST.md` v1.0 (este doc nuevo — **LEER PRIMERO**) + `docs/agents/00_BOOTSTRAP.md` v1.5 + ADR-011 + ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 NOTICE r6 + Bible v1.4 §1 + SESSION_LOG S1.4+S1.5+S1.6 entries.
+- **Files in scope:** depende goal (ver PRE_S2_CHECKLIST orden ejecución).
+- **Notas especiales:** **PRE_S2_CHECKLIST.md = SSoT operacional pre-S2** — cualquier drift de los 5 hard blockers bloquea S2 kickoff legítimo. **Memoria SONAR Identity r2 debe confirmarse al boot** — si retrieval muestra r1, force-update. **Briefs v1 delete confirmado, briefs v2 = única SSoT creative**. **No leer `02_admirals_tablet.md` viejo como SSoT** — está pre-pivot, confunde.
+
+### Files in scope respetados
+
+✅ Scope strict: `docs/art/briefs/` (6 creates) + `docs/agents/00_BOOTSTRAP.md` (1 mod) + `docs/art/01_art_direction.md` (1 mod) + `progress/SESSION_LOG.md` (1 append) + `progress/PRE_S2_CHECKLIST.md` (1 create). **NO tocó code, NO tocó DB, NO tocó `.windsurf/*`, NO tocó otros docs firmados operacionales** (Phase 6 defer explícito).
+
+> **Founder guidance institutional:** *"DEJAMOS EL DESIGN TRABAJANDO Y SEGUIMOS"* (repetido 3× — mantra sesión C+B combo). *"ok perfecto y deja un parte de obligatorios qeu tengo que tener antes de empezar s2"* (cierre S1.6 — request directo parte pre-S2).
+
+---
