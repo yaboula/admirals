@@ -977,6 +977,236 @@ Founder hizo 4 decisiones explícitas en sync 2026-05-03 ~07:00 UTC+02 vía 4 as
 
 ---
 
+## ADR-013 — Namespace migration execution Phase 8+9 — rename `admirals_*` → `sonar_*` en código + DB ANTES de Sprint 2
+
+- **Fecha:** 2026-05-04
+- **Autor:** Founder (executive decision D3 per `progress/PRE_S2_CHECKLIST.md` v1.3) + Cascade (architect, risk analysis + execution planning)
+- **Estado:** ✅ accepted
+- **Tags:** identity, namespace, migration, code, db, execution_plan, foundational
+- **Relación:** **implements** ADR-011 §4 Phase 8 (code refactor) + Phase 9 (DB migration 009). Append-only inmutable per ADR-007.
+
+### Contexto
+
+ADR-011 aprobó pivot Admirals → SONAR con 12-phase execution plan. Code namespace `admirals_bridges`/`admirals_bank`/`admirals_core` + tablas SQL `admirals_*` + eventos `admirals:*` fueron marcados como legacy preservable hasta **Phase 8 code refactor + Phase 9 DB migration 009** per ADR-011 §5.5.8 excepciones permitidas. Decisión timing quedó explícitamente **pendiente founder** en `PRE_S2_CHECKLIST.md` §D3 (3 opciones: A=ahora, B=defer Oleada 1 close, C=híbrido parcial).
+
+Post-S1.8 briefs v2 delivered + BOOTSTRAP v1.5 firmed + `02_sonar_tablet.md` v1.2 canonical post-pivot + `01_roadmap.md` v1.5 post-pivot (S1.9), las operational docs t\u00e9cnicas pending B1 Phase 6 purge (`02_events_catalog.md`, `03_db_schema.md`, `04_api_contracts.md`, `05_state_machines.md`) requieren decisión D3 para documentar naming canonical antes de B2 SPRINT_PLAN_S2 redacción.
+
+Founder decisión sync 2026-05-04 ~00:48 UTC+02: **D3 = Opción A Phase 8+9 AHORA antes S2** vía ask_user_question estructurado post-S1.9 (4 opciones presentadas: A=ahora, B=defer Oleada 1 close, C=híbrido parcial, B+=defer con schedule firmado).
+
+### Decisión
+
+**Ejecutar Phase 8 (code refactor) + Phase 9 (DB migration 009) ANTES de Sprint 2 arranque.** Code namespace + DB tables + events prefixes se alinean con brand SONAR canonical desde S2+. Docs 2-5 técnicos documentan naming canonical `sonar_*` como target state + migration execution referenciada.
+
+#### Scope Phase 8 — Code refactor
+
+- **Resources folder rename (git mv):**
+  - `resources/admirals_bridges/` → `resources/sonar_bridges/`
+  - `resources/admirals_bank/` → `resources/sonar_bank/`
+  - `resources/admirals_core/` → `resources/sonar_core/`
+- **Internal refs update per resource:**
+  - `fxmanifest.lua`: name + description + exports declarations.
+  - `config.lua`: namespace vars + exports references.
+  - `server/*.lua` + `client/*.lua` + `lib/*.lua`: `exports['admirals_*']` → `exports['sonar_*']` call sites.
+  - Event names `admirals:*` emit + handler attachments → `sonar:*`.
+  - `scripts/*.lua` smoke utilities: resource name references updated.
+- **fxmanifest load order preserved:** dependencies renamed consistently.
+- **server.cfg.example:** `ensure admirals_*` → `ensure sonar_*`.
+- **scripts/smoke_test_s*.md:** smoke manuals updated con resource names canonical + commands nuevos.
+
+#### Scope Phase 9 — DB Migration 009
+
+- **Nueva migration `009_rename_admirals_to_sonar.sql`:**
+  - `RENAME TABLE admirals_accounts TO sonar_accounts`
+  - `RENAME TABLE admirals_audit_log TO sonar_audit_log`
+  - `RENAME TABLE admirals_bridge_idempotency TO sonar_bridge_idempotency`
+  - `RENAME TABLE admirals_bank_accounts TO sonar_bank_accounts`
+  - `RENAME TABLE admirals_bank_movements TO sonar_bank_movements`
+  - `RENAME TABLE admirals_bank_escrows TO sonar_bank_escrows`
+  - Foreign key constraints + index names bumped coherentemente.
+  - Rollback script documented: `DOWN` statement for emergency revert.
+- **Checksum SHA-256 calculated + registered en `admirals_schema_versions` (rename table included in same migration last).** Migration idempotente verified.
+- **Audit trail preserved:** movements + audit_log data retained, sólo tablas renamed. Zero data loss.
+
+#### Scope execution — orden operacional
+
+1. **This session (docs-only safe):** ADR-013 (este) + ADR-015 (D1) firm + docs 2-7 rewrite documentando naming canonical + PRE_S2_CHECKLIST update + SESSION_LOG S1.9 EXTENDED. Code + DB NO se tocan. Commit docs-only push safe.
+2. **Next session founder-available:** code refactor execute + migration 009 + smoke regression local server founder. Branch separado `phase-8-9-sonar-rename` o main con gate smoke.
+3. **Post-smoke verify:** 30/30 smoke cumulative pasa → merge main + tag `phase-8-9-complete` + workspace folder migration `d:\theBigProject` → `d:\sonar` (Phase 11 opcional founder decision).
+4. **Pre-S2 gate:** Phase 10 smoke regression green + BOOTSTRAP v1.5 → v1.6 + B2 SPRINT_PLAN_S2 redactable.
+
+#### Schedule tácito
+
+- **Phase 8 + 9 execution session:** next AI session (~2026-05-04 o 05) con founder server-local disponible.
+- **Phase 10 smoke regression:** mismo session o session + 1 (manual founder ejecución 30-60min).
+- **B2 SPRINT_PLAN_S2 planning:** post-Phase 10 green (~session + 2).
+- **S2 arranque estimado:** ~2-3 sesiones post-S1.9 ≈ 1-2 días calendario depending founder availability.
+
+### Alternativas consideradas
+
+- **B — Phase 8+9 DEFERIDAS hasta Oleada 1 close (big-bang al final):** rechazada por founder. Razón: docs 2-5 técnicos tendrían que documentar legacy `admirals_*` con NOTICE "preserved por compat hasta Phase 8", creando doble lectura molesta durante ~6 sprints (S2-S9 ~4-6 meses). Brand inconsistency prolongada. Valor migración incremental inferior a cost lectura constante "pero si es SONAR why admirals_bank?".
+- **C — Phase 8 parcial SÍ + Phase 9 defer (híbrido):** rechazada. Razón: mixed state (resources folder `sonar_*` + DB tables `admirals_*`) es MÁS confuso, no menos. Complejidad documentación dual + risk naming drift (devs olvidan que tabla es legacy). Bird-in-hand vs 2-in-bush.
+- **B+ — DEFERIDAS con schedule firmado:** rechazada. Mismo problema que B + adds bureaucratic overhead sin beneficio real. Si decision is "eventually", mejor ahora antes de que código acumule más call sites.
+- **A — Phase 8+9 AHORA (elegida):** founder explicit green-light. Cost: ~3 sessions extra (code + DB + smoke) antes S2. Benefit: brand alignment código + DB + docs desde S2 launch. ROI alto porque S2+ es donde mayoría del código se escribirá.
+
+### Consecuencias
+
+#### Positivas
+- **Brand alignment completo desde S2:** código + DB + docs + UI + identity memoria = coherente SONAR. Cero lectura dual.
+- **Docs 2-5 técnicos simples:** documentan solo naming canonical `sonar_*`. No necesitan NOTICE dual o explicaciones legacy. Simplifica rewrite Phase 6 mass-purge.
+- **Sprint 2+ dev velocity preservada:** nuevos resources S2 (`sonar_tablet`, `sonar_companies` eventual) alineados desde día 1. Cero namespace drift.
+- **Smoke regression temprana catches issues ahora:** si rename rompe algo en `admirals_bank` v0.4.0, detect post-S1 cuando state es conocido + FSM testing fresh, no después de 6 sprints de feature development layered.
+- **Tag fossils preserved:** `v0.0.0`, `v0.1.0`, `sprint-1-complete` siguen apuntando a commits Admirals heritage. Historia inmutable + auditable.
+
+#### Negativas
+- **~3 sessions heavy Sonnet ~6-10h code + DB + smoke** antes de poder arrancar S2. Schedule S2 arranque slippage ~2-3 días calendario post-S1.9.
+- **Risk migration 009 FK violations / checksum mismatches / rename ambiguity:** mitigable con dry-run test local + rollback script. Founder debe boot local server post-refactor antes push main.
+- **Resource name changes afectan cualquier external scripts custom del founder** (si existen). Mitigación: founder inventario pre-refactor + comunicar a beta testers si aplica.
+- **Memoria SONAR Identity r2 OK** — ya documenta naming canonical. Sin update required.
+
+#### Neutrales
+- **Historic Sprint 0+1 entries inmutables** (ADR-008/009/010 + tags + SESSION_LOG + commits `v0.0.0`/`v0.1.0`/`sprint-1-complete`): preservados heritage per ADR-011 §5.5.8. Refs `admirals_*` en esos contextos = correct documentation.
+- **Archive folder `docs/_archive/`:** sin cambios.
+
+### Risks accepted by founder (documented per workspace red-flags protocol)
+
+- 🟡 **R1 — Smoke regression failure catches post-refactor:** posible 1-3 bugs namespace drift (grep miss alguna ref hardcoded). Mitigación: grep exhaustivo pre-commit + dry-run boot server antes push + rollback script migration 009.
+- 🟡 **R2 — Founder local server availability:** smoke regression requires founder time 30-60min. Si not available, delay S2 further. Mitigación: execute Phase 8+9 en branch separado (`phase-8-9-sonar-rename`), founder smoke cuando disponible, merge main solo post-green.
+- 🟢 **R3 — Tag `sprint-1-complete` stays pointing admirals_bank v0.4.0 commit:** intencional preservation heritage. Zero mitigation needed.
+- 🟢 **R4 — Beta testers / external consumers broken refs:** solo aplicable si founder ha compartido server con testers pre-S2. Pre-pivot actualmente solo-dev = low risk. Mitigación: comunicación explicit si aplica.
+
+### Impact
+
+#### Docs (esta sesión — docs-only safe)
+- ✅ `docs/planning/02_decision_log.md` — ADR-013 (este) + ADR-015 + §5.1 tag index extension + §6.2 v1.5 + §6.3 changelog + §7 TL;DR rows.
+- ✅ `docs/technical/02_events_catalog.md` — rewrite events canonical `sonar:*` + NOTICE execution Phase 8 schedule.
+- ✅ `docs/technical/03_db_schema.md` — rewrite tables canonical `sonar_*` + migration 009 schedule + DDL target state.
+- ✅ `docs/technical/04_api_contracts.md` — rewrite callbacks/exports canonical + C003 DEFERRED S3 per ADR-015 D1=B.
+- ✅ `docs/technical/05_state_machines.md` — rewrite FSM refs canonical.
+- ✅ `docs/technical/06_fivem_standards.md` — light refresh naming canonical context.
+- ✅ `docs/technical/07_bridges_compatibility.md` — light refresh SONAR rebrand + ADR-011/013 refs + canonical naming.
+- ✅ `progress/PRE_S2_CHECKLIST.md` v1.4 → v1.5 — D1/D3 resolved + B1 8/8 status + Phase 8+9 schedule.
+- ✅ `progress/SESSION_LOG.md` — S1.9 EXTENDED entry.
+
+#### Docs (próxima sesión post-refactor)
+- 🔴 `docs/agents/00_BOOTSTRAP.md` v1.5 → v1.6 — naming canonical confirmed en código real + ejemplos commits `sonar_*`.
+- 🔴 `progress/SPRINT_RETRO_S1.md` — append "Phase 8+9 execution retrospective" sub-section.
+
+#### Código (próxima sesión founder-available)
+- 🔴 `resources/admirals_bridges/` → `resources/sonar_bridges/` + internal refs.
+- 🔴 `resources/admirals_bank/` → `resources/sonar_bank/` + internal refs.
+- 🔴 `resources/admirals_core/` → `resources/sonar_core/` + internal refs.
+- 🔴 `resources/admirals_core/migrations/009_rename_admirals_to_sonar.sql` NEW (creada en new resource folder `resources/sonar_core/migrations/`).
+- 🔴 `server.cfg.example` — ensure directives updated.
+- 🔴 `scripts/smoke_test_s*.md` — manuals updated canonical names.
+
+#### Memoria persistente AI
+- 🟢 `SONAR Identity Direction` memoria r2 — sin update required (ya documentaba naming canonical target).
+
+### Re-evaluation trigger
+
+- **Phase 10 smoke regression post-refactor:** si falla smoke 30/30, ADR-014 (hotfix path) para amendar execution plan (rollback parcial o fix-forward).
+- **3 meses post-S2 launch:** measure si namespace alignment facilitó onboarding nuevos devs/AI agents. Si zero beneficio detectable, ADR retroactive note.
+
+---
+
+## ADR-014 — RESERVADO (placeholder para hotfix path si smoke regression Phase 10 falla)
+
+- **Estado:** 🔴 proposed (no escrito todavía)
+- **Trigger:** smoke regression post-Phase 8+9 execution falla 1+ pasos.
+- **Scope tentativo:** rollback script migration 009 execute + revert resources rename + NOTICE "Phase 8+9 deferred per hotfix" + schedule re-attempt.
+
+---
+
+## ADR-015 — Sprint 2 scope UI-heavy pivot (amends ADR-011 §4 Phase 12)
+
+- **Fecha:** 2026-05-04
+- **Autor:** Founder (executive decision D1 per `progress/PRE_S2_CHECKLIST.md` v1.3) + Cascade (architect, impact analysis)
+- **Estado:** ✅ accepted
+- **Tags:** scope, sprint, mvp, ui, sonar, amendment
+- **Relación:** **amends** ADR-011 §4 Phase 12 (Sprint 2 arranque) + `docs/planning/01_roadmap.md` v1.5 §4.2 Sprint 2 goals propuestos. Append-only inmutable per ADR-007.
+
+### Contexto
+
+`docs/planning/01_roadmap.md` v1.5 §4.2 Sprint 2 rewrite (S1.9) documentó 3 scope options founder D1: A=tech-balanced (memoria original pre-pivot), B=UI-heavy post-pivot (maximiza valor percibido SONAR identity), C=híbrido. Memoria founder pre-pivot había expresado: *"UI es ~50-60% del valor percibido pero S2 también incluye T2 adapters ESX/QBCore, admirals_companies DDL, C003 getTransactions. Planning S2 balanceará scope, NO todo-UI."*
+
+Post-ADR-012 refinement + 5 briefs v2 delivered + logo v2 working canonical + sonar_tablet v1.2 canonical, founder re-evaluó scope en contexto nuevo: **identidad SONAR es ship brand-defining debut S2**. Primera experiencia player con SONAR Tablet + SONAR Bank app + motion/sound/visual signature → crítico para brand perception. T2 adapters + companies DDL + C003 son tech-infrastructure que pueden llegar S3 sin perder MVP playability (empresas pueden funcionar con adapter T1 QBox puro + C001/C002/C004/C005 shipped S1).
+
+Founder decisión sync 2026-05-04 ~00:55 UTC+02: **D1 = Opción B UI-heavy** vía ask_user_question estructurado post-ADR-013.
+
+### Decisión
+
+**Sprint 2 scope S2 re-ajusta a UI-heavy post-pivot — maximizar valor percibido identidad SONAR como debut visual.** Defer tech infrastructure (T2 adapters ESX/QBCore, `sonar_companies` DDL, callback C003 `getTransactions`) a Sprint 3. S2 duración estimada bumped 3 → 4 semanas.
+
+#### Scope S2 UI-heavy (detallado)
+
+- **SONAR Tablet shell refinado (no minimal):**
+  - NUI React + TailwindCSS + shadcn/ui base per `03_founder_playbook.md` stack default.
+  - SonarOS boot sequence canonical (splash + lock + home + app states) per `02_sonar_tablet.md` v1.2 §3 + §4.
+  - Motion signature canonical per `art/briefs/04_brief_motion.md` v1 (12 motion tokens, spring physics, depth descent patterns).
+  - Sound signature canonical 5 SFX (`signal_emerge`/`depth_press`/`layer_dive`/`console_tap`/`panel_open`) per ADR-012 §D3 + `art/briefs/03_brief_sound.md` v1.
+- **SONAR Bank app polished:**
+  - Balance + IBAN display con logo v2 integration (boot splash + Bank app header).
+  - Transactions list (consume C001/C002 shipped S1 + enriched visual presentation).
+  - Transfer UI (consume C004 pre-transfer validation + C005 audit log).
+  - Paleta hybrid Tier A/B/C aplicada per ADR-012 §D2 (~30-40% dark + ~30-40% white surfaces).
+  - Voz neutral premium-tech en copy UI per ADR-012 §D3.
+- **Map app (basic):**
+  - GPS ubicación player real-time.
+  - Markers admin-defined (POIs).
+  - Minimap integration base (zoom + pan).
+
+#### Scope S2 DEFERRED a S3 (justificación)
+
+- **T2 adapters ESX/QBCore:** ocurre S3 como groundwork para expansion beta testing multi-framework. No-op para S2 single-framework QBox test.
+- **`sonar_companies` DDL:** Sprint 5 construye empresas fundación. S3 puede preparar DDL ahead-of-time.
+- **C003 `getTransactions`:** Bank app S2 puede funcionar con query directa DB shipped S1 (consumer pattern already proven).
+
+### Alternativas consideradas
+
+- **A — Tech-balanced (memoria original):** rechazada. Razón: S2 es UI debut SONAR. Dividir entre UI polish + T2 groundwork dilutes ambos. T2 sin UI sólida = invisible. UI sólida sin T2 = completo desde player POV.
+- **C — Híbrido:** rechazada. Razón: T2 read-only es tech infrastructure sin UI visible S2 = efort wasted vs S3 where T2 actually matters.
+- **B — UI-heavy (elegida):** founder explicit. S2 = SONAR brand debut. S3 = tech infrastructure expansion.
+
+### Consecuencias
+
+#### Positivas
+- **S2 ship brand-defining:** primera experiencia player con SONAR es polished + canonical + on-brand. Boot Tablet feels premium. Transfer completes con depth_press SFX. Lock screen con logo v2. UI matches 01_art_direction.md canonical.
+- **Identity coherence max:** todo ADR-012 D1/D2/D3 + briefs v2 aplicados en producto real S2. Meta-goal canonical identidad lock.
+- **Motion/sound debut integrado:** no defer a "polish pass later" que típicamente nunca llega.
+- **Docs 4 api_contracts simplified:** C003 marked DEFERRED S3, no rewrite detallado.
+
+#### Negativas
+- **Duración S2 bumped 3 → 4 semanas:** ship más lento. Mitigation: value-per-week mantenida (menos features por semana pero más polished).
+- **Empresas básicas Sprint 5 arrancan sin DDL pre-work:** Sprint 5 sesión dedicada DDL `sonar_companies`. Mitigación: S5 puede usar 1 día para DDL + 2 semanas features. Historial velocity S1 = 15× estimación → margin.
+- **T2 adapters beta testing defer a S3+:** si founder quiere abrir beta a tester ESX/QBCore antes S3, blocker. Mitigación: beta Oleada 1 está planned closed-beta post-S8 polish, plenty time.
+- **C003 getTransactions consumer pattern:** UI Bank app consume DB directly query — slight anti-pattern vs callback-only. Mitigación: temporal hasta C003 ships S3.
+
+#### Neutrales
+- Sprint 3 scope bumped con T2 + DDL + C003 groundwork. Sprint 3 original scope (Item físico + quality) preserved — solo additive.
+
+### Risks accepted by founder
+
+- 🟢 **R1 — S2 duration overrun:** 4 semanas vs 3 original = ~33% más tiempo. Mitigación: velocity history S1 15× suggest schedule reality-check favor founder.
+- 🟢 **R2 — T2 framework fragmentation perception:** if tester joins con ESX during S2 beta, broken. Mitigación: beta closed Oleada 1 close, no public S2.
+- 🟡 **R3 — UI polish rabbit hole:** UI work tiende a expand. Mitigación: done criteria explícitos `01_roadmap.md` v1.5 §4.2 Sprint 2 (8 bullets) actúan como scope fence.
+
+### Impact
+
+#### Docs (esta sesión)
+- ✅ `docs/planning/02_decision_log.md` — ADR-015 (este).
+- ✅ `progress/PRE_S2_CHECKLIST.md` — §D1 decisión registered, §B2 SPRINT_PLAN_S2 scope guidance updated.
+- ✅ `docs/technical/04_api_contracts.md` — C003 marked DEFERRED S3 en rewrite.
+
+#### Docs (próxima sesión)
+- 🟡 `progress/SPRINT_PLAN_S2.md` — créase con scope B + 4-semanas estim + done criteria `01_roadmap.md` v1.5 §4.2 canonical.
+
+### Re-evaluation trigger
+
+- **Sprint 2 week 2 checkpoint:** if motion/sound signature implementation slower than estimated, re-consider cut Map app.
+- **Post-S2 close retro:** measure actual scope velocity vs 4-week estim. Inform Sprint 3 planning.
+
+---
+
 ## 3. Cómo añadir nuevo ADR
 
 ### 3.1 Workflow
@@ -1063,21 +1293,32 @@ Founder hizo 4 decisiones explícitas en sync 2026-05-03 ~07:00 UTC+02 vía 4 as
 | `audit` | ADR-010 |
 | `ssot_consistency` | ADR-010 |
 | `foundational` | ADR-002, ADR-003, ADR-009, ADR-010, ADR-011 |
-| `identity` | ADR-011, ADR-012 |
+| `identity` | ADR-011, ADR-012, ADR-013 |
 | `branding` | ADR-011, ADR-012 |
 | `aesthetic` | ADR-011, ADR-012 |
 | `ssot_invalidation` | ADR-011, ADR-012 |
 | `risk_accepted` | ADR-011 |
 | `pivot` | ADR-008, ADR-011 |
 | `refinement` | ADR-012 |
-| `amendment` | ADR-012 |
+| `amendment` | ADR-012, ADR-015 |
+| `namespace` | ADR-013 |
+| `migration` | ADR-013 |
+| `code` | ADR-013 |
+| `db` | ADR-010, ADR-013 |
+| `execution_plan` | ADR-013 |
+| `foundational` | ADR-002, ADR-003, ADR-009, ADR-010, ADR-011, ADR-013 |
+| `scope` | ADR-005 (superseded), ADR-006, ADR-008, ADR-015 |
+| `sprint` | ADR-015 |
+| `mvp` | ADR-005 (superseded), ADR-008, ADR-015 |
+| `ui` | ADR-015 |
+| `sonar` | ADR-015 |
 
 ### 5.2 Por estado
 
 | Estado | ADRs |
 |---|---|
-| accepted | ADR-001 a ADR-004, ADR-006 a ADR-012 |
-| proposed | — |
+| accepted | ADR-001 a ADR-004, ADR-006 a ADR-013, ADR-015 |
+| proposed | ADR-014 (placeholder hotfix path, pending trigger) |
 | deprecated | — |
 | superseded | ADR-005 (por ADR-008) |
 
@@ -1102,10 +1343,10 @@ Founder hizo 4 decisiones explícitas en sync 2026-05-03 ~07:00 UTC+02 vía 4 as
 
 ### 6.2 Estado del documento
 
-- **Versión:** 1.4 (firmado — completo, 6 secciones, 12 ADRs).
-- **Próxima revisión:** al añadir ADR-013 (próxima decisión importante post-SONAR-refinement).
-- **Documento padre:** `planning/01_roadmap.md`.
-- **Documento hermano:** `agents/00_BOOTSTRAP.md`.
+- **Versión:** 1.5 (firmado — completo, 6 secciones, 14 ADRs + 1 placeholder).
+- **Próxima revisión:** al ejecutar ADR-013 Phase 8+9 + smoke regression (→ ADR-014 si falla, o v1.6 si success + ADR-016 próxima decisión).
+- **Documento padre:** `planning/01_roadmap.md` v1.5.
+- **Documento hermano:** `agents/00_BOOTSTRAP.md` v1.5.
 
 ### 6.3 Changelog
 
@@ -1116,6 +1357,7 @@ Founder hizo 4 decisiones explícitas en sync 2026-05-03 ~07:00 UTC+02 vía 4 as
 | 1.2 | 2026-05-02 | Founder + Cascade | **+1 ADR** cerrando Sprint 0: ADR-010 (hybrid `admirals_audit_log` + `admirals_event_log` — resuelve inconsistencia SSoT §03 ↔ §04 firmada Oleada 0). Tag index actualizado (`db`, `audit`, `ssot_consistency`). Tracked acción S1 en SPRINT_RETRO §4.3 para añadir DDL canónico en `03_db_schema.md`. |
 | 1.3 | 2026-05-03 | Founder (executive decision) + Cascade (architect, risks documented) | **+1 ADR foundational + risk_accepted**: ADR-011 strategic identity pivot Admirals → SONAR (radical rebrand + aesthetic overhaul, naval Almirantazgo → submarino nuclear / abyssal exploration). Founder explicit override of architect risk concerns documented per workspace red-flags protocol. 7 risks accepted. ~30 docs invalidados, ~200 code call sites refactor pendiente, 6 DB tables migration pendiente, git tags fossils. Tags `identity`, `branding`, `aesthetic`, `ssot_invalidation`, `risk_accepted` añadidos. **`pivot` tag now ADR-008 + ADR-011**. |
 | 1.4 | 2026-05-03 | Founder + Cascade | **+1 ADR** refinement post-Phase 5 light: ADR-012 (SONAR identity refinement — abstract metaphor + hybrid theme + neutral voice, **amends ADR-011** no supersede). Founder evaluation post-Bible v1.3 + briefs detectó 3 desviaciones interpretativas (metaphórica literal-militar excesiva, dark-extremo 60% canvas, voz arquetipo capitán submarino). 4 decisiones founder D1-D4 + 4 risks accepted documented. Tag index extended (`refinement`, `amendment`). |
+| 1.5 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **+2 ADRs firmed + 1 placeholder reserved** resolviendo decisiones D1 + D3 pending PRE_S2_CHECKLIST v1.4. ADR-013 (Namespace migration execution Phase 8+9 — rename `admirals_*` → `sonar_*` código + DB ANTES Sprint 2, **implements ADR-011 §4**). ADR-015 (Sprint 2 scope UI-heavy pivot — defer T2 adapters + `sonar_companies` DDL + C003 a S3, **amends ADR-011 §4 Phase 12**). ADR-014 placeholder reservado hotfix path smoke regression Phase 10 failure. Tag index extended (`namespace`, `migration`, `code`, `execution_plan`, `sprint`, `ui`, `sonar`). §5.2 estado bumped (ADR-014 proposed, ADR-013+015 accepted). §7 TL;DR 3 rows añadidas. Founder executive decisions via ask_user_question S1.9 EXTENDED post-S1.9 commit. |
 
 ---
 
@@ -1135,17 +1377,20 @@ Founder hizo 4 decisiones explícitas en sync 2026-05-03 ~07:00 UTC+02 vía 4 as
 | **ADR-010** | Hybrid `admirals_audit_log` + `admirals_event_log` (resuelve inconsistencia SSoT §03 ↔ §04) | ✅ accepted | architecture, db, audit, ssot_consistency, foundational |
 | **ADR-011** | Strategic Identity Pivot: Admirals → SONAR (radical rebrand + aesthetic overhaul, naval → nuclear submarine) | ✅ accepted (founder override + risks documented) | identity, branding, pivot, foundational, aesthetic, ssot_invalidation, risk_accepted |
 | **ADR-012** | SONAR identity refinement: abstract metaphor + hybrid theme + neutral voice (amends ADR-011) | ✅ accepted | identity, branding, aesthetic, refinement, amendment, ssot_invalidation |
+| **ADR-013** | Namespace migration execution Phase 8+9 — rename `admirals_*` → `sonar_*` en código + DB ANTES Sprint 2 (implements ADR-011 §4) | ✅ accepted | identity, namespace, migration, code, db, execution_plan, foundational |
+| **ADR-014** | Hotfix path si smoke regression Phase 10 falla (placeholder reservado, no-escrito) | 🔴 proposed (pending trigger) | hotfix, contingency, placeholder |
+| **ADR-015** | Sprint 2 scope UI-heavy pivot — defer T2 adapters + DDL + C003 a S3 (amends ADR-011 §4 Phase 12) | ✅ accepted | scope, sprint, mvp, ui, sonar, amendment |
 
 ---
 
 ## Resumen ejecutivo (cierre)
 
-El **Decision Log** es la memoria institucional de Admirals:
+El **Decision Log** es la memoria institucional de SONAR (ex-Admirals):
 
 - **Formato ADR estándar** con contexto + decisión + alternativas + consecuencias + impact + re-evaluation trigger.
 - **Lifecycle:** proposed → accepted → deprecated / superseded.
 - **Inmutables** tras accepted — cambios = nuevo ADR con superseded link.
-- **12 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**, **🚨 strategic identity pivot Admirals → SONAR (ADR-011, founder override + risks documented)**, **🔄 SONAR identity refinement abstract+hybrid+neutral (ADR-012, amends ADR-011)**.
+- **14 ADRs accepted + 1 reservado placeholder** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**, **🚨 strategic identity pivot Admirals → SONAR (ADR-011, founder override + risks documented)**, **🔄 SONAR identity refinement abstract+hybrid+neutral (ADR-012, amends ADR-011)**, **🔧 namespace migration execution Phase 8+9 (ADR-013, implements ADR-011 §4)**, **🎨 Sprint 2 scope UI-heavy pivot (ADR-015, amends ADR-011 §4 Phase 12)**, ADR-014 reservado placeholder hotfix smoke regression.
 - **Protocol claro** para añadir nuevos + anti-patterns.
 - **Tag index** facilita búsqueda por tema.
 
@@ -1155,4 +1400,4 @@ El **Decision Log** es la memoria institucional de Admirals:
 
 *"Decisiones sin registro son decisiones perdidas. El log es memoria permanente."*
 
-**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.4**
+**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.5**

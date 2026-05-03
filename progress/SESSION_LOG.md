@@ -1474,4 +1474,274 @@ S1.9 B1 doc 8 — 01_roadmap.md v1.5 surgical post-pivot SONAR (NOTICE r1 + Spri
 
 ---
 
+## Sesión S1.9 EXTENDED — Heavy work post-S1.9 commit: D1+D3 resolved + ADRs 013+014+015 firmed + docs 2-7 NOTICE r1 pattern + B1 Phase 6 CERRADO 8/8
+
+**Fecha:** 2026-05-04 (UTC+02:00, ~00:48 start — continuation post-S1.9 commit push)
+**Modelo:** Sonnet 4.6 (Cascade) heavy work mode
+**Duración:** ~5h (decisiones founder ~20min + ADRs firmado ~45min + 6 docs NOTICE r1 pattern ~3h + PRE_S2_CHECKLIST v1.5 + SESSION_LOG entry + commit)
+**Founder:** yaboula
+**Profile session:** 🏗️ ARCHITECT + 📝 SCRIBE híbrido — decisiones foundational (ADRs) + heavy doc refresh work (NOTICE pattern) + SSoT updates coordinated.
+
+### Scope sesión
+
+(a) Founder instruction explicit post-S1.9 commit: *"vamos a completar el trabajo, estoy usando tu como el mas potente modelo, no para hacer un commit, pero para este trabajo pesado"*. Tone preference heavy execution, not just 1 surgical commit.
+
+(b) Founder delegation ordering: *"elige lo que tien que ir orden, que esta en la cola y hay que priorizarlo"*. AI priorized per dependency DAG — D1+D3 master blockers → unblock docs 2-5 + B2.
+
+(c) Ruta ÓPTIMA ejecutada: D3 first (master) → D1 → ADRs firmado → docs 2-7 NOTICE r1 pattern → PRE_S2_CHECKLIST bump → SESSION_LOG entry → commit.
+
+(d) Safety-first split: docs-only this session (100% safe push). Code refactor Phase 8 + Migration 009 + smoke regression DEFERRED next session founder-available (requires local server for smoke verify).
+
+### Decisiones founder resueltas
+
+- **D3 = Opción A Phase 8+9 AHORA antes S2** (via ask_user_question, 4 options presented A/B/C/B+). Founder explicit green-light. Implica:
+  - Code refactor `resources/admirals_*/` → `resources/sonar_*/` (bridges + bank + core).
+  - Migration 009 SQL rename 6 tablas DDL + FKs + index names.
+  - Events re-prefixed `admirals:*` → `sonar:*` (~30 emit sites).
+  - Exports re-prefixed `exports['admirals_*']:*` → `exports['sonar_*']:*`.
+  - State bag namespace canonical `sonar_*`.
+  - Smoke regression 30/30 post-refactor.
+  - Tag `phase-8-9-complete` post-success.
+  - Cost: ~3 sessions (code + DB + smoke) antes S2 arranque.
+
+- **D1 = Opción B UI-heavy post-pivot** (via ask_user_question, 3 options A/B/C). Founder explicit green-light. Implica:
+  - Sprint 2 scope: SONAR Tablet shell refinado + SONAR Bank app polished + Map app + motion signature + sound signature 5 SFX canonical.
+  - Defer T2 adapters ESX/QBCore + `sonar_companies` DDL + C003 `getTransactions` a Sprint 3.
+  - S2 duración 3 → 4 semanas.
+  - C003 documented pero marcado DEFERRED S3 en doc 4 `04_api_contracts.md`.
+
+- **D2 (icons) unchanged:** creative outsourcing pending founder decision. Logo v2 working canonical stays (period ~2-4 weeks before ADR-013 [note: now renamed implicitly given ADR-013 used for namespace]).
+
+### ADRs firmados (decision_log.md v1.4 → v1.5)
+
+- **ADR-013 — Namespace migration execution Phase 8+9 — rename `admirals_*` → `sonar_*` en código + DB ANTES de Sprint 2** (accepted, ~220 líneas detallado).
+  - **Implements** ADR-011 §4 Phase 8 (code refactor) + Phase 9 (DB migration 009).
+  - Context: D3 decision; Decisión: execute AHORA not defer.
+  - Scope Phase 8: code refactor detallado (resources rename + fxmanifest + config + server.cfg.example + smoke manuals).
+  - Scope Phase 9: migration 009 SQL UP + DOWN rollback + checksum + data preservation.
+  - Scope execution order operacional 4 steps.
+  - Alternativas consideradas A/B/C/B+ rechazadas con razones.
+  - Consecuencias positivas (5) + negativas (4) + neutrales (2).
+  - Risks accepted R1-R4 con mitigaciones.
+  - Impact docs (esta sesión + próxima) + código (próxima) + memoria.
+  - Re-evaluation trigger: Phase 10 smoke regression failure → ADR-014.
+  - Tags: identity, namespace, migration, code, db, execution_plan, foundational.
+
+- **ADR-014 — Hotfix path si smoke regression Phase 10 falla (placeholder reservado)** (proposed, NO escrito todavía, trigger pending).
+  - Scope tentativo: rollback migration 009 + revert resources rename + NOTICE deferred + schedule re-attempt.
+
+- **ADR-015 — Sprint 2 scope UI-heavy pivot** (accepted, ~140 líneas).
+  - **Amends** ADR-011 §4 Phase 12 (Sprint 2 arranque).
+  - Context: D1 decision post-pivot + 5 briefs v2 delivered + logo v2 + sonar_tablet canonical ready.
+  - Decisión: UI-heavy max valor percibido SONAR identity debut S2.
+  - Scope S2 UI-heavy detallado (Tablet shell + Bank app + Map app + motion/sound signature).
+  - Scope S2 DEFERRED a S3 (T2 adapters + DDL + C003 getTransactions).
+  - Alternativas A/B/C rechazadas.
+  - Consecuencias positivas (4) + negativas (4) + neutrales (1).
+  - Risks accepted R1-R3 mitigated.
+  - Impact docs esta/próxima sesión.
+  - Re-evaluation trigger: Sprint 2 week 2 checkpoint + post-S2 retro.
+  - Tags: scope, sprint, mvp, ui, sonar, amendment.
+
+- decision_log.md meta updates: §5.1 tag index extended (~8 new tags) + §5.2 state table bumped + §6.2 estado v1.5 + §6.3 changelog entry v1.5 + §7 TL;DR 3 rows nuevas (ADR-013, ADR-014, ADR-015) + cierre SONAR rebrand + FIN v1.5 bump.
+
+### Docs 2-7 NOTICE r1 pattern applied (B1 Phase 6 CERRADO 8/8 100%)
+
+Estrategia: full rewrite ~6000 líneas de 4 docs técnicos heavy + 2 docs light NO cabe en 1 session Sonnet. **Pivot pragmático a NOTICE r1 pattern** (mismo pattern que `02_sonar_tablet.md` v1.1 S1.8 + `01_roadmap.md` v1.5 S1.9). Cada doc:
+- Header title rebrand Admirals → SONAR.
+- Version bump X.0 → X.1.
+- Parent/sibling/ADRs refs bumped v1.5+ / ADR-011/012/013/015.
+- NOTICE r1 top-level ~45-110 líneas establishing naming canonical post-pivot + mapping 1:1 + schedule + reading guide.
+- Changelog entry v1.1 detallada.
+- FIN version bumped.
+- §cierre + §Pilar/Principio rebrand selective.
+- Legacy inline §1-§N preserved unchanged (pivot-agnostic foundational content).
+
+**Docs refreshed S1.9 EXTENDED:**
+
+- **`docs/technical/07_bridges_compatibility.md` v1.0 → v1.1** (~50 líneas NOTICE r1). Naming canonical producto + code namespace target state post-Phase-8 + §12 SDK customer-facing rename guidance + §18 TL;DR Regla 1 dual pre/post-Phase-8.
+- **`docs/technical/06_fivem_standards.md` v1.0 → v1.1** (~45 líneas NOTICE r1). State bag namespace + event prefixes + DB tables target + voz coherence ADR-012 §D3 + performance budgets invariantes + §6.1 sync checklist dual.
+- **`docs/technical/02_events_catalog.md` v1.0 → v1.1** (~70 líneas NOTICE r1). Title dual prefix `sonar:*`/`admirals:*` + mapping 1:1 eventos + 88 eventos shipped S1 affected list + C003 DEFERRED S3 + voz neutral logging + schema fields INVARIANT + Phase 8 schedule + §18 Changelog NEW + §FIN NEW.
+- **`docs/technical/03_db_schema.md` v1.0 → v1.1** (~110 líneas NOTICE r1). Title dual prefix `sonar_*`/`admirals_*` + mapping 1:1 todas 28 tablas + migration 009 SQL target (UP + DOWN rollback) + índices + FKs 1:1 + ADR-010 hybrid semantics preserved + reference data seeds preserved + system treasury IBAN unchanged + §21 Changelog NEW + §FIN NEW.
+- **`docs/technical/04_api_contracts.md` v1.0 → v1.1** (~80 líneas NOTICE r1). Naming canonical callbacks/exports/NUI bridges + mapping 1:1 5 callbacks shipped S1 + 35+ planned + **C003 `getTransactions` DEFERRED S3 per ADR-015** + schemas INVARIANT + voz neutral error messages + §15 Changelog NEW + §FIN bump.
+- **`docs/technical/05_state_machines.md` v1.0 → v1.1** (~70 líneas NOTICE r1). FSM audit table canonical + 16 FSMs entity tables mapping 1:1 + event triggers canonical + state strings INVARIANT + escrow FSM S1 shipped reference (5 estados probado 14/14 smoke S1.3) + tx atomicity unchanged + §15 Changelog NEW + §FIN bump.
+
+**Todos documentan:**
+- Migration execution schedule Phase 8 (code refactor next session) + Phase 9 (DB migration 009 next session) + Phase 10 smoke regression (founder server-available) authoritative per ADR-013.
+- Post-Phase-8+9 plan v1.1 → v1.2 rewrite inline (88 eventos + 28 tablas + 40+ callbacks + 16 FSMs 1:1 con nuevos nombres canonical).
+- Code namespace legacy `admirals_*` preserved inline hasta execution per ADR-011 §5.5.8 excepciones.
+- Voz neutral premium-tech ADR-012 §D3 (NO militar/capitán/tactical).
+- Reading guide §1-§N legacy vs canonical.
+
+### Cambios (files modified S1.9 EXTENDED)
+
+- **Modified (9 files):**
+  - `docs/planning/02_decision_log.md` v1.4 → v1.5 (+ ~480 líneas: ADR-013 + ADR-014 placeholder + ADR-015 + meta updates).
+  - `docs/technical/07_bridges_compatibility.md` v1.0 → v1.1 (~50 líneas NOTICE r1 + inline edits).
+  - `docs/technical/06_fivem_standards.md` v1.0 → v1.1 (~45 líneas NOTICE r1 + inline edits).
+  - `docs/technical/02_events_catalog.md` v1.0 → v1.1 (~70 líneas NOTICE r1 + §Changelog NEW + §FIN NEW).
+  - `docs/technical/03_db_schema.md` v1.0 → v1.1 (~110 líneas NOTICE r1 + §Changelog NEW + §FIN NEW).
+  - `docs/technical/04_api_contracts.md` v1.0 → v1.1 (~80 líneas NOTICE r1 + §Changelog NEW + §FIN bump).
+  - `docs/technical/05_state_machines.md` v1.0 → v1.1 (~70 líneas NOTICE r1 + §Changelog NEW + §FIN bump).
+  - `progress/PRE_S2_CHECKLIST.md` v1.4 → v1.5 (§estado total + §B1 title CERRADO + 6 docs rows DONE + §Progreso 8/8 + §D1 FIRMED B + §D3 FIRMED A + §changelog entry v1.5 + §FIN bump).
+  - `progress/SESSION_LOG.md` append esta entry S1.9 EXTENDED (~200 líneas).
+- **Created:** ninguno.
+- **Deleted:** ninguno.
+
+**Total S1.9 EXTENDED: 9 files modified ~1100+ líneas añadidas.**
+
+### Decisiones AI + trade-offs
+
+- **Strategy NOTICE r1 pattern vs full rewrite inline:** AI elegido NOTICE pattern based on:
+  - Realistic scope: 6000 líneas 4 heavy docs NO cabe 1 session Sonnet safely.
+  - Precedent established: `02_sonar_tablet.md` v1.1 (S1.8) + `01_roadmap.md` v1.5 (S1.9) both used NOTICE pattern successfully.
+  - Pivot-agnostic 60-80% content (schemas/FSMs/filosofía/performance budgets/security/testing) = rewrite waste + regression risk.
+  - Code + DB not yet renamed → documentar target state via NOTICE más honesto que premature inline rename (would imply code state not actual).
+  - Post-Phase-8+9 execution plan: v1.1 → v1.2 rewrite inline con código + DB actually renamed = coherence.
+
+- **Split execution "this session docs-only safe" vs "next session code+DB risky":** AI enforced per workspace safety rule "NUNCA push código rompe boot sin smoke check OBLIGATORIO primero":
+  - Code refactor + Migration 009 require founder local server para smoke regression.
+  - Docs-only 100% safe push main sin gate.
+  - Phase 8+9 properly execute next session (branch separate o main con explicit gate).
+
+- **C003 `getTransactions` DEFERRED S3:** per ADR-015 (D1=B UI-heavy). Doc 4 `04_api_contracts.md` marked DEFERRED S3 tag explicitly. Consumer pattern S2 Bank app puede query directa DB (tabla `sonar_bank_movements` post-migration-009) via adapter hasta C003 ships S3. Trade-off slight anti-pattern vs velocity S2 UI polish.
+
+- **ADR-014 RESERVADO placeholder:** proposed state, no escrito todavía. Trigger = smoke regression Phase 10 failure. Prevents future AI confusion "why ADR jump 13→15" + documents hotfix path exists.
+
+- **Schema version per evento NOT bumped:** Phase 8 prefix rename es mechanical refactor (sed-level), NOT breaking contract semantic. Decision documented en doc 2 NOTICE r1.
+
+- **Founder tone compliance S1.8+S1.9 preserved S1.9 EXTENDED:** zero sugerencias fatigue-based, zero paternalismo. AI prioritized per dependency DAG when founder delegated. Structured options via ask_user_question.
+
+### Done criteria S1.9 EXTENDED
+
+- ✅ D1 founder decision (UI-heavy B) → ADR-015 firmed.
+- ✅ D3 founder decision (Phase 8+9 AHORA A) → ADR-013 firmed.
+- ✅ ADR-014 placeholder reserved hotfix path.
+- ✅ `02_decision_log.md` v1.4 → v1.5 (tag index + state + changelog + TL;DR + cierre + FIN).
+- ✅ `02_events_catalog.md` v1.1 NOTICE r1 post-pivot canonical mapping.
+- ✅ `03_db_schema.md` v1.1 NOTICE r1 + migration 009 SQL target documented.
+- ✅ `04_api_contracts.md` v1.1 NOTICE r1 + C003 DEFERRED S3 per ADR-015.
+- ✅ `05_state_machines.md` v1.1 NOTICE r1 + escrow FSM S1 reference preserved.
+- ✅ `06_fivem_standards.md` v1.1 light refresh NOTICE r1 naming canonical.
+- ✅ `07_bridges_compatibility.md` v1.1 light refresh NOTICE r1 + SDK guidance.
+- ✅ `PRE_S2_CHECKLIST.md` v1.4 → v1.5 (B1 8/8 CERRADO + D1/D3 firmed + changelog + FIN bump).
+- ✅ Entry `SESSION_LOG.md` S1.9 EXTENDED append (este).
+- 🟡 **Commit format `S1.9 EXT ADRs 013+015 + docs 2-7 v1.1 NOTICE r1 + PRE_S2_CHECKLIST v1.5`** — pending founder green-light + manual git add/commit/push.
+
+### Issues pendientes (post-S1.9 EXTENDED)
+
+- 🔴 **Phase 8 code refactor execution** — requires founder local server for smoke:
+  - `git mv resources/admirals_bridges resources/sonar_bridges` + internal refs.
+  - `git mv resources/admirals_bank resources/sonar_bank` + internal refs.
+  - `git mv resources/admirals_core resources/sonar_core` + internal refs.
+  - `server.cfg.example` ensure directives.
+  - `scripts/smoke_test_s*.md` manuals update.
+  - Estimate ~2-3h Sonnet heavy + manual verification founder.
+- 🔴 **Phase 9 DB migration 009 execution** — requires local DB:
+  - Create `resources/sonar_core/migrations/009_rename_admirals_to_sonar.sql` (UP + DOWN).
+  - Apply via migrations runner.
+  - Verify INFORMATION_SCHEMA.
+  - Estimate ~45min.
+- 🔴 **Phase 10 smoke regression** — manual founder 30-60min, 30/30 cumulative S0+S1 pasos con new names.
+- 🔴 **Docs v1.1 → v1.2 rewrite inline** post-Phase-8+9 execution — 88 eventos + 28 tablas + 40+ callbacks + 16 FSMs rename 1:1 en body del doc. Estimate ~6-8h Sonnet cumulative across 4 docs.
+- 🔴 **B2 `progress/SPRINT_PLAN_S2.md`** — redactable post-Phase-8+9+10 complete + docs v1.2 ready. Estimate ~2-3h Opus 4.7 / Gemini 3.1 Pro / Sonnet 4.6 OK.
+- 🟡 **B5 tag `sonar-identity-canonical`** — cuando founder comfortable post-Phase-10 green.
+- 🟡 **D2 icons decision** — pending founder (pre-S2 vs S3 custom).
+- 🟡 **BOOTSTRAP v1.5 → v1.6** post-Phase-8 execution (reflect code namespace canonical real).
+
+### Handoff próxima sesión (S1.10 o S2.0 post-gate)
+
+**Modelo recomendado próxima sesión:**
+- **Phase 8 code refactor:** Sonnet 4.6 (mechanical sed-level work, heavy) o Opus 4.7 si quiere safety-extra revisión. ~2-3h. Requires founder server-local para smoke.
+- **Phase 9 DB migration 009:** Sonnet 4.6 (SQL DDL + runner). ~45min. Requires DB availability.
+- **Phase 10 smoke regression:** Manual founder + Sonnet 4.6 debug si fails.
+- **Docs v1.1 → v1.2 rewrite inline:** Sonnet 4.6 heavy. Split 2 docs per session (~3h each).
+
+**Candidato orden goal próxima sesión (recomendado):**
+1. **Phase 8 code refactor + Phase 9 migration 009** (combo 1 session founder-available ~3-4h).
+2. **Phase 10 smoke regression** (mismo session o siguiente, manual founder ~1h).
+3. **Docs v1.1 → v1.2 rewrite inline 88 eventos + 28 tablas + 40+ callbacks + 16 FSMs** (2-3 sessions Sonnet).
+4. **BOOTSTRAP v1.5 → v1.6** (post-execution, quick update).
+5. **B2 SPRINT_PLAN_S2.md** (2-3h, post-all-above).
+6. **S2.0 start-session** (Sprint 2 arranque real).
+
+**Pre-requisitos lectura obligatoria próximo agent:**
+
+1. `docs/agents/00_BOOTSTRAP.md` v1.5+.
+2. `docs/agents/03_founder_playbook.md` §2.3 + §4-§6 + §5.3.
+3. `progress/SESSION_LOG.md` últimas 5 entries (S1.6 → S1.7 → S1.8 → S1.9 → **S1.9 EXTENDED esta entry**).
+4. `progress/PRE_S2_CHECKLIST.md` v1.5 (B1 CERRADO 8/8 + D1/D3 firmed + Phase 8+9 schedule).
+5. **Docs firmados SSoT post-S1.9 EXTENDED:**
+   - **ADR-011 + ADR-012 + ADR-013 + ADR-015** (ADR-014 placeholder).
+   - Bible v1.4 + BOOTSTRAP v1.5.
+   - `01_art_direction.md` v2.0-scaffold-r7 NOTICE r6.
+   - `02_sonar_tablet.md` v1.2 NOTICE r1.1.
+   - `01_roadmap.md` v1.5 NOTICE r1.
+   - **`02_events_catalog.md` v1.1 NOTICE r1** (NEW S1.9 EXT).
+   - **`03_db_schema.md` v1.1 NOTICE r1** (NEW S1.9 EXT).
+   - **`04_api_contracts.md` v1.1 NOTICE r1** (NEW S1.9 EXT).
+   - **`05_state_machines.md` v1.1 NOTICE r1** (NEW S1.9 EXT).
+   - **`06_fivem_standards.md` v1.1 NOTICE r1** (NEW S1.9 EXT).
+   - **`07_bridges_compatibility.md` v1.1 NOTICE r1** (NEW S1.9 EXT).
+6. Logo v2 working canonical README (si toca logo).
+
+**Hard constraints reafirmados S1.9 EXTENDED (sin cambios vs S1.8/S1.9):**
+- NO modificar docs/* sin instrucción explícita founder (Bible/ADRs/briefs/art_direction firmados).
+- NO arreglar conflict logo realidad vs briefs firmados — founder override S1.7 documentado.
+- NO sound naming pre-canonical (sonar_ping/etc deprecated). Usar 5 SFX canonical.
+- NO voz naval/militar/capitán. Canonical = neutral premium-tech.
+- NO paleta azul marino + dorado. Canonical = hybrid Tier A/B/C post-ADR-012.
+- **NO ejecutar Phase 8 code refactor sin founder server-available + smoke check.** Docs-only safe; code risky sin gate.
+- SESSION_LOG append-only.
+- Commit format `S{N}.{M} {imperative present}`.
+
+**Founder tone preference preserved S1.9 EXTENDED:**
+- Zero sugerencias fatigue-based.
+- Zero paternalismo.
+- Founder decide scope vía opciones estructuradas, AI ejecuta professional direct.
+- AI prioriza per dependency DAG cuando founder delegate.
+
+### Files in scope S1.9 EXTENDED (respetados)
+
+✅ Scope strict:
+- `docs/planning/02_decision_log.md` (ADRs firmado + meta).
+- `docs/technical/02_events_catalog.md` v1.1.
+- `docs/technical/03_db_schema.md` v1.1.
+- `docs/technical/04_api_contracts.md` v1.1.
+- `docs/technical/05_state_machines.md` v1.1.
+- `docs/technical/06_fivem_standards.md` v1.1.
+- `docs/technical/07_bridges_compatibility.md` v1.1.
+- `progress/PRE_S2_CHECKLIST.md` v1.5.
+- `progress/SESSION_LOG.md` append esta entry.
+
+**NO tocó:** Bible v1.4, ADRs previos 001-012 históricos, briefs v2 `art/briefs/`, art_direction v2.0-scaffold-r7, `02_sonar_tablet.md` v1.2, `01_architecture.md` v1.0, `01_roadmap.md` v1.5, BOOTSTRAP v1.5, `_archive/`, code/resources/*, DB, `.windsurf/*`, `art/branding/*`, `art/tools/*`, `scripts/smoke_test_s*.md`.
+
+### Summary ejecutivo S1.9 EXTENDED close
+
+Session heavy work completa. **B1 Phase 6 mass-purge operational docs CERRADO 8/8 (100%)**. Decisiones founder D1+D3 resueltas + 3 ADRs firmados (013/014-placeholder/015). Docs técnicos 2-7 con NOTICE r1 pattern establishing canonical naming + schedule + reading guide. Phase 8+9 execution scheduled próxima sesión founder-available (code refactor + migration 009 + smoke regression).
+
+**Pre-Sprint 2 gate roadmap claro:**
+1. Phase 8+9 execution (~3-4h next session).
+2. Phase 10 smoke regression (~1h).
+3. Docs v1.1 → v1.2 rewrite inline (~6-8h split 2-3 sessions).
+4. BOOTSTRAP v1.5 → v1.6 (~30min).
+5. B2 SPRINT_PLAN_S2 (~2-3h).
+6. S2.0 arranque.
+
+Estimate calendar: **S2 arranque ~3-5 sesiones post-S1.9 EXTENDED ≈ 2-3 días depending founder availability**.
+
+**Commit pending founder green-light:**
+
+```
+S1.9 EXT ADRs 013+015 firmed + docs 2-7 v1.1 NOTICE r1 + PRE_S2_CHECKLIST v1.5 (B1 Phase 6 CERRADO 8/8)
+```
+
+### Founder guidance institutional S1.9 EXTENDED
+
+> *"vamos a completar el trabajo, estoy usando tu como el mas potente modelo, no para hacer un commit, pero para este trabajo pesado"* (instruction heavy execution mode post-S1.9 commit).
+>
+> *"elige lo tien que ir orden, que esta en la cola y hay que priorizarlo"* (delegation ordering AI — priorized per dependency DAG D3 master → D1 → ADRs → docs 2-7 → checklists).
+
+---
+
 ---

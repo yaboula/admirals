@@ -1,31 +1,81 @@
-# 📐 Admirals — API Contracts
+# 📐 SONAR — API Contracts
 
-> **Versión:** 1.0 (firmado — completo, 14 secciones, 40+ callbacks catalogados).
-> **Tipo:** Technical/Implementation. Contratos formales de **APIs síncronas** (callbacks, exports, NUI bridges, DB access) que el código Admirals expone e invoca.
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013/015; §1-§14 legacy v1.0 inline preserved). **SSoT vigente** — filosofía + callbacks catalog + exports + NUI bridges + DB access + error codes + rate limits + versioning + security sin cambios foundational (pivot-agnostic). Callback prefix `admirals:*:callback:*` scheduled rename `sonar:*:callback:*` Phase 8 per ADR-013. **C003 `getTransactions` DEFERRED S3** per ADR-015 (D1=B UI-heavy pivot).
+> **Tipo:** Technical/Implementation. Contratos formales de **APIs síncronas** (callbacks, exports, NUI bridges, DB access) que el código SONAR expone e invoca.
 > **Documento padre:** `technical/01_architecture.md` v1.0 (firmado).
-> **Documento hermano:** `technical/02_events_catalog.md` v1.0 (firmado) — cubre eventos fire-and-forget. Este doc cubre request/response.
-> **Documento hermano:** `technical/03_db_schema.md` v1.0 (firmado).
-> **Documento hermano próximo:** `technical/05_state_machines.md`, `technical/06_fivem_standards.md`.
+> **Documento hermano:** `technical/02_events_catalog.md` v1.1+ (post-pivot) — cubre eventos fire-and-forget. Este doc cubre request/response.
+> **Documento hermano:** `technical/03_db_schema.md` v1.1+ (post-pivot).
+> **Documento hermano próximo:** `technical/05_state_machines.md` v1.1+, `technical/06_fivem_standards.md` v1.1+.
+> **ADRs relacionados:** ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)** + **ADR-015 (Sprint 2 UI-heavy, C003 DEFERRED S3)**.
 > **Estado:** firmado.
 
-> **Lectura previa obligatoria:** `technical/01_architecture.md` §5 (bus eventos) + §10 (Tablet), `technical/02_events_catalog.md` §1 (filosofía), `00_PRODUCT_BIBLE.md`.
+> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.5, `technical/01_architecture.md` §5 (bus eventos) + §10 (Tablet), `technical/02_events_catalog.md` v1.1+ §1 (filosofía), `00_PRODUCT_BIBLE.md` v1.4, **`planning/02_decision_log.md` ADR-013 + ADR-015**.
+
+---
+
+## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013 + ADR-015, 2026-05-04)
+
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + callback prefix `admirals:*:callback:*` + `exports['admirals_*']:*` + 40+ callbacks shipped/planned.** ADR-011 + ADR-012 + ADR-013 (namespace migration) + ADR-015 (Sprint 2 UI-heavy) refinan identity canonical + naming + scope. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§14 abajo, **gana este NOTICE + ADR-011/012/013/015**.
+
+### NEW CANONICAL — vigente desde 2026-05-04
+
+#### Naming canonical APIs (DEPRECATED heritage `admirals:*` + `admirals_*`)
+- **Producto:** SONAR (no Admirals).
+- **Callback prefix canonical post-Phase-8 (ADR-013 scheduled):** `sonar:*:callback:*` reemplaza `admirals:*:callback:*`. Mapping 1:1:
+  - C001 `admirals:bank:callback:get_balance` → `sonar:bank:callback:get_balance`
+  - C002 `admirals:bank:callback:get_movements` → `sonar:bank:callback:get_movements`
+  - C003 `admirals:bank:callback:get_transactions` → `sonar:bank:callback:get_transactions` **(DEFERRED S3 per ADR-015)**
+  - C004 `admirals:bank:callback:pre_transfer` → `sonar:bank:callback:pre_transfer`
+  - C005 `admirals:bank:callback:audit_log` → `sonar:bank:callback:audit_log`
+  - + 35+ callbacks planned verticales (bank/empresa/inventory/tablet/granja/molino/…) — rename 1:1 Phase 8.
+- **Resource exports canonical post-Phase-8:** `exports['admirals_bank']:*` → `exports['sonar_bank']:*`. `exports['admirals_core']:*` → `exports['sonar_core']:*`. `exports['admirals_bridges']:*` → `exports['sonar_bridges']:*`.
+- **NUI bridges canonical post-Phase-8:** `RegisterNUICallback('admirals:*')` → `RegisterNUICallback('sonar:*')`. `SendNUIMessage({type: 'admirals:*', …})` → `SendNUIMessage({type: 'sonar:*', …})`.
+- **Request/response schemas, error codes, rate limits, auth matrices = INVARIANTES.** Pre/post Phase-8 identical. Solo names actualizan.
+
+#### C003 `getTransactions` DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot)
+- **Status change:** C003 was planned for S2 shipping per pre-pivot memory. Post-ADR-015 (2026-05-04) **DEFERRED to Sprint 3** — scope S2 UI-heavy focus sobre Tablet shell + Bank app + Map app + motion/sound signature.
+- **Consumer pattern S2 Bank app:** UI puede query directa DB en S2 (tabla `sonar_bank_movements` post-Phase-9) via adapter pattern. C003 proper callback ships S3 cuando T2 adapters + DDL + extended tech infra arrive.
+- **Callback signature v1.1:** mantener documentación histórica en §5 / §6 del doc (spec was drafted). Marcar con 🔴 DEFERRED S3 tag. NO remover — shipped S3.
+- **Other callbacks shipped S1 unaffected:** C001/C002/C004/C005 continue ship path Phase 8 rename only.
+
+#### Error codes + voz (ADR-012 §D3 applied)
+- Error codes semantic (§7.2) identifiers IDENTICAL — technical codes pivot-agnostic (`INSUFFICIENT_FUNDS`, `INVALID_IBAN`, `RATE_LIMIT_EXCEEDED`, etc.).
+- Error message strings (§7.3 `message` field) voz neutral premium-tech. NO militar/capitán/tactical en copy. Example preserved: `"Saldo insuficiente. Saldo actual: 150€, requerido: 500€."` — voz correcta.
+- NUI copy strings (push messages + modal text) voz canonical ADR-012.
+
+#### Migration execution schedule (ADR-013 + ADR-015 authoritative)
+- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Callback + export + NUI emit sites NO tocados.
+- **Phase 8 execution session (próxima sesión founder-available):** grep + sed rename callbacks + exports + NUI prefijos + RegisterNetEvent + handler attachments. Estimate ~30 callback emit + ~40 NUI bridge sites.
+- **Post-Phase-8 doc bump v1.1 → v1.2:** refs inline `admirals:*` → `sonar:*` + `exports['admirals_*']` → `exports['sonar_*']` en todo el cuerpo (40+ callbacks + exports catalog actualizados 1:1). C003 DEFERRED S3 reinforced.
+- **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica C001/C002/C004/C005 shipped S1 emit correctly con nuevos prefijos.
+
+#### Cómo leer el resto del documento (§1-§14)
+
+1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + ADR-015 + `00_BOOTSTRAP.md` v1.5.**
+2. **Filosofía + tipos API (§1-§4) + exports catalog (§2) + NUI bridges (§3) + DB access (§4) + error codes (§7) + rate limits (§8) + versioning (§9) + security (§10) + testing (§11) siguen válidos pivot-agnostic** — foundational design APIs sin cambios.
+3. **40+ callbacks documentados (§5-§6) — refs `admirals:*:callback:*` prefix = LEGACY estado actual código S0+S1.** Post-Phase-8 ejecutada = canonical `sonar:*:callback:*`. Mapping 1:1 aplicable.
+4. **Resource exports strings `admirals_bank`/`admirals_core`/`admirals_bridges`:** legacy estado actual. Post-Phase-8 = `sonar_*` coherentemente.
+5. **Request/response schemas + field types + validators + auth matrix + rate limits = INVARIANTES.** Pre/post Phase-8 identical.
+6. **C003 `getTransactions`:** DEFERRED S3 per ADR-015. §5/§6 documentación preservada histórica para schedule S3 ship.
+7. **Error codes catalog §7:** identifiers identical pre/post. Voz error messages neutral premium-tech.
+8. **Si duda → ADR-011 + ADR-012 + ADR-013 + ADR-015 + NOTICE r1 mandan.**
 
 ---
 
 ## 0. Resumen ejecutivo
 
-Este documento define los **contratos API síncronos** (request/response) de Admirals. Complementa `events_catalog` (fire-and-forget) con las **APIs bidireccionales**:
+Este documento define los **contratos API síncronos** (request/response) de SONAR (ex-Admirals). Complementa `events_catalog` (fire-and-forget) con las **APIs bidireccionales**:
 
 1. **Server Callbacks** — cliente pide → servidor responde (validación + datos).
 2. **Resource Exports** — funciones expuestas por un resource a otros resources.
 3. **NUI Bridges** — Tablet UI (JS) ↔ client Lua (RegisterNUICallback + SendNUIMessage).
-4. **Database Access Layer** — wrappers sobre MySQL con conventions Admirals.
+4. **Database Access Layer** — wrappers sobre MySQL con conventions SONAR.
 
 > **Filosofía:** **cada contrato API es un acuerdo firmado** entre el código caller y el callee. Romper la forma (params, return shape) es breaking change → bump MAJOR del resource.
 
 Define:
 
-- **Tipos de API** en Admirals.
+- **Tipos de API** en SONAR.
 - **Catálogo completo Server Callbacks** (~40 callbacks críticos).
 - **Catálogo Resource Exports** (funciones públicas por resource).
 - **Catálogo NUI Bridges** (Tablet UI ↔ client).
@@ -1406,7 +1456,7 @@ Cada callback:
 
 ## Resumen ejecutivo (cierre)
 
-Los **API Contracts Admirals** son el puente formal entre código. Cubren:
+Los **API Contracts SONAR (ex-Admirals)** son el puente formal entre código. Cubren:
 
 - **40+ server callbacks** documented signatures (request/response/errors/auth/rate).
 - **5 resource exports catalogs** (bank, empresa, inventory, tablet, core + node-specific).
@@ -1424,4 +1474,15 @@ Los **API Contracts Admirals** son el puente formal entre código. Cubren:
 
 *"Un contrato API firmado vale más que cien reuniones de sincronización."*
 
-**FIN DEL DOCUMENTO `technical/04_api_contracts.md` v1.0**
+---
+
+## 15. Changelog
+
+| Versión | Fecha | Autor | Cambios |
+|---|---|---|---|
+| 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 14 secciones, 40+ callbacks catalogados, 5 resource exports catalogs (bank/empresa/inventory/tablet/core + node-specific), NUI bridges 8 endpoints + 10 push messages, DB access layer wrappers + transactions + audit, error codes canonical ~30 categorized, rate limits per category, versioning protocol breaking vs non-breaking + deprecation flow, security top 5 threats mitigations, testing protocol manual + stress. **Firmable Oleada 0.** |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013 + ADR-015). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~80 líneas) establece: naming canonical callbacks/exports/NUI bridges (mapping 1:1 5 callbacks shipped S1 + 35+ planned) + **C003 `getTransactions` DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot)** + request/response schemas + error codes + rate limits + auth matrix INVARIANTES pre/post Phase-8 + voz neutral ADR-012 §D3 en error message strings + migration execution schedule Phase 8 (next session) + reading guide §1-§14 legacy vs canonical. §0 resumen + §cierre rebrand + hermanos refs bumped v1.1+ + ADRs 011/012/013/015 linked. **NO touched:** §1-§14 filosofía + tipos API + 40+ callbacks catalog + exports catalog + NUI bridges + DB access + error codes + rate limits + versioning + security + testing (pivot-agnostic foundational API design). Callback prefix `admirals:*:callback:*` + exports `admirals_*` + NUI prefixes preservados legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8: 40+ callbacks + exports rename 1:1 inline body + C003 DEFERRED S3 tag reinforced. |
+
+---
+
+**FIN DEL DOCUMENTO `technical/04_api_contracts.md` v1.1**

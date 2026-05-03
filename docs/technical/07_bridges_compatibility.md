@@ -1,14 +1,57 @@
-# 🔌 Admirals — Bridges & Compatibility Layer
+# 🔌 SONAR — Bridges & Compatibility Layer
 
-> **Versión:** 1.0 (firmado — completo, 18 secciones).
-> **Tipo:** Technical/Implementation. **Último doc Oleada 0 antes de Sprint 1.** Define el **Bridges Layer** — capa de abstracción que permite a Admirals funcionar sobre múltiples frameworks FiveM (QBox, QBCore, ESX) y scripts custom (lb-phone, qs-inventory, Renewed-Banking, etc.) sin acoplarse a ninguno.
-> **Documento padre:** `agents/00_BOOTSTRAP.md` v1.1 (firmado).
-> **Documento hermano SSoT:** `technical/01_architecture.md` (Bridges layer mencionado §Layers), `technical/04_api_contracts.md` (todo API Admirals que toca dinero/items/fono pasa por aquí).
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§18 legacy v1.0 inline preserved con surface rebrand). **SSoT bridges vigente** — arquitectura + interfaces + tier system + adapters + SDK + anti-patterns sin cambios foundational (pivot-agnostic). Namespace code rename `admirals_bridges` → `sonar_bridges` scheduled Phase 8 post-S1.9 EXTENDED per ADR-013.
+> **Tipo:** Technical/Implementation. **Último doc Oleada 0 antes de Sprint 1.** Define el **Bridges Layer** — capa de abstracción que permite a SONAR funcionar sobre múltiples frameworks FiveM (QBox, QBCore, ESX) y scripts custom (lb-phone, qs-inventory, Renewed-Banking, etc.) sin acoplarse a ninguno.
+> **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5 (firmado post-pivot).
+> **Documento hermano SSoT:** `technical/01_architecture.md` (Bridges layer mencionado §Layers), `technical/04_api_contracts.md` (todo API SONAR que toca dinero/items/fono pasa por aquí).
 > **Documento hermano SSoT:** `technical/06_fivem_standards.md` (performance budgets y security aplican también a bridges).
-> **ADR relacionado:** ADR-007 (pendiente firma en `planning/02_decision_log.md` tras cerrar este doc).
+> **ADRs relacionados:** ADR-009 (Bridges Layer foundational) + ADR-011 (pivot Admirals → SONAR) + ADR-012 (identity refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)**.
 > **Estado:** firmado.
 
-> **Lectura previa obligatoria:** `technical/01_architecture.md`, `technical/04_api_contracts.md`, `technical/06_fivem_standards.md`, `planning/01_roadmap.md` v1.1 (pivot MVP Granja).
+> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.5, `technical/01_architecture.md`, `technical/04_api_contracts.md`, `technical/06_fivem_standards.md`, `planning/01_roadmap.md` v1.5 (pivot MVP Granja + Sprint 2 DIFERIDO + Phase 8+9 scheduled), **`planning/02_decision_log.md` ADR-013** (namespace migration execution).
+
+---
+
+## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
+
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + code namespace `admirals_bridges`/`admirals_core`.** ADR-011 (pivot) + ADR-012 (refinement) + ADR-013 (namespace migration Phase 8+9 execution scheduled) refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§18 abajo, **gana este NOTICE + ADR-011/012/013**.
+
+### NEW CANONICAL — vigente desde 2026-05-04
+
+#### Naming canonical (DEPRECATED heritage "Admirals" producto)
+- **Producto:** SONAR (no Admirals).
+- **Bridges Layer:** SONAR Bridges Layer.
+- **Code resources target state post-Phase-8 (ADR-013 scheduled):**
+  - `resources/admirals_bridges/` → `resources/sonar_bridges/`
+  - `resources/admirals_bank/` → `resources/sonar_bank/`
+  - `resources/admirals_core/` → `resources/sonar_core/`
+- **Export calls target state post-Phase-8:** `exports['admirals_bridges']:*` → `exports['sonar_bridges']:*`. `exports['admirals_core']:*` → `exports['sonar_core']:*`. `exports['admirals_bank']:*` → `exports['sonar_bank']:*`.
+- **Event prefixes target state post-Phase-8:** `admirals:bank:*` → `sonar:bank:*` + equivalentes bridges/core.
+- **Regla 1 (§18) anti-pattern grep actualizada post-Phase-8:** `grep -r "exports\['qb-" resources/sonar_core/` → 0 matches (antes `admirals_core`).
+
+#### Phase 8+9 execution schedule (ADR-013 authoritative)
+- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Code + DB NO tocados.
+- **Phase 8 execution session (próxima sesión founder-available):** git mv resources admirals_* → sonar_* + fxmanifest + config.lua + internal refs + exports + event prefixes + server.cfg.example + smoke manuals.
+- **Phase 9 execution session (misma o siguiente):** migration `009_rename_admirals_to_sonar.sql` rename 6 tablas SQL DDL + FKs + index names + registrar en `admirals_schema_versions`/`sonar_schema_versions` final.
+- **Phase 10 smoke regression:** manual founder 30/30 pasos cumulative S0+S1 post-refactor.
+- **Phase 11 workspace migration (opcional):** `d:\theBigProject` → `d:\sonar` si founder decide.
+- **Pre-Sprint 2 gate:** Phase 10 green + BOOTSTRAP v1.5 → v1.6 + B2 SPRINT_PLAN_S2 redactable.
+
+#### §12 Custom Adapter SDK — customer-facing renaming
+- Config customer path post-Phase-8: `resources/sonar_bridges/config.lua` (no `admirals_bridges`).
+- SDK templates `sdk/template_bank.lua` / `template_inventory.lua` / `template_phone.lua` sin cambios interfaces (métodos + tipos + errores iguales).
+- Readme `sdk/README.md` rename references. Customers que hayan escrito adapters pre-Phase-8 = 1-time `Bridges.RegisterAdapter` path change sobre `sonar_bridges`.
+- Versioning SEMVER preservado — Bridges Layer v0.2.0 (pre-rename) → v0.3.0 (post-rename) major-minor bump documenting migration per ADR-013.
+
+#### Cómo leer el resto del documento (§1-§18)
+
+1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
+2. **Arquitectura + tier system + 6 bridges + adapters + auto-detection + native fallbacks + lifecycle hooks + testing matrix + versioning + anti-patterns (§1-§11, §13-§16) siguen válidos pivot-agnostic** — foundational design no cambia.
+3. **Refs producto "Admirals" en §1-§18 = legacy** → leer "SONAR".
+4. **Refs code `admirals_bridges`/`admirals_core`/`admirals_bank`/`exports['admirals_*']`/`admirals:*` events = LEGACY estado actual código.** Post-Phase-8 ejecutada = canonical `sonar_*`.
+5. **§12 SDK customer refs:** post-Phase-8, usar `sonar_bridges` path. Pre-Phase-8 (estado actual), `admirals_bridges` path funciona.
+6. **§18 TL;DR reglas absolutas:** semantics intact, solo naming actualiza post-Phase-8.
+7. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
 
 ---
 
@@ -1086,17 +1129,18 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 
 ### 17.2 Estado del documento
 
-- **Versión:** 1.0 (firmable — completo, 17 secciones).
-- **Próxima revisión:** tras implementación Sprint 0 Oleada 1 con learnings reales + v1.1 con adapters adicionales validados.
-- **Documento padre:** `agents/00_BOOTSTRAP.md` v1.1.
-- **Documentos hermanos:** `technical/01_architecture.md`, `technical/04_api_contracts.md`, `technical/06_fivem_standards.md`.
-- **ADR relacionado:** ADR-007 (pendiente firma `planning/02_decision_log.md`).
+- **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level + header + hermanos + ADRs refs + lectura obligatoria; §1-§18 legacy inline preserved).
+- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `admirals_*` refs legacy actualizadas a `sonar_*` canonical en §1-§18, o v2.0 si cambio estructural bridges post-S2 learnings).
+- **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5.
+- **Documentos hermanos:** `technical/01_architecture.md`, `technical/04_api_contracts.md`, `technical/06_fivem_standards.md` v1.1+, `planning/01_roadmap.md` v1.5.
+- **ADRs relacionados:** ADR-009 (Bridges Layer foundational) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9)**.
 
 ### 17.3 Changelog
 
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción. 17 secciones: filosofía + arquitectura + tier system + 6 bridges (Bank/Inventory/Phone/Identity/Target/Notify) con interfaces exactas + adapters T1/T2/native + auto-detection + config overrides + native fallbacks + Custom Adapter SDK + lifecycle hooks + testing matrix + versioning policy + anti-patterns + roadmap. **Firmable.** |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~50 líneas) establece: naming canonical producto + code namespace target state post-Phase-8 (`sonar_bridges`/`sonar_core`/`sonar_bank` + `exports['sonar_*']` + `sonar:*` events) per ADR-013 scheduled + Phase 8+9 execution schedule (next session founder-available) + §12 SDK customer-facing rename guidance + reading guide §1-§18 legacy vs canonical. §0 resumen + headers `00_BOOTSTRAP.md` v1.1 → v1.5 + ADR-007 ref → ADR-009/011/012/013. §17.2 bumped + próxima revisión post-Phase-8+9. **NO touched:** §1-§16 arquitectura + tier + 6 bridges + adapters + SDK interfaces + testing matrix + versioning + anti-patterns (pivot-agnostic). Code namespace `admirals_*` preservado legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
 
 ---
 
@@ -1104,9 +1148,15 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 
 ### Regla 1: Nunca external directo
 ```
+# Pre-Phase-8 (estado actual):
 grep -r "exports\['qb-" admirals_core/ → 0 matches
 grep -r "exports\['qbx-" admirals_core/ → 0 matches (incluso QBox primary)
 grep -r "ESX\." admirals_core/ → 0 matches
+
+# Post-Phase-8 canonical (ADR-013 scheduled):
+grep -r "exports\['qb-" sonar_core/ → 0 matches
+grep -r "exports\['qbx-" sonar_core/ → 0 matches
+grep -r "ESX\." sonar_core/ → 0 matches
 ```
 
 ### Regla 2: 6 bridges, 6 responsibilidades
@@ -1138,15 +1188,15 @@ Testing matrix con 6 combos baseline. Cada release smoke-tested. CI para T1 Olea
 
 ## Resumen ejecutivo (cierre)
 
-El **Bridges Layer Admirals** es **la inversión más importante pre-code** del proyecto. Sin él:
+El **Bridges Layer SONAR (ex-Admirals)** es **la inversión más importante pre-code** del proyecto. Sin él:
 
-- Admirals se acopla a 1 framework → 70% del mercado FiveM premium excluido.
+- SONAR se acopla a 1 framework → 70% del mercado FiveM premium excluido.
 - Refactorizar post-Sprint-3 es **semanas perdidas**.
 - Customers con scripts custom no pueden comprarnos.
 
 Con él:
 
-- **Admirals vende a QBox + QBCore + ESX + customs.**
+- **SONAR vende a QBox + QBCore + ESX + customs.**
 - **Desde línea 1, el código es framework-agnostic.**
 - **Custom Adapter SDK permite comunidad extender sin tocar core.**
 - **Fallbacks nativos garantizan que nada crashea.**
@@ -1169,4 +1219,4 @@ Este doc define:
 
 *"Una abstracción bien diseñada es dinero en el banco. Una abstracción mal diseñada es un banco que quiebra."*
 
-**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.0**
+**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.1**

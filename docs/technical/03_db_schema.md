@@ -1,18 +1,116 @@
-# 🗄️ Admirals — Schema de Base de Datos
+# 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `admirals_*` (pre-migration-009 legacy)
 
-> **Versión:** 1.0 (firmado)
-> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§20 legacy v1.0 inline preserved con 28 tablas `admirals_*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). Table prefix `admirals_*` scheduled rename `sonar_*` Phase 9 migration 009 per ADR-013.
+> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
-> **Documento hermano:** `02_events_catalog.md` v1.0 (eventos que mutan estas tablas).
-> **Estado:** primera redacción completa de las 4 partes (20 secciones, ~2335 líneas, 28 tablas con DDL completo).
+> **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
+> **ADRs relacionados:** ADR-010 (hybrid audit_log) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)**.
+> **Estado:** firmado.
 
-> **Lectura previa obligatoria:** `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad).
+> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.5, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled).
+
+---
+
+## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
+
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + 28 tablas prefijo `admirals_*` (`admirals_accounts`, `admirals_bank_accounts`, etc.).** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§20 abajo, **gana este NOTICE + ADR-011/012/013**.
+
+### NEW CANONICAL — vigente desde 2026-05-04
+
+#### Naming canonical tables (DEPRECATED heritage `admirals_*` prefix)
+- **Producto:** SONAR (no Admirals).
+- **Table prefix canonical post-Phase-9 (ADR-013 scheduled):** `sonar_*` reemplaza `admirals_*`. Mapping 1:1 las 28 tablas:
+  - `admirals_accounts` → `sonar_accounts`
+  - `admirals_tablets` → `sonar_tablets`
+  - `admirals_companies` → `sonar_companies`
+  - `admirals_company_members` → `sonar_company_members`
+  - `admirals_bank_accounts` → `sonar_bank_accounts`
+  - `admirals_bank_movements` → `sonar_bank_movements`
+  - `admirals_bank_escrows` → `sonar_bank_escrows`
+  - `admirals_audit_log` → `sonar_audit_log`
+  - `admirals_bridge_idempotency` → `sonar_bridge_idempotency`
+  - `admirals_event_log` → `sonar_event_log`
+  - `admirals_schema_versions` → `sonar_schema_versions`
+  - `admirals_documents` / `admirals_document_signatures` / `admirals_document_templates` → `sonar_document*`
+  - `admirals_chats` / `admirals_chat_participants` / `admirals_messages` → `sonar_chat*` + `sonar_messages`
+  - `admirals_notifications` → `sonar_notifications`
+  - `admirals_market_offers` / `admirals_market_reviews` → `sonar_market_*`
+  - `admirals_reputation` → `sonar_reputation`
+  - `admirals_logistics_jobs` → `sonar_logistics_jobs`
+  - `admirals_granja_*` (4 tablas: plots/silos/machines/licenses) → `sonar_granja_*`
+  - `admirals_molino_*` (3 tablas: silos/machines/batches) → `sonar_molino_*`
+  - `admirals_settings` → `sonar_settings`
+- **Índices + FKs + constraint names:** rename 1:1 coherentemente per tabla. Ejemplo: `idx_admirals_bank_accounts_iban` → `idx_sonar_bank_accounts_iban`. `fk_admirals_bank_movements_account` → `fk_sonar_bank_movements_account`.
+- **Schema DDL + columns + types + defaults + constraints = INVARIANTES.** Pre/post migration-009 identical. Solo names actualizan.
+
+#### Migration 009 `009_rename_admirals_to_sonar.sql` (Phase 9 scheduled per ADR-013)
+- **Migration type:** DDL rename batch atomic. Mitigable si falla (rollback script documented).
+- **Content target:**
+  ```sql
+  -- UP (apply)
+  RENAME TABLE
+    admirals_accounts TO sonar_accounts,
+    admirals_tablets TO sonar_tablets,
+    admirals_companies TO sonar_companies,
+    admirals_company_members TO sonar_company_members,
+    admirals_bank_accounts TO sonar_bank_accounts,
+    admirals_bank_movements TO sonar_bank_movements,
+    admirals_bank_escrows TO sonar_bank_escrows,
+    admirals_audit_log TO sonar_audit_log,
+    admirals_bridge_idempotency TO sonar_bridge_idempotency,
+    admirals_event_log TO sonar_event_log,
+    admirals_schema_versions TO sonar_schema_versions,
+    -- ... resto 28 tablas rename en batch atomic
+    admirals_settings TO sonar_settings;
+
+  -- Indexes + FKs coherentemente renamed (InnoDB renamea FKs automatically con RENAME TABLE, verify post-migration con INFORMATION_SCHEMA).
+
+  -- Registrar migration 009 en sonar_schema_versions con checksum SHA-256.
+
+  -- DOWN (rollback emergency)
+  RENAME TABLE
+    sonar_accounts TO admirals_accounts,
+    -- ... resto 28 tablas reverse;
+  ```
+- **Checksum SHA-256** calculated + registered (Phase 9 execution).
+- **Audit trail preserved:** data rows intact, zero data loss. Solo metadata DDL names change.
+- **Pre-migration verify:** `SELECT COUNT(*) FROM admirals_bank_movements` = N rows. Post-migration: `SELECT COUNT(*) FROM sonar_bank_movements` = N rows (identical).
+
+#### Hybrid `audit_log` + `event_log` (ADR-010) unchanged semantics
+- `admirals_audit_log` (wrapper operational) → `sonar_audit_log`. Schema + indexes + write pattern identical.
+- `admirals_event_log` (append-only event sourcing) → `sonar_event_log`. Schema + indexes + polymorphic refs identical.
+- ADR-010 dual-table strategy preserved 1:1 post-migration.
+
+#### ERD + FKs + cardinality
+- ERD textual §2 del doc: refs `admirals_*` legacy. Post-migration lecturable con mental mapping 1:1 to `sonar_*`.
+- FKs cascade policies + ON DELETE/UPDATE = identical.
+
+#### Reference data (seeds) post-migration
+- `admirals_settings` key/value rows: key strings (e.g., `'starter_balance'`) unchanged; solo tabla name bumped.
+- System treasury seed `AD-SYS0-0000-0001` (migration 004) preserved en `sonar_bank_accounts` post-rename. IBAN value unchanged para preservar continuidad ledger.
+
+#### Migration execution schedule (ADR-013 authoritative)
+- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). DB NO tocada.
+- **Phase 9 execution session (próxima sesión founder-available):** crear `resources/sonar_core/migrations/009_rename_admirals_to_sonar.sql` (con rollback DOWN documented) + ejecutar via migrations runner + verify INFORMATION_SCHEMA + checksum registered.
+- **Post-Phase-9 doc bump v1.1 → v1.2:** refs inline `admirals_*` → `sonar_*` en DDL + índices + queries + diccionario datos (28 tablas actualizadas 1:1).
+- **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica queries + FKs + particionado con nuevas names.
+
+#### Cómo leer el resto del documento (§1-§20)
+
+1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
+2. **Filosofía + ERD + DDL + índices + queries + migrations strategy + particionado + backup + diccionario (§1-§20) siguen válidos pivot-agnostic** — foundational schema design sin cambios.
+3. **28 tablas documentadas (§3-§12, §14-§16) — refs `admirals_*` prefix = LEGACY estado actual DB.** Post-migration-009 ejecutada = canonical `sonar_*`. Mapping 1:1 aplicable.
+4. **índices + FKs + constraint names `admirals_*`:** legacy estado actual. Post-migration-009 = `sonar_*` coherentemente.
+5. **DDL columns + types + defaults + constraints = INVARIANTES.** Pre/post migration-009 identical.
+6. **§20.1 Resumen 28 tablas:** counts unchanged. Solo prefix actualiza.
+7. **ADR-010 hybrid audit_log + event_log semantics:** preserved 1:1.
+8. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
 
 ---
 
 ## 0. Resumen ejecutivo
 
-Este documento es **la referencia oficial del schema relacional de Admirals**. Define cada tabla, columna, tipo, índice, foreign key y query crítica del ecosistema.
+Este documento es **la referencia oficial del schema relacional de SONAR (ex-Admirals)**. Define cada tabla, columna, tipo, índice, foreign key y query crítica del ecosistema.
 
 Cubre:
 
@@ -27,7 +125,7 @@ Cubre:
 - **Reference data (seeds)** mínima.
 - **Diccionario de datos** completo.
 
-> **Toda tabla del ecosistema Admirals DEBE estar definida aquí.** Si la tabla no está documentada, no existe en producción.
+> **Toda tabla del ecosistema SONAR DEBE estar definida aquí.** Si la tabla no está documentada, no existe en producción.
 
 ---
 
@@ -2302,11 +2400,11 @@ Cuando un developer añade columna:
 
 ## Resumen ejecutivo del documento (cierre)
 
-Este documento es **el contrato de persistencia** del ecosistema Admirals.
+Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admirals).
 
 **Pilares cumplidos:**
 
-- ✅ **Architecture P3 (Schema compartido):** todas las tablas con prefijo `admirals_`, schema único compartido entre resources.
+- ✅ **Architecture P3 (Schema compartido):** todas las tablas con prefijo `admirals_` (legacy pre-migration-009) / `sonar_` (canonical post-migration-009 per ADR-013), schema único compartido entre resources.
 - ✅ **Architecture P9 (DB fuente de verdad, RAM cache):** schema completo + repos en código (cache + flush) ya listos.
 - ✅ **Pilar 3 (Detalle obsesivo):** cada tabla con DDL completo, índices justificados, queries hot path documentadas.
 - ✅ **Pilar 2 (Cadena interconectada):** FKs explícitas + lineage_json en batches + related_* en event_log permiten trazabilidad cross-vertical completa.
@@ -2314,7 +2412,7 @@ Este documento es **el contrato de persistencia** del ecosistema Admirals.
 
 **Decisiones clave:**
 
-- Prefijo `admirals_` obligatorio.
+- Prefijo `admirals_` obligatorio (pre-migration-009) / `sonar_` obligatorio (post-migration-009 per ADR-013).
 - UUID v4 para entidades de negocio + BIGINT para tablas de alto volumen.
 - MySQL 8 + InnoDB + utf8mb4.
 - Soft deletes en histórico legal.
@@ -2332,3 +2430,16 @@ Este documento es **el contrato de persistencia** del ecosistema Admirals.
 ---
 
 *"Data is the foundation. Schema is the law."*
+
+---
+
+## 21. Changelog
+
+| Versión | Fecha | Autor | Cambios |
+|---|---|---|---|
+| 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 20 secciones, ~2335 líneas, 28 tablas DDL completo + ~60 índices justificados + queries hot path + migrations strategy + particionado + backup + diccionario datos. **Firmable Oleada 0.** |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `admirals_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_admirals_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `admirals_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
+
+---
+
+**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.1**
