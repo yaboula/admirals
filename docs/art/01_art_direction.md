@@ -760,9 +760,9 @@ Direcciones foundational:
 - [ ] §15 Glossary: 40+ términos canónicos. ✅ **(done 55+ v2.0-scaffold-r2)**
 - [ ] §16 Motion specs: duration tokens + easing + springs + pattern catalog + a11y. ✅ **(done v2.0-scaffold-r2)**
 - [ ] §17 Verticales placeholder: stubs Panadería/Retail/Cervecería/Mecánico. ✅ **(done v2.0-scaffold-r3)**
-- [ ] §18 Storybook integration: cross-ref con file live.
-- [ ] §19 Shader contracts: cross-ref con file live.
-- [ ] §20 Roadmap art direction iterations: v2.1/v2.2/v3.0 triggers.
+- [ ] §18 Storybook integration: cross-ref con file live. ✅ **(design-side done v2.0-scaffold-r4 — pending `docs/technical/04_storybook_guide.md` live file cross-ref bump)**
+- [ ] §19 Shader contracts: cross-ref con file live. ✅ **(design-side done v2.0-scaffold-r4 — pending `docs/technical/02_shader_contracts.md` post-pivot update cross-ref bump)**
+- [x] §20 Roadmap art direction iterations: v2.1/v2.2/v3.0 triggers. ✅ **(done v2.0-scaffold-r4)**
 
 **Firma protocol:**
 1. Cuando checklist completo, founder hace review full doc (1-2 sesiones dedicadas).
@@ -1178,27 +1178,181 @@ SONAR records complete chain in bitácora
 
 ---
 
-## 18-20. Secciones pendientes (Phase 4 continuation — Opus-candidato creative density)
+## 18. Storybook integration specs
 
-> **TODO Phase 4 continuación (sesión dedicada Opus 4.7 MAX recomendada por creative density):**
+> **Full spec (Phase 4 detail-pass).** Storybook es la **documentation live de components React** del Tablet NUI. Cross-ref canonical: `docs/technical/04_storybook_guide.md` (doc técnico dedicado). Esta sección define **contratos design-side** con Storybook.
 
-- §3.3 Logo SONAR detail visual construction (designer collaboration).
-- §5.2 Custom icon set 8 SVG construction + Figma library + repo.
-- §6 Textures SVG repo + CSS class library + 3D texture maps.
-- §7.3 Sound bibliography sourcing + license docs.
-- §9-§10 Nodes Granja + Molino detalle completo (Phase 7 purge docs).
-- §11 SONAR OS Tablet decisiones detail (cross-ref `02_sonar_tablet.md` rewrite Phase 5).
-- §12 Marketing moodboard + video specs + Tebex page layout + trailer storyboard.
-- §18 Storybook integration specs (`04_storybook_guide.md` cross-ref).
-- §19 Shader contracts (`02_shader_contracts.md` cross-ref) post-pivot.
-- §20 Roadmap art direction iterations (v2.1, v2.2, v3.0 trigger conditions).
+### 18.1 Purpose & scope
+
+- **Propósito:** cada componente del Tablet SONAR renderizado aislado + todas sus variants + stories que ejercitan los casos de uso (active/inactive/loading/error/empty).
+- **Audience:** dev frontend (implementation reference) + designer (visual verification) + founder (review visual sin booting FiveM completo).
+- **Scope:** solo components React del Tablet NUI. No cubre Lua server nor 3D assets.
+
+### 18.2 Component organization (carpeta estructura)
+
+```
+/stories/
+├── primitives/              # Atomic (Button, Input, Badge, Icon)
+├── components/              # Molecules (Card, Modal, TabBar, NotificationDrawer)
+├── patterns/                # Organisms (LedgerTable, ContractSigner, DashboardBridge)
+├── screens/                 # Full screens (BankHome, MarketPlaza, GranjaAdmin)
+└── tokens/                  # Design tokens visualizers (colors, type, motion, spacing)
+```
+
+### 18.3 Design tokens pipeline (Figma → code)
+
+- **Source of truth:** Design system Figma library (§13.1.2).
+- **Pipeline:**
+  1. Designer actualiza tokens en Figma (via Tokens Studio plugin o similar).
+  2. Export JSON via figma-export API → `tokens/` folder en repo.
+  3. Script TypeScript `tokens.ts` genera constantes typed (`colors.sonarBright`, `motion.base`, `type.displayLg`).
+  4. Storybook theme consume `tokens.ts` → 100% parity Figma ↔ Storybook ↔ código producción.
+- **Regla crítica:** **ningún código hardcodea valores** (color hex, duración ms, px). Todo vía tokens. Si falta token, abrir issue a Figma primero.
+
+### 18.4 Stories obligatorias por component
+
+Cada component debe tener **mínimo 4 stories**:
+
+1. **`Default`** — estado canónico nominal.
+2. **`AllVariants`** — grid visual de todas las variants (size, color, state).
+3. **`Interactive`** — with actions/state toggles + play-function Testing Library.
+4. **`EdgeCases`** — empty state, loading, error, overflow, truncation, long text, a11y reduced-motion simulation.
+
+**Opcional per caso:** `DarkMode`, `LightMode`, `ResponsiveBreakpoints`, `PerformanceStressTest` (muchas instancias simultáneas).
+
+### 18.5 Naming convention
+
+- **Stories directorio:** PascalCase reflejando component (`Button.stories.tsx`).
+- **Story names:** sentence case describing scenario (`"Primary with icon"`, `"Loading state"`, `"Empty ledger message"`).
+- **Vocabulario:** siempre per Glossary §15 (e.g., `Operador profile card`, `Manifiesto signer modal`, `Ping notification tray`). **Cero drift a v1.0 Admirals lexicon.**
+
+### 18.6 Visual regression testing
+
+- **Tool target:** Chromatic o Percy (decisión Phase 6 + ADR si significativa).
+- **Baseline:** firmar baseline al cerrar cada oleada (tag `storybook-oleada-<N>-baseline`).
+- **CI integration:** fail PR si snapshot diff >0.1% sin approval explícito founder/Cascade.
+
+### 18.7 Performance budgets NUI components
+
+- **Single component mount:** <16ms render (under 1 frame).
+- **Full screen cold start:** <200ms (sin `sonar_ping` audio; con audio, +100ms overhead acceptable).
+- **Storybook interaction tests:** <5s per story CI time.
+
+---
+
+## 19. Shader contracts specs (FiveM integration)
+
+> **Full spec (Phase 4 detail-pass).** Shader contracts definen cómo los shaders custom integran con la aesthetic SONAR (abyss canvas, bioluminescent glow, glassmorphism instruments). Cross-ref canonical: `docs/technical/02_shader_contracts.md` (post-pivot update pendiente). Esta sección define **contratos visuales**, el file técnico define **parámetros exactos GTA V engine + HLSL**.
+
+### 19.1 Shaders SONAR catalog
+
+| Shader | Uso | Target | Prioridad |
+|---|---|---|---|
+| **sonar-mesh-grid-shader** | Background pattern sutil en surfaces premium (Tablet Pro+, Bank sede MLO). | NUI HTML + 3D world | 🟡 P1 Oleada 2 |
+| **abyss-fog-shader** | Depth fog post-process FiveM world en zonas interior MLO SONAR (Bank, Granja admin). Desaturación + tinte Depth 800. | 3D world | 🟢 P2 Oleada 3 |
+| **bioluminescence-particle-shader** | Ping expansions + data highlight particles (Tablet NUI + 3D world overlays). | NUI + 3D | 🟡 P1 Oleada 2 |
+| **glassmorphism-fallback-shader** | Simulación glassmorphism en contextos sin `backdrop-filter` support (fallback FiveM older builds). | NUI HTML canvas | 🟢 P2 |
+| **depth-gauge-lcd-shader** | Simulación LCD retroiluminado en instruments 3D (silo, tank, depth indicators). | 3D prop | 🟢 P2 |
+| **sonar-pulse-wave-shader** | Onda concéntrica sonar expandiéndose (signal beacon 3D world). | 3D world | 🟢 P2 |
+
+### 19.2 Performance contracts
+
+> **Principio base:** shaders custom son optimizaciones visuales, NUNCA degradan la experiencia base.
+
+- **FPS target preserved:** adición de shaders NUNCA reduce FPS baseline >5% en hardware mid-tier (RX 5600 / RTX 3060 / equivalents).
+- **Per-pixel operations budget:** <4 texture samples + <8 ALU operations per pixel para shaders NUI.
+- **LOD-aware:** shaders 3D degradan progresivamente con distancia camera (full effect <20m, half <50m, off >100m).
+- **Fallback obligatorio:** todo shader tiene fallback sin shader (plain texture + shadow) si flag `shaders_enabled = false`.
+
+### 19.3 Integration points
+
+- **NUI shaders:** CSS filters + WebGL canvas overlays (fallback `backdrop-filter` → gradient emulation).
+- **3D world shaders:** `.fxc` compiled via OpenIV pipeline; `ytd` texture dictionaries + `sps` shader presets.
+- **Hybrid (NUI overlay 3D world):** sonar ping 3D beacon sincronizado con NUI notification via `lib-gtamp` or custom React Three Fiber bridge (TBD Phase 6 ADR).
+
+### 19.4 Aesthetic contracts
+
+- **Color palette compliance:** shaders usan SOLO colores Tier A/B/C + Crew + Signal + verticales sub-paletas. Cero colores custom hardcoded in shaders.
+- **Tinting parametrizable:** shaders aceptan uniform `u_tint_color` para adaptación por contexto (e.g., silo verde eco OK, silo rojo alert).
+- **Motion rules inheritance:** shaders animados respetan §16 motion filosofía (cero bounce excesivo, durations tokens, reduced-motion disabled).
+
+### 19.5 Anti-patterns shader
+
+- ❌ Bloom/glow excesivo "portfolio cyberpunk style" → mata la aesthetic silent service.
+- ❌ Color cycling rainbow → inmediate disqualify (viola palette Tier governance).
+- ❌ Particle emission ilimitada → performance killer.
+- ❌ Post-process full-screen constantly-on (solo activar per-zone MLO o per-event).
+- ❌ Shaders sin fallback → rompe experiencia hardware antiguo.
+
+---
+
+## 20. Roadmap art direction iterations
+
+> **Full spec (Phase 4 detail-pass).** Cómo evoluciona este doc en el tiempo + triggers para version bumps + cadence de review.
+
+### 20.1 Living document policy (per ADR-007)
+
+Este doc es **living document** — se actualiza continuamente post-firma v2.0 según evolución producto. Versiones siguen semver-like:
+
+- **Patch (v2.0.X):** correcciones tipográficas, aclaraciones, typos, enlaces rotos. **NO requiere ADR.**
+- **Minor (v2.X):** adiciones incrementales (nuevo vertical stub, nueva texture, refinement token). **ADR recomendado si invalida pattern previo.**
+- **Major (vX.0):** refactor significativo (palette rework, tipografía change, rebranding). **ADR obligatorio + founder approval formal.**
+
+### 20.2 v2.1 trigger conditions
+
+> *Cuándo activar bump minor v2.0 → v2.1:*
+
+- ✅ Primer vertical Oleada 3 (Panadería MVP) llega a production → promote su stub §17.1 a sección dedicada full-detail + doc `docs/design/03_node_bakery.md`.
+- ✅ Usability feedback NUI tras launch Oleada 1 genera insights visuales concretos (ajustes tokens type scale, spacing, contrasts específicos).
+- ✅ Sound design real-world testing revela que SFX firma necesita tuning (volumen, EQ, decay times).
+- ✅ Logo final post-designer entregado → bump §3.3 a "firmable designer-locked".
+- ✅ Custom icon set 8 post-designer entregado → bump §5.2 a "firmable designer-locked".
+
+**Target fecha estimada:** Q2 2026 (post-Oleada 1 launch + 1 oleada-de-vida feedback).
+
+### 20.3 v2.2 trigger conditions
+
+> *Cuándo activar bump minor v2.1 → v2.2:*
+
+- ✅ Palette refinement tras production real: tintas específicas emergen (e.g., Depth 750 intermedia, nueva Signal sub-level).
+- ✅ Integration patterns inter-vertical más maduros revelan nuevos cross-patterns que ameritan sección dedicada (ej. §17.6 Interoperability patterns).
+- ✅ Community feedback positivo acumulado valida identidad core + señala micro-ajustes en voice/tone.
+- ✅ Marketing assets iteración 2 (trailer Oleada 2, rebrand website, new screenshots curated) consolidados.
+
+**Target fecha estimada:** Q4 2026 - Q1 2027.
+
+### 20.4 v3.0 trigger conditions
+
+> *Cuándo activar bump major v2.X → v3.0:*
+
+- 🚨 Major product pivot (nuevo paradigma operativo, plataforma adicional, second-brand).
+- 🚨 Rebranding ejecutivo (SONAR name/logo change — extreme case).
+- 🚨 Palette core change approved por founder (ej. shift de teal a cyan puro, o adición de brand hero color).
+- 🚨 Tipografía familia principal swap (ej. Geist → custom-designed typeface post-funding).
+- 🚨 Art direction refactor post-5 años producto-living (natural refresh cycle).
+
+**Target fecha estimada:** ≥ 2028 o trigger-based sin ETA.
+
+### 20.5 Review cadence
+
+- **Cada cierre de oleada:** review rápido this doc (~30 min) — detectar drift + typos + inconsistencies acumuladas + update §14.2 checklist tickmarks.
+- **Cada 6 meses (Q2 + Q4):** review formal founder + Cascade architect — evaluar si triggers v2.X conditions met + planning bump.
+- **Cada major release producto (Oleada complete):** review completo + SESSION_LOG entry documentando decisiones arte → update history.
+- **Ad-hoc cuando red flag detectado:** si dev/AI encuentra contradicción doc vs code o doc vs doc, reporta immediate + resolve.
+
+### 20.6 Changelog discipline
+
+- Cada bump **requiere entry en changelog footer** (este doc §Changelog).
+- Entry format: `| vX.Y.Z | date | author | cambios concretos + razón + secciones tocadas + cross-refs ADR |`.
+- Entries **nunca se editan retroactivamente** (append-only, igual SESSION_LOG).
+- Si error en entry pasada → nueva entry correctiva referenciando original.
 
 ---
 
 ## Estado del documento
 
-- **Versión:** 2.0-scaffold-r3 (Phase 4 partial — 6 slices Sonnet-compatible complete).
-- **Próxima revisión:** Phase 4 continuation (Opus 4.7 MAX recomendado) → completar slices creative-density pendientes (§3.3 logo visual construction, §5.2 custom icon SVG, §6 textures SVG repo, §7.3 sound bibliography, §9-§10 nodes detail Phase 7 dep, §11 SONAR OS Tablet cross-ref, §12 marketing moodboard, §18-20 storybook/shader/roadmap) → bump v2.0 firmable.
+- **Versión:** 2.0-scaffold-r4 (Phase 4 partial — **Sonnet scaffold 100% complete**).
+- **Próxima revisión:** Phase 4 continuation (Opus 4.7 MAX recomendado) → completar slices restantes creative-density/designer-dependent (§3.3 logo visual construction, §5.2 custom icon SVG, §6 textures SVG repo, §7.3 sound bibliography sourcing, §9-§10 nodes detail Phase 7 dep, §11 SONAR OS Tablet cross-ref Phase 5 dep, §12 marketing moodboard + trailer storyboard) → bump v2.0 firmable.
 - **Reemplaza:** `_archive/01_art_direction_v1_admirals.md` v1.0 (deprecated).
 - **ADR origen:** ADR-011 (`planning/02_decision_log.md` §11).
 
@@ -1211,9 +1365,10 @@ SONAR records complete chain in bitácora
 | 2.0-scaffold-r1 | 2026-05-03 | Founder + Cascade | **Inversión jerarquía paleta meta-brand** (founder strategic correction pre-Phase 4): `Sonar Bright #2DD4BF` promovido a **PRIMARY BRAND IDENTITY** (Tier B — logo, CTAs, branding marketing, app-icon, focus rings). `Coloro 092-37-14 #175A5F` desciende a **structural support tier** (Tier C — glassmorphism tints, inactive borders, deep-tier UI; cero uso en logo/branding identity). Razón founder: marca SONAR percibida como **bioluminescencia + energía tecnológica**, firma en mercado = brillo, no oscuridad. Abyss Black canvas preservado para descanso visual sesiones largas (dark-mode-first). Reorganización §3.4.1 en 3 tiers (A canvas, B identity pop, C structural support) + §3.4.4 60/25/10/5/<3 ratios + §3.3 logo rules updated + §3.4.6 ping color = Sonar Bright. |
 | 2.0-scaffold-r2 | 2026-05-03 | Founder + Cascade | **Phase 4 partial attack (Sonnet-compatible slices)** post-commit checkpoint 6d3d96c: (a) **§4.2 Type scale detail-pass** — tokens canónicos completos con line-height (ratio + px absoluto), letter-spacing, familia+peso; responsive breakpoints website xs/sm/md/lg/xl; 6 reglas de aplicación tipográfica. (b) **§15 Glossary expandido** de 13 a 55+ términos organizados en 7 categorías (A meta-brand core ×9, B UI elements ×11, C actions/ops ×10, D data/tracking ×9, E social/contracts ×8, F status signals ALL CAPS ×8, G deprecated v1.0 Admirals ×9 + H uso cross-language). Canonical SSoT léxico para Phases 5-7. (c) **§16 Motion specs detalladas** — filosofía S6, duration tokens ×6 ms-precise, easing curves cubic-bezier ×5 submarine-themed, spring physics Framer Motion ×4 configs, motion pattern catalog ×12 patrones, a11y prefers-reduced-motion, performance budgets NUI. (d) Residuals fix: §11 lock screen + §12 website — Coloro identity refs → Sonar Bright per r1 hierarchy. Secciones pendientes Opus: §3.3 logo construction, §5.2 custom icon SVG, §12 marketing moodboard, §13 plan assets, §14 governance, §17-20 verticales/storybook/shader/roadmap. |
 | 2.0-scaffold-r3 | 2026-05-03 | Founder + Cascade | **Phase 4 partial continuation (Sonnet-compatible administrative + stubs)** post-commit 0b2b47e: (a) **§13 Plan de assets completo** — catalog 3D+2D+sound+branding con priority per-oleada, briefing template markdown equipo 3D externo, prioridades oleadas 1-3+, repo structure assets (git LFS strategy), licensing + rights clauses. (b) **§14 Governance del arte completo** — review process matrix qué requiere ADR, signing protocol v2.0 firmable checklist ×20 criterios, version control assets repo, designer collaboration workflow (3 phases briefing/iteration/delivery + red flags), anti-patterns governance. (c) **§17 Verticales placeholder stubs** — Panadería (concept + sub-paleta + sound + signal bake_ping), Retail (concept + sub-paleta + signal sale_ping), Cervecería (concept + sub-paleta + signal ferment_ping/tap_ping), Mecánico (concept + sub-paleta + signal repair_ping/invoice_ping) + cross-vertical integration pattern con ejemplo lineage end-to-end Granja→Molino→Panadería→Retail. Secciones pendientes Opus: §3.3 logo visual, §5.2 icons SVG, §6 textures repo, §7.3 sound bibliography, §9-§10 nodes detail, §11 Tablet cross-ref, §12 marketing, §18-20 storybook/shader/roadmap. |
+| 2.0-scaffold-r4 | 2026-05-03 | Founder + Cascade | **Phase 4 Sonnet scaffold 100% complete** post-commit d0ecfeb: (a) **§18 Storybook integration specs** — purpose/scope, component organization `/stories/` (primitives/components/patterns/screens/tokens), design tokens pipeline Figma → code (Tokens Studio → JSON → TS typed), stories obligatorias por component ×4 (Default/AllVariants/Interactive/EdgeCases), naming convention (Glossary §15 aligned), visual regression testing (Chromatic/Percy), perf budgets NUI (<16ms mount, <200ms cold start, <5s CI). (b) **§19 Shader contracts specs** — catalog ×6 shaders SONAR (mesh-grid, abyss-fog, bioluminescence-particle, glassmorphism-fallback, depth-gauge-LCD, sonar-pulse-wave) con target + prioridad, performance contracts (FPS <5% reduction, LOD-aware, fallback obligatorio), integration points NUI/3D/hybrid, aesthetic contracts (palette compliance + tint parametrizable + motion inheritance), anti-patterns ×5. (c) **§20 Roadmap art direction iterations** — living document policy per ADR-007 (patch/minor/major semver), v2.1 trigger conditions (×5 Q2 2026), v2.2 triggers (×4 Q4 2026-Q1 2027), v3.0 triggers (×5, ≥2028), review cadence (cierre oleada + Q2/Q4 + major release + ad-hoc), changelog discipline append-only. (d) Cleanup: unicode escapes literales fixed (`\u2014` → —, `\u2265` → ≥), duplicate separator removed, §14.2 checklist ticks updated. **Sonnet-doable scaffold 100% terminado** — remaining slices requieren designer/Opus creative density. |
 
 ---
 
 *"Hear the depth. Below the surface, every signal counts."*
 
-**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold (foundational, Phase 4 detail-pass pending).**
+**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold-r4 (foundational + Sonnet detail-pass 100%, Opus creative-density pendiente).**
