@@ -559,13 +559,269 @@ Direcciones foundational:
 
 ## 13. Plan de assets
 
-> **TODO Phase 4 detail-pass:** asset list 3D + 2D + sound + branding, briefing equipo 3D, prioridades por oleada.
+> **Full spec (Phase 4 detail-pass).** Plan ejecutable de todos los assets que requiere SONAR, por categoría + oleada + prioridad. **Esta es la lista operativa para briefing del equipo 3D + audio + diseñador + marketing.**
+
+### 13.1 Asset catalog completo
+
+#### 13.1.1 Assets 3D (mundo FiveM)
+
+| Asset | Tipo | Oleada | Prioridad | Notas |
+|---|---|---|---|---|
+| **Tablet device model** | Prop handheld | 1 | 🔴 P0 | Portable tablet frame + pantalla + botón power + speaker grill. Brushed steel tech accent frame. Aprox 0.3m ancho. |
+| **Tablet Pro tier frame** | Prop handheld variant | 2 | 🟡 P1 | Variante premium con bezel más fino + detalles metálicos adicionales. |
+| **Granja MLO admin building** | MLO interior + exterior | 1 | 🔴 P0 | Sede administrativa + oficina + zona recepción operadores. Materialidad wood+metal+window. |
+| **Granja parcelas (3 variantes)** | Terreno + props | 1 | 🔴 P0 | Parcela seca / húmeda / cosechada. Textura variable por estado. |
+| **Silo granja** | Prop grande | 1 | 🔴 P0 | Silo metálico exterior con depth gauge LCD visible. Audio changes por llenado. |
+| **Herramientas granja** | Props handheld | 1 | 🟡 P1 | Hoz, saco, pala, carretilla. Wear+tear visible. |
+| **Saco de grano (variantes calidad)** | Prop carryable | 1 | 🔴 P0 | 3 variantes tela por grade (A/B/C). Tag sellado con eco visible. |
+| **Molino MLO** | MLO interior + exterior | 1 | 🟡 P1 | Industrial interior con rodillos + belts + output packaging station. |
+| **Batch flour packaging** | Prop | 1 | 🟡 P1 | Bolsas packaging con tag lineage. |
+| **Vehículo reparto granja** | Vehículo | 2 | 🟡 P1 | Camioneta vintage modificable cargo capacity. |
+| **Uniforme Granja** | Ropa jugador | 2 | 🟢 P2 | Overall marrón + botas + gorra logo SONAR Granja discreto. |
+| **Uniforme Molino** | Ropa jugador | 2 | 🟢 P2 | Delantal blanco manchado + gorra + máscara polvo. |
+| **SONAR Bank sede edificio** | MLO | 2 | 🟡 P1 | Interior command center aesthetic + exterior marker discreto. |
+| **Market plaza exterior** | Mapa área | 2 | 🟡 P1 | Espacio público para bid/offer boards + meetings operadores. |
+
+#### 13.1.2 Assets 2D (UI + iconografía + marketing)
+
+| Asset | Tipo | Oleada | Prioridad | Notas |
+|---|---|---|---|---|
+| **Logo SONAR completo** | SVG vectorial | 1 | 🔴 P0 | Monograma + wordmark + lockup variants (vertical/horizontal/reverse). 5 variantes. |
+| **Favicon SONAR** | ICO + SVG | 1 | 🔴 P0 | 16/32/48/64/128/256 sizes + dark/light variants. |
+| **App icon Tablet** | PNG + SVG | 1 | 🔴 P0 | 512×512 iOS-style rounded square con monograma sobre abyss-black. |
+| **Custom SONAR icon set v1** | SVG library | 1 | 🔴 P0 | 8 custom icons (sonar-ping, submarine, depth-gauge, hydrophone, bioluminescence, pressure-hull, periscope, torpedo-bay). SVG + Figma components. |
+| **Lucide icon subset** | SVG references | 1 | 🔴 P0 | Curated list Lucide icons usados + stroke 1.5px + consistencia visual. |
+| **Texturas background** | PNG + SVG tiled | 1 | 🟡 P1 | Sonar mesh grid + glassmorphism fallback + brushed steel. |
+| **UI mockups Figma** | Figma file | 1 | 🔴 P0 | Tablet OS shell + apps principales (Bank, Home, Settings, Notif tray). Source of truth UI. |
+| **Design system Figma** | Figma library | 1 | 🔴 P0 | Components + tokens (color, type, motion, spacing). Referenced from UI mockups. |
+| **Storybook components** | Code library | 2 | 🟡 P1 | Componentes React live documentation (cross-ref `04_storybook_guide.md`). |
+| **Website templates** | Figma + HTML | 2 | 🟡 P1 | Landing hero + pricing + docs + store + changelog. |
+| **Tebex page mockups** | Figma | 2 | 🟡 P1 | Product pages layout + pricing table + screenshot grids. |
+| **Press kit** | PDF + assets ZIP | 2 | 🟢 P2 | Logos variantes + bio + screenshots + quotes founder. |
+
+#### 13.1.3 Assets audio / sound
+
+| Asset | Tipo | Oleada | Prioridad | Notas |
+|---|---|---|---|---|
+| **5 SFX firma SONAR** | OGG mono | 1 | 🔴 P0 | `sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch`. -15dB normalized. |
+| **Ambient Granja** | OGG stereo loop | 1 | 🟡 P1 | Viento + pájaros sutiles + crujido madera + lejano tractor. Loopable seamless. |
+| **Ambient Molino** | OGG stereo loop | 2 | 🟡 P1 | Rodillos industriales + belts + polvo aéreo sonoro. |
+| **Ambient SONAR OS (Tablet)** | OGG stereo loop | 2 | 🟢 P2 | Sub bridge very-low drone + sonar ping intervals ambient. Activo solo focus mode. |
+| **Trailer music** | WAV master | 2 | 🟢 P2 | Track custom cinematografic con sonar ping hits sincronizados. |
+| **Boot sound Tablet** | OGG mono | 1 | 🔴 P0 | Chord deliberate 1.8s acompañando splash. |
+
+#### 13.1.4 Branding + marketing materials
+
+| Asset | Tipo | Oleada | Prioridad | Notas |
+|---|---|---|---|---|
+| **Brand book PDF** | PDF completo | 2 | 🟡 P1 | Logo rules + palette + tipografía + voz + do/dont + 40-60 páginas. Referenciable externo. |
+| **Trailer reveal Oleada 1** | MP4 master | 2 | 🟡 P1 | 60-90s hero reveal style cinematográfico. Script + storyboard §12. |
+| **Screenshots in-game curated** | PNG library | 2 | 🟡 P1 | 20-30 screenshots para Tebex + website + social + press. Composed intentionally (lighting, framing, UI state). |
+| **Website copy spanish + english** | MD/txt files | 2 | 🟡 P1 | Hero + features + pricing + docs + changelog + about. SEO-optimized. |
+| **Social media templates** | PSD/Figma | 2 | 🟢 P2 | Twitter/X + Discord + Instagram/TikTok announcement templates. |
+| **Launch announcement video** | MP4 short | 2 | 🟢 P2 | 30s teaser para social/discord. |
+
+### 13.2 Briefing template equipo 3D (externo)
+
+> Cada asset 3D handoff a equipo externo requiere brief en este formato:
+
+```markdown
+# Brief 3D — [Asset Name]
+
+## Objetivo
+[1-2 frases: qué es, para qué sirve en producto]
+
+## References visuales
+- [3-5 references moodboard]
+- Anti-references (opcional): [qué NO queremos]
+
+## Specs técnicos
+- Polycount target: [low/mid/high + rango triangles]
+- Texture resolution: [1K/2K/4K]
+- PBR materials: [diffuse/normal/roughness/metallic]
+- LODs: [número de LODs]
+- Rig/animation: [sí/no]
+- FiveM compatibility: [ydr/ytyp/ymap formato]
+
+## Aesthetic SONAR
+- Materialidad: [wood aged / brushed steel / glass / organic]
+- Wear+tear: [nuevo / usado / muy usado]
+- Glow elements integrados: [LCDs instrument visible emit]
+- Color accents: [si el asset tiene superficies Coloro Support / Sonar Bright]
+
+## Entregables esperados
+- Formato files: [.blend, .fbx, .ydr]
+- Timeline: [estimate]
+- Review checkpoints: [milestones intermediates]
+```
+
+### 13.3 Prioridades por oleada
+
+| Oleada | Scope | Assets P0 obligatorios |
+|---|---|---|
+| **0 (foundation)** | ADR + docs + arquitectura | — (cero assets, solo docs) |
+| **1 (MVP Granja + Tablet)** | Banco core + Tablet OS + Granja loop | Tablet device + Granja MLO + Granja parcelas + Silo + Saco grano + Logo SONAR + Favicon + App icon + Custom icon set + 5 SFX firma + Boot sound + UI mockups Figma |
+| **2 (Molino + Bank app + Mercado)** | Expansión cadena + Tablet apps | Molino MLO + Batch flour + Vehículo reparto + SONAR Bank sede + Market plaza + Ambient loops + Brand book + Trailer Oleada 1 |
+| **3+ (verticales extendidos)** | Panadería, Retail, Cervecería, Mecánico | TBD per §17 stubs |
+
+### 13.4 Repo structure assets
+
+```
+/assets/
+├── branding/
+│   ├── logos/                     # SVG master + exports PNG/ICO
+│   ├── brand-book/                # PDF + source
+│   └── press-kit/                 # ZIPs curados
+├── ui/
+│   ├── figma-source/              # Links a Figma files (no store en git)
+│   ├── icons/
+│   │   ├── sonar-custom-v1/       # 8 custom icons SVG
+│   │   └── lucide-subset.md       # Curated list referenced
+│   └── textures/
+│       ├── sonar-mesh-grid.svg
+│       ├── glassmorphism-fallback.png
+│       └── brushed-steel.png
+├── audio/
+│   ├── sfx/
+│   │   ├── sonar_ping.ogg
+│   │   ├── sonar_pressure.ogg
+│   │   └── …
+│   ├── ambient/
+│   │   ├── granja-loop.ogg
+│   │   └── …
+│   └── boot/
+│       └── tablet-boot.ogg
+├── 3d/
+│   ├── source/                    # .blend master files
+│   ├── fivem-exports/             # .ydr / .ytyp ready-to-stream
+│   └── briefs/                    # Markdown briefs por asset
+└── marketing/
+    ├── screenshots/               # Curated game screenshots
+    ├── trailer/                   # Video masters + storyboards
+    └── social/                    # Templates sized per platform
+```
+
+### 13.5 Licensing + rights
+
+- **Todos los assets creados para SONAR:** copyright Studio SONAR, uso exclusivo producto + marketing.
+- **Terceros (licencias):**
+  - Tipografía Geist Sans/Mono: SIL Open Font License (free commercial).
+  - Tipografía Inter Tight: SIL OFL (free commercial).
+  - Lucide icons: ISC license (free commercial + modification OK).
+  - Stock audio (si se usa como base foley): license comercial obligatorio documentar en repo.
+- **Outsourced 3D:** contratos con work-for-hire clause — copyright transfiere a SONAR al entregar + pagar. Source files (.blend) obligatorio entrega.
+- **Prohibido en repo:** assets stock sin licencia documentada, modelos ripped de juegos (NoPixel fork assets, GTA Online clones, etc.), música con copyright sin autorización.
 
 ---
 
 ## 14. Governance del arte
 
-> **TODO Phase 4 detail-pass:** review process, signing protocol, version control assets repo, designer collaboration workflow.
+> **Full spec (Phase 4 detail-pass).** Cómo se toman decisiones de arte, quién aprueba qué, cómo se firman documentos visuales, cómo colabora el equipo con designers externos. **Si este doc no define un workflow para algo, la decisión default es founder review.**
+
+### 14.1 Review process — quién aprueba qué
+
+| Decisión | Reviewer primario | Trigger ADR |
+|---|---|---|
+| **Paleta color** (añadir/quitar/mover tier) | Founder + Cascade architect | ✅ ADR obligatorio |
+| **Tipografía** (cambio familia principal) | Founder + Cascade architect | ✅ ADR obligatorio |
+| **Voz de marca** (tono, vocabulario, personas) | Founder | ✅ ADR obligatorio |
+| **Logo design final** | Founder + designer externo | ✅ ADR obligatorio |
+| **Iconografía custom set** | Founder + designer | 🟡 ADR recomendado |
+| **Sound design SFX firma** | Founder + sound designer | 🟡 ADR recomendado |
+| **Motion patterns principales** | Cascade + Founder review | 🟢 No ADR (salvo cambio filosofía) |
+| **UI mockup Figma** | Cascade + Founder review | 🟢 No ADR |
+| **Storybook components** | Cascade | 🟢 No ADR (implementation detail) |
+| **Marketing copy individual** | Founder + writer | 🟢 No ADR |
+| **Trailer script + storyboard** | Founder + video producer | 🟡 ADR si define género/tono |
+| **Assets 3D outsourced** | Founder + 3D lead | 🟢 No ADR (operational) |
+
+**Regla base:** si una decisión **invalida** algo firmado en SSoT docs (este incluido), ADR obligatorio antes de ejecutar (per workspace rules §red_flags).
+
+### 14.2 Signing protocol v2.0 firmable
+
+> Este doc (`01_art_direction.md`) pasa de `scaffold` a `firmable` cuando cumple los siguientes criterios:
+
+**Checklist v2.0 firmable (all must pass):**
+
+- [ ] §1 Filosofía S1-S10 completa + antirefs + comparativa competidores.
+- [ ] §2 Metáfora central completamente articulada.
+- [ ] §3 Identidad Studio: marca + voz + logo (con visual construction spec + designer lock) + paleta (3 tiers tokens finales).
+- [ ] §4 Sistema tipográfico: familias + scale tokens con line-height exact + reglas aplicación. ✅ **(done v2.0-scaffold-r2)**
+- [ ] §5 Iconografía: Lucide + custom set 8 con SVG construction specs + Figma library live.
+- [ ] §6 Texturas: 3 texturas con source files + CSS class library.
+- [ ] §7 Sound design: 5 SFX firma con sourcing docs + format specs + license. Ambient bibliography preliminar.
+- [ ] §8 Principios identidad por nodo: framework + 3D vs código completo.
+- [ ] §9 Granja: concept statement + sub-paleta detalle + props 3D lineup + sound signature + motion.
+- [ ] §10 Molino / Banca / Mercado: placeholders con detalle mínimo Phase 7.
+- [ ] §11 SONAR OS Tablet: decisiones foundational + cross-ref `02_sonar_tablet.md`.
+- [ ] §12 Marketing materials: moodboard completo + trailer storyboard + Tebex layout + website copy directions.
+- [ ] §13 Plan de assets: catalog + briefing + prioridades + repo structure + licensing. ✅ **(done v2.0-scaffold-r3)**
+- [ ] §14 Governance: este section. ✅ **(done v2.0-scaffold-r3)**
+- [ ] §15 Glossary: 40+ términos canónicos. ✅ **(done 55+ v2.0-scaffold-r2)**
+- [ ] §16 Motion specs: duration tokens + easing + springs + pattern catalog + a11y. ✅ **(done v2.0-scaffold-r2)**
+- [ ] §17 Verticales placeholder: stubs Panadería/Retail/Cervecería/Mecánico. ✅ **(done v2.0-scaffold-r3)**
+- [ ] §18 Storybook integration: cross-ref con file live.
+- [ ] §19 Shader contracts: cross-ref con file live.
+- [ ] §20 Roadmap art direction iterations: v2.1/v2.2/v3.0 triggers.
+
+**Firma protocol:**
+1. Cuando checklist completo, founder hace review full doc (1-2 sesiones dedicadas).
+2. Founder green-light + Cascade bump versión `v2.0-scaffold-rN` → `v2.0` firmable.
+3. Header doc actualizado a "Estado: firmado".
+4. Commit `docs: sign 01_art_direction.md v2.0` + tag `art-direction-v2.0` (opcional).
+5. Post-firma, cambios = new ADR + version bump (v2.1+). Living document per ADR-007.
+
+### 14.3 Version control assets repo
+
+- **Git LFS obligatorio** para binaries (PSD, AI, .blend, ydr, PNGs grandes, videos). Texto (SVG, MD) normal git.
+- **Source files obligatorio tracked:** `.blend`, `.fig` (via figma-export API), `.ai` master logo, WAV sources audio.
+- **Exports cached tracked:** FiveM .ydr / .ytyp, PNG exports logo sized, OGG exports audio normalized. Regenerables pero preservados.
+- **Branches:** `main` canonical. `feature/<asset-name>` work-in-progress. NO commits directos main para assets outsourced.
+- **Tagging releases:** al cerrar oleada, tag `assets-oleada-<N>` — freeze de assets usados en producto en ese momento.
+- **Figma files:** referenced via URL en MD files. NO attempted sync bidireccional (Figma es SSoT Figma-side).
+
+### 14.4 Designer collaboration workflow (externo)
+
+> Para cada engagement con designer externo (logo, custom icons, 3D artist):
+
+**Fase 1 — Briefing (founder + Cascade):**
+1. Cascade redacta brief markdown con template §13.2 (para 3D) o equivalente (para 2D/audio).
+2. Founder review + ajustes.
+3. Send a designer + kickoff call (si aplica).
+
+**Fase 2 — Iteration (~2-4 weeks per asset significant):**
+1. Designer entrega primer draft con 2-3 variantes.
+2. Founder + Cascade review síncrono (30-60 min).
+3. Feedback estructurado: qué funciona (preserve), qué no (iterate), qué falta (add).
+4. Designer entrega v2 con ajustes.
+5. Repetir hasta v3-v4 (máx).
+
+**Fase 3 — Delivery:**
+1. Designer entrega final: source files (.blend/.ai/.fig) + exports (FiveM-ready / web-ready) + documentación cambios.
+2. Cascade review técnico: specs cumplidos, naming convention, repo structure match.
+3. Founder firma off.
+4. Commit a repo con tag release + payment release (si paid engagement).
+5. Post-mortem breve: qué funcionó, qué mejorar next engagement.
+
+**Red flags designer workflow:**
+- 🚩 Designer solicita cambios constantes de scope sin re-briefing formal.
+- 🚩 Entregas sin source files (only exports) — rechazar, no es contract-compliant.
+- 🚩 Designer usa paleta distinta a Tier A/B/C sin ADR approval.
+- 🚩 Asset rompe principios S1-S10 sin justificación — re-work.
+- 🚩 Designer no puede entregar variants (logo color/size) — incomplete delivery.
+
+### 14.5 Anti-patterns governance
+
+> **Qué NO hacemos en decisiones de arte:**
+
+- ❌ **Changes bypass review** — merge directo main sin founder review asset cambio.
+- ❌ **Rogue assets** — asset added al producto sin que pase por catalog §13.1 + brief §13.2.
+- ❌ **Unauthorized palette changes** — dev/designer usa color custom fuera Tier A/B/C + Crew + Signal. Si necesita nuevo color → ADR primero.
+- ❌ **Mix stack inconsistent** — usar paleta Admirals v1.0 deprecated (`_archive/`) en new work.
+- ❌ **Voice drift** — copy escrito con voz friendly/playful violando glossary §15.
+- ❌ **Unaccounted assets** — files en repo que no están en catalog §13.1 ni justificados en brief.
+- ❌ **License untracked** — asset terceros añadido sin documentar licencia + ubicación repo.
+- ❌ **Skip a11y** — animations sin `prefers-reduced-motion` handling, contrastes sin WCAG check.
 
 ---
 
@@ -780,11 +1036,159 @@ Test obligatorio: con `prefers-reduced-motion: reduce` activo, el Tablet debe se
 
 ---
 
-## 17-20. Secciones pendientes (Phase 4 continuation — Opus-candidato creative density)
+## 17. Verticales placeholder (stubs futuros Oleada 2+)
+
+> **Scope:** stubs de identidad por vertical futuro. Cada vertical tendrá su **doc dedicado** detallado (e.g., `docs/design/<NN>_node_<name>.md`) durante Phase 7 doc purge. Aquí documentamos solo concept statement + sub-paleta preliminar + ícono + sound + signal integration SONAR.
+
+> **Principio cross-vertical:** todos respiran bajo meta-brand SONAR (Tier B identity pop + abyss canvas). Cada vertical aporta **un acento cultural de 1-2 colores** en tier vertical (no en Tier A/B/C meta-brand).
+
+### 17.1 Panadería — "Surface node manufactura fina"
+
+**Concept statement:**
+> *"Surface node de manufactura fina. Calor seco del horno, harina en el aire, aroma que viaja. El tiempo aquí se mide en fermentaciones y ciclos de horno — cada batch lleva su eco de calidad escalada."*
+
+**Mood reference:** Chef's Table bread episodes, artisan wood-fired bakery aesthetic, cobblestone alley mornings.
+
+**Sub-paleta preliminar (acento vertical):**
+| Nombre | Hex | Uso |
+|---|---|---|
+| **Bread Gold** | `#C9A566` | Acento cultural primario (signage, uniformes, packaging). |
+| **Flour White** | `#F5EDDF` | Packaging clean + dust texture surfaces. |
+| **Oven Glow** | `#E67E43` | Warmth accent interior (fire signal). Rare decorative use only. |
+
+**Icon signature:** `bread-loaf` + `wheat-sheaf-processed` (stylized crust pattern).
+
+**Sound signature:**
+- `bakery_oven_open` — puerta horno + calor escapando (200ms).
+- `bakery_knead` — amasado rítmico (loopable).
+- Ambient panadería: horno crackling + aromas (implicit) + llenado tranvias.
+
+**Signal protocol SONAR:**
+- `bake_ping` event — batch de pan listo para recoger (payload: `batch_id`, `quality`, `lineage_molino_origin`, `baker_operator`).
+- `fermentation_timer_ping` — masa lista próxima fase.
+- Integra con `SONAR OS Granja` (origin lineage) + `SONAR OS Molino` (flour input).
+
+---
+
+### 17.2 Retail — "Surface node transacción consumer-facing"
+
+**Concept statement:**
+> *"Surface node de punto de venta. Consumer-facing, transacciones rápidas, receipts impresos, escaparates organizados. Donde el operador meets the NPC public demand — cada venta es un eco en el ledger SONAR."*
+
+**Mood reference:** Parisian concept stores, clean minimal boutique (Aesop, Muji), fluorescent-but-tasteful lighting.
+
+**Sub-paleta preliminar:**
+| Nombre | Hex | Uso |
+|---|---|---|
+| **Retail Cream** | `#EFE8DD` | Surfaces clínicas (counters, walls). |
+| **Receipt Paper** | `#F9F5EC` | Printed materials, receipts in-world. |
+| **POS Green** | `#4A8A6B` | Confirmation accent (transaction OK). Desaturated forest. |
+
+**Icon signature:** `shopping-bag` + `receipt-printer` + `barcode-scan`.
+
+**Sound signature:**
+- `retail_pos_confirm` — print receipt + drawer open (600ms).
+- `retail_bell_entry` — campanita entrada NPC cliente (200ms).
+- Ambient: conversación ambiental baja + música ambiente lounge.
+
+**Signal protocol SONAR:**
+- `sale_ping` — venta consumer-NPC ejecutada (payload: `items[]`, `total`, `operator`, `timestamp`).
+- `stock_low_ping` — inventario crítico bajo.
+- Integra con cualquier vertical upstream (Panadería, Granja direct, etc.) via lineage.
+
+---
+
+### 17.3 Cervecería — "Surface node fermentación artesanal"
+
+**Concept statement:**
+> *"Surface node de fermentación artística lenta. Cobre pulido, vapor aromatizado, paciencia obligatoria — cada lote fermenta en su tiempo biológico. El cobre **no se pule para brillar**; se pule para no-corroerse. La diferencia importa."*
+
+**Mood reference:** Craft brewery modern (Brewdog, Stone Brewing visual), steampunk-light touch, industrial lighting.
+
+**Sub-paleta preliminar:**
+| Nombre | Hex | Uso |
+|---|---|---|
+| **Copper Vessel** | `#B97B45` | Acento principal (tanks, instruments, packaging emboss). |
+| **Hop Green** | `#7A9464` | Secondary natural (ingredient iconography). |
+| **Amber Ale** | `#C78B3A` | Product color reference (fills en UI, liquid renders 3D). |
+
+**Icon signature:** `brewery-tank` + `hop-flower` + `tap-dispenser`.
+
+**Sound signature:**
+- `brewery_ferment_bubble` — burbujeo lento tanque (loopable subtle).
+- `brewery_tap_pour` — pour cerveza en vaso (1s con foam hiss).
+- `brewery_steam_release` — válvula steam venting (400ms).
+- Ambient: bubbles + máquinas pressure + distant radio.
+
+**Signal protocol SONAR:**
+- `ferment_ping` — lote alcanza fase fermentación clave (day N, gravity reading).
+- `tap_ping` — nueva cerveza lista servir en tap público.
+- `batch_ready_ping` — ciclo fermentación completo, stock disponible.
+
+---
+
+### 17.4 Mecánico — "Surface node reparación + modificación"
+
+**Concept statement:**
+> *"Surface node de reparación y mod tuning. Grease, soldadura, suspensión de piezas colgantes, tools organized by frequency-of-use. Precision industrial — aquí se restauran vehículos con la misma precisión con la que SONAR registra transacciones."*
+
+**Mood reference:** High-end custom garage (Singer Porsche, ICON 4x4 aesthetic), tool boards + diamond-plate floors.
+
+**Sub-paleta preliminar:**
+| Nombre | Hex | Uso |
+|---|---|---|
+| **Grease Black** | `#1A1612` | Surfaces industrial sucio (pisos, herramientas). Diferente de abyss-black, tinte warmer. |
+| **Safety Yellow** | `#E8B733` | Acento safety (lines on floor, high-vis). Rare strategic use. |
+| **Steel Blue** | `#4A5A6B` | Tools + bolts + hardware accent. |
+
+**Icon signature:** `wrench` + `engine-block` + `welding-torch`.
+
+**Sound signature:**
+- `mechanic_wrench_tighten` — torque ratchet (300ms).
+- `mechanic_weld_arc` — soldadura arc (loopable + sparkle hits).
+- `mechanic_engine_rev` — test rev vehículo (1s, configurable pitch).
+- Ambient: metal clanking + compressor + radio AM tuner.
+
+**Signal protocol SONAR:**
+- `repair_ping` — reparación completada (payload: `vehicle_id`, `parts_used[]`, `cost`, `mechanic_operator`).
+- `invoice_ping` — invoice generado hacia cliente operador.
+- `mod_install_ping` — mod/tune instalado (tier upgrade tracked).
+
+---
+
+### 17.5 Cross-vertical integration patterns
+
+> **Principio:** cada signal protocol de vertical genera un `Eco` trackeable en SONAR Bank. Los `lineage` cadenas cross-vertical (Granja → Molino → Panadería → Retail) son el corazón economico del ecosystem.
+
+**Ejemplo lineage end-to-end:**
+
+```
+farmer harvests wheat (harvest_ping)
+    ↓ eco FARM-2026-0042
+miller processes batch (mill_ping)
+    ↓ eco MILL-2026-0018 + lineage: [FARM-2026-0042]
+baker produces bread batch (bake_ping)
+    ↓ eco BAKE-2026-0007 + lineage: [MILL-2026-0018, FARM-2026-0042]
+retailer sells to NPC (sale_ping)
+    ↓ eco SALE-2026-2148 + lineage: [BAKE-2026-0007, MILL-2026-0018, FARM-2026-0042]
+SONAR records complete chain in bitácora
+```
+
+**Cada vertical preserva su identidad cultural (color + sound + ícono)**, pero **comparte protocolo SONAR** (eco IDs + lineage + signals). Esta es la **coherencia meta-brand** que nos diferencia radicalmente en el mercado.
+
+---
+
+## 18-20. Secciones pendientes (Phase 4 continuation — Opus-candidato creative density)
 
 > **TODO Phase 4 continuación (sesión dedicada Opus 4.7 MAX recomendada por creative density):**
 
-- §17 Verticales placeholder (Panadería, Retail, Cervecería, Mecánico futuros) — stub identities por vertical.
+- §3.3 Logo SONAR detail visual construction (designer collaboration).
+- §5.2 Custom icon set 8 SVG construction + Figma library + repo.
+- §6 Textures SVG repo + CSS class library + 3D texture maps.
+- §7.3 Sound bibliography sourcing + license docs.
+- §9-§10 Nodes Granja + Molino detalle completo (Phase 7 purge docs).
+- §11 SONAR OS Tablet decisiones detail (cross-ref `02_sonar_tablet.md` rewrite Phase 5).
+- §12 Marketing moodboard + video specs + Tebex page layout + trailer storyboard.
 - §18 Storybook integration specs (`04_storybook_guide.md` cross-ref).
 - §19 Shader contracts (`02_shader_contracts.md` cross-ref) post-pivot.
 - §20 Roadmap art direction iterations (v2.1, v2.2, v3.0 trigger conditions).
@@ -793,8 +1197,8 @@ Test obligatorio: con `prefers-reduced-motion: reduce` activo, el Tablet debe se
 
 ## Estado del documento
 
-- **Versión:** 2.0-scaffold-r2 (Phase 4 partial — 3 slices Sonnet-compatible complete).
-- **Próxima revisión:** Phase 4 continuation (Opus 4.7 MAX) → completar secciones pendientes creative density (§3.3 logo construction, §5.2 custom icon SVG, §12 marketing, §13 assets, §14 governance, §17-20) → bump v2.0 firmable.
+- **Versión:** 2.0-scaffold-r3 (Phase 4 partial — 6 slices Sonnet-compatible complete).
+- **Próxima revisión:** Phase 4 continuation (Opus 4.7 MAX recomendado) → completar slices creative-density pendientes (§3.3 logo visual construction, §5.2 custom icon SVG, §6 textures SVG repo, §7.3 sound bibliography, §9-§10 nodes detail Phase 7 dep, §11 SONAR OS Tablet cross-ref, §12 marketing moodboard, §18-20 storybook/shader/roadmap) → bump v2.0 firmable.
 - **Reemplaza:** `_archive/01_art_direction_v1_admirals.md` v1.0 (deprecated).
 - **ADR origen:** ADR-011 (`planning/02_decision_log.md` §11).
 
@@ -806,6 +1210,7 @@ Test obligatorio: con `prefers-reduced-motion: reduce` activo, el Tablet debe se
 | 2.0-scaffold | 2026-05-03 | Founder + Cascade | **Foundational scaffolding post-pivot SONAR**. Estructura completa 20 secciones + decisiones foundational firmes (paleta hex, tipografía, voz, sound, iconografía nombres). Detalle pendiente Phase 4 detail-pass dedicada. |
 | 2.0-scaffold-r1 | 2026-05-03 | Founder + Cascade | **Inversión jerarquía paleta meta-brand** (founder strategic correction pre-Phase 4): `Sonar Bright #2DD4BF` promovido a **PRIMARY BRAND IDENTITY** (Tier B — logo, CTAs, branding marketing, app-icon, focus rings). `Coloro 092-37-14 #175A5F` desciende a **structural support tier** (Tier C — glassmorphism tints, inactive borders, deep-tier UI; cero uso en logo/branding identity). Razón founder: marca SONAR percibida como **bioluminescencia + energía tecnológica**, firma en mercado = brillo, no oscuridad. Abyss Black canvas preservado para descanso visual sesiones largas (dark-mode-first). Reorganización §3.4.1 en 3 tiers (A canvas, B identity pop, C structural support) + §3.4.4 60/25/10/5/<3 ratios + §3.3 logo rules updated + §3.4.6 ping color = Sonar Bright. |
 | 2.0-scaffold-r2 | 2026-05-03 | Founder + Cascade | **Phase 4 partial attack (Sonnet-compatible slices)** post-commit checkpoint 6d3d96c: (a) **§4.2 Type scale detail-pass** — tokens canónicos completos con line-height (ratio + px absoluto), letter-spacing, familia+peso; responsive breakpoints website xs/sm/md/lg/xl; 6 reglas de aplicación tipográfica. (b) **§15 Glossary expandido** de 13 a 55+ términos organizados en 7 categorías (A meta-brand core ×9, B UI elements ×11, C actions/ops ×10, D data/tracking ×9, E social/contracts ×8, F status signals ALL CAPS ×8, G deprecated v1.0 Admirals ×9 + H uso cross-language). Canonical SSoT léxico para Phases 5-7. (c) **§16 Motion specs detalladas** — filosofía S6, duration tokens ×6 ms-precise, easing curves cubic-bezier ×5 submarine-themed, spring physics Framer Motion ×4 configs, motion pattern catalog ×12 patrones, a11y prefers-reduced-motion, performance budgets NUI. (d) Residuals fix: §11 lock screen + §12 website — Coloro identity refs → Sonar Bright per r1 hierarchy. Secciones pendientes Opus: §3.3 logo construction, §5.2 custom icon SVG, §12 marketing moodboard, §13 plan assets, §14 governance, §17-20 verticales/storybook/shader/roadmap. |
+| 2.0-scaffold-r3 | 2026-05-03 | Founder + Cascade | **Phase 4 partial continuation (Sonnet-compatible administrative + stubs)** post-commit 0b2b47e: (a) **§13 Plan de assets completo** — catalog 3D+2D+sound+branding con priority per-oleada, briefing template markdown equipo 3D externo, prioridades oleadas 1-3+, repo structure assets (git LFS strategy), licensing + rights clauses. (b) **§14 Governance del arte completo** — review process matrix qué requiere ADR, signing protocol v2.0 firmable checklist ×20 criterios, version control assets repo, designer collaboration workflow (3 phases briefing/iteration/delivery + red flags), anti-patterns governance. (c) **§17 Verticales placeholder stubs** — Panadería (concept + sub-paleta + sound + signal bake_ping), Retail (concept + sub-paleta + signal sale_ping), Cervecería (concept + sub-paleta + signal ferment_ping/tap_ping), Mecánico (concept + sub-paleta + signal repair_ping/invoice_ping) + cross-vertical integration pattern con ejemplo lineage end-to-end Granja→Molino→Panadería→Retail. Secciones pendientes Opus: §3.3 logo visual, §5.2 icons SVG, §6 textures repo, §7.3 sound bibliography, §9-§10 nodes detail, §11 Tablet cross-ref, §12 marketing, §18-20 storybook/shader/roadmap. |
 
 ---
 
