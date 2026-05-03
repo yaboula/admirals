@@ -1,13 +1,101 @@
 # 🌊 SONAR — Art Direction (Studio + Ecosystem)
 
-> **Versión:** 2.0-scaffold (en redacción — foundational scaffolding post-pivot ADR-011, detail-pass pendiente Phase 4).
-> **Documento padre:** `00_PRODUCT_BIBLE.md` (rewrite pendiente Phase 5).
+> **Versión:** 2.0-scaffold-r6 (refinement post-ADR-012 — abstract metaphor + hybrid theme + neutral voice).
+> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-ADR-012 cleanup).
 > **Documentos hermanos:** `02_sonar_tablet.md` (rename + rewrite pendiente Phase 5) · `01_node_farm.md` (purge pendiente Phase 7).
-> **ADR origen:** `planning/02_decision_log.md` ADR-011 — Strategic Identity Pivot Admirals → SONAR.
+> **ADR origen:** `planning/02_decision_log.md` ADR-011 (rebrand foundational) **+ ADR-012 (refinement amendment)**. Lectura conjunta obligatoria.
 > **Reemplaza:** `docs/_archive/01_art_direction_v1_admirals.md` (v1.0 Admirals/Almirantazgo, archivado 2026-05-03).
-> **Estado:** 🚧 en redacción (NO firmable hasta Phase 4 complete).
+> **Estado:** 🚧 en redacción (NO firmable hasta Phase 4 complete + Phase 4.5 v2 briefs delivered).
 
-> **Lectura previa obligatoria:** ADR-011 completo. **NO leer `_archive/01_art_direction_v1_admirals.md` para implementación SONAR — está deprecated.**
+> **Lectura previa obligatoria:** ADR-011 + **ADR-012**. **NO leer `_archive/01_art_direction_v1_admirals.md` para implementación SONAR — está deprecated.**
+
+---
+
+## 🔄 REFINEMENT NOTICE r6 (per ADR-012, 2026-05-03)
+
+**Este documento contiene scaffold-r1..r5 escrito interpretando SONAR con metáfora literal-submarino-militar + dark-extremo + voz capitán. ADR-012 refina esa interpretación.** Las secciones NO han sido reescritas surgicalmente todavía (Phase 4.5 v2 hará rewrite full); en lugar de eso, **este aviso top-level establece la interpretación canónica vigente**. En cualquier conflicto entre lo siguiente y el contenido §1-§20 abajo, **gana este aviso + ADR-012**.
+
+### NEW CANONICAL — vigente desde 2026-05-03
+
+#### Metáfora — ABSTRACTA PURA (ADR-012 §D1)
+
+- **SONAR ES:** profundidad como fuerza simbólica. Valor oculto bajo capas. Calma metódica al descender. Exploración paciente. Patterns que emergen al observar con atención. Claridad bajo presión. Acrónimo SOund Navigation And Ranging interpretado **metafórico, no literal**: el producto "ve escuchando" la economía, no es hardware acústico.
+- **SONAR NO ES** (purga explícita — ignorar ocurrencias en §1-§20):
+  - Submarino militar literal (silhouettes/perfiles).
+  - Hardware de señal acústica: hydrophones, sonar pings (radio/frecuencia), waveforms, oscilloscope, instrument-panels concretos.
+  - Armamento submarino: torpedos, depth charges, missile bays.
+  - Equipo de cubierta literal: periscopios, bridge-as-command-center militar, hatches, casco con remaches, crew submarino.
+  - Voz/personaje militar: "silent service", "capitán submarino nuclear", "comandante", "almirante", "a bordo", "tripulación", "tactical".
+
+#### Theme — SINGLE HYBRID DARK + WHITE SURFACES (ADR-012 §D2)
+
+- **NO dark-mode-extremo 60% canvas abyss.** Reemplaza ratio scaffold-r1.
+- **Single hybrid theme** (un solo theme, balance interior): canvas oscuro principal + paneles/cards/surfaces blancos o off-white selectivos.
+- **Nuevas proporciones meta:**
+  - **~30-40%** deep surfaces (canvas dark — Abyss/Depths Tier A reduced).
+  - **~30-40%** white/off-white surfaces (panels, cards, content areas — **NEW Tier**).
+  - **~10-15%** Sonar Bright `#2DD4BF` identity (Tier B preserved — funciona AAA dark + AA+ light).
+  - **~10%** structural support Coloro `#175A5F` (Tier C preserved).
+  - **<5%** signal functional (preserved).
+- **Refs convergentes:** Notion (dark canvas + white content panes), Arc Browser (dark chrome + light content), Stripe Dashboard (dark sidebar + white workspace), Linear (dark canvas + white modal/cards selectivos), GitHub dark mode mixed surfaces.
+- **Glassmorphism preserved** signature pero pierde exclusividad dark — puede aplicar tinte sutil sobre surfaces blancos también.
+
+#### Voz — NEUTRAL PREMIUM-TECH (ADR-012 §D3)
+
+- **Eliminar TODO arquetipo militar/submarino.** Cero "silent service", "capitán", "comandante", "almirante", "a bordo", "tripulación", "tactical", "operación naval".
+- **Tono retenido:** preciso, confiado, terse, calmo, professional, atemporal.
+- **Estilo referencia copy:** Vercel docs, Linear copy, Stripe docs, Apple Pro apps. Premium-tech moderno sin personaje fictício.
+- **Ejemplos voz canónica r6:**
+  - ✅ *"SONAR maps your economy. Every transaction logged."*
+  - ✅ *"Hear the depth. Understand the patterns."*
+  - ✅ *"Console activated. Ready."*
+  - ✅ *"Transfer received: 1,240€ — entry FARM-2026-0042."*
+  - ❌ *"Console SONAR activada. Profundidad operativa."* (era voz capitán scaffold-r1..r5).
+  - ❌ *"Contacto detectado: transferencia recibida en eco SONAR."* (literal sub-acoustic — superseded).
+
+#### Iconografía — ABSTRACT-PROFUNDIDAD (ADR-012 §D1)
+
+- **Conservados de scaffold-r5 (3/8):**
+  - `depth-gauge` (medidor profundidad — concept abstract OK).
+  - `pressure-hull` **reconceptualizado**: ya NO casco submarino con remaches. Ahora = **capas de profundidad concéntricas / contención abstract** (estilo geological strata, NOT metal hull).
+  - `bioluminescence` (luz bajo presión, valor emergiendo — abstract).
+- **Purgados de scaffold-r5 (5/8 — NO usar):**
+  - ❌ `sonar-ping` (ondas concéntricas radio/frecuencia).
+  - ❌ `submarine` (silueta literal).
+  - ❌ `hydrophone` (mic acústico militar).
+  - ❌ `periscope` (equipo sub literal).
+  - ❌ `torpedo-bay` (armamento militar).
+- **Nuevos a definir Phase 4.5 v2 (5 candidatos preliminares):**
+  - `descent-layers` (capas descendiendo).
+  - `signal-clarity` (patrón emergiendo de ruido).
+  - `depth-grid` (grid profundidad isométrica).
+  - `observation-field` (campo observación — sustituye periscope para "view/monitor").
+  - `lineage-trace` (línea uniendo nodos — sustituye torpedo-bay para "logística/dispatch").
+
+#### Sound naming — neutral (ADR-012 §D3 spillover)
+
+- Todos los SFX `sonar_*` scaffold-r1 nombres preservados a nivel **concepto** pero re-interpretados sin radio/freq:
+  - `sonar_ping` → `signal_emerge` (notif primaria — sonido patrón emergiendo, no ping radio).
+  - `sonar_pressure` → `depth_press` (firma/confirm — peso descendiendo).
+  - `sonar_depth` → `layer_dive` (escritura/dive UI).
+  - `sonar_console` → `console_tap` (premium click).
+  - `sonar_hatch` → `panel_open` (open modal — sin "hatch" submarino).
+- Nombres finales lock Phase 4.5 BRIEF-SOUND-001.
+
+#### Glossary cleanup (ADR-012 spillover §15)
+
+- **Términos canonical r6** (cross-ref Bible v1.4 §15):
+  - **Console** ✅ (genérico tech, no militar).
+  - **Bridge** ❌ deprecated en sentido "command center militar" → re-interpretar como **"Tablet home view"** abstract genérico.
+  - **Depth / Eco / Manifiesto / Bitácora / Signal / Lineage / Patrón** ✅ todos abstractos OK.
+  - **Periscope / Hatch / Hydrophone / Ping / Sweep / Sumersión** ❌ deprecated literal. Sustituir cuando aparezca uso operativo.
+
+### Cómo leer el resto del documento (§1-§20)
+
+1. **Lee primero esta NOTICE r6 + ADR-012.**
+2. **Tokens técnicos (paleta hex, tipografía, motion specs ms-precise, type scale, storybook, shaders, governance) siguen válidos** — lo que cambia es el "wrapping" metafórico/lingüístico, no los tokens medibles.
+3. **Cuando encuentres referencias literales submarino-militar (`sonar-ping` icon, "capitán submarino", "silent service", "periscope", "torpedo", "hydrophone"), considéralas SUPERSEDED por esta NOTICE.** Phase 4.5 v2 hará el surgical rewrite final.
+4. **Si hay duda interpretación → ADR-012 manda.**
 
 ---
 
@@ -160,6 +248,7 @@ SONAR                     (Studio + paragua)
 ### 3.3 Logo SONAR
 
 > **Concepto:** monograma "S" estilizado como **onda sonar concéntrica** — minimalist geométrico. Inspiración: Linear, Stripe, Apple modern, Vercel.
+> **Brief operacional:** ver `docs/art/briefs/01_brief_logo.md` (BRIEF-LOGO-001) — paquete encargo completo con deliverables, lockups, review gates, licensing.
 
 **TODO Phase 4:** Detail visual construction + designer collaboration. Preliminary spec:
 
@@ -367,7 +456,8 @@ SONAR                     (Studio + paragua)
 ### 5.2 Custom SONAR icon set (8-10 essentials)
 
 > Replaces 20 navales heritage v1.0. Stripped-down minimalist sub/sonar themed.
-> **TODO Phase 4:** SVG construction + Figma component library + repo location `art/icons/sonar_icons_v1/`.
+> **Brief operacional:** ver `docs/art/briefs/02_brief_icons.md` (BRIEF-ICONS-001) — paquete encargo completo con specs, deliverables, review gates, licensing.
+> **Pendiente Phase 4 ejecución creativa:** SVG construction + Figma component library + repo location `art/icons/sonar_icons_v1/` (post-designer assignment).
 
 | Icono | Concepto | Uso |
 |---|---|---|
@@ -1351,8 +1441,9 @@ Este doc es **living document** — se actualiza continuamente post-firma v2.0 s
 
 ## Estado del documento
 
-- **Versión:** 2.0-scaffold-r4 (Phase 4 partial — **Sonnet scaffold 100% complete**).
-- **Próxima revisión:** Phase 4 continuation (Opus 4.7 MAX recomendado) → completar slices restantes creative-density/designer-dependent (§3.3 logo visual construction, §5.2 custom icon SVG, §6 textures SVG repo, §7.3 sound bibliography sourcing, §9-§10 nodes detail Phase 7 dep, §11 SONAR OS Tablet cross-ref Phase 5 dep, §12 marketing moodboard + trailer storyboard) → bump v2.0 firmable.
+- **Versión:** 2.0-scaffold-r6 (refinement post-ADR-012 — NOTICE r6 establishes new canonical metaphor/theme/voice/icons/sound; §1-§20 NO surgical rewrite yet, Phase 4.5 v2 ejecutará).
+- **Próxima revisión:** Phase 4.5 v2 (Sonnet o Opus) → (a) surgical rewrite §1-§20 alineado con NOTICE r6 + ADR-012 (purga literal-militar, hybrid theme integration, iconografía abstract finalizada, voz neutral copy samples) + (b) BRIEFS v2 (LOGO + ICONS + SOUND + MOTION + MARKETING redacted clean). Luego Phase 4 ejecución creativa → bump v2.0 firmable.
+- **Briefs operacionales:** descartados v1 (locked en metáfora literal-militar). Phase 4.5 v2 redactará v2 alineados con ADR-012.
 - **Reemplaza:** `_archive/01_art_direction_v1_admirals.md` v1.0 (deprecated).
 - **ADR origen:** ADR-011 (`planning/02_decision_log.md` §11).
 
@@ -1366,9 +1457,11 @@ Este doc es **living document** — se actualiza continuamente post-firma v2.0 s
 | 2.0-scaffold-r2 | 2026-05-03 | Founder + Cascade | **Phase 4 partial attack (Sonnet-compatible slices)** post-commit checkpoint 6d3d96c: (a) **§4.2 Type scale detail-pass** — tokens canónicos completos con line-height (ratio + px absoluto), letter-spacing, familia+peso; responsive breakpoints website xs/sm/md/lg/xl; 6 reglas de aplicación tipográfica. (b) **§15 Glossary expandido** de 13 a 55+ términos organizados en 7 categorías (A meta-brand core ×9, B UI elements ×11, C actions/ops ×10, D data/tracking ×9, E social/contracts ×8, F status signals ALL CAPS ×8, G deprecated v1.0 Admirals ×9 + H uso cross-language). Canonical SSoT léxico para Phases 5-7. (c) **§16 Motion specs detalladas** — filosofía S6, duration tokens ×6 ms-precise, easing curves cubic-bezier ×5 submarine-themed, spring physics Framer Motion ×4 configs, motion pattern catalog ×12 patrones, a11y prefers-reduced-motion, performance budgets NUI. (d) Residuals fix: §11 lock screen + §12 website — Coloro identity refs → Sonar Bright per r1 hierarchy. Secciones pendientes Opus: §3.3 logo construction, §5.2 custom icon SVG, §12 marketing moodboard, §13 plan assets, §14 governance, §17-20 verticales/storybook/shader/roadmap. |
 | 2.0-scaffold-r3 | 2026-05-03 | Founder + Cascade | **Phase 4 partial continuation (Sonnet-compatible administrative + stubs)** post-commit 0b2b47e: (a) **§13 Plan de assets completo** — catalog 3D+2D+sound+branding con priority per-oleada, briefing template markdown equipo 3D externo, prioridades oleadas 1-3+, repo structure assets (git LFS strategy), licensing + rights clauses. (b) **§14 Governance del arte completo** — review process matrix qué requiere ADR, signing protocol v2.0 firmable checklist ×20 criterios, version control assets repo, designer collaboration workflow (3 phases briefing/iteration/delivery + red flags), anti-patterns governance. (c) **§17 Verticales placeholder stubs** — Panadería (concept + sub-paleta + sound + signal bake_ping), Retail (concept + sub-paleta + signal sale_ping), Cervecería (concept + sub-paleta + signal ferment_ping/tap_ping), Mecánico (concept + sub-paleta + signal repair_ping/invoice_ping) + cross-vertical integration pattern con ejemplo lineage end-to-end Granja→Molino→Panadería→Retail. Secciones pendientes Opus: §3.3 logo visual, §5.2 icons SVG, §6 textures repo, §7.3 sound bibliography, §9-§10 nodes detail, §11 Tablet cross-ref, §12 marketing, §18-20 storybook/shader/roadmap. |
 | 2.0-scaffold-r4 | 2026-05-03 | Founder + Cascade | **Phase 4 Sonnet scaffold 100% complete** post-commit d0ecfeb: (a) **§18 Storybook integration specs** — purpose/scope, component organization `/stories/` (primitives/components/patterns/screens/tokens), design tokens pipeline Figma → code (Tokens Studio → JSON → TS typed), stories obligatorias por component ×4 (Default/AllVariants/Interactive/EdgeCases), naming convention (Glossary §15 aligned), visual regression testing (Chromatic/Percy), perf budgets NUI (<16ms mount, <200ms cold start, <5s CI). (b) **§19 Shader contracts specs** — catalog ×6 shaders SONAR (mesh-grid, abyss-fog, bioluminescence-particle, glassmorphism-fallback, depth-gauge-LCD, sonar-pulse-wave) con target + prioridad, performance contracts (FPS <5% reduction, LOD-aware, fallback obligatorio), integration points NUI/3D/hybrid, aesthetic contracts (palette compliance + tint parametrizable + motion inheritance), anti-patterns ×5. (c) **§20 Roadmap art direction iterations** — living document policy per ADR-007 (patch/minor/major semver), v2.1 trigger conditions (×5 Q2 2026), v2.2 triggers (×4 Q4 2026-Q1 2027), v3.0 triggers (×5, ≥2028), review cadence (cierre oleada + Q2/Q4 + major release + ad-hoc), changelog discipline append-only. (d) Cleanup: unicode escapes literales fixed (`\u2014` → —, `\u2265` → ≥), duplicate separator removed, §14.2 checklist ticks updated. **Sonnet-doable scaffold 100% terminado** — remaining slices requieren designer/Opus creative density. |
+| 2.0-scaffold-r5 | 2026-05-03 | Founder + Cascade | **Phase 4.5 partial — Specialist briefs delivered (Sonnet)** post-commit b480af5: (a) Created `docs/art/briefs/` directory + README index. (b) **BRIEF-LOGO-001** — paquete encargo completo logo SONAR (~270 líneas): contexto proyecto, 10 deliverables (SVGs + PNGs + lockups + glow variants + guidelines PDF + Figma source), specs técnicos vinculantes (concepto S-onda locked, color tokens Tier B, tipografía wordmark Geist Sans, geometry 12×12 grid, 5 lockups), do/don't ✅×6 ❌×11, referencias visuales (5 convergir + 5 anti), 5 review gates R0-R4, licensing + NDA + presupuesto orientativo €1.5-3.5k, founder pre-kickoff checklist ×6. (c) **BRIEF-ICONS-001** — paquete encargo iconografía custom 8 esenciales (~280 líneas): los 8 iconos locked (sonar-ping/submarine/depth-gauge/hydrophone/bioluminescence/pressure-hull/periscope/torpedo-bay) + 2 stretch (manifiesto/bitacora), 32 SVG files target + React TS lib + Figma + guidelines PDF + showcase PNG, specs canvas 24×24 stroke 1.5px round Lucide-compatible, guidance per-icon individual ×8, do/don't, 4 review gates R0-R3, licensing + presupuesto €1.2-2.8k. (d) Cross-refs §3.3 + §5.2 → briefs/. Pendiente Phase 4.5: BRIEF-SOUND-001 + BRIEF-MOTION-001 + BRIEF-MARKETING-001. |
+| 2.0-scaffold-r6 | 2026-05-03 | Founder + Cascade | **REFINEMENT NOTICE r6 (per ADR-012)** post-commit d0712cc: top-level NOTICE establece NEW CANONICAL vigente desde hoy: (a) **Metáfora abstracta pura** (profundidad + exploración simbólica, NO submarino militar literal NO radios/freq) — explicit purga `sonar-ping`/`submarine`/`hydrophone`/`periscope`/`torpedo-bay` icons + voz capitán submarino + sound names sub-acoustic. (b) **Hybrid theme dark+white surfaces** (Notion/Arc/Stripe Dashboard ratio ~30-40% dark + ~30-40% white surfaces + ~10-15% Sonar Bright + ~10% structural + <5% signals) reemplaza dark-extremo 60% scaffold-r1. (c) **Voz neutral premium-tech** (Vercel/Linear/Stripe copy style) elimina arquetipo militar. (d) **Iconografía 3/8 conservados** (depth-gauge + pressure-hull reconceptualizado capas + bioluminescence) + 5 candidatos abstractos a definir Phase 4.5 v2. (e) **Sound naming refactored** sin radio/freq. (f) **Glossary cleanup** Console/Bridge/Depth/Eco OK; Periscope/Hatch/Hydrophone/Ping/Sweep deprecated. §1-§20 NO surgical rewrite todavía — NOTICE supersedes en cualquier conflicto, Phase 4.5 v2 hará surgical full. Briefs v1 (logo + icons + README) descartados. |
 
 ---
 
 *"Hear the depth. Below the surface, every signal counts."*
 
-**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold-r4 (foundational + Sonnet detail-pass 100%, Opus creative-density pendiente).**
+**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold-r6 (refinement notice ADR-012 — §1-§20 surgical rewrite pendiente Phase 4.5 v2).**
