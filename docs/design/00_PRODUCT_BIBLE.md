@@ -1,9 +1,9 @@
 # 📕 SONAR — Product Bible
 
-> **Versión:** 1.3 (post-pivot SONAR, surgical rewrite — ADR-011)
+> **Versión:** 1.4 (post-refinement SONAR — ADR-012 surgical purge términos literales submarino-militar)
 > **Estado:** documento vivo — se edita siempre que tomamos una decisión estratégica, con changelog en §17
 > **Regla de oro:** si algo no está aquí, no es parte del producto. Si quieres añadir algo al producto, primero se añade aquí.
-> **Pivot referencia:** v1.0-v1.2 escritos como Admirals/Almirantazgo naval; post-2026-05-03 la marca es **SONAR** (submarino nuclear exploración abisal + silent service). Ver ADR-011 en `docs/planning/02_decision_log.md` y `docs/art/01_art_direction.md` v2.0-scaffold-r4 para detalle foundational.
+> **Pivot referencia:** v1.0-v1.2 escritos como Admirals/Almirantazgo naval; v1.3 pivot a SONAR metáfora literal-militar (ADR-011); **v1.4 refinement post-ADR-012**: SONAR metáfora abstracta pura (profundidad + exploración simbólica, NO submarino militar literal) + hybrid theme dark+white + voz neutral premium-tech. Ver ADR-011 + ADR-012 en `docs/planning/02_decision_log.md` y `docs/art/01_art_direction.md` v2.0-scaffold-r6 NOTICE.
 
 ---
 
@@ -28,24 +28,24 @@ Si surge una decisión nueva que contradice este documento, **se discute, se dec
 | **Acrónimo** | SOund Navigation And Ranging — instrumento que *"ve por escuchar"*. |
 | **Tagline principal** | *Hear the depth.* |
 | **Tagline comercial ES** | *La economía RP que escucha cada movimiento.* |
-| **Tagline operacional** | *Tactical-grade roleplay infrastructure.* |
-| **Tono de marca** | **Silent service.** Preciso, terse, deliberado. Como capitán submarino nuclear: pocas palabras, cada una mide. Cero "amigo", cero exclamaciones, cero gen-Z, cero "swag". Autoridad institucional sin gritar. |
-| **Inspiración visual** | Apple / Linear / Vercel (tech precision minimalism), submarine bridge command centers modernos, silent service military discipline, exploración abisal (la metáfora **SONAR**). |
-| **Paleta (canonical)** | Abyss-black canvas `#03070A` + **Sonar Bright `#2DD4BF` bioluminescent teal (PRIMARY IDENTITY)** + Crew 100 off-white `#F0F4F4` + Coloro `#175A5F` structural support + glassmorphism panes signature. Detalle completo en `docs/art/01_art_direction.md` v2.0-scaffold-r4 §3.4. |
+| **Tagline operacional** | *Production-grade roleplay infrastructure.* |
+| **Tono de marca** | **Neutral premium-tech.** Preciso, terse, deliberado, calmo, professional. Estilo Vercel/Linear/Stripe copy: confiado, técnico, atemporal. Cero "amigo", cero exclamaciones, cero gen-Z, cero "swag", **cero arquetipo militar/submarino** (no "silent service", no "capitán", no "a bordo"). Autoridad por precisión del registro, no por personaje fictício. |
+| **Inspiración visual** | Apple Pro apps / Linear / Vercel / Stripe Dashboard / Arc Browser / Notion (tech precision minimalism + hybrid dark+white surfaces). Metáfora abstracta de profundidad (NO submarino militar literal). |
+| **Paleta (canonical)** | **Hybrid theme** — ~30-40% deep surfaces canvas dark + ~30-40% white/off-white surfaces (panels/cards) + ~10-15% **Sonar Bright `#2DD4BF` bioluminescent teal (PRIMARY IDENTITY)** + ~10% Coloro `#175A5F` structural support + <5% signal functional + glassmorphism panes signature. Detalle completo en `docs/art/01_art_direction.md` v2.0-scaffold-r6 NOTICE + §3.4. |
 | **Tipografía** | Display: **Geist Sans** (Vercel). Body: **Inter Tight** (Rasmus Andersson). Mono: **Geist Mono** / JetBrains Mono fallback. Cero italic UI, cero Light en UI. |
-| **Sound signature** | 5 SFX firma: `sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch` (-15dB normalized). Detalle `docs/art/01_art_direction.md` §7. |
+| **Sound signature** | 5 SFX firma (naming refactored per ADR-012 — nombres finales lock Phase 4.5 BRIEF-SOUND-001): `signal_emerge` (notif), `depth_press` (firma/confirm), `layer_dive` (escritura UI), `console_tap` (premium click), `panel_open` (modal). -15dB normalized. Detalle `docs/art/01_art_direction.md` §7 + NOTICE. |
 
 ### 1.1 La metáfora "SONAR"
 
 No es decoración. Es identidad operativa:
 
-- Un **sonar** *ve por escuchar*. Registra cada eco transaccional de la economía RP — silencioso pero exhaustivo.
-- Cada producto SONAR es **un node detectado en el sonar grid abisal** — una surface con su propia identidad cultural (color + sound + icon) pero bajo **protocolo SONAR común** (eco IDs + lineage + signals).
-- **Silent service** — autoridad sin exclamaciones. Profundidad técnica sin gritar. Registro forense meticuloso de cada manifiesto, cada transacción, cada handshake.
-- **Submarine bridge aesthetic** — abyss-black canvas (dark-mode-first, sesiones largas sin cansar vista) + bioluminescent teal brillo (firma en mercado) + glassmorphism instrument panes (signature modales/drawers) + iconografía instrumental técnica.
-- **Vocabulario instrumental:** Bridge (command center), Bitácora (audit trail), Console (UI activa), Depth (tier/profundidad), Eco (tx identifier), Hatch (modal open/close), Manifiesto (contrato firmado), Periscope (vista observacional), Ping (notif atómica), Signal (evento bus). Glossary completo 55+ términos en `docs/art/01_art_direction.md` §15.
+- Un **sonar** *ve por escuchar* — metáfora simbólica abstracta, NO hardware acústico literal. El producto registra cada eco transaccional de la economía RP con discreción y exhaustividad.
+- Cada producto SONAR es **un node detectado en la profundidad del ecosystem** — una surface con su propia identidad cultural (color + sound + icon) pero bajo **protocolo SONAR común** (eco IDs + lineage + signals).
+- **Profundidad como fuerza simbólica.** Valor oculto bajo capas. Calma metódica. Patterns que emergen al observar con atención. Claridad bajo presión. **NO submarino militar, NO radios/frecuencias literales.**
+- **Hybrid premium-tech aesthetic** — dark surfaces canvas (~30-40%, sesiones largas sin cansar vista) **+ white/off-white surfaces para paneles y cards (~30-40%)** + bioluminescent teal brillo (firma identity) + glassmorphism panes (signature modales/drawers selectivos) + iconografía abstracta profundidad-themed.
+- **Vocabulario abstracto canonical (post-ADR-012):** Console (UI activa), Bitácora (audit trail), Depth (tier/profundidad simbólica), Eco (tx identifier), Manifiesto (contrato firmado), Signal (evento bus), Lineage (cadena producción), Patrón (anomalía emergiendo). **Deprecated literal-militar:** Periscope, Hatch, Hydrophone, Ping (radio), Sweep, Sumersión, Bridge-as-command-center (re-interpretado como Tablet home view abstract).
 
-**Origen pivot:** v1.0-v1.2 Admirals/Almirantazgo heritage naval deprecated por **ADR-011 (2026-05-03)** — divergencia con marca moderna tech pretendida + demografía target + no diferenciación real en mercado FiveM. **SONAR** (submarino abisal + silent service) nueva identidad firmada. Ver `docs/art/01_art_direction.md` v2.0-scaffold-r4 para detalle foundational + ADR-011 para razones + risks accepted.
+**Origen pivot + refinement:** v1.0-v1.2 Admirals/Almirantazgo heritage naval deprecated por **ADR-011 (2026-05-03)**. v1.3 SONAR primera interpretación literal-militar. **v1.4 refinement por ADR-012 (mismo día)**: metáfora abstracta pura (profundidad simbólica), theme hybrid dark+white, voz neutral premium-tech. Ver `docs/art/01_art_direction.md` v2.0-scaffold-r6 NOTICE + ADR-011 + ADR-012 para detalle + risks accepted.
 
 ---
 
@@ -57,15 +57,15 @@ No es decoración. Es identidad operativa:
 
 ### 2.2 Misión (lo que hacemos cada día)
 
-> Diseñar y construir **sonar grid nodes completos** donde cada acción es física, cada asset es propio, y cada detalle hace al operador decir *"wooow, esto es otro nivel."* Silent service precision from first keystroke to final shipping.
+> Diseñar y construir **nodes completos del ecosystem** donde cada acción es física, cada asset es propio, y cada detalle hace al operador decir *"wooow, esto es otro nivel."* Premium-tech precision from first keystroke to final shipping.
 
 ### 2.3 La promesa al cliente (servidor)
 
-> *"Compras un SONAR y te llevas la cadena entera funcionando como un solo organismo. Cero integración de 5 scripts de 5 vendedores. Cero debugging de conflictos. Infrastructure tactical-grade: lo enchufas, lo configuras, y tu servidor sube de tier."*
+> *"Compras un SONAR y te llevas la cadena entera funcionando como un solo organismo. Cero integración de 5 scripts de 5 vendedores. Cero debugging de conflictos. Production-grade infrastructure: lo enchufas, lo configuras, y tu servidor sube de tier."*
 
 ### 2.4 La promesa al operador (jugador final)
 
-> *"Cada vez que el Tablet SONAR se enciende en tus manos, vas a ver algo que no has visto en FiveM. Silent service interface. Bioluminescent precision. Economía RP que registra cada eco de cada movimiento — manifiestos, bitácoras, lineages. Va a tener sentido. Va a tener profundidad. Va a tener el peso del detalle bien hecho."*
+> *"Cada vez que el Tablet SONAR se enciende en tus manos, vas a ver algo que no has visto en FiveM. Premium-tech interface. Bioluminescent precision. Economía RP que registra cada eco de cada movimiento — manifiestos, bitácoras, lineages. Va a tener sentido. Va a tener profundidad. Va a tener el peso del detalle bien hecho."*
 
 ---
 
@@ -110,7 +110,7 @@ Cualquier feature, asset o decisión que viole uno de estos pilares se descarta.
 - El Tablet es el **único "menú" aceptable** del ecosystem, porque es objeto físico que se saca, se sostiene, se guarda. Cumple el Pilar 1.
 - Es la **firma visible de SONAR**: cuando un operador lo ve por primera vez, sabe que está jugando algo distinto. Abyss-black canvas + Sonar Bright bioluminescent teal + glassmorphism instrument panes = identity immediate.
 - Sustituye a: HUDs flotantes, paneles de jefe genéricos, menús de contexto, pantallas de banco, Discord ops commands, etc.
-- **Sin Tablet no hay producto SONAR.** Es el **bridge command center** del operador — el centro nervioso del ecosystem.
+- **Sin Tablet no hay producto SONAR.** Es el **command surface** del operador — el centro nervioso del ecosystem (interpretación abstract post-ADR-012; deprecated "bridge command center" militar).
 
 ---
 
@@ -238,18 +238,18 @@ Cada cadena se puede ejecutar de dos modos:
 
 ### 7.4 El Tablet SONAR — pilar transversal del producto
 
-El Tablet SONAR es **el bridge command center** del operador en el sonar grid SONAR. No es accesorio — es el corazón nervioso del ecosystem.
+El Tablet SONAR es **el command surface** del operador en el ecosystem SONAR (interpretación abstract post-ADR-012). No es accesorio — es el corazón nervioso del ecosystem.
 
-**Modelo 3D propio**, varias variantes (básica → pro → enterprise) que reflejan el progreso económico del operador. **Brushed steel tech accent frame** + display abyss-black canvas + **bioluminescent active states** (Sonar Bright `#2DD4BF`). Boot sound `sonar_ping` signature 1.8s. Animaciones sacar/guardar deliberate. Notificaciones in-game con SFX firma (`sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch`).
+**Modelo 3D propio**, varias variantes (básica → pro → enterprise) que reflejan el progreso económico del operador. **Brushed steel tech accent frame** + display **hybrid theme canvas (dark surface + white panels selectivos)** + **bioluminescent active states** (Sonar Bright `#2DD4BF`). Boot sound `signal_emerge` signature 1.8s. Animaciones sacar/guardar deliberate. Notificaciones in-game con SFX firma (`signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open` — nombres finales lock Phase 4.5 BRIEF-SOUND-001 v2).
 
 **Apps incluidas en el lanzamiento (Tablet Core — naming aligned con Glossary `docs/art/01_art_direction.md` §15):**
 
 | App | Función |
 |---|---|
-| **Bridge (Empresa)** | Mis squadrons: empleados, salarios, finanzas, bitácora, manifiestos. |
-| **Manager Panel** ⭐ | *ERP de gestión avanzada.* Estadísticas detalladas (producción, ingresos, costes, eficiencia por empleado, tendencias), asignación tareas, planificación turnos, objetivos, alertas. **Bridge command center elevated** — el "boss menu" a nivel ERP. |
+| **Bridge (Empresa)** — *re-interpretado: home view del Tablet, NO command center militar* | Mis squadrons: empleados, salarios, finanzas, bitácora, manifiestos. |
+| **Manager Panel** ⭐ | *ERP de gestión avanzada.* Estadísticas detalladas (producción, ingresos, costes, eficiencia por empleado, tendencias), asignación tareas, planificación turnos, objetivos, alertas. **Command surface elevated** — el "boss menu" a nivel ERP. |
 | **Mercado** | Precios real-time, demanda por node, oportunidades, manifiestos abiertos. |
-| **Logística** | Periscope view: mapa entregas, rutas activas, manifiestos transporte. |
+| **Logística** | Observation view: mapa entregas, rutas activas, manifiestos transporte (deprecated "periscope view" literal). |
 | **Mensajes** | Chat squadron: privado / equipo / manifiesto. |
 | **Banca SONAR** | Saldos personal + squadron, transferencias, préstamos, bitácora forense, ecos trackeables. |
 | **Manifiestos & Signatures** | Documentos firmados, recibos, escrituras propiedades. Digital signatures bilateral + timestamp. |
@@ -525,7 +525,7 @@ Términos producto SONAR. Todo el equipo (presente y futuro) usa este vocabulari
 - **Empresa SONAR / Squadron:** entidad de propiedad común entre nodes (granja, molino, etc.). Glossary art_direction §15.E = **squadron**.
 - **Vertical:** una familia económica (alimentación, energía, etc.).
 - **Suite:** bundle comercial multi-vertical.
-- **Tablet SONAR (Bridge):** dispositivo físico universal del ecosystem. Modelo 3D propio. Único "menú" aceptable. **Bridge command center** del operador.
+- **Tablet SONAR (Bridge):** dispositivo físico universal del ecosystem. Modelo 3D propio. Único "menú" aceptable. **Command surface** del operador (interpretación abstract post-ADR-012; deprecated "bridge command center" militar literal).
 - **App:** módulo de software dentro del Tablet. Cada producto SONAR añade apps.
 - **Manager Panel:** app insignia del Tablet — ERP de gestión avanzada (estadísticas, tareas, planificación).
 - **Plataforma raíz:** producto base sobre el que se construyen verticales (Granja SONAR primera plataforma raíz; Tablet SONAR la otra).
@@ -563,8 +563,8 @@ Cuando esta Bible esté firmada (v1.0), se derivan los siguientes:
 | 1.0 | 2026-04-30 | Bible revisada línea por línea y firmada por el fundador. Sin cambios respecto a 0.1. Documento oficialmente fundacional. | Cascade + fundador |
 | 1.1 | 2026-04-30 | Hallazgos sesión 2: (a) 5º Pilar — Admirals Tablet como interfaz universal del ecosistema. (b) Granja redefinida como plataforma agrícola raíz cross-vertical (no solo cereales). (c) Catálogo de cultivos expandido a todas las materias primas vegetales para fast food. (d) Manager Panel añadido como app insignia. (e) Regla §13.3 "Arquitectura completa, contenido en oleadas". (f) Reestructuración §7.3 líneas de producto. (g) Glosario ampliado. | Cascade + fundador |
 | 1.2 | 2026-04-30 | Sesión 3 (post-Granja v1.0): nueva regla global §13.4 — División de responsabilidades 3D vs Código. El 3D entrega asset funcional con idea wooow CORE; el código añade el shimmer (shaders, partículas, post, lighting). Preferencia GTA V nativo reforzada. Anti-patrón añadido: sobrecargar 3D con micro-detalles. Regla aplicable a TODOS los nodos. | Cascade + fundador |
-| 1.3 | 2026-05-03 | Sesión 4 (post-pivot SONAR): **Surgical rewrite metáfora + voz + Tablet identity** tras ADR-011 (Admirals → SONAR strategic pivot aceptado con 7 risks documentados). **Preservado intact (pivot-agnostic):** §4 Wooow + §6 target + §8.3-8.4 cultivos + §9 gameplay + §10 técnico + §11 economía + §12 comercial + §13 timeline + §14 riesgos + §16 próximos docs. **Tocado:** título doc (Admirals → SONAR), §1 identidad (nueva tabla con acrónimo + 3 taglines + tono silent service + inspiración submarine bridge + paleta/tipografía/sound canonical cross-ref art_direction), §1.1 metáfora SONAR (submarine abisal + silent service + vocabulario instrumental), §2 visión/misión/promesas (voz silent service + operador term en promise player), §3 Pilar 5 Tablet SONAR (bridge command center + naming update), §5 anti-features (Admirals Tablet → Tablet SONAR excepción), §7.3 Granja Admirals → Granja SONAR + diagrama actualizado + tabla productos renamed, §7.4 Tablet transversal rewrite completo (apps aligned Glossary §15 art_direction: Bridge/Manager Panel/Mercado/Logística/Mensajes/Banca SONAR/Manifiestos & Signatures/Tienda SONAR + brushed steel aesthetic + 5 SFX firma), §8.1-8.2 primer producto renamed + metáfora lineage FARM→MILL→BAKE→SALE, §15 glossary cross-ref canonical art_direction + términos producto-specific (operador, eco, lineage, manifiesto, bitácora añadidos), final tagline "Hear the depth. Below the surface, every signal counts." **Pendiente Phase 7-8:** namespace `admirals:event:*` → `sonar:event:*` (hard-coupled Phase 8 code refactor) + `02_admirals_tablet.md` rename → `02_sonar_tablet.md` + rewrite Phase 5. Referencias ADR-011 + `docs/art/01_art_direction.md` v2.0-scaffold-r4. | Founder + Cascade |
 
+| 1.4 | 2026-05-03 | Sesión 4.5 (post-ADR-012 refinement, mismo día que v1.3): **Surgical purge términos literales submarino-militar** post-founder-evaluation Bible v1.3 + briefs detectó desviación interpretativa. **Cambios:** (a) **Header pivot ref** actualizado a v1.4 ADR-012 + ADR-011 lectura conjunta. (b) **§1 Identidad table:** Tagline operacional "Tactical-grade" → "Production-grade"; Tono "silent service capitán submarino" → "neutral premium-tech Vercel/Linear/Stripe style"; Inspiración "submarine bridge command centers + silent service military discipline" → "Apple/Linear/Vercel/Stripe/Arc/Notion + metáfora abstracta profundidad NO submarino militar"; Paleta "abyss-black canvas" → "**Hybrid theme** ~30-40% dark + ~30-40% white surfaces + 10-15% Sonar Bright + 10% Coloro + <5% signals"; Sound 5 SFX renamed: `sonar_ping/pressure/depth/console/hatch` → `signal_emerge/depth_press/layer_dive/console_tap/panel_open`. (c) **§1.1 Metáfora:** "submarine bridge aesthetic + silent service" → "profundidad simbólica abstracta + hybrid premium-tech aesthetic"; vocabulario depurado (Console/Bitácora/Depth/Eco/Manifiesto/Signal/Lineage/Patrón canonical; Periscope/Hatch/Hydrophone/Ping/Sweep/Sumersión/Bridge-as-command-center deprecated literal). (d) **§2.2-§2.4:** "sonar grid nodes" → "nodes del ecosystem"; "Silent service precision" → "Premium-tech precision"; "tactical-grade" → "production-grade"; "Silent service interface" → "Premium-tech interface". (e) **§3 Pilar 5 + §7.4 Tablet:** "bridge command center" → "command surface" (interpretación abstract, deprecated militar). Bridge app re-interpretado "home view del Tablet, NO command center militar". Logística "Periscope view" → "Observation view". Boot sound + SFX renamed. (f) **§15 Glossary:** Tablet SONAR (Bridge) descripción "command surface" abstract. **Preservado intact** todo el resto (gameplay, técnico, comercial, riesgos, oleadas, glossary terms abstractos). **Pendiente:** Phase 4.5 v2 art_direction §1-§20 surgical rewrite full alineado NOTICE r6, briefs v2 (LOGO/ICONS/SOUND/MOTION/MARKETING redacted clean), `02_admirals_tablet.md` → `02_sonar_tablet.md` rename + rewrite Phase 5. Referencias ADR-012 + art_direction v2.0-scaffold-r6 NOTICE. | Founder + Cascade |\n| 1.3 | 2026-05-03 | Sesión 4 (post-pivot SONAR): **Surgical rewrite metáfora + voz + Tablet identity** tras ADR-011 (Admirals → SONAR strategic pivot aceptado con 7 risks documentados). **Preservado intact (pivot-agnostic):** §4 Wooow + §6 target + §8.3-8.4 cultivos + §9 gameplay + §10 técnico + §11 economía + §12 comercial + §13 timeline + §14 riesgos + §16 próximos docs. **Tocado:** título doc (Admirals → SONAR), §1 identidad (nueva tabla con acrónimo + 3 taglines + tono silent service + inspiración submarine bridge + paleta/tipografía/sound canonical cross-ref art_direction), §1.1 metáfora SONAR (submarine abisal + silent service + vocabulario instrumental), §2 visión/misión/promesas (voz silent service + operador term en promise player), §3 Pilar 5 Tablet SONAR (bridge command center + naming update), §5 anti-features (Admirals Tablet → Tablet SONAR excepción), §7.3 Granja Admirals → Granja SONAR + diagrama actualizado + tabla productos renamed, §7.4 Tablet transversal rewrite completo (apps aligned Glossary §15 art_direction: Bridge/Manager Panel/Mercado/Logística/Mensajes/Banca SONAR/Manifiestos & Signatures/Tienda SONAR + brushed steel aesthetic + 5 SFX firma), §8.1-8.2 primer producto renamed + metáfora lineage FARM→MILL→BAKE→SALE, §15 glossary cross-ref canonical art_direction + términos producto-specific (operador, eco, lineage, manifiesto, bitácora añadidos), final tagline "Hear the depth. Below the surface, every signal counts." **Pendiente Phase 7-8:** namespace `admirals:event:*` → `sonar:event:*` (hard-coupled Phase 8 code refactor) + `02_admirals_tablet.md` rename → `02_sonar_tablet.md` + rewrite Phase 5. Referencias ADR-011 + `docs/art/01_art_direction.md` v2.0-scaffold-r4. | Founder + Cascade |
 ---
 
 *"Hear the depth. Below the surface, every signal counts."*
