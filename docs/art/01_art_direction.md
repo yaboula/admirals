@@ -59,12 +59,12 @@
   - `depth-gauge` (medidor profundidad — concept abstract OK).
   - `pressure-hull` **reconceptualizado**: ya NO casco submarino con remaches. Ahora = **capas de profundidad concéntricas / contención abstract** (estilo geological strata, NOT metal hull).
   - `bioluminescence` (luz bajo presión, valor emergiendo — abstract).
-- **Purgados de scaffold-r5 (5/8 — NO usar):**
-  - ❌ `sonar-ping` (ondas concéntricas radio/frecuencia).
-  - ❌ `submarine` (silueta literal).
-  - ❌ `hydrophone` (mic acústico militar).
-  - ❌ `periscope` (equipo sub literal).
-  - ❌ `torpedo-bay` (armamento militar).
+- **Purgados de scaffold-r5 (5/8 — DEPRECATED, NO usar):**
+  - ❌ DEPRECATED `sonar-ping` (ondas concéntricas radio/frecuencia).
+  - ❌ DEPRECATED `submarine` (silueta literal).
+  - ❌ DEPRECATED `hydrophone` (mic acústico militar).
+  - ❌ DEPRECATED `periscope` (equipo sub literal).
+  - ❌ DEPRECATED `torpedo-bay` (armamento militar).
 - **Nuevos a definir Phase 4.5 v2 (5 candidatos preliminares):**
   - `descent-layers` (capas descendiendo).
   - `signal-clarity` (patrón emergiendo de ruido).
@@ -74,13 +74,13 @@
 
 #### Sound naming — neutral (ADR-012 §D3 spillover)
 
-- Todos los SFX `sonar_*` scaffold-r1 nombres preservados a nivel **concepto** pero re-interpretados sin radio/freq:
-  - `sonar_ping` → `signal_emerge` (notif primaria — sonido patrón emergiendo, no ping radio).
-  - `sonar_pressure` → `depth_press` (firma/confirm — peso descendiendo).
-  - `sonar_depth` → `layer_dive` (escritura/dive UI).
-  - `sonar_console` → `console_tap` (premium click).
-  - `sonar_hatch` → `panel_open` (open modal — sin "hatch" submarino).
-- Nombres finales lock Phase 4.5 BRIEF-SOUND-001.
+- Todos los SFX `sonar_*` scaffold-r1 nombres deprecated → renamed neutral (mapping canonical post-ADR-012):
+  - **DEPRECATED `sonar_ping`** → **CANONICAL `signal_emerge`** (notif primaria — sonido patrón emergiendo, no ping radio).
+  - **DEPRECATED `sonar_pressure`** → **CANONICAL `depth_press`** (firma/confirm — peso descendiendo).
+  - **DEPRECATED `sonar_depth`** → **CANONICAL `layer_dive`** (escritura/dive UI).
+  - **DEPRECATED `sonar_console`** → **CANONICAL `console_tap`** (premium click).
+  - **DEPRECATED `sonar_hatch`** → **CANONICAL `panel_open`** (open modal — sin "hatch" submarino).
+- Nombres finales lock Phase 4.5 BRIEF-SOUND-001 v1 (ya delivered).
 
 #### Glossary cleanup (ADR-012 spillover §15)
 
@@ -94,7 +94,7 @@
 
 1. **Lee primero esta NOTICE r6 + ADR-012.**
 2. **Tokens técnicos (paleta hex, tipografía, motion specs ms-precise, type scale, storybook, shaders, governance) siguen válidos** — lo que cambia es el "wrapping" metafórico/lingüístico, no los tokens medibles.
-3. **Cuando encuentres referencias literales submarino-militar (`sonar-ping` icon, "capitán submarino", "silent service", "periscope", "torpedo", "hydrophone"), considéralas SUPERSEDED por esta NOTICE.** Phase 4.5 v2 hará el surgical rewrite final.
+3. **Cuando encuentres referencias literales submarino-militar (DEPRECATED `sonar-ping` icon, "capitán submarino", "silent service", DEPRECATED `periscope`, DEPRECATED `torpedo`, DEPRECATED `hydrophone`), considéralas SUPERSEDED por esta NOTICE.** Phase 4.5 v2 + Phase 4 surgical full hará el surgical rewrite final.
 4. **Si hay duda interpretación → ADR-012 manda.**
 
 ---
@@ -113,9 +113,9 @@ Este es **foundational scaffolding** post-pivot SONAR (per ADR-011). Contiene:
 
 Este documento es **la dirección artística oficial de SONAR**. Define cómo el ecosistema SE VE, SE SIENTE y SE OYE.
 
-> **Tesis central:** SONAR no es un script. SONAR es **el submarino nuclear** que escucha, registra y coordina toda la actividad económica del ecosistema. Cuando un jugador abre el Tablet, ve el bridge command center — abyss black profundo iluminado por bioluminescent teal de los instrumentos. **Inmersión total, profundidad real.**
+> **Tesis central (post-ADR-012):** SONAR no es un script. SONAR es **infrastructure premium-tech** que mapea, registra y coordina toda la actividad económica del ecosistema con la precisión de un instrumento que *"ve escuchando"* — metáfora simbólica de profundidad, NO submarino militar literal. Cuando un jugador abre el Tablet, encuentra una **command surface premium** — hybrid theme dark + white surfaces, identity bioluminescent teal Sonar Bright como firma. **Profundidad simbólica, calma metódica, claridad bajo presión.**
 
-> **Lema:** *"Below the surface, every signal counts."*
+> **Lema:** *"Hear the depth."*
 
 ---
 
@@ -140,66 +140,73 @@ Este documento es **la dirección artística oficial de SONAR**. Define cómo el
 
 | ❌ NO somos | Por qué |
 |---|---|
-| **Heritage retro-Almirantazgo XVII-XIX** | v1.0 deprecated. Somos modernidad submarine. |
-| **Cyberpunk neón saturado loud** | Saturado FiveM. SONAR = precisión silenciosa. |
+| **Heritage retro-Almirantazgo XVII-XIX** | v1.0 deprecated por ADR-011. |
+| **Submarino militar literal (silhouettes / periscopios / torpedos / hydrophones / sonar pings radio)** | DEPRECATED por ADR-012. SONAR es metáfora abstracta de profundidad, NO hardware submarino militar. |
+| **Voz arquetipo militar ("silent service", "capitán submarino", "tactical-grade", "a bordo")** | DEPRECATED por ADR-012. Voz canonical = neutral premium-tech (Vercel/Linear/Stripe). |
+| **Theme dark-extremo 60% canvas** | DEPRECATED scaffold-r1. Canonical hybrid theme: ~30-40% dark + ~30-40% white surfaces. |
+| **Cyberpunk neón saturado loud** | Saturado FiveM. SONAR = precisión calmada. |
 | **Material Design 2 plano genérico** | Sin alma, drop-shadows raised buttons feos. |
 | **Skeumorphism RPG medieval** | Cuero sintético, scrolls. Tackier. |
-| **Friendly cartoon flat illustrations** | SONAR es silent service, no Notion-playful. |
-| **Apple iOS clone literal** | Glassmorphism OK como signature pero stripped-down. |
-| **Tactical operator masculino agresivo (CoD UI)** | Diferencia: silent service vs tacticool loud. |
+| **Friendly cartoon flat illustrations** | SONAR es premium-tech infrastructure, no Notion-playful. |
+| **Apple iOS clone literal** | Glassmorphism OK como signature selectivo pero stripped-down. |
+| **Tactical operator masculino agresivo (CoD UI)** | Diferencia: neutral premium-tech vs tacticool loud. |
 | **Gamer RGB neon backlit** | Lime gamer chillón, magenta, RGB rainbow → cero. |
 
 ### 1.3 Comparativa competidores FiveM 2026
 
-| Aspecto | Prism | NoPixel-clones | 17 Movement | 0Resmon | **SONAR** |
+| Aspecto | Prism | NoPixel-clones | 17 Movement | 0Resmon | **SONAR (post-ADR-012)** |
 |---|---|---|---|---|---|
-| Paleta | Lime + black + glow | Neón variado | Tactical orange + black | Off-white + soft blue | **Sonar Bright bioluminescent teal `#2DD4BF` (identity) + abyss-black canvas `#03070A` + Coloro `#175A5F` structural support + glassmorphism panes** ⭐ |
-| Mood | Tactical loud | RP serious dark | Ops urgent | Productivity | **Silent service tech precision** ⭐ |
-| Diferenciación | Genérico tactical | Variable | Genérico | Tool única | **El único submarino. Profundidad real, no superficie tactical.** ⭐ |
+| Paleta | Lime + black + glow | Neón variado | Tactical orange + black | Off-white + soft blue | **Hybrid theme dark + white surfaces + Sonar Bright bioluminescent teal `#2DD4BF` (identity) + Coloro `#175A5F` structural support + glassmorphism panes selectivos** ⭐ |
+| Mood | Tactical loud | RP serious dark | Ops urgent | Productivity | **Neutral premium-tech precision (Vercel/Linear/Stripe class)** ⭐ |
+| Diferenciación | Genérico tactical | Variable | Genérico | Tool única | **Premium-tech infrastructure FiveM. Profundidad simbólica + hybrid theme + voz neutral. Cero arquetipo militar.** ⭐ |
 
 ---
 
-## 2. La metáfora central — El Submarino Nuclear / Exploración Abisal
+## 2. La metáfora central — Profundidad simbólica abstracta (post-ADR-012)
 
-### 2.1 ¿Por qué el submarino?
+### 2.1 ¿Por qué "profundidad"?
 
-> **El submarino nuclear de exploración abisal.** Navío más sofisticado del XXI: silencioso, hermético, autosuficiente, navega por instrumentos en oscuridad absoluta. Combina **precisión tecnológica extrema** + **silencio operacional disciplinado** + **autoridad institucional** (silent service militar) + **registro forense exhaustivo** (sonar ve todo).
+> **Profundidad como fuerza simbólica.** Metáfora abstracta inspirada en exploración abisal pero **NO submarino militar literal**. Combina **precisión tecnológica extrema** + **calma metódica al descender** + **autoridad por precisión del registro** + **claridad bajo presión** + **patterns que emergen al observar con atención**.
 
 **¿Por qué encaja SONAR?**
 
-- ✅ **Coordinación de información** — el sonar **ve por escuchar**; SONAR ve la economía RP por registrar cada eco transaccional.
-- ✅ **Registro meticuloso** — DB schema, audit trail, contratos, lineage = los **logs de bitácora del sonar**.
-- ✅ **Autoridad silenciosa** — somos infraestructura neutral. Otorgamos credenciales precisas (IBANs, contratos, signal protocols).
-- ✅ **Estética atemporal** — submarine tech XXI envejece bien. Cyberpunk neón sí lo sería.
-- ✅ **Diferenciación radical** — nadie en FiveM usa esta metáfora completa.
+- ✅ **Coordinación de información** — el sonar **simbólicamente ve escuchando**; SONAR ve la economía RP registrando cada eco transaccional con discreción y exhaustividad.
+- ✅ **Registro meticuloso** — DB schema, audit trail, contratos, lineage = las **bitácoras del ecosystem**.
+- ✅ **Autoridad por precisión** — somos infraestructura premium-tech neutral. Otorgamos credenciales precisas (IBANs, contratos, signal protocols).
+- ✅ **Estética atemporal** — premium-tech moderno (Vercel/Linear/Stripe class) envejece bien. Cyberpunk neón no.
+- ✅ **Diferenciación radical** — nadie en FiveM usa metáfora abstracta de profundidad simbólica con hybrid theme premium-tech.
 
-### 2.2 Elementos del lenguaje "Submarino"
+> **Anti:** NO submarino militar literal, NO hardware acústico, NO armamento, NO equipo cubierta literal, NO voz/personaje militar. Ver §1.2 anti-references + ADR-012 D1.
 
-| Elemento | Uso visual | Ejemplos |
-|---|---|---|
-| **Sonar ping (concentric waves)** | Logo, app icons, splash, notifications | Pulse animation active states, logo monogram |
-| **Submarine silhouette minimalist** | Branding, watermark | Splash, marketing |
-| **Depth gauge (instrument)** | Decoración técnica + iconografía | Loading, progress, depth indicators |
-| **Hydrophone / acoustic** | Audio comms, signal monitoring | Sound notifications |
-| **Bioluminescence (puntos brillantes)** | Notificaciones nuevas, activos | Notification badges, real-time indicators |
-| **Pressure hull (líneas casco)** | Privacy, security, encrypted | PIN screens, security settings |
-| **Periscope** | View, monitor | Map view, observation |
-| **Glassmorphism porthole (ojo de buey)** | Modal/drawer signature | Notification drawer, modals |
-| **Sonar mesh grid** | Background subtle | Premium tier surfaces |
-| **Brushed steel tech accent** | Premium device frame | Tablet Pro/Enterprise frame |
+### 2.2 Elementos del lenguaje "Profundidad simbólica" (post-ADR-012)
 
-### 2.3 El "ecosystem grid"
+> **Refactor v1.0→r6:** elementos literal-submarino DEPRECATED. Reemplazos abstract-profundidad canonical.
 
-Cada vertical es un **node detectado en el sonar grid abisal**:
+| Elemento (canonical r6) | Uso visual | Ejemplos | Reemplaza (deprecated) |
+|---|---|---|---|
+| **Descent layers (capas descendiendo)** | Logo concept candidate, drill-down nav, app icons | Logo monogram exploration, lineage visualization | DEPRECATED "Sonar ping concentric waves" |
+| **Depth strata (cross-section)** | Iconografía profundidad, separators visuales | Layer transitions, depth indicators | DEPRECATED "Submarine silhouette" |
+| **Depth gauge abstract** | Decoración técnica + iconografía | Loading, progress, depth indicators | preserved (concept abstract) |
+| **Signal clarity (pattern emergiendo de ruido)** | Audio/comms, filter results | Sound notifications, search clarity | DEPRECATED "Hydrophone / acoustic" |
+| **Bioluminescence (puntos brillantes orgánicos)** | Notificaciones nuevas, activos | Notification badges, real-time indicators | preserved (concept abstract) |
+| **Pressure hull RECONCEPTUALIZADO** = capas concéntricas/contención abstract | Privacy, security, encrypted | PIN screens, security settings | reconceptualizado (NO casco metal) |
+| **Observation field (área observada abstract)** | View, monitor, spectator | Map view, observation | DEPRECATED "Periscope" |
+| **Glassmorphism panes signature selectivos** | Modal/drawer signature | Notification drawer, modals | preserved (sin connotación submarino) |
+| **Depth grid isométrico** | Background subtle, premium tier | Premium tier surfaces, Tablet wallpaper accent | preserved (concept abstract) |
+| **Brushed steel tech accent (frame)** | Premium device frame | Tablet Pro/Enterprise frame | preserved (premium-tech generic, NO submarino) |
 
-- **Granja** = surface node agrícola. Signals: soil quality, harvest pings.
-- **Molino** = surface node industrial. Signals: production throughput.
-- **Banca** = SONAR command center. The bridge itself.
-- **Mercado** = signal exchange. Bid/offer pings cross-mesh.
-- **Logística** = transit signals tracked node-to-node.
-- **Futuras** = nuevos nodes en el sonar grid.
+### 2.3 El "ecosystem grid" (re-frased post-ADR-012)
 
-> **Toda decisión de identidad por nodo deriva de "qué tipo de signal somos en el sonar grid".**
+Cada vertical es un **node en la profundidad del ecosystem**:
+
+- **Granja** = node agrícola. Signals: soil quality, harvest emerge.
+- **Molino** = node industrial. Signals: production throughput.
+- **Banca** = command surface central del ecosystem (NO "bridge command center militar").
+- **Mercado** = signal exchange. Bid/offer signals cross-ecosystem.
+- **Logística** = transit signals tracked node-to-node + lineage trace.
+- **Futuras** = nuevos nodes en el ecosystem.
+
+> **Toda decisión de identidad por nodo deriva de "qué tipo de signal somos en el ecosystem profundidad".**
 
 ---
 
@@ -211,7 +218,7 @@ Cada vertical es un **node detectado en el sonar grid abisal**:
 - **Origen:** SOund Navigation And Ranging — instrumento que "ve por escuchar".
 - **Tagline principal:** *"Hear the depth."*
 - **Tagline secundario español:** *"La economía RP que escucha cada movimiento."*
-- **Tagline operacional:** *"Tactical-grade roleplay infrastructure."*
+- **Tagline operacional:** *"Production-grade roleplay infrastructure."* (post-ADR-012; deprecated *"Tactical-grade"* militar).
 
 **Naming hierarchy:**
 
@@ -225,37 +232,43 @@ SONAR                     (Studio + paragua)
 └── SONAR <Vertical>      (futuros)
 ```
 
-### 3.2 Voz de marca
+### 3.2 Voz de marca (post-ADR-012)
 
-| Aspecto | Dirección |
+> **Refactor:** voz arquetipo militar/submarino DEPRECATED. Voz canonical = neutral premium-tech.
+
+| Aspecto | Dirección canonical r6 |
 |---|---|
-| **Tono** | Silent service. Preciso. Terse. Profundamente profesional. Como capitán de submarino: pocas palabras, cada una mide. |
-| **Persona** | Comandante de submarino nuclear. Autoridad por disciplina del registro, no por voz alta. |
-| **Vocabulario** | Léxico submarino-tech: profundidad, presión, eco, ping, contacto, sweep, sondeo, manifiesto, registro, sumersión, periscopio, bitácora, signal, hatch, console, bridge. |
+| **Tono** | Neutral premium-tech. Preciso, terse, calmo, professional, atemporal. Estilo Vercel/Linear/Stripe/Apple Pro apps copy. |
+| **Persona** | NO arquetipo personaje. Autoridad por precisión del registro + claridad técnica, no por personaje fictício militar. |
+| **Vocabulario canonical** | Console, Bitácora, Depth (simbólico), Eco, Manifiesto, Signal, Lineage, Patrón, profundidad (simbólica abstracta), claridad, precisión. |
+| **Vocabulario DEPRECATED** | Periscope, Hatch (submarino), Hydrophone, Ping (radio), Sweep, Sumersión, Bridge-as-command-center militar, "silent service", "capitán", "comandante", "almirante", "a bordo", "tripulación", "tactical-grade". |
 | **Length** | Frases cortas. Datos primero. Ornamento prohibido. |
-| **Humor** | Casi cero. Cuando aparece, seco como aire de mar. |
-| **NO hacemos** | Exclamaciones, "amigo", "vibes", gen-Z, cálido emocional. |
+| **Humor** | Casi cero. Cuando aparece, seco — sin referencias marítimas literales. |
+| **NO hacemos** | Exclamaciones, "amigo", "vibes", gen-Z, cálido emocional, hyperbole, comparaciones competidores explícitas, **arquetipo militar/submarino**. |
 
-**Ejemplos:**
+**Ejemplos canonical r6:**
 
-- ✅ *"Console SONAR activada. Profundidad operativa."*
-- ✅ *"Contacto detectado: transferencia 1,240€ recibida en eco SONAR."*
-- ✅ *"Cosecha registrada en bitácora. Calidad: A. Eco: FARM-2026-0042."*
-- ✅ *"Contrato firmado. Signal estable. Ambas partes pueden invocar arbitraje."*
-- ❌ *"¡Hey, listo para tu aventura RP?!"* — no.
-- ❌ *"Bienvenido a bordo, almirante."* (heritage v1.0) — no.
+- ✅ *"Console activated. Ready."*
+- ✅ *"Transfer received: 1,240€ — entry FARM-2026-0042."*
+- ✅ *"Cosecha registrada. Calidad: A. Eco: FARM-2026-0042."*
+- ✅ *"Manifesto signed. Both parties may invoke arbitration."*
+- ✅ *"Hear the depth. Understand the patterns."* (marketing hero).
+- ❌ *"Console SONAR activada. Profundidad operativa."* (era voz capitán scaffold-r1..r5 — DEPRECATED).
+- ❌ *"Contacto detectado: transferencia 1,240€ recibida en eco SONAR."* (literal sub-acoustic — DEPRECATED).
+- ❌ *"Bienvenido a bordo, almirante."* (heritage v1.0 + arquetipo militar — DEPRECATED).
+- ❌ *"¡Hey, listo para tu aventura RP?!"* (gen-Z exclamaciones).
 
-### 3.3 Logo SONAR
+### 3.3 Logo SONAR (post-ADR-012)
 
-> **Concepto:** monograma "S" estilizado como **onda sonar concéntrica** — minimalist geométrico. Inspiración: Linear, Stripe, Apple modern, Vercel.
-> **Brief operacional:** ver `docs/art/briefs/01_brief_logo.md` (BRIEF-LOGO-001) — paquete encargo completo con deliverables, lockups, review gates, licensing.
+> **Concepto NO-LOCKED post-ADR-012:** monograma "S" estilizado con metáfora abstracta de profundidad simbólica. **DEPRECATED v1**: "S como onda sonar concéntrica" (radio/freq literal). **Candidatos preliminares Phase 4.5 v2** (designer explora 4-5 direcciones): descent-layers (capas descendiendo), prisma profundidad (3D minimalist), gradient depth, geometric depth-grid, geometric S-descent. Inspiración: Linear, Stripe, Apple Pro apps, Vercel, Arc Browser, Notion.
+> **Brief operacional:** ver `docs/art/briefs/01_brief_logo.md` v2 (BRIEF-LOGO-001 v2) — paquete encargo completo con deliverables, lockups, review gates, licensing. **Briefs v1 descartados** (locked en metáfora literal-militar).
 
 **TODO Phase 4:** Detail visual construction + designer collaboration. Preliminary spec:
 
 | Variante | Uso |
 |---|---|
 | Logo completo (monograma + wordmark "SONAR" + opcional tagline) | Website hero, packaging, splash |
-| Solo monograma (S sonar waves) | Favicon, app icon Tablet, watermark |
+| Solo monograma (S abstract concept TBD Phase 4.5 v2) | Favicon, app icon Tablet, watermark |
 | Wordmark solo | Footers, créditos |
 | Lockup vertical/horizontal | Aspect ratio variantes |
 | Reverso oscuro/claro | **Sonar Bright `#2DD4BF` sobre abyss-black `#03070A`** (canónico) + abyss-black sobre crew-100 `#F0F4F4` (reverse contraste-forced) |
@@ -275,7 +288,7 @@ SONAR                     (Studio + paragua)
 
 > **Filosofía de la paleta SONAR:** la firma en mercado es el **brillo bioluminescente**, no la oscuridad. El abyss-black es **canvas que protege la vista del jugador** (sesiones largas, dark-mode-first), pero el **identity-pop es siempre teal brillante**. La marca SONAR **brilla**.
 
-##### Tier A — Canvas & Surfaces (oscuros, ~60% pantalla)
+##### Tier A — Canvas & Surfaces (oscuros, **~30-40% pantalla post-ADR-012 hybrid theme** — deprecated scaffold-r1 60%)
 
 > **Función:** soporte visual oscuro que descansa la vista en sesiones largas y permite al brillo destacar. **No representan la marca** — son el lienzo.
 
@@ -293,7 +306,7 @@ SONAR                     (Studio + paragua)
 | Nombre | Hex | Uso |
 |---|---|---|
 | **Sonar Bright** | `#2DD4BF` | **🌟 PRIMARY BRAND IDENTITY.** Logo SONAR. Wordmark. CTA primary. App-icon Tablet. Active states. Focus rings. Marketing hero accent. **Esta es la marca.** |
-| **Sonar Glow** | `#5EEAD4` | Bioluminescent highlight (lighter sister of Bright). Sonar ping animations expandiéndose, key data emphasis, hover states sobre Sonar Bright, notification active dots. |
+| **Sonar Glow** | `#5EEAD4` | Bioluminescent highlight (lighter sister of Bright). `signal_emerge_pulse` animation soft-glow (NO concentric expanding waves — ver §16.5), key data emphasis, hover states sobre Sonar Bright, notification active dots. |
 | **Sonar Pulse** | `#14E5DD` | Pure brilliance saturated (deeper sister of Bright). Critical real-time signals, sweep animation, signal alerts urgentes. **Reservado para momentos de máxima atención** — overuse lo desgasta. |
 
 ##### Tier C — Structural Support (deep teal — ~5% pantalla)
@@ -326,11 +339,15 @@ SONAR                     (Studio + paragua)
 
 > **Crítico anti-pattern:** SONAR es **dark canvas + brilliant teal pop**, NO "teal everywhere". El brillo es **firma escasa** que se gana respeto por su rareza, no por su omnipresencia.
 
-1. **~60% abyss + depths** (Tier A — canvas + surfaces oscuros, descanso visual).
-2. **~25% Crew neutrals** (text + UI structure).
-3. **~10% IDENTITY POP — Sonar Bright + Sonar Glow + Sonar Pulse** (Tier B — logo, CTAs primary, active states, focus rings, branding marketing). **Esta es la firma de la marca.**
-4. **~5% Coloro Support** (Tier C — tintes glassmorphism, inactive borders, dim instruments, deep-tier UI).
-5. **<3% Signal functional** (state indicators críticos/warn/ok/info).
+**Ratios CANONICAL post-ADR-012 (hybrid theme):**
+
+1. **~30-40% deep surfaces (Tier A canvas dark)** — Abyss Black + Depths reduced (sidebar, hero dark sections, splash, modal backdrops). Descanso visual sesiones largas.
+2. **~30-40% white/off-white surfaces (NEW Tier post-ADR-012 hybrid)** — Crew 100 `#F0F4F4` para paneles, cards, content areas, drawer interiors, dashboard workspaces. Refs convergentes: Notion (white content panes), Stripe Dashboard (white workspace), Linear (white modal/cards selectivos), Arc Browser (light content). **NEW — reemplaza ~25% Crew text-only.**
+3. **~10-15% IDENTITY POP — Sonar Bright + Sonar Glow + Sonar Pulse** (Tier B — logo, CTAs primary, active states, focus rings, branding marketing). **Esta es la firma de la marca.**
+4. **~10% Coloro Support** (Tier C — tintes glassmorphism, inactive borders, dim instruments, deep-tier UI).
+5. **<5% Signal functional** (Critical/Warn/OK/Info — reservado momentos atención).
+
+**DEPRECATED scaffold-r1 ratios (60% dark + 25% Crew + 10% Bright + 5% Coloro):** purgados por ADR-012. NO usar.
 
 **Jerarquía visual clara:**
 - Cuando el ojo recorre una pantalla SONAR, lo primero que registra es el **brillo teal Tier B** sobre el canvas oscuro Tier A. **Eso es la marca.**
@@ -356,8 +373,8 @@ SONAR                     (Studio + paragua)
 - **Permitido (instrument glow — TODO Sonar Bright Tier B identity):**
   - Active CTA primary: `box-shadow: 0 0 24px rgba(45,212,191,0.25)` (Sonar Bright halo).
   - Focus rings: `box-shadow: 0 0 0 3px rgba(45,212,191,0.4)` (Sonar Bright ring).
-  - Sonar ping animation: radial gradient expandiéndose **Sonar Bright `#2DD4BF` → transparent** (logo monogram, splash, notification primary). **Pure identity moment.**
-  - Sonar Pulse animation (high-priority signals): radial `#14E5DD` → transparent, faster decay.
+  - `signal_emerge_pulse` animation (canonical post-ADR-012, ver §16.5 + BRIEF-MOTION-001 v1 §4.4): glow soft pulse Sonar Bright `#2DD4BF` con scale-bounce subtle 1-2 ciclos, **NO concentric waves expanding** (deprecated `sonar-ping` radio). Pure identity moment.
+  - High-priority signals pulse: glow `#14E5DD` Sonar Pulse, faster decay (sin concentric expanding).
   - Critical alert pulsing: `box-shadow: 0 0 32px rgba(248,113,113,0.3)` (Signal Critical, no Tier B).
 - **Prohibido:** outer glow gamer en surfaces estáticas, glow en text, RGB rainbow, neón saturado pure.
 
@@ -437,7 +454,7 @@ SONAR                     (Studio + paragua)
 
 ### 4.3 Reglas tipográficas
 
-1. **ALL CAPS** permitido en status indicators (`ACTIVE`, `OFFLINE`, `DIVE`, `SURFACE`) tracking +0.05em — silent service military precision.
+1. **ALL CAPS** permitido en status indicators (`ACTIVE`, `OFFLINE`, `READY`, `PROCESSING`) tracking +0.05em — premium-tech precision (Vercel/Linear/Stripe class). DEPRECATED v1: `DIVE`/`SURFACE` (literal sub-acoustic).
 2. Tabular nums obligatorio en columnas numéricas.
 3. Tracking display: -0.03em (tighter than v1 -0.02em — tech precision).
 4. Italic prohibido excepto enfasis técnico puntual.
@@ -461,14 +478,14 @@ SONAR                     (Studio + paragua)
 
 | Icono | Concepto | Uso |
 |---|---|---|
-| `sonar-ping` | Ondas concéntricas pulsando | Logo monogram, splash, notification primary |
+| `signal-emerge` | Ondas concéntricas pulsando | Logo monogram, splash, notification primary |
 | `submarine` | Silueta sub minimalist | Loading states, brand watermark |
 | `depth-gauge` | Indicator profundidad | Loading, progress, depth context |
-| `hydrophone` | Mic submarino | Audio/comms |
+| `signal-clarity` | Mic submarino | Audio/comms |
 | `bioluminescence` | Constelación puntos brillantes | Notifications nuevas, activos |
 | `pressure-hull` | Casco con líneas presión | Privacy, security, encrypted |
-| `periscope` | Periscopio extending | View, monitor |
-| `torpedo-bay` | Tubo lanzamiento | Logística futura (Oleada 2+) |
+| `observation-field` | Periscopio extending | View, monitor |
+| `lineage-trace` | Tubo lanzamiento | Logística futura (Oleada 2+) |
 
 ### 5.3 Iconos por estado
 
@@ -511,19 +528,19 @@ Heritage materiales (parchment/brass/oak/wax) deprecated. Reemplazados por tech-
 
 ## 7. Sound design META-BRAND SONAR
 
-### 7.1 Filosofía
+### 7.1 Filosofía (post-ADR-012)
 
-> **Silent service.** Volumen base muy bajo (-15dB, more silenced than v1's -12dB). Cada acción importante tiene su sonido firma. El silencio entre sonidos también está diseñado.
+> **El silencio es diseño.** Volumen base muy bajo (-15dB, more silenced than v1's -12dB). Cada acción importante tiene su sonido firma. El silencio entre sonidos también está diseñado. **DEPRECATED v1**: "silent service" arquetipo militar — voz/concept canonical post-ADR-012 = neutral premium-tech.
 
 ### 7.2 Sound library Studio (5 SFX firma)
 
 | Sound | Reemplaza | Uso | Carácter |
 |---|---|---|---|
-| `sonar_ping` | `admirals_chime` | Notificación crítica | Single sonar ping con echo decay (1.2s). Active-passive. |
-| `sonar_pressure` | `admirals_seal` | Firma documento, confirmación | Submarine pressure equalize sound (300ms). Subtle hiss + click. |
-| `sonar_depth` | `admirals_quill` | Inicio escritura, dive | Diving descent tone (1s). Low frequency drone descent. |
-| `sonar_console` | `admirals_brass_click` | Confirmación premium action | Tech tactile click instrument (50ms). Crisp. |
-| `sonar_hatch` | `admirals_parchment` | Abrir documento, abrir modal | Submarine hatch open (600ms). Metallic seal disengaging. |
+| `signal_emerge` | `admirals_chime` (legacy) + DEPRECATED v1 `sonar_ping` | Notificación crítica primaria | Mid-tone clarity con leve pitch-rise sugiriendo "algo emergiendo" (400-800ms). Premium-tech tonal Apple Mail/Vercel deploy class. **NO ping radio waveform**. Ver BRIEF-SOUND-001 v1 §2.1.1. |
+| `depth_press` | `admirals_seal` (legacy) + DEPRECATED v1 `sonar_pressure` | Firma documento, confirmación | Low-mid press con weight + leve settle decay (200-400ms). Sugiere peso descendiendo confirmado. Apple Touch ID success class. |
+| `layer_dive` | `admirals_quill` (legacy) + DEPRECATED v1 `sonar_depth` | Submit / escritura / drill-down | Quick mid-tone descent suave (150-300ms). Smooth transitional frictionless. Notion page transition class. |
+| `console_tap` | `admirals_brass_click` (legacy) + DEPRECATED v1 `sonar_console` | Confirmación premium click | Brief high-mid click con leve "pop" tonal (50-150ms). Crisp precise. Apple trackpad haptic-equivalent class. |
+| `panel_open` | `admirals_parchment` (legacy) + DEPRECATED v1 `sonar_hatch` | Abrir modal / drawer / panel | Soft rise + breath-like reveal (200-400ms). Sugiere panel emerging. Apple notification center reveal class. **NO door creak ni hatch literal**. |
 
 ### 7.3 Reglas
 
@@ -609,7 +626,7 @@ Cada nodo se define en 7 dimensiones:
 
 - App "Granja" en Tablet: 80% SONAR OS chrome (abyss + Coloro) + 20% acentos terracota/wheat-gold.
 - Signal protocol Granja: cada cosecha emite `harvest_ping` event con `quality + lineage_origin + producer_id` payload.
-- Sound signature Granja: ambient earth/wind + integrated `sonar_ping` cuando cosecha se registra en bitácora.
+- Sound signature Granja: ambient earth/wind + integrated `signal_emerge` cuando cosecha se registra en bitácora.
 
 ---
 
@@ -627,7 +644,7 @@ Decisiones foundational SONAR OS:
 
 - **Layout:** horizontal default (preserved).
 - **Density:** ajustable, productividad-first.
-- **Boot:** 1.8s, sonar-themed (logo SONAR + onda sonar pingeando + tipografía Geist fina + decay con `sonar_ping` audio).
+- **Boot:** 1.8s, sonar-themed (logo SONAR + onda sonar pingeando + tipografía Geist fina + decay con `signal_emerge` audio).
 - **Lock screen:** abyss-black canvas + Sonar Bright instrument dots (depth gauge + clock) + glassmorphism PIN entry modal.
 - **Home:** grid apps con bioluminescent active state.
 - **App switcher:** glassmorphism cards.
@@ -641,7 +658,7 @@ Decisiones foundational SONAR OS:
 
 Direcciones foundational:
 
-- **Trailer:** abyss-black opening + sonar ping reveals SONAR logo + cuts cinematográficos (no gamer cuts rápidos) + `sonar_ping` audio firma.
+- **Trailer:** abyss-black opening + sonar ping reveals SONAR logo + cuts cinematográficos (no gamer cuts rápidos) + `signal_emerge` audio firma.
 - **Tebex page:** dark canvas, bioluminescent CTA buttons, screenshot grid 4-cols, pricing table glassmorphism.
 - **Website:** Geist Sans hero massive, Inter Tight body, abyss canvas + **Sonar Bright hero accent** (logo + CTAs + key data pop) + Coloro Support solo en glassmorphism panes opcionales.
 
@@ -693,7 +710,7 @@ Direcciones foundational:
 
 | Asset | Tipo | Oleada | Prioridad | Notas |
 |---|---|---|---|---|
-| **5 SFX firma SONAR** | OGG mono | 1 | 🔴 P0 | `sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch`. -15dB normalized. |
+| **5 SFX firma SONAR** | OGG mono | 1 | 🔴 P0 | `signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open`. -15dB normalized. |
 | **Ambient Granja** | OGG stereo loop | 1 | 🟡 P1 | Viento + pájaros sutiles + crujido madera + lejano tractor. Loopable seamless. |
 | **Ambient Molino** | OGG stereo loop | 2 | 🟡 P1 | Rodillos industriales + belts + polvo aéreo sonoro. |
 | **Ambient SONAR OS (Tablet)** | OGG stereo loop | 2 | 🟢 P2 | Sub bridge very-low drone + sonar ping intervals ambient. Activo solo focus mode. |
@@ -919,20 +936,20 @@ Direcciones foundational:
 
 > **Vocabulario canónico SONAR** — SSoT léxico para toda doc rewrite Phases 5-7 + voice de marca + UI copy + marketing materials. **Cuando el dev/AI escribe copy SONAR, estos son los términos correctos.**
 
-> **Origen léxico:** submarine tech + naval silent service + acoustic instrumentation. Preservado consistency cross-touchpoint (logo a Tablet a website a trailer a docs).
+> **Origen léxico (post-ADR-012):** premium-tech infrastructure + abstracción profundidad simbólica + neutral voice (Vercel/Linear/Stripe class). **DEPRECATED v1**: submarine tech + naval silent service + acoustic instrumentation literal. Preservado consistency cross-touchpoint (logo a Tablet a website a trailer a docs).
 
 ### 15.A Meta-brand core (9 términos)
 
 | Término | Definición | Traducción técnica |
 |---|---|---|
 | **SONAR** | Nombre del proyecto + Studio + paragua marca. Acrónimo SOund Navigation And Ranging. | Product name |
-| **Bridge** | Command center del operador. La vista principal del Tablet donde él opera. | Main Tablet dashboard / home view |
+| **Bridge** (re-interpretado post-ADR-012) | **"Tablet home view"** abstract. Vista principal del Tablet donde el operador opera. **DEPRECATED v1**: "command center militar" — connotación submarino purgada. | Main Tablet dashboard / home view |
 | **Bitácora** | Audit trail / log forense. Registro inmutable de acciones. | `admirals_bank_audit_log` + eventos event_log |
 | **Console** | UI activa del Tablet en uso. Lo que el operador está mirando ahora. | Current foreground app |
 | **Depth** | Nivel de profundidad operacional (metáfora — no literal). Indicador de tier/role/acceso. | User permission level / tier |
 | **Operador** | El jugador. Sustituye "player" / "user" en copy player-facing. | Player / user |
 | **Pressure hull** | Cerramiento seguro de datos sensibles. Indicador visual privacy/encrypted. | Security/privacy boundary |
-| **Silent service** | Disciplina operacional: pocas palabras, precisión máxima. Voz de marca principal. | Brand voice discipline |
+| ~~**Silent service**~~ DEPRECATED post-ADR-012 → use **Neutral premium-tech** | DEPRECATED arquetipo militar. Voz canonical r6 = neutral premium-tech (Vercel/Linear/Stripe). Disciplina preservada (terse + precisión) sin connotación militar. | Brand voice discipline (neutral premium-tech) |
 | **Sub-brand** | Verticales (SONAR Bank, SONAR Market, SONAR Granja). Parte del ecosistema. | Product vertical |
 
 ### 15.B UI elements (11 términos)
@@ -940,13 +957,13 @@ Direcciones foundational:
 | Término | Definición | Traducción técnica |
 |---|---|---|
 | **Dock** | Barra inferior de apps anchadas del Tablet. | App dock / taskbar |
-| **Hatch** | Abrir/cerrar modal o app. "Open the hatch" = launch. | Modal/app open-close |
+| ~~**Hatch**~~ DEPRECATED post-ADR-012 → use **Panel open** | DEPRECATED literal submarino. Reemplazo canonical: **Panel open / Panel close** (abrir/cerrar modal o drawer). | Modal/app open-close |
 | **Home** | Launcher grid del Tablet. Vista de apps. | Launcher screen |
 | **Lock screen** | Pantalla inactiva del Tablet con entrada PIN/auth. | Lock screen |
-| **Periscope** | Vista observacional: mapa, dashboard, monitor. Observar sin ejecutar. | Observation view / map |
-| **Porthole** | Ventana/modal glassmorphism. Ojo de buey submarino. | Glassmorphism modal/drawer |
+| ~~**Periscope**~~ DEPRECATED post-ADR-012 → use **Observation field / view** | DEPRECATED literal submarino. Reemplazo canonical: **Observation field / view** (mapa, dashboard, monitor abstract). | Observation view / map |
+| ~~**Porthole**~~ DEPRECATED post-ADR-012 → use **Glass panel** | DEPRECATED "ojo de buey submarino" literal. Reemplazo canonical: **Glass panel** (modal/drawer glassmorphism abstract). | Glassmorphism modal/drawer |
 | **Sonar grid** | Background pattern dotted/line sutil en surfaces premium. | Background texture |
-| **Splash** | Boot screen del Tablet con logo animation + `sonar_ping`. | Boot splash |
+| **Splash** | Boot screen del Tablet con logo animation + `signal_emerge`. | Boot splash |
 | **Switcher** | Vista de apps abiertas en multitask (glassmorphism cards). | App switcher |
 | **Tray** | Notification panel glassmorphism drawer. | Notification panel |
 | **Status bar** | Top bar del Tablet con clock + depth gauge + signal strength. | Top status bar |
@@ -1020,18 +1037,18 @@ Direcciones foundational:
 | Puerto | Node |
 | Bahía / dique | Surface / Bridge |
 | Pergamino / bitácora brass | Bitácora (preserved, pero sin materiales brass) |
-| Brújula / sextante | Depth gauge / periscope |
-| Llave de latón | Pressure hull key |
+| Brújula / sextante | Depth gauge (abstract) / Observation field (DEPRECATED v1 periscope) |
+| Llave de latón | Layer-protection key (DEPRECATED v1 "pressure hull key" — hull reconceptualizado capas) |
 | Sello de cera | Signature (digital) |
 
 ### 15.H Uso léxico cross-language
 
 | Context | Español (primary) | Inglés (secondary) |
 |---|---|---|
-| UI player-facing | **Preferir castellano** con términos SONAR (ej. "Contacto detectado", "Manifiesto firmado") | Inglés OK en términos muy técnicos (Sweep, Dive) — silent service feel |
+| UI player-facing | **Preferir castellano** con términos SONAR (ej. "Transferencia recibida", "Manifiesto firmado") | Inglés OK en términos muy técnicos — premium-tech feel (DEPRECATED Sweep/Dive sub-acoustic literal) |
 | Marketing hero | Castellano brand-voice + taglines mixtos | Taglines inglés OK ("Hear the depth.") |
 | Docs técnicos | Mixto — cada doc tiene convention declarada | Mayoría inglés en código, castellano en prosa |
-| Sound naming (audio files) | N/A | Siempre inglés snake_case (`sonar_ping.ogg`) |
+| Sound naming (audio files) | N/A | Siempre inglés snake_case canonical post-ADR-012 (`signal_emerge.ogg`, `depth_press.ogg`, etc. — ver BRIEF-SOUND-001 v1). DEPRECATED v1 `sonar_*.ogg`. |
 
 > **Meta-regla:** si un dev/AI duda entre dos palabras para nombrar algo nuevo, consulta este glossary PRIMERO. Si no existe término, **propone candidato + submite via PR/ADR** para consolidar vocabulario cross-touchpoint. **El léxico coherente es parte de la marca.**
 
@@ -1056,22 +1073,22 @@ Direcciones foundational:
 | `motion-fast` | 150ms | Micro-interactions (tooltip appear, status change, tab underline slide) |
 | `motion-base` | 200ms | Standard transitions (modal open, tab content switch, dropdown) |
 | `motion-slow` | 320ms | Deliberate (page transition, card expand, drawer open) |
-| `motion-deliberate` | 480ms | Rare ceremonial (boot splash fade, sonar ping full cycle, login success) |
-| `motion-sonar-ping` | 1200ms | Sonar ping animation concentric full cycle (unique token) |
+| `motion-deliberate` | 480ms | Rare ceremonial (boot splash fade, `signal_emerge_pulse` full cycle, login success) |
+| `motion-signal-emerge` | 1200ms | `signal_emerge_pulse` animation glow soft pulse + scale-bounce subtle (canonical post-ADR-012, NO concentric waves — ver BRIEF-MOTION-001 v1 §4.4). DEPRECATED v1 `motion-sonar-ping`. |
 
-**Regla:** nunca usar duraciones > 480ms salvo excepciones signature (sonar-ping). Motion prolongado aburre al operador en sesiones largas.
+**Regla:** nunca usar duraciones > 480ms salvo excepciones signature (`signal_emerge_pulse`, `logo_descent_reveal` boot). Motion prolongado aburre al operador en sesiones largas.
 
 ### 16.3 Easing curves (cubic-bezier)
 
 | Token | Curve | Carácter | Uso |
 |---|---|---|---|
-| `submarine-ease-out` | `cubic-bezier(0.33, 1, 0.68, 1)` | Water resistance settling | Default exit-to-rest (modal open, element appear) |
-| `submarine-ease-in` | `cubic-bezier(0.32, 0, 0.67, 0)` | Compressing toward depth | Entering, building pressure (modal close, element disappear) |
-| `submarine-ease-in-out` | `cubic-bezier(0.65, 0, 0.35, 1)` | Balanced deliberate | Position transitions, tab switches |
-| `submarine-snap` | `cubic-bezier(0.17, 0.67, 0.33, 1.2)` | Microscopic overshoot (tactile) | Button press feedback, confirmation |
-| `sonar-pulse` | `cubic-bezier(0.4, 0, 0.2, 1)` | Smooth radial propagation | Ping expansion animations |
+| `ease-depth-descent` (DEPRECATED v1 `submarine-ease-out`) | `cubic-bezier(0.33, 1, 0.68, 1)` | Settling abstract | Default exit-to-rest (modal open, element appear) |
+| `ease-depth-enter` (DEPRECATED v1 `submarine-ease-in`) | `cubic-bezier(0.32, 0, 0.67, 0)` | Compressing toward depth abstract | Entering, building presence (modal close, element disappear) |
+| `ease-deliberate` (DEPRECATED v1 `submarine-ease-in-out`) | `cubic-bezier(0.65, 0, 0.35, 1)` | Balanced deliberate | Position transitions, tab switches |
+| `ease-snap` (DEPRECATED v1 `submarine-snap`) | `cubic-bezier(0.17, 0.67, 0.33, 1.2)` | Microscopic overshoot (tactile) | Button press feedback, confirmation |
+| `ease-signal-emerge` (DEPRECATED v1 `sonar-pulse`) | `cubic-bezier(0.4, 0, 0.2, 1)` | Smooth signal propagation | `signal_emerge_pulse` animations (NO concentric expanding waves) |
 
-> **Default:** cuando un dev no sabe cuál usar, `submarine-ease-out` en `motion-base` (200ms) es la combinación universal segura.
+> **Default:** cuando un dev no sabe cuál usar, `ease-depth-descent` (DEPRECATED v1 `submarine-ease-out`) en `motion-base` (200ms) es la combinación universal segura.
 
 ### 16.4 Spring physics (Framer Motion config)
 
@@ -1325,7 +1342,7 @@ Cada component debe tener **mínimo 4 stories**:
 ### 18.7 Performance budgets NUI components
 
 - **Single component mount:** <16ms render (under 1 frame).
-- **Full screen cold start:** <200ms (sin `sonar_ping` audio; con audio, +100ms overhead acceptable).
+- **Full screen cold start:** <200ms (sin `signal_emerge` audio; con audio, +100ms overhead acceptable).
 - **Storybook interaction tests:** <5s per story CI time.
 
 ---
@@ -1368,7 +1385,7 @@ Cada component debe tener **mínimo 4 stories**:
 
 ### 19.5 Anti-patterns shader
 
-- ❌ Bloom/glow excesivo "portfolio cyberpunk style" → mata la aesthetic silent service.
+- ❌ Bloom/glow excesivo "portfolio cyberpunk style" → mata la aesthetic premium-tech neutral (DEPRECATED v1 "silent service").
 - ❌ Color cycling rainbow → inmediate disqualify (viola palette Tier governance).
 - ❌ Particle emission ilimitada → performance killer.
 - ❌ Post-process full-screen constantly-on (solo activar per-zone MLO o per-event).
@@ -1441,9 +1458,9 @@ Este doc es **living document** — se actualiza continuamente post-firma v2.0 s
 
 ## Estado del documento
 
-- **Versión:** 2.0-scaffold-r6 (refinement post-ADR-012 — NOTICE r6 establishes new canonical metaphor/theme/voice/icons/sound; §1-§20 NO surgical rewrite yet, Phase 4.5 v2 ejecutará).
-- **Próxima revisión:** Phase 4.5 v2 (Sonnet o Opus) → (a) surgical rewrite §1-§20 alineado con NOTICE r6 + ADR-012 (purga literal-militar, hybrid theme integration, iconografía abstract finalizada, voz neutral copy samples) + (b) BRIEFS v2 (LOGO + ICONS + SOUND + MOTION + MARKETING redacted clean). Luego Phase 4 ejecución creativa → bump v2.0 firmable.
-- **Briefs operacionales:** descartados v1 (locked en metáfora literal-militar). Phase 4.5 v2 redactará v2 alineados con ADR-012.
+- **Versión:** 2.0-scaffold-r7 (Phase 4 surgical full inline cleanup post-ADR-012 — §1-§20 inline rewritten alineado NOTICE r6 + ADR-012; principales secciones §0-§3 + §4.3 + §7.1-§7.2 + §15 + §16 + §19.5 purged literal-militar inline).
+- **Próxima revisión:** v2.0 firma (post Phase 4 ejecución creativa = logo SVG + icons set + sound files + motion patterns + marketing assets delivered) → bump v2.0 firmable.
+- **Briefs operacionales (v2):** ✅ 5/5 delivered en `docs/art/briefs/` post-ADR-012 (LOGO + ICONS + SOUND + MOTION + MARKETING). Briefs v1 descartados (locked en metáfora literal-militar).
 - **Reemplaza:** `_archive/01_art_direction_v1_admirals.md` v1.0 (deprecated).
 - **ADR origen:** ADR-011 (`planning/02_decision_log.md` §11).
 
@@ -1459,9 +1476,10 @@ Este doc es **living document** — se actualiza continuamente post-firma v2.0 s
 | 2.0-scaffold-r4 | 2026-05-03 | Founder + Cascade | **Phase 4 Sonnet scaffold 100% complete** post-commit d0ecfeb: (a) **§18 Storybook integration specs** — purpose/scope, component organization `/stories/` (primitives/components/patterns/screens/tokens), design tokens pipeline Figma → code (Tokens Studio → JSON → TS typed), stories obligatorias por component ×4 (Default/AllVariants/Interactive/EdgeCases), naming convention (Glossary §15 aligned), visual regression testing (Chromatic/Percy), perf budgets NUI (<16ms mount, <200ms cold start, <5s CI). (b) **§19 Shader contracts specs** — catalog ×6 shaders SONAR (mesh-grid, abyss-fog, bioluminescence-particle, glassmorphism-fallback, depth-gauge-LCD, sonar-pulse-wave) con target + prioridad, performance contracts (FPS <5% reduction, LOD-aware, fallback obligatorio), integration points NUI/3D/hybrid, aesthetic contracts (palette compliance + tint parametrizable + motion inheritance), anti-patterns ×5. (c) **§20 Roadmap art direction iterations** — living document policy per ADR-007 (patch/minor/major semver), v2.1 trigger conditions (×5 Q2 2026), v2.2 triggers (×4 Q4 2026-Q1 2027), v3.0 triggers (×5, ≥2028), review cadence (cierre oleada + Q2/Q4 + major release + ad-hoc), changelog discipline append-only. (d) Cleanup: unicode escapes literales fixed (`\u2014` → —, `\u2265` → ≥), duplicate separator removed, §14.2 checklist ticks updated. **Sonnet-doable scaffold 100% terminado** — remaining slices requieren designer/Opus creative density. |
 | 2.0-scaffold-r5 | 2026-05-03 | Founder + Cascade | **Phase 4.5 partial — Specialist briefs delivered (Sonnet)** post-commit b480af5: (a) Created `docs/art/briefs/` directory + README index. (b) **BRIEF-LOGO-001** — paquete encargo completo logo SONAR (~270 líneas): contexto proyecto, 10 deliverables (SVGs + PNGs + lockups + glow variants + guidelines PDF + Figma source), specs técnicos vinculantes (concepto S-onda locked, color tokens Tier B, tipografía wordmark Geist Sans, geometry 12×12 grid, 5 lockups), do/don't ✅×6 ❌×11, referencias visuales (5 convergir + 5 anti), 5 review gates R0-R4, licensing + NDA + presupuesto orientativo €1.5-3.5k, founder pre-kickoff checklist ×6. (c) **BRIEF-ICONS-001** — paquete encargo iconografía custom 8 esenciales (~280 líneas): los 8 iconos locked (sonar-ping/submarine/depth-gauge/hydrophone/bioluminescence/pressure-hull/periscope/torpedo-bay) + 2 stretch (manifiesto/bitacora), 32 SVG files target + React TS lib + Figma + guidelines PDF + showcase PNG, specs canvas 24×24 stroke 1.5px round Lucide-compatible, guidance per-icon individual ×8, do/don't, 4 review gates R0-R3, licensing + presupuesto €1.2-2.8k. (d) Cross-refs §3.3 + §5.2 → briefs/. Pendiente Phase 4.5: BRIEF-SOUND-001 + BRIEF-MOTION-001 + BRIEF-MARKETING-001. |
 | 2.0-scaffold-r6 | 2026-05-03 | Founder + Cascade | **REFINEMENT NOTICE r6 (per ADR-012)** post-commit d0712cc: top-level NOTICE establece NEW CANONICAL vigente desde hoy: (a) **Metáfora abstracta pura** (profundidad + exploración simbólica, NO submarino militar literal NO radios/freq) — explicit purga `sonar-ping`/`submarine`/`hydrophone`/`periscope`/`torpedo-bay` icons + voz capitán submarino + sound names sub-acoustic. (b) **Hybrid theme dark+white surfaces** (Notion/Arc/Stripe Dashboard ratio ~30-40% dark + ~30-40% white surfaces + ~10-15% Sonar Bright + ~10% structural + <5% signals) reemplaza dark-extremo 60% scaffold-r1. (c) **Voz neutral premium-tech** (Vercel/Linear/Stripe copy style) elimina arquetipo militar. (d) **Iconografía 3/8 conservados** (depth-gauge + pressure-hull reconceptualizado capas + bioluminescence) + 5 candidatos abstractos a definir Phase 4.5 v2. (e) **Sound naming refactored** sin radio/freq. (f) **Glossary cleanup** Console/Bridge/Depth/Eco OK; Periscope/Hatch/Hydrophone/Ping/Sweep deprecated. §1-§20 NO surgical rewrite todavía — NOTICE supersedes en cualquier conflicto, Phase 4.5 v2 hará surgical full. Briefs v1 (logo + icons + README) descartados. |
+| 2.0-scaffold-r7 | 2026-05-03 | Founder + Cascade | **Phase 4 surgical full inline cleanup post-ADR-012** post-commits `5838a79` (briefs v2) + `a879c45` (BOOTSTRAP v1.5). Surgical inline rewrite §1-§20 alineado NOTICE r6 + ADR-012 (NOTICE r6 sigue vigente como top-level canonical, pero ahora contenido inline también purged). **Cambios secciones:** (a) **§0.1 Tesis central** rewrite ("infrastructure premium-tech... metáfora simbólica de profundidad NO submarino militar literal"; lema canonical "Hear the depth."). (b) **§1.2 Anti-references table**: 4 NEW deprecated rows (submarino militar literal + voz arquetipo militar + theme dark-extremo 60% + tactical operator). (c) **§1.3 Comparativa competidores**: SONAR row purged ("Hybrid theme + neutral premium-tech + Cero arquetipo militar"). (d) **§2 Metáfora central** full rewrite: "Profundidad simbólica abstracta" (§2.1 razón abstract + §2.2 elements canonical/deprecated table 10 rows + §2.3 ecosystem grid re-frased). (e) **§3.1 Tagline operacional** "Production-grade" (deprecated "Tactical-grade"). (f) **§3.2 Voz de marca** full rewrite (neutral premium-tech + vocabulario canonical + DEPRECATED + 5 ejemplos canonical r6 + 4 anti-ejemplos). (g) **§3.3 Logo** concepto NO-LOCKED (5 candidatos preliminares Phase 4.5 v2; deprecated S-onda concéntrica). (h) **§3.4 Paleta**: Tier A heading ratios actualizado (~30-40% pantalla post-ADR-012); ratios CANONICAL hybrid theme (5 buckets: dark ~30-40% + white ~30-40% + Sonar Bright ~10-15% + Coloro ~10% + signals <5%); deprecated scaffold-r1 60% explícito. Sonar Glow + glow rules updated `signal_emerge_pulse` (no concentric expanding). (i) **§4.3 Type rules** ALL CAPS examples premium-tech (deprecated DIVE/SURFACE sub-acoustic). (j) **§7.1-§7.2 Sound** filosofía "El silencio es diseño" (deprecated "silent service"); 5 SFX descriptions canonical r6 + DEPRECATED v1 mapping + character refs Apple/Vercel/Notion/Stripe. (k) **§15 Glossary**: Origen léxico re-frased; §15.A Bridge re-interpretado + Silent service deprecated; §15.B Hatch/Periscope/Porthole deprecated entries; §15.G/§15.H deprecated mappings updated. (l) **§16 Motion**: easing curves rebrand (`ease-depth-descent`/`ease-depth-enter`/`ease-deliberate`/`ease-snap`/`ease-signal-emerge` con DEPRECATED v1 submarine-* names); duration token `motion-signal-emerge`; default reference updated. (m) **§19.5 Anti-pattern shader** "premium-tech neutral" (deprecated "silent service"). **PowerShell bulk-replace step:** ejecutado para `sonar_ping/pressure/depth/console/hatch` SFX + `sonar-ping`/`hydrophone`/`periscope`/`torpedo-bay` icons → canonical post-ADR-012 names; restoración manual NOTICE r6 mapping table + r6 changelog entry afectados (corrupción contained, fix in-session). **Footer state + tagline + FIN line** actualizados v2.0-scaffold-r7. Cross-refs: ADR-012 + BRIEF-LOGO-001 v2 + BRIEF-ICONS-001 v2 + BRIEF-SOUND-001 v1 + BRIEF-MOTION-001 v1 + BRIEF-MARKETING-001 v1. **Pendiente Phase 4 ejecución creativa**: logo SVG real + icons set real + sound files real + motion patterns real + marketing assets real → bump v2.0 firmable. |
 
 ---
 
-*"Hear the depth. Below the surface, every signal counts."*
+*"Hear the depth. Understand the patterns."*
 
-**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold-r6 (refinement notice ADR-012 — §1-§20 surgical rewrite pendiente Phase 4.5 v2).**
+**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold-r7 (Phase 4 surgical full inline cleanup post-ADR-012 — §1-§20 alineado NOTICE r6 + ADR-012).**
