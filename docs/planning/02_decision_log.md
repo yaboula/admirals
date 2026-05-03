@@ -657,6 +657,210 @@ Tres opciones analizadas:
 
 ---
 
+## ADR-011 — Strategic Identity Pivot: Admirals → SONAR (radical rebrand + aesthetic overhaul)
+
+- **Fecha:** 2026-05-03
+- **Autor:** Founder (executive decision) + Cascade (architect, documented risks per workspace red-flags protocol)
+- **Estado:** accepted (founder explicit override of architect risk concerns — risks documented below per professional duty)
+- **Tags:** identity, branding, pivot, foundational, aesthetic, ssot_invalidation, risk_accepted
+
+### Contexto
+
+Al cierre de Sprint 1 (2026-05-02, 30/30 smokes ✅, tag `sprint-1-complete`), durante planning session S2 dedicada, se introduce:
+
+1. **2026-05-02 23:36 UTC+02** — Founder añade nota strategic UI: preferencia inspiración Prism + Quasar, premium-modern-friendly, **paleta primaria nueva = WGSN Coloro 092-37-14** (deep petrol teal). Mi memoria UI design persistente fue creada.
+2. **2026-05-03 03:46** — Founder reafirma fork A planning. Comparte 3 capturas Prism Scripts (Vehicle Manage UI, Advanced Pause Menu, Mining Job) ilustrando aesthetic dark-canvas + brilliant-pop + grid-background + glow-instruments.
+3. **2026-05-03 04:12** — Architect lee `docs/art/01_art_direction.md` v1.0 (2678 líneas firmadas) + `docs/design/02_admirals_tablet.md` §6 + búsqueda web Prism Scripts. **Surfaces critical conflict:** la nueva dirección visual contradice EXPLÍCITAMENTE 5 anti-references firmadas en §1.3 ("Sci-fi cyberpunk neón", "Dark mode tacticool militar negro/lima", "Glassmorphism iOS clone") y §6.4 ("Glow / neon outer glow → Cero"). Architect presenta 3 opciones (A radical, B reconcile, C hybrid) con recomendación firme **Opción B**.
+4. **2026-05-03 04:39** — Founder decide **Opción A radical**: pivot completo de identidad. Nueva metáfora: "Submarino Nuclear de Alta Tecnología / Exploración Abisal". Rebrand de proyecto: **Admirals → SONAR**. Aesthetic: Dark Mode extremo + Glassmorphism + Coloro 092-37-14 + bioluminescencia + sonar instruments + neón teal pop. Tono: tecnología pura, táctica, silenciosa, precisión.
+5. **2026-05-03 04:44** — Architect documenta 7 banderas rojas (time, escalation pattern, SSoT contradictions ×2, market reasoning thinness, cost ~200h work, scope creep, internal request contradiction). Founder explicitly overrides: *"es la última vez que me limites por tiempo, soy responsable y acepto el riesgo, nunca haces referencia a tiempo"*.
+
+### Decisión
+
+**Pivot identidad completo, multi-superficie:**
+
+1. **Project naming:** `Admirals` → `SONAR` en TODA la superficie (docs + code + DB + git + workspace).
+2. **Metáfora central:** Naval Almirantazgo XVII-XIX → Submarino Nuclear / Exploración Abisal moderna.
+3. **Aesthetic:** Heritage premium (navy/brass/parchment + Cormorant serif + naval iconography + spring physics motion) → Tech precision dark (deep abyssal black canvas + Coloro 092-37-14 bioluminescent teal pop + Inter Tight + sonar/sub iconography + glassmorphism + tech glow).
+4. **Voz de marca:** Almirante distinguido cálido ("Bienvenido a bordo. Tu primera Tablet espera en el muelle.") → Silent service tech-precise ("Console SONAR activada. Contacto detectado en sonar.").
+5. **Anti-patterns firmados §1.3 + §6.4 INVERTIDOS:** lo que era prohibido (tacticool dark/lime, glassmorphism, glow neon) ahora es **signature**. lo que era signature (heritage textures parchment/brass/oak, naval iconography, ship's bell sounds) ahora es **deprecated**.
+
+### Alternativas consideradas
+
+- **A (elegida) — Pivot Radical SONAR.**
+  - Pros: alineado 100% con founder's actual creative vision; aesthetic match con tendencias UI premium FiveM 2026 (Prism, NoPixel-clones, tactical modern); founder owns risk explicitly.
+  - Cons: invalida ~25 docs firmados (~40K líneas) + code refactor 3 resources + DB migration 6 tablas + git tag fossils; sale del blue ocean naval-heritage (única posición diferenciadora declarada en `docs/art/01_art_direction.md:113`); contradice 5 anti-references firmadas en SSoT.
+
+- **B (architect-recommended) — Reconcile: misma metáfora Almirantazgo, ejecución modernizada "puente de fragata moderna nocturna".**
+  - Pros: salvaba 2678 líneas + cohesión cross-doc + diferenciación competitiva única (nadie en FiveM hace naval heritage); Coloro 092-37-14 encajaba como "deep ocean petrol" naval-coherent; ejecución sí flexible donde la metáfora es valor inmutable.
+  - Cons: founder consideró "insuficiente" para captura completa de su visión actual; bloqueaba aesthetic Prism-pure que founder quiere ejecutar.
+  - **Razón descartada:** Founder green-light explícito sobre Opción A invalidó esta alternativa.
+
+- **C — Hybrid (Tablet UI tech / branding heritage).**
+  - Pros: incremental, low-cost.
+  - Cons: viola principio firmado A2 ("Identidad por nodo, coherencia por meta-brand") — fragmentación identidad cross-touchpoint.
+  - **Razón descartada:** anti-A9 ("Estilo coherente cross-touchpoint").
+
+### Consecuencias
+
+**Positivas:**
+- Identidad alineada con visión actual founder + tendencia mercado FiveM premium 2026.
+- Aesthetic SONAR (dark + bioluminescent teal + tech precision + glassmorphism) es ejecutable con Coloro 092-37-14 como hilo conductor.
+- Brand name `SONAR` es semantically rich (SOund Navigation And Ranging — instrumento que "ve por escuchar") + matches tech metaphor.
+- Founder pasión renovada → velocity boost esperado en S2+ (founder explicit: "vamos con total energía").
+- Tabla rasa permite tipografía/iconografía/sound design diseñados desde día 1 con visión coherente (vs heritage acumulada).
+
+**Negativas / trade-offs:**
+- **~25 docs firmados invalidados** (estimado ~40K líneas afectadas). Rewrite multi-sesión.
+- **3 resources renombrados** (`admirals_core` → `sonar_core`, `admirals_bank` → `sonar_bank`, `admirals_bridges` → `sonar_bridges`). ~200+ namespace call sites refactor.
+- **6 tablas DB renombradas** vía migration 009 (admirals_bank_accounts, admirals_bank_movements, admirals_bank_audit_log, admirals_escrows, admirals_bridge_idempotency, admirals_schema_versions). `admirals_schema_versions` self-reference requiere bootstrap dance especial.
+- **Riesgo regresión S1** durante refactor — 30/30 smokes deben re-validar post-rename.
+- **Git tags fossils**: `v0.0.0` (S0.4), `v0.1.0` (S1.1), `sprint-1-complete` (S1) quedan etiquetando hitos del nombre antiguo. No removibles sin history rewrite.
+- **Workspace corpus** (`yaboula/admirals` → `yaboula/sonar`) requiere migration IDE.
+- **Sprint 2 inicio diferido** hasta completar refactor + doc rewrite + smoke regression (gate). Post-pivot S2.0 = "SONAR foundation re-validation" antes de retomar Tablet shell + Bank app.
+- **Sale del blue ocean diferenciador** (naval heritage único FiveM) hacia red ocean (dark-tech-tactical aesthetic ya saturado por Prism, NoPixel-clones, 17Movement, 0Resmon).
+- **5 anti-references firmadas en `01_art_direction.md` §1.3 + §6.4 invalidadas**: "Sci-fi cyberpunk neón" estaba ❌, ahora ✅ tech precision; "Dark mode tacticool" estaba ❌, ahora ✅ silent service; "Glassmorphism iOS clone" estaba ❌, ahora ✅ porthole/sub windows; "Glow neon outer" estaba ❌ "Cero", ahora ✅ instrument bioluminescence.
+
+**Neutrales:**
+- Sound design (`admirals_chime`, `admirals_seal`, `admirals_quill`, `admirals_brass_click`, `admirals_parchment`) — todo deprecated; nuevo set SONAR (`sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch`).
+- Voz de marca completamente reescrita.
+- Logo Admirals (monograma A brújula+ancla) deprecated; nuevo logo SONAR pendiente diseño.
+- Custom icon set 20 navales (`compass-rose`, `sextant`, `wax-seal`, `ledger`, `port-lighthouse`, etc.) deprecated; nuevo set 8-10 sub/sonar-themed pendiente diseño.
+
+### Risks accepted by founder (architect documented per workspace `admirals.md` red-flags protocol)
+
+> **Workspace rule §red_flags requires:** *"Founder pide algo que contradice SSoT firmado → STOP y consulta founder"*. Architect raised flags, founder explicitly overrode. Risks documented inmutably here for institutional memory.
+
+1. **🚩 SSoT contradiction directa** — pivot invierte 5 anti-references firmadas v1.0 (`01_art_direction.md` §1.3 + §6.4). Founder rule "SSoT firmados > AI training knowledge" requería ADR antes de override; este ADR cumple esa obligación post-hoc.
+
+2. **🚩 Anti-pattern A3 firmado**: *"Premium se siente, no se grita. Nada de neón."* Founder pivot adopta neon (bioluminescent teal pop) como signature — directa contradiction con principio firmado.
+
+3. **🚩 Reasoning basado en exposure single-vendor**: founder vio 3 capturas marketing Prism Scripts y concluyó "el mercado dicta tendencia clara". No hay market research formal (ej. survey FiveM premium customers, análisis 5+ competitors aesthetic). Risk: false consensus from single sample.
+
+4. **🚩 Coste real subestimado por founder mention "100,000 líneas"**: scope real estimado por architect = ~40K líneas docs + ~200 code call sites + 6 DB tables + smoke regression + git/corpus migration. Total work ~120-200h.
+
+5. **🚩 Sprint 2 delay**: roadmap §4.2 estimaba S2 = 3 semanas para Tablet shell + Bank app + Map app. Pivot añade 2-3 semanas pre-S2 de refactor/rewrite/regression antes de poder retomar S2 scope original.
+
+6. **🚩 Sale del blue ocean diferenciador**: `01_art_direction.md:113` (firmado v1.0) declaró: *"Diferenciación radical — nadie en FiveM usa esta metáfora [Almirantazgo]. La gente espera tactical-ops o cyberpunk. Lleguemos con una chaqueta de almirante y los hayamos reescrito el género."* SONAR aesthetic = exactamente lo que esa declaración identificaba como red ocean saturado.
+
+7. **🚩 Internal request contradiction**: founder pidió simultáneamente "completo + seguro + ahora" — 3 condiciones mutuamente excluyentes a las 04:39. Architect propone resolución vía multi-phase plan (Phase 1-2 esta sesión = ADR + foundation; Phases 3-6 sesiones posteriores con dry-runs y gates), preservando "completo + seguro" sacrificando "ahora" parcialmente. Founder accepted multi-phase.
+
+**Founder explicit override quote (2026-05-03 04:44 UTC+02):**
+> *"es la última vez que me limites por tiempo, soy responsable y acepto el riesgo, nunca haces referencia a tiempo. arrancamos y vamos con total energia, porque no sabes los detalles de mi estoy totalmente listo."*
+
+**Architect compliance:** override accepted, risks documented per professional senior duty, executing per founder direction.
+
+### Impact
+
+**Docs invalidados (firmados — requieren rewrite multi-sesión):**
+
+| Doc | Líneas | Scope rewrite |
+|---|---|---|
+| `docs/00_PRODUCT_BIBLE.md` | ~3000 | Metáfora central, voz, P5 (Tablet identity), examples |
+| `docs/agents/00_BOOTSTRAP.md` | ~600 | Project name, identity refs, version v1.4 → v2.0 |
+| `docs/agents/03_founder_playbook.md` | ~1015 | Examples, voz refs |
+| `docs/art/01_art_direction.md` | 2678 | **Full rewrite from scratch v2.0 SONAR** ⭐ |
+| `docs/art/02_shader_contracts.md` | ~1500 | Shader vibes pivoted (water caustics, deep blue lighting) |
+| `docs/art/03_sound_bible.md` | ~1000 | Full sound bibliography rewrite (5 SFX firma SONAR) |
+| `docs/art/04_storybook_guide.md` | ~600 | Aesthetic guide rewrite |
+| `docs/design/00_PRODUCT_BIBLE.md` (if duplicate) | — | Verify |
+| `docs/design/01_node_farm.md` | ~1500 | Naval refs purged, integrate w/ SONAR ecosystem |
+| `docs/design/02_admirals_tablet.md` | 1599 | **Rename to `02_sonar_tablet.md` + full rewrite** ⭐ |
+| `docs/design/03_node_mill.md` | ~800 | Naval refs purged |
+| `docs/design/04_node_bakery.md` | ~800 | Naval refs purged |
+| `docs/design/05_node_retail.md` | ~600 | Naval refs purged |
+| `docs/economy/01_economic_model.md` | ~2500 | IBANs context, currency naming refs |
+| `docs/gameplay/01_gameplay_loops.md` | ~1500 | Voz examples, Tablet refs |
+| `docs/gameplay/02_progression_systems.md` | ~600 | Refs |
+| `docs/gameplay/03_social_features.md` | ~400 | Refs |
+| `docs/planning/01_roadmap.md` | ~870 | Project name throughout, sprint refs |
+| `docs/planning/02_decision_log.md` | ~830 | This file — preserved with ADR-011 (this entry) |
+| `docs/qa/01_testing_protocol.md` | ~760 | Project name, smoke test refs |
+| `docs/technical/01_architecture.md` | ~3000 | Project name + architecture diagrams |
+| `docs/technical/02_events_catalog.md` | ~3000 | Event names `admirals:*` → `sonar:*` (333 matches) |
+| `docs/technical/03_db_schema.md` | ~3000 | Table names `admirals_*` → `sonar_*` (463 matches) |
+| `docs/technical/04_api_contracts.md` | ~1500 | Callback names + namespace refs |
+| `docs/technical/05_state_machines.md` | ~880 | FSM refs + project name |
+| `docs/technical/06_fivem_standards.md` | ~900 | Standard examples + project name |
+| `docs/technical/07_bridges_compatibility.md` | ~900 | Resource name `admirals_bridges` + namespace |
+
+**Estimado total docs:** ~30 docs, ~30K-40K líneas afectadas, ~2282 referencias `Admirals|admirals_|Almirantazgo|admiralty`.
+
+**Código afectado (Phase 4 — sesión separada):**
+
+| Surface | Cambio |
+|---|---|
+| `resources/admirals_core/` | Rename → `resources/sonar_core/` |
+| `resources/admirals_bank/` | Rename → `resources/sonar_bank/` |
+| `resources/admirals_bridges/` | Rename → `resources/sonar_bridges/` |
+| Namespace global `Admirals.*` | → `Sonar.*` (Bus, DB, Rate, Logger, Metrics, Migrations, Idempotency) ~200+ call sites |
+| Exports `exports.admirals_bridges:*` | → `exports.sonar_bridges:*` cada call site |
+| Admin commands `admirals_*` | → `sonar_*` |
+| `server.cfg` `ensure admirals_*` | → `ensure sonar_*` |
+| Module headers/comments | Project name purge |
+
+**DB migration (Phase 5 — sesión separada con dry-run obligatorio):**
+
+| Tabla | Acción |
+|---|---|
+| `admirals_bank_accounts` | RENAME → `sonar_bank_accounts` |
+| `admirals_bank_movements` | RENAME → `sonar_bank_movements` |
+| `admirals_bank_audit_log` | RENAME → `sonar_bank_audit_log` |
+| `admirals_escrows` | RENAME → `sonar_escrows` |
+| `admirals_bridge_idempotency` | RENAME → `sonar_bridge_idempotency` |
+| `admirals_schema_versions` | RENAME → `sonar_schema_versions` (recursive self-ref tracking — bootstrap dance required) |
+| FKs (multiple) | DROP + RECREATE post-rename |
+| CHECK constraints (multiple) | DROP + RECREATE post-rename |
+
+**Migration 009** será non-trivial: transacción atómica con orden DROP_FK → RENAME → RECREATE_FK × 6 tablas + escape recursivo del schema_versions self-reference. Requiere **dry-run en DB clone snapshot** antes de production.
+
+**Git impact (irreversible):**
+- Tags `v0.0.0` (S0.4 close), `v0.1.0` (S1.1 smoke green), `sprint-1-complete` (S1 close): fossils del nombre antiguo, no removibles sin history rewrite.
+- Commits S0.x + S1.x (~30 commits): historial con `admirals_*` references inmutable.
+- `progress/SESSION_LOG.md` (~824 líneas): preservado append-only — entries históricas no se editan; entries futuras usan `SONAR` naming.
+
+**Workspace IDE migration:**
+- Corpus `yaboula/admirals` → `yaboula/sonar` (post-rename git remote).
+- Memorias persistentes AI: actualizadas para `SONAR` identity (deprecated Admirals refs).
+- Workspace rules `.windsurf/rules/admirals.md` → `.windsurf/rules/sonar.md`.
+- Workflows `.windsurf/workflows/*.md`: project name refs purged.
+
+### Execution plan (multi-session, founder-approved)
+
+| Phase | Scope | Session | Dependency |
+|---|---|---|---|
+| **1** | ADR-011 (this entry) + decision_log §5/§6/§7 updated | This session ✅ | — |
+| **2** | `docs/art/01_art_direction.md` v2.0 SONAR scaffolding (foundation doc, full rewrite stub w/ TODOs for next session detail-pass) + archive v1.0 to `docs/_archive/` | This session | Phase 1 |
+| **3** | SESSION_LOG entry "S1.4 strategic identity pivot" + update memoria UI design → SONAR | This session | Phase 2 |
+| **4** | Foundation docs detail-pass: `art_direction.md` v2.0 detail (paleta exacta hex, tipografía specs, iconografía 8 custom, sound 5 firma, voz samples) | Next session (dedicated) | Phase 3 |
+| **5** | Cascade rewrite docs: `00_PRODUCT_BIBLE.md`, `00_BOOTSTRAP.md`, `02_sonar_tablet.md` (renamed from admirals_tablet) | Multi-session | Phase 4 |
+| **6** | Tech docs rewrite: `01_architecture.md`, `02_events_catalog.md` (333 event renames), `03_db_schema.md` (463 table refs), `04_api_contracts.md` | Multi-session | Phase 5 |
+| **7** | Remaining docs purge: design/* nodes, economy/*, gameplay/*, qa/*, planning/01_roadmap.md | Multi-session | Phase 6 |
+| **8** | Code refactor: rename 3 resources + namespace + exports + admin commands | Single session (high-risk) | Phase 7 |
+| **9** | DB migration 009: dry-run on DB clone → smoke validation → production apply | Single session (highest-risk) | Phase 8 |
+| **10** | Smoke regression 30/30 with new SONAR naming — gate antes de Sprint 2 retomar | Validation gate | Phase 9 |
+| **11** | Workspace IDE migration: corpus rename + workspace rules update + memorias actualizadas | Cleanup session | Phase 10 |
+| **12** | Tag `sonar-foundation-v0.0.0` post-pivot complete; resume Sprint 2 (Tablet shell + Bank app SONAR-aesthetic) | Resume normal cadence | Phase 11 |
+
+### Rollback
+
+Each phase reversible until commit + push:
+
+- **Phases 1-7 (docs):** git revert per-commit; old Admirals docs preserved in `docs/_archive/`.
+- **Phase 8 (code refactor):** git revert; previous resource names + namespaces restorable.
+- **Phase 9 (DB migration):** **IRREVERSIBLE post-apply en producción**. Mitigación: snapshot DB clone pre-apply + migration 010 reverso preparado pre-9 (RENAME inverso).
+- **Phase 11 (workspace corpus):** reversible IDE-side.
+
+**Rollback total post-pivot (worst case):** posible vía supersede this ADR-011 con ADR-012 "Revert SONAR pivot, restore Admirals identity" + checkout commit pre-Phase 1. Coste igual al pivot inicial (~120-200h).
+
+### Re-evaluation trigger
+
+- **3 meses post-pivot:** measure engagement diferenciador en mercado FiveM premium. Si SONAR aesthetic no genera lift detectable vs Admirals heritage hipotético → consider ADR-012 partial revert.
+- **Si Phase 9 DB migration falla en dry-run:** stop, ADR-011 amendment con escope reducido (no-rename DB, only docs+code namespace).
+- **Si rewrite scope cause sprint slippage > 4 semanas acumulado:** renegotiate Phase 5-7 scope (consider Hybrid Option C aposteriori — rewrite solo Tablet UI / branding marketing, mantener resto Admirals heritage).
+- **Sprint 2 sigue siendo MVP-bloqueante:** si tras Phase 10 smoke regression falla, ADR-011 amendment para hotfix path antes de S2 resume.
+
+---
+
 ## 3. Cómo añadir nuevo ADR
 
 ### 3.1 Workflow
@@ -742,13 +946,19 @@ Tres opciones analizadas:
 | `db` | ADR-010 |
 | `audit` | ADR-010 |
 | `ssot_consistency` | ADR-010 |
-| `foundational` | ADR-002, ADR-003, ADR-009, ADR-010 |
+| `foundational` | ADR-002, ADR-003, ADR-009, ADR-010, ADR-011 |
+| `identity` | ADR-011 |
+| `branding` | ADR-011 |
+| `aesthetic` | ADR-011 |
+| `ssot_invalidation` | ADR-011 |
+| `risk_accepted` | ADR-011 |
+| `pivot` | ADR-008, ADR-011 |
 
 ### 5.2 Por estado
 
 | Estado | ADRs |
 |---|---|
-| accepted | ADR-001 a ADR-004, ADR-006 a ADR-010 |
+| accepted | ADR-001 a ADR-004, ADR-006 a ADR-011 |
 | proposed | — |
 | deprecated | — |
 | superseded | ADR-005 (por ADR-008) |
@@ -774,8 +984,8 @@ Tres opciones analizadas:
 
 ### 6.2 Estado del documento
 
-- **Versión:** 1.2 (firmado — completo, 6 secciones, 10 ADRs).
-- **Próxima revisión:** al añadir ADR-011 (próxima decisión importante Sprint 1+).
+- **Versión:** 1.3 (firmado — completo, 6 secciones, 11 ADRs).
+- **Próxima revisión:** al añadir ADR-012 (próxima decisión importante post-SONAR-pivot).
 - **Documento padre:** `planning/01_roadmap.md`.
 - **Documento hermano:** `agents/00_BOOTSTRAP.md`.
 
@@ -786,6 +996,7 @@ Tres opciones analizadas:
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción. Formato ADR + 7 ADRs iniciales (subagents archived, FiveM platform, tax 8%, no XP genérico, Oleada 1 Bakery-only, discard ops/minimize qa, doc signing system). **Firmable, living document.** |
 | 1.1 | 2026-05-01 | Founder + Cascade | **+2 ADRs** cerrando Oleada 0: ADR-008 (pivot MVP Granja, supersedes ADR-005) y ADR-009 (Bridges Layer compat multi-framework, foundational). Tag index actualizado (`pivot`, `architecture`, `compat`, `bridges`). ADR-005 marcado superseded. |
 | 1.2 | 2026-05-02 | Founder + Cascade | **+1 ADR** cerrando Sprint 0: ADR-010 (hybrid `admirals_audit_log` + `admirals_event_log` — resuelve inconsistencia SSoT §03 ↔ §04 firmada Oleada 0). Tag index actualizado (`db`, `audit`, `ssot_consistency`). Tracked acción S1 en SPRINT_RETRO §4.3 para añadir DDL canónico en `03_db_schema.md`. |
+| 1.3 | 2026-05-03 | Founder (executive decision) + Cascade (architect, risks documented) | **+1 ADR foundational + risk_accepted**: ADR-011 strategic identity pivot Admirals → SONAR (radical rebrand + aesthetic overhaul, naval Almirantazgo → submarino nuclear / abyssal exploration). Founder explicit override of architect risk concerns documented per workspace red-flags protocol. 7 risks accepted. ~30 docs invalidados, ~200 code call sites refactor pendiente, 6 DB tables migration pendiente, git tags fossils. Tags `identity`, `branding`, `aesthetic`, `ssot_invalidation`, `risk_accepted` añadidos. **`pivot` tag now ADR-008 + ADR-011**. |
 
 ---
 
@@ -803,6 +1014,7 @@ Tres opciones analizadas:
 | **ADR-008** | Pivot MVP Oleada 1: Bakery → Granja (cross-vertical root) | ✅ accepted | roadmap, scope, mvp, pivot |
 | **ADR-009** | Bridges Layer: abstracción compat multi-framework + custom scripts | ✅ accepted | architecture, compat, foundational, bridges |
 | **ADR-010** | Hybrid `admirals_audit_log` + `admirals_event_log` (resuelve inconsistencia SSoT §03 ↔ §04) | ✅ accepted | architecture, db, audit, ssot_consistency, foundational |
+| **ADR-011** | Strategic Identity Pivot: Admirals → SONAR (radical rebrand + aesthetic overhaul, naval → nuclear submarine) | ✅ accepted (founder override + risks documented) | identity, branding, pivot, foundational, aesthetic, ssot_invalidation, risk_accepted |
 
 ---
 
@@ -813,7 +1025,7 @@ El **Decision Log** es la memoria institucional de Admirals:
 - **Formato ADR estándar** con contexto + decisión + alternativas + consecuencias + impact + re-evaluation trigger.
 - **Lifecycle:** proposed → accepted → deprecated / superseded.
 - **Inmutables** tras accepted — cambios = nuevo ADR con superseded link.
-- **10 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**.
+- **11 ADRs** capturan decisiones clave: platform FiveM, economía tax 8%, no XP, **MVP Granja (pivot de Bakery per ADR-008)**, lean docs FiveM-native, firma system, subagents archived, **Bridges Layer foundational (ADR-009)**, **hybrid audit_log vs event_log (ADR-010)**, **🚨 strategic identity pivot Admirals → SONAR (ADR-011, founder override + risks documented)**.
 - **Protocol claro** para añadir nuevos + anti-patterns.
 - **Tag index** facilita búsqueda por tema.
 
@@ -823,4 +1035,4 @@ El **Decision Log** es la memoria institucional de Admirals:
 
 *"Decisiones sin registro son decisiones perdidas. El log es memoria permanente."*
 
-**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.2**
+**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.3**

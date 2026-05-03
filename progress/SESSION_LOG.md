@@ -885,3 +885,105 @@ Mensaje sigue convention `S{N}.{M} {imperative present}` per workspace rule + S1
 ✅ 6 creates + 7 modifications + 4 deletes (cleanup) = 17 file ops. Scope respetó SPRINT_PLAN_S1 §S1.3 + ampliación documentada (migrations 007/008 imprevistas por incidencia FK in-flight, founder green-light explícito). NO tocó `docs/*` firmados, NO tocó `admirals_bridges/*`, NO tocó `.windsurf/*`. Cleanup eliminó todo harness disposable conforme convention S1.1/S1.2.
 
 ---
+
+### S1.4 — Strategic Identity Pivot Admirals → SONAR (ADR-011 + art_direction.md v2.0 scaffold)
+
+- **Fecha:** 2026-05-03
+- **Duración:** ~3h (planning UI S2 → identity conflict surfaced → 3 options presented → founder decision Option A radical → Phase 1-3 execution)
+- **Founder + Agent:** yaboula + Cascade
+- **Sprint:** post-S1 / pre-S2 (out-of-band session strategic — NO sprint formal)
+- **Perfil:** 🏗️ ARCHITECT + 📝 SCRIBE (cero builder — sesión 100% docs)
+- **Modelo:** Claude Sonnet 4.5
+- **Goal:** Resolver conflicto identidad detectado durante planning S2 (founder color preference Coloro 092-37-14 + inspiración Prism Scripts vs SSoT firmada `01_art_direction.md` v1.0 Almirantazgo). Decisión founder + ADR registrado + foundation rewrite iniciado.
+- **Status:** ✅ Done — Phase 1-3 completas. Phases 4-12 deferred multi-sesión.
+
+### Contexto de la sesión
+
+Durante planning S2 dedicada (post-S1 close), founder añadió 2 notas estratégicas UI:
+
+1. **2026-05-02 23:36** — Preferencia inspiración Prism + Quasar, premium-modern-friendly + paleta primaria nueva = WGSN Coloro 092-37-14.
+2. **2026-05-03 03:46** — Reafirma fork A planning. Comparte 3 capturas Prism Scripts ilustrando aesthetic dark-canvas + brilliant-pop + glow-instruments.
+
+Architect leyó `docs/art/01_art_direction.md` v1.0 (2678 líneas firmadas) + `docs/design/02_admirals_tablet.md` §6 + búsqueda Prism Scripts. **Surfaces critical conflict:** nueva dirección visual contradice EXPLÍCITAMENTE 5 anti-references firmadas en `01_art_direction.md` §1.3 ("Sci-fi cyberpunk neón", "Dark mode tacticool militar negro/lima", "Glassmorphism iOS clone") y §6.4 ("Glow / neon outer glow → Cero").
+
+Architect presentó 3 opciones con recomendación firme **Opción B (Reconcile)**. Founder eligió **Opción A (Pivot Radical)**: rebrand completo Admirals → SONAR + nueva metáfora Submarino Nuclear / Exploración Abisal + aesthetic dark + bioluminescent teal + glassmorphism + tech precision.
+
+Architect documentó 7 banderas rojas (time, escalation pattern, SSoT contradictions ×2, market reasoning thinness, cost ~200h, scope creep, internal request contradiction). Founder explicit override: *"es la última vez que me limites por tiempo, soy responsable y acepto el riesgo"*.
+
+### Cambios
+
+- **Created:**
+  - `docs/_archive/01_art_direction_v1_admirals.md` — preservación inmutable v1.0 Admirals (2678 líneas) — moved via `Move-Item` PowerShell para preservar git rename history.
+  - `docs/art/01_art_direction.md` v2.0-scaffold — foundational scaffolding post-pivot SONAR. Contiene: 20 secciones planificadas, decisiones foundational firmes (paleta hex 16 colores institucionales+functionales+crew, tipografía Geist Sans+Inter Tight+Geist Mono, voz silent service, sound 5 SFX firma, iconografía 8 custom names, glassmorphism + glow rules signature). TODOs claros para Phase 4 detail-pass.
+- **Modified:**
+  - `docs/planning/02_decision_log.md` — version 1.2→1.3. **+1 ADR foundational + risk_accepted**: ADR-011 strategic identity pivot Admirals → SONAR. ADR completo con 7 secciones (Contexto, Decisión, Alternativas A/B/C, Consecuencias positivas/negativas/neutrales, **Risks accepted by founder** ×7 documentados per workspace red-flags protocol, Impact docs+code+DB+git+workspace, Execution plan 12-phases multi-sesión, Rollback strategy, Re-evaluation triggers). Tag index actualizado (+5 nuevos: identity, branding, aesthetic, ssot_invalidation, risk_accepted; pivot extendido ADR-008+ADR-011). §5.2 estado ADR-001..011 accepted. §6.2 v1.3 firmable (11 ADRs). §6.3 changelog +entry 1.3. §7 TL;DR +ADR-011 row. Resumen ejecutivo cierre actualizado 11 ADRs.
+  - `progress/SESSION_LOG.md` — append S1.4 entry (este).
+- **Moved (PowerShell `Move-Item`):**
+  - `docs/art/01_art_direction.md` v1.0 → `docs/_archive/01_art_direction_v1_admirals.md`. Git tracking: rename detectable post-commit.
+
+**Total S1.4: 1 move + 2 creates + 2 edits = 5 operaciones.**
+
+### Decisiones tomadas
+
+- **Pivot radical Option A elegida sobre B/C** — founder green-light explícito. Razón founder: aesthetic Prism-pure + Coloro 092-37-14 + tendencia mercado FiveM premium 2026. Architect documented Opción B (Reconcile) como recomendación rejected — preserva 2678 líneas + diferenciación competitiva única naval (`01_art_direction.md:113` declaración "blue ocean"). Override aceptado per `admirals.md` rules §trust_hierarchy: founder green-light en conversación actual = highest authority.
+- **ADR-011 documenta 7 risks accepted by founder INMUTABLEMENTE** — per workspace rule §red_flags ("Founder pide algo que contradice SSoT firmado → STOP y consulta founder"). Architect raised flags, founder explicitly overrode → risks documented inmutables for institutional memory. Memoria persistente: en 6 meses, lectura ADR-011 da contexto completo de qué se sopesó vs decisión final.
+- **Multi-phase plan 12 phases, NO ejecución big-bang** — founder pidió "completo + seguro + ahora" simultáneo (3 condiciones mutuamente excluyentes). Architect propuso multi-phase plan: Phase 1-3 esta sesión (ADR + foundation art_direction scaffold + SESSION_LOG + memory) preserva "completo + seguro" sacrificando "ahora" parcialmente. Phases 4-12 deferred sesiones futuras con dry-runs, gates, smoke regression. Founder accepted multi-phase tras confirmación detallada.
+- **`docs/_archive/` directory creada como SSoT preservation pattern** — convention establecida hoy: docs deprecated por ADRs futuros se mueven a `_archive/<filename>_v<n>_<context>.md` (preserves git history via Move-Item, not delete). Permite rollback total via supersede ADR + checkout archive. **Acción S2:** considerar formalizar pattern en `02_decision_log.md` §3 (cómo añadir nuevo ADR) si surge necesidad de archive futuro.
+- **art_direction.md v2.0-scaffold NO firmable hasta Phase 4** — header explícito "🚧 en redacción" + estado §estado_documento_check. Phase 4 detail-pass sesión dedicada completará: type scale tokens detallados, motion specs ms-precise, custom icon SVG construction, sound bibliography sourcing, glossary 30+ términos, marketing materials specs, governance protocol, plan assets nodos completo.
+- **Decisiones foundational firmes en v2.0-scaffold (ya elegidas, NO TODOs):**
+  - Paleta hex 16 colores: 8 institucionales (abyss-black + 3 depths + Coloro identity + 3 sonar pop), 4 crew neutrals, 4 functional signals.
+  - Tipografía: Geist Sans display + Inter Tight body + Geist Mono datos. Razones documentadas, alternativas consideradas listadas.
+  - Voz de marca silent service + persona "comandante submarino nuclear" + vocabulario lexico submarino-tech + 6 ejemplos voz aplicada (3 ✅ + 2 ❌ + 1 deprecated v1).
+  - Sound naming 5 firma (sonar_ping/pressure/depth/console/hatch) replaces 5 v1 firma (admirals_chime/seal/quill/brass_click/parchment).
+  - Iconografía custom 8 essentials (sonar-ping, submarine, depth-gauge, hydrophone, bioluminescence, pressure-hull, periscope, torpedo-bay) replaces 20 navales v1.
+  - Glassmorphism rules signature (modal/drawer only, NO surfaces principales).
+  - Glow rules signature (instrument glow OK, gamer outer glow prohibido, test del 50%).
+  - 60/30/10/<5 paleta usage rule.
+  - Anti-pattern crítico documentado: "dark canvas + brilliant pop", NO "teal everywhere".
+- **§9 Granja preservation light-recontextualized** — preserved estructura v1 con concept statement revised (surface node agrícola en sonar grid SONAR, harvest_ping signal). Detalle completo Phase 7 doc purge. Razón: foundation work foundational, no rewrite agresivo de nodos sin Phase 7 dedicado.
+- **Memoria UI design persistente actualizada** — UpdateMemory action: pivoted desde "navy + Coloro Reconcile" hacia "SONAR identity (abyss + Coloro + sonar bright/glow + glassmorphism + silent service voice)". Memoria sirve como context handoff cross-session AI agents.
+
+### Issues pendientes (post-S1.4)
+
+- 🟢 **Phase 4 detail-pass `01_art_direction.md` v2.0-scaffold → v2.0 firmable** — sesión dedicada futura. Modelo recomendado: Opus 4.7 MAX (decisiones design foundational + creative density alta).
+- 🔴 **~28 docs firmados invalidados, rewrite Phases 5-7 multi-sesión** — `00_PRODUCT_BIBLE.md`, `00_BOOTSTRAP.md`, `02_sonar_tablet.md` (renamed), `01_architecture.md`, `02_events_catalog.md` (333 event renames), `03_db_schema.md` (463 table refs), `04_api_contracts.md`, design/* nodes (5), economy/01, gameplay/* (3), qa/01, planning/01_roadmap.md, art/02-04, technical/05-07. Total ~30K-40K líneas afectadas. Cada doc requiere sesión dedicada o batch sesion según scope.
+- 🔴 **Code refactor Phase 8 single-session high-risk** — rename 3 resources `admirals_*` → `sonar_*` + namespace `Admirals.*` → `Sonar.*` (~200+ call sites) + exports + admin commands + server.cfg. Smoke regression 30/30 obligatorio post-refactor.
+- 🔴 **DB migration 009 Phase 9 single-session highest-risk** — rename 6 tablas + bootstrap dance `admirals_schema_versions` self-reference + DROP/RECREATE FKs+CHECKs. **Dry-run obligatorio en DB clone snapshot** antes de production. Migration 010 reverso preparado pre-9 (rollback safety).
+- 🔴 **Smoke regression Phase 10 validation gate** — 30/30 smokes con SONAR naming antes de Sprint 2 retomar. Si falla, ADR-011 amendment hotfix path.
+- 🔴 **Workspace IDE migration Phase 11 cleanup** — corpus `yaboula/admirals` → `yaboula/sonar` + workspace rules `.windsurf/rules/admirals.md` → `sonar.md` + workflows refs purged + memorias persistentes actualizadas.
+- 🟡 **Git tags fossils** — `v0.0.0`, `v0.1.0`, `sprint-1-complete` quedan etiquetando hitos del nombre antiguo. NO removibles sin history rewrite. Decisión founder: dejar como historia institucional.
+- 🟡 **Sprint 2 inicio diferido** — antes Tablet shell + Bank app + Map app, requiere Phases 4-12 complete. Roadmap §4.2 update pendiente Phase 7.
+- 🟡 **Re-evaluation trigger ADR-011 3 meses post-pivot** — measure engagement diferenciador SONAR vs Admirals heritage hipotético. Si no genera lift detectable mercado FiveM premium, considerar ADR-012 partial revert.
+
+### Handoff próxima sesión
+
+> **NOTA:** próxima sesión NO es S1.5 standard sprint cadence — es Phase 4 detail-pass de pivot ADR-011.
+
+- **Modelo recomendado:** Opus 4.7 MAX (perfil 🏗️ ARCHITECT + 🎨 DESIGNER, scope creative density alta — paleta validation contra accesibilidad, motion specs ms-precise, glossary creativo, sound bibliography curation, marketing voice samples).
+- **Goal:** completar `docs/art/01_art_direction.md` v2.0-scaffold → v2.0 firmable. TODOs marcados explícitamente en doc:
+  - §3.3 logo SONAR detail visual construction (designer collaboration).
+  - §4.2 type scale line-height per-size + letter-spacing exact tokens + responsive breakpoints.
+  - §5.2 custom icon set 8 SVG construction + Figma library + repo `art/icons/sonar_icons_v1/`.
+  - §6 textures SVG repo + CSS class library + 3D texture maps.
+  - §7.3 sound bibliography sourcing + audio asset format specs + license docs + sonification per nodo.
+  - §11 SONAR OS Tablet decisiones detail (cross-ref `02_sonar_tablet.md` rewrite Phase 5 dependency).
+  - §12 marketing materials moodboard + video specs + Tebex page layout + trailer storyboard.
+  - §13 plan assets list 3D+2D+sound+branding + briefing equipo 3D + prioridades por oleada.
+  - §14 governance review protocol + signing workflow + designer collaboration.
+  - §15 glossary completo 30+ términos.
+  - §16-20 motion specs + verticales placeholders + storybook + shader contracts + roadmap iterations.
+- **Pre-requisitos:**
+  - Re-read `01_art_direction.md` v2.0-scaffold completo + ADR-011 § Contexto/Decisión/Risks.
+  - Web research adicional opcional: glassmorphism best practices 2026, Geist Sans usage examples, submarine UI references (Hunt: Showdown, Sub-Sea, Aquanox visual references).
+- **Files in scope:** `docs/art/01_art_direction.md` (only). NO tocar code, NO tocar otros docs (Phases 5+ scope).
+- **Notas especiales:** Phase 4 es **creative density session**, NO refactor mass-purge. Una sesión dedicada con Opus para densidad de detalle máxima. Founder validation por sección recomendada.
+
+### Files in scope respetados
+
+✅ 1 move + 2 creates + 2 edits = 5 file ops. Scope strictly respected: solo `docs/_archive/` (created), `docs/art/01_art_direction.md` (moved + recreated), `docs/planning/02_decision_log.md` (ADR-011 added), `progress/SESSION_LOG.md` (this entry). NO tocó otros docs firmados, NO tocó code, NO tocó DB, NO tocó `.windsurf/*`, NO tocó workspace rules. Phases 5-12 deferred per execution plan.
+
+> **Founder explicit quote on override (institutional memory):** *"es la última vez que me limites por tiempo, soy responsable y acepto el riesgo, nunca haces referencia a tiempo. arrancamos y vamos con total energia, porque no sabes los detalles de mi estoy totalmente listo."* — 2026-05-03 04:44 UTC+02.
+
+> **Architect compliance:** override accepted, 7 risks documented in ADR-011 per professional senior duty + workspace rules §red_flags protocol, executing per founder direction multi-phase to preserve "completo + seguro" while sacrificing "ahora" partially.
+
+---
