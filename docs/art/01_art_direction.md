@@ -299,23 +299,52 @@ SONAR                     (Studio + paragua)
 
 - **Aplicación:** IBANs, batch IDs, audit trail, console, code snippets docs.
 
-### 4.2 Type scale (modular 1.250)
+### 4.2 Type scale (modular 1.250 — Major Third)
 
-> **TODO Phase 4:** detail line-height per-size + letter-spacing exact tokens + responsive breakpoints.
+> **Full spec (Phase 4 detail-pass).** Tokens incluyen tamaño, line-height (ratio + px absoluto), letter-spacing, familia + peso. Ajustados para **lectura confortable en abyss canvas** (long-session).
 
-| Token | Tamaño | Familia | Uso |
+#### 4.2.1 Tokens canónicos desktop (base = Tablet in-game 1920×1080 equivalent, websites ≥1280px)
+
+| Token | Size | Line-height | Tracking | Familia + Peso | Uso |
+|---|---|---|---|---|---|
+| `display-xl` | 64px | 72px (1.125) | -0.03em | Geist SemiBold | Hero website, splash Tablet |
+| `display-lg` | 48px | 56px (1.167) | -0.03em | Geist SemiBold | Section heros, grandes headlines |
+| `display-md` | 36px | 44px (1.222) | -0.02em | Geist Medium | h1 docs, page titles Tablet, modal hero |
+| `display-sm` | 28px | 36px (1.286) | -0.02em | Geist Medium | h2, modal titles, card hero |
+| `body-xl` | 22px | 32px (1.455) | -0.005em | Inter Tight Regular | Lead paragraphs, intro sections |
+| `body-lg` | 18px | 28px (1.556) | 0 | Inter Tight Regular | Body web, paragraphs cómodos |
+| `body-md` | 16px | 24px (1.500) | 0 | Inter Tight Regular | Body Tablet default, body docs, prosa |
+| `body-sm` | 14px | 20px (1.429) | 0 | Inter Tight Regular | Secondary text, captions, helper text |
+| `body-xs` | 12px | 18px (1.500) | +0.01em | Inter Tight Medium | Labels, badges, micro-data (peso Medium compensa tamaño) |
+| `mono-md` | 14px | 22px (1.571) | 0 | Geist Mono | Datos técnicos (IBANs, ecos, batch IDs) |
+| `mono-sm` | 12px | 18px (1.500) | +0.005em | Geist Mono | Audit trails, console, dev mode |
+| `caps-md` | 14px | 20px (1.429) | +0.05em | Inter Tight Medium ALL CAPS | Status indicators principales (`ACTIVE`, `DIVE`) |
+| `caps-sm` | 12px | 16px (1.333) | +0.08em | Inter Tight Medium ALL CAPS | Micro-status, badges discretos (`OFFLINE`, `STANDBY`) |
+
+#### 4.2.2 Responsive breakpoints (website)
+
+> **Principio:** Tablet in-game siempre renderiza tokens desktop canónicos (fixed resolution). **Solo website público tiene responsive scaling.**
+
+| Breakpoint | Viewport | Escala display | Escala body |
 |---|---|---|---|
-| `display-xl` | 64px | Geist SemiBold | Hero website, splash |
-| `display-lg` | 48px | Geist SemiBold | Section heros |
-| `display-md` | 36px | Geist Medium | h1 docs, page titles Tablet |
-| `display-sm` | 28px | Geist Medium | h2, modal titles |
-| `body-xl` | 22px | Inter Tight Regular | Lead paragraphs |
-| `body-lg` | 18px | Inter Tight Regular | Body web |
-| `body-md` | 16px | Inter Tight Regular | Body Tablet, body docs |
-| `body-sm` | 14px | Inter Tight Regular | Secondary, captions |
-| `body-xs` | 12px | Inter Tight Medium | Labels, badges, micro-data |
-| `mono-md` | 14px | Geist Mono | Datos técnicos |
-| `mono-sm` | 12px | Geist Mono | Audit trails, console |
+| `xs` | <480px | ×0.60 | ×0.90 (min 14px) |
+| `sm` | 480-767px | ×0.75 | ×0.95 |
+| `md` | 768-1023px | ×0.85 | ×1.00 |
+| `lg` | 1024-1279px | ×0.95 | ×1.00 |
+| `xl` | ≥1280px | ×1.00 (canónico) | ×1.00 |
+
+**Ejemplo aplicado:** `display-xl` (64px canónico) → renderiza 38px en mobile xs, 48px en sm, 54px en md, 61px en lg, 64px ≥1280px.
+
+**Cero responsive en Tablet in-game** — siempre desktop canónico porque la resolución del juego es fija.
+
+#### 4.2.3 Reglas de aplicación
+
+1. **Línea de prosa ≥ body-md (16px):** cualquier texto prose-like (párrafos, descripciones, body docs) NUNCA por debajo de 16px — accesibilidad + long-session comfort sobre abyss canvas.
+2. **Display siempre Geist Medium o SemiBold:** cero Display weight Light en UI real (solo marketing hero opcional).
+3. **Body Regular default, Medium para enfasis ligero, SemiBold para héros inline:** cero Body Bold salvo keyword puntual (1-2 palabras máx).
+4. **Tabular numbers obligatorio:** `font-feature-settings: 'tnum' 1` en todas las columnas de números (extractos Bank, tablas cosechas, ledgers).
+5. **Max line-length body:** ≤ 72 caracteres por línea (≈65ch CSS) — lecturas largas confortables.
+6. **Max line-length display:** ≤ 30 caracteres por línea — los héros no lloran.
 
 ### 4.3 Reglas tipográficas
 
@@ -509,7 +538,7 @@ Decisiones foundational SONAR OS:
 - **Layout:** horizontal default (preserved).
 - **Density:** ajustable, productividad-first.
 - **Boot:** 1.8s, sonar-themed (logo SONAR + onda sonar pingeando + tipografía Geist fina + decay con `sonar_ping` audio).
-- **Lock screen:** abyss-black canvas + Coloro identity instrumentos.
+- **Lock screen:** abyss-black canvas + Sonar Bright instrument dots (depth gauge + clock) + glassmorphism PIN entry modal.
 - **Home:** grid apps con bioluminescent active state.
 - **App switcher:** glassmorphism cards.
 - **Notification panel:** glassmorphism drawer + sonar mesh grid background subtle.
@@ -524,7 +553,7 @@ Direcciones foundational:
 
 - **Trailer:** abyss-black opening + sonar ping reveals SONAR logo + cuts cinematográficos (no gamer cuts rápidos) + `sonar_ping` audio firma.
 - **Tebex page:** dark canvas, bioluminescent CTA buttons, screenshot grid 4-cols, pricing table glassmorphism.
-- **Website:** Geist Sans hero massive, Inter Tight body, abyss canvas + Coloro identity hero accent.
+- **Website:** Geist Sans hero massive, Inter Tight body, abyss canvas + **Sonar Bright hero accent** (logo + CTAs + key data pop) + Coloro Support solo en glassmorphism panes opcionales.
 
 ---
 
@@ -540,44 +569,232 @@ Direcciones foundational:
 
 ---
 
-## 15. Glossary SONAR vocabulary (NEW — meta-brand internal lexicon)
+## 15. Glossary SONAR vocabulary (meta-brand internal lexicon)
 
-> **TODO Phase 4 detail-pass:** glossary completo con 30+ términos.
+> **Vocabulario canónico SONAR** — SSoT léxico para toda doc rewrite Phases 5-7 + voice de marca + UI copy + marketing materials. **Cuando el dev/AI escribe copy SONAR, estos son los términos correctos.**
 
-Foundational terms:
+> **Origen léxico:** submarine tech + naval silent service + acoustic instrumentation. Preservado consistency cross-touchpoint (logo a Tablet a website a trailer a docs).
 
-- **Bridge** = command center de un operador (= player).
-- **Bitácora** = audit trail / log forense.
-- **Console** = UI activa del Tablet en uso.
-- **Contacto** = otro operador detectado (= player o NPC).
-- **Depth** = nivel de profundidad operacional (metáfora; no literal).
-- **Eco** = registro/identifier de transacción (e.g., "Eco: TXN-2026-0042").
-- **Hatch** = abrir/cerrar modal o app.
-- **Manifiesto** = contrato firmado entre dos contactos.
-- **Periscope** = vista observacional (mapa, dashboard).
-- **Ping** = notification atómica.
-- **Signal** = evento del bus / data update detectado.
-- **Submersión / emersión** = entrar/salir del Tablet.
-- **Sweep** = búsqueda / scan de datos.
+### 15.A Meta-brand core (9 términos)
+
+| Término | Definición | Traducción técnica |
+|---|---|---|
+| **SONAR** | Nombre del proyecto + Studio + paragua marca. Acrónimo SOund Navigation And Ranging. | Product name |
+| **Bridge** | Command center del operador. La vista principal del Tablet donde él opera. | Main Tablet dashboard / home view |
+| **Bitácora** | Audit trail / log forense. Registro inmutable de acciones. | `admirals_bank_audit_log` + eventos event_log |
+| **Console** | UI activa del Tablet en uso. Lo que el operador está mirando ahora. | Current foreground app |
+| **Depth** | Nivel de profundidad operacional (metáfora — no literal). Indicador de tier/role/acceso. | User permission level / tier |
+| **Operador** | El jugador. Sustituye "player" / "user" en copy player-facing. | Player / user |
+| **Pressure hull** | Cerramiento seguro de datos sensibles. Indicador visual privacy/encrypted. | Security/privacy boundary |
+| **Silent service** | Disciplina operacional: pocas palabras, precisión máxima. Voz de marca principal. | Brand voice discipline |
+| **Sub-brand** | Verticales (SONAR Bank, SONAR Market, SONAR Granja). Parte del ecosistema. | Product vertical |
+
+### 15.B UI elements (11 términos)
+
+| Término | Definición | Traducción técnica |
+|---|---|---|
+| **Dock** | Barra inferior de apps anchadas del Tablet. | App dock / taskbar |
+| **Hatch** | Abrir/cerrar modal o app. "Open the hatch" = launch. | Modal/app open-close |
+| **Home** | Launcher grid del Tablet. Vista de apps. | Launcher screen |
+| **Lock screen** | Pantalla inactiva del Tablet con entrada PIN/auth. | Lock screen |
+| **Periscope** | Vista observacional: mapa, dashboard, monitor. Observar sin ejecutar. | Observation view / map |
+| **Porthole** | Ventana/modal glassmorphism. Ojo de buey submarino. | Glassmorphism modal/drawer |
+| **Sonar grid** | Background pattern dotted/line sutil en surfaces premium. | Background texture |
+| **Splash** | Boot screen del Tablet con logo animation + `sonar_ping`. | Boot splash |
+| **Switcher** | Vista de apps abiertas en multitask (glassmorphism cards). | App switcher |
+| **Tray** | Notification panel glassmorphism drawer. | Notification panel |
+| **Status bar** | Top bar del Tablet con clock + depth gauge + signal strength. | Top status bar |
+
+### 15.C Actions & operations (10 términos)
+
+| Término | Definición | Traducción técnica |
+|---|---|---|
+| **Dive** | Entrar en profundidad: focus mode, modal full-screen, sesión intensiva. | Focus / deep mode |
+| **Emersión** | Salir del Tablet a world (close session). | Tablet close |
+| **Handshake** | Pareado de contratos firmados entre dos contactos (mutual commit). | Contract bilateral sign |
+| **Invocar** | Llamar a un servicio: "invocar arbitraje", "invocar garantía". | Invoke service/procedure |
+| **Ping** | Notification atómica individual. Evento puntual. | Single notification event |
+| **Signal** | Evento del bus / data update detectado. Continuo o puntual. | EventBus event |
+| **Submersión** | Entrar en el Tablet (open session). | Tablet open |
+| **Sweep** | Búsqueda / scan de datos. Barrido filtrado. | Search / filter scan |
+| **Surface** | Salir a vista amplia: zoom out, panoramic, overview mode. | Overview / zoom out |
+| **Standby** | Estado inactivo pero alerta. El Tablet está "en standby". | Idle listening state |
+
+### 15.D Data & tracking (9 términos)
+
+| Término | Definición | Traducción técnica |
+|---|---|---|
+| **Eco** | Identifier inmutable de transacción/evento. Ej. `Eco: TXN-2026-0042`. | Transaction ID (IBAN-like format) |
+| **Lineage** | Trail origen→destino de un batch (granja→molino→panadería→retail). | Supply chain traceability |
+| **Manifiesto** | Contrato firmado entre dos contactos con cláusulas y eco de registro. | Signed contract / agreement |
+| **Ping registry** | Log histórico de notificaciones del operador. | Notifications history |
+| **Signature** | Firma digital criptágica sobre manifiesto. Bilateral + timestamp. | Digital signature |
+| **Trace** | Investigación retrospectiva de un eco — sigue el trail. | Audit trace/investigation |
+| **Waypoint** | Marcador espacial en mapa (periscope view). | Map marker |
+| **Batch** | Lote de bienes con propiedades (calidad, cantidad, lineage). | Product batch |
+| **Depth gauge** | Indicador visual de profundidad/tier/progreso. | Progress/tier indicator |
+
+### 15.E Social & contracts (8 términos)
+
+| Término | Definición | Traducción técnica |
+|---|---|---|
+| **Arbitraje** | Resolución de disputa por un tercero. | Dispute resolution |
+| **Cargo** | Payload de un contrato (bienes, dinero, servicio). | Contract payload |
+| **Contacto** | Otro operador detectado (player o NPC). Vocabulario player-facing. | Other player / NPC |
+| **Convoy** | Agrupación de transportes (logística futura Oleada 2+). | Transport convoy |
+| **Escort** | Acompañamiento de protección a convoy. | Protection escort |
+| **Escrow** | Fondos en custodia entre handshake y liberación. | Escrow funds |
+| **Squadron** | Empresa / grupo organizado de operadores. | Company / crew |
+| **Alliance** | Federación entre squadrons (futuro). | Company alliance |
+
+### 15.F Status & signals (8 términos ALL CAPS)
+
+> **Convención:** status indicators siempre en `caps-md` o `caps-sm` (ALL CAPS tracking +0.05em / +0.08em).
+
+| Término | Significado | Color indicador |
+|---|---|---|
+| **ACTIVE** | Operador en sesión, Tablet abierto. | Sonar Bright |
+| **DIVE** | Focus mode, no-interrupciones. | Sonar Pulse |
+| **ECHO** | Transacción registrada en bitácora. | Signal OK |
+| **IDLE** | Operador conectado pero inactivo. | Crew 500 |
+| **OFFLINE** | Operador desconectado. | Crew 700 |
+| **SONAR-LOCK** | Estado read-only, sin mutaciones permitidas. | Coloro Support |
+| **STANDBY** | Proceso esperando input. | Crew 300 |
+| **SURFACE** | Operador en world, Tablet cerrado. | Crew 300 |
+
+### 15.G Términos DEPRECATED (v1.0 Admirals — NO usar en new work)
+
+> **Hard rule:** estos términos solo pueden aparecer en `_archive/`, ADRs históricos, SESSION_LOG entries históricas, o Phase 8 code refactor (renaming activamente). **Cero uso en new copy player-facing, new docs, new marketing.**
+
+| Deprecated | Reemplazado por |
+|---|---|
+| Almirante / Almirantazgo | Operador / SONAR |
+| Bienvenido a bordo | Console SONAR activada |
+| Capitán / tripulación | Operador / squadron |
+| Puerto | Node |
+| Bahía / dique | Surface / Bridge |
+| Pergamino / bitácora brass | Bitácora (preserved, pero sin materiales brass) |
+| Brújula / sextante | Depth gauge / periscope |
+| Llave de latón | Pressure hull key |
+| Sello de cera | Signature (digital) |
+
+### 15.H Uso léxico cross-language
+
+| Context | Español (primary) | Inglés (secondary) |
+|---|---|---|
+| UI player-facing | **Preferir castellano** con términos SONAR (ej. "Contacto detectado", "Manifiesto firmado") | Inglés OK en términos muy técnicos (Sweep, Dive) — silent service feel |
+| Marketing hero | Castellano brand-voice + taglines mixtos | Taglines inglés OK ("Hear the depth.") |
+| Docs técnicos | Mixto — cada doc tiene convention declarada | Mayoría inglés en código, castellano en prosa |
+| Sound naming (audio files) | N/A | Siempre inglés snake_case (`sonar_ping.ogg`) |
+
+> **Meta-regla:** si un dev/AI duda entre dos palabras para nombrar algo nuevo, consulta este glossary PRIMERO. Si no existe término, **propone candidato + submite via PR/ADR** para consolidar vocabulario cross-touchpoint. **El léxico coherente es parte de la marca.**
 
 ---
 
-## 16-20. Secciones pendientes Phase 4
+## 16. Motion specs (ms-precise)
 
-> **TODO Phase 4 detail-pass:**
+> **Full spec (Phase 4 detail-pass).** Principio base **S6 — Motion como agua profunda**: silenciosa, deliberada, con masa. Cero rebote excesivo, cero nervios, cero easings-default de librería.
 
-- §16 Motion specs detallados (ms-precise easing curves, Framer Motion tokens).
-- §17 Verticales placeholder (Panadería, Retail, Cervecería, Mecánico futuros).
+### 16.1 Filosofía motion SONAR
+
+- **Peso:** cada elemento animado tiene masa perceptible. Motion con física de agua profunda — hay resistencia antes de que se asiente.
+- **Deliberación:** Motion breve pero nunca instantáneo. El operador percibe la causa-efecto.
+- **Silent:** Motion no llama atención sobre sí mismo. Acompaña el flujo mental del operador.
+- **Cero playful bounce:** springs con stiffness >400 + damping <20 están PROHIBIDOS (anti-pattern gen-Z portfolio bounce).
+
+### 16.2 Duration tokens
+
+| Token | ms | Uso |
+|---|---|---|
+| `motion-instant` | 80ms | Acknowledgments (button press recoil, hover on/off, focus state) |
+| `motion-fast` | 150ms | Micro-interactions (tooltip appear, status change, tab underline slide) |
+| `motion-base` | 200ms | Standard transitions (modal open, tab content switch, dropdown) |
+| `motion-slow` | 320ms | Deliberate (page transition, card expand, drawer open) |
+| `motion-deliberate` | 480ms | Rare ceremonial (boot splash fade, sonar ping full cycle, login success) |
+| `motion-sonar-ping` | 1200ms | Sonar ping animation concentric full cycle (unique token) |
+
+**Regla:** nunca usar duraciones > 480ms salvo excepciones signature (sonar-ping). Motion prolongado aburre al operador en sesiones largas.
+
+### 16.3 Easing curves (cubic-bezier)
+
+| Token | Curve | Carácter | Uso |
+|---|---|---|---|
+| `submarine-ease-out` | `cubic-bezier(0.33, 1, 0.68, 1)` | Water resistance settling | Default exit-to-rest (modal open, element appear) |
+| `submarine-ease-in` | `cubic-bezier(0.32, 0, 0.67, 0)` | Compressing toward depth | Entering, building pressure (modal close, element disappear) |
+| `submarine-ease-in-out` | `cubic-bezier(0.65, 0, 0.35, 1)` | Balanced deliberate | Position transitions, tab switches |
+| `submarine-snap` | `cubic-bezier(0.17, 0.67, 0.33, 1.2)` | Microscopic overshoot (tactile) | Button press feedback, confirmation |
+| `sonar-pulse` | `cubic-bezier(0.4, 0, 0.2, 1)` | Smooth radial propagation | Ping expansion animations |
+
+> **Default:** cuando un dev no sabe cuál usar, `submarine-ease-out` en `motion-base` (200ms) es la combinación universal segura.
+
+### 16.4 Spring physics (Framer Motion config)
+
+> **Cuando el motion necesita física real (no sólo curve), preferir springs sobre cubic-bezier largos.**
+
+| Token | `stiffness` | `damping` | `mass` | Carácter | Uso |
+|---|---|---|---|---|---|
+| `springs.gentle` | 120 | 26 | 1 | Suave, sin overshoot | Modal enter, drawer open |
+| `springs.default` | 170 | 28 | 1 | Equilibrado, pequeño settle | Card expand, accordion |
+| `springs.precise` | 240 | 32 | 0.8 | Rápido y firme | Micro-interactions, UI controls |
+| `springs.deliberate` | 80 | 30 | 1.2 | Peso alto, settle lento | Boot splash, ceremonial reveals |
+
+**PROHIBIDO:** `springs.bouncy` (stiffness >400, damping <20) — anti-pattern "playful bounce" portfolio JS.
+
+### 16.5 Motion pattern catalog
+
+| Patrón | Especificación | Uso |
+|---|---|---|
+| **Modal enter** | `opacity: 0 → 1` + `translateY: +8px → 0`, `springs.gentle` | Todo modal, drawer, overlay |
+| **Modal exit** | `opacity: 1 → 0` + `translateY: 0 → +4px`, `submarine-ease-out motion-fast` | Closing modales |
+| **Tab switch** | Underline slide `submarine-ease-in-out motion-base` + content crossfade `motion-fast` | Tab navigation |
+| **Sonar ping** | Radial gradient `scale: 0 → 1` + `opacity: 1 → 0`, `sonar-pulse motion-sonar-ping` | Notificaciones primarias, logo animado, splash |
+| **List stagger** | Item enter delay 40ms each, `springs.precise` | Listas que aparecen (ledger, contacts) |
+| **Button press** | `scale: 1 → 0.97 → 1`, `submarine-snap` 120ms | CTAs, tactile feedback |
+| **Depth gauge load** | Arc `stroke-dashoffset` desde full → 0, `submarine-ease-in-out motion-deliberate` | Loading progress |
+| **Notification badge** | `scale: 0 → 1` + `opacity: 0 → 1`, `springs.gentle motion-base` | Badge counter appear |
+| **Focus ring** | Sonar Bright ring `box-shadow` appear instant-fade, `motion-instant` | Input focus, keyboard nav |
+| **Page transition** | `opacity + translateY` cross `submarine-ease-in-out motion-slow` | Full page route change |
+| **Hatch open** | Stage 1 seal-break `motion-fast` + Stage 2 content reveal `motion-slow` | App launch (tablet), premium modal |
+| **Sweep scan** | Horizontal gradient sweep `motion-deliberate`, loop | Loading/scanning states |
+
+### 16.6 Accessibility — `prefers-reduced-motion`
+
+> **Crítico:** TODAS las animaciones deben respetar `@media (prefers-reduced-motion: reduce)`.
+
+Replace patterns:
+- **Springs y easings** → `opacity-only` transitions en `motion-instant` (80ms linear).
+- **Sonar ping concentric** → **DESACTIVADO** (sin expansion). Badge estático + color.
+- **Pulse animations** → color estático enfatizado, sin motion.
+- **Stagger delays** → eliminados, todo aparece simultáneo.
+- **Scale transforms** → eliminados (no button press, no modal scale).
+- **Translate transforms** → eliminados (no slide-in patterns).
+
+Test obligatorio: con `prefers-reduced-motion: reduce` activo, el Tablet debe seguir siendo **100% funcional y visualmente claro** — solo más quieto.
+
+### 16.7 Performance budgets motion
+
+- **FPS target:** 60fps constantes en animations. 120fps nice-to-have para monitores high-refresh.
+- **GPU-accelerated props:** priorizar `transform` + `opacity` (compositor-only). Evitar animar `width/height/top/left` (layout thrashing).
+- **Concurrent animations max:** 3 simultáneas en una misma surface (más = ruido visual + perf).
+- **Frame budget NUI:** < 8ms per frame (target 60fps = 16.7ms, dejar margen).
+
+---
+
+## 17-20. Secciones pendientes (Phase 4 continuation — Opus-candidato creative density)
+
+> **TODO Phase 4 continuación (sesión dedicada Opus 4.7 MAX recomendada por creative density):**
+
+- §17 Verticales placeholder (Panadería, Retail, Cervecería, Mecánico futuros) — stub identities por vertical.
 - §18 Storybook integration specs (`04_storybook_guide.md` cross-ref).
 - §19 Shader contracts (`02_shader_contracts.md` cross-ref) post-pivot.
-- §20 Roadmap art direction iterations.
+- §20 Roadmap art direction iterations (v2.1, v2.2, v3.0 trigger conditions).
 
 ---
 
 ## Estado del documento
 
-- **Versión:** 2.0-scaffold (en redacción).
-- **Próxima revisión:** Phase 4 detail-pass (sesión dedicada) → bump v2.0 firmable.
+- **Versión:** 2.0-scaffold-r2 (Phase 4 partial — 3 slices Sonnet-compatible complete).
+- **Próxima revisión:** Phase 4 continuation (Opus 4.7 MAX) → completar secciones pendientes creative density (§3.3 logo construction, §5.2 custom icon SVG, §12 marketing, §13 assets, §14 governance, §17-20) → bump v2.0 firmable.
 - **Reemplaza:** `_archive/01_art_direction_v1_admirals.md` v1.0 (deprecated).
 - **ADR origen:** ADR-011 (`planning/02_decision_log.md` §11).
 
@@ -588,6 +805,7 @@ Foundational terms:
 | 1.0 | 2026 (varias) | Founder + Cascade | v1.0 firmada Admirals/Almirantazgo (2678 líneas). Archivada por ADR-011. |
 | 2.0-scaffold | 2026-05-03 | Founder + Cascade | **Foundational scaffolding post-pivot SONAR**. Estructura completa 20 secciones + decisiones foundational firmes (paleta hex, tipografía, voz, sound, iconografía nombres). Detalle pendiente Phase 4 detail-pass dedicada. |
 | 2.0-scaffold-r1 | 2026-05-03 | Founder + Cascade | **Inversión jerarquía paleta meta-brand** (founder strategic correction pre-Phase 4): `Sonar Bright #2DD4BF` promovido a **PRIMARY BRAND IDENTITY** (Tier B — logo, CTAs, branding marketing, app-icon, focus rings). `Coloro 092-37-14 #175A5F` desciende a **structural support tier** (Tier C — glassmorphism tints, inactive borders, deep-tier UI; cero uso en logo/branding identity). Razón founder: marca SONAR percibida como **bioluminescencia + energía tecnológica**, firma en mercado = brillo, no oscuridad. Abyss Black canvas preservado para descanso visual sesiones largas (dark-mode-first). Reorganización §3.4.1 en 3 tiers (A canvas, B identity pop, C structural support) + §3.4.4 60/25/10/5/<3 ratios + §3.3 logo rules updated + §3.4.6 ping color = Sonar Bright. |
+| 2.0-scaffold-r2 | 2026-05-03 | Founder + Cascade | **Phase 4 partial attack (Sonnet-compatible slices)** post-commit checkpoint 6d3d96c: (a) **§4.2 Type scale detail-pass** — tokens canónicos completos con line-height (ratio + px absoluto), letter-spacing, familia+peso; responsive breakpoints website xs/sm/md/lg/xl; 6 reglas de aplicación tipográfica. (b) **§15 Glossary expandido** de 13 a 55+ términos organizados en 7 categorías (A meta-brand core ×9, B UI elements ×11, C actions/ops ×10, D data/tracking ×9, E social/contracts ×8, F status signals ALL CAPS ×8, G deprecated v1.0 Admirals ×9 + H uso cross-language). Canonical SSoT léxico para Phases 5-7. (c) **§16 Motion specs detalladas** — filosofía S6, duration tokens ×6 ms-precise, easing curves cubic-bezier ×5 submarine-themed, spring physics Framer Motion ×4 configs, motion pattern catalog ×12 patrones, a11y prefers-reduced-motion, performance budgets NUI. (d) Residuals fix: §11 lock screen + §12 website — Coloro identity refs → Sonar Bright per r1 hierarchy. Secciones pendientes Opus: §3.3 logo construction, §5.2 custom icon SVG, §12 marketing moodboard, §13 plan assets, §14 governance, §17-20 verticales/storybook/shader/roadmap. |
 
 ---
 
