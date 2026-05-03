@@ -2,7 +2,7 @@
 
 > **Autor:** Founder + Cascade (S1.6 close, 2026-05-03).
 > **Propósito:** lista exhaustiva de lo que **TIENE que estar hecho** antes de abrir `/start-session` S2.0.
-> **Estado total:** 🔴 5 blockers duros + 🟡 3 decisiones founder + 🟢 5 soft-opcionales.
+> **Estado total (post-S1.9):** 🔴 5 blockers duros (B1 2/8 done, 6 pendientes) + 🟡 3 decisiones founder + 🟢 5 soft-opcionales.
 > **ETA mínimo pre-S2 ejecutando todo:** ~3-4 sessions AI (~12-18h founder time).
 > **Documento living:** se actualiza cuando cualquier checkbox cambia de estado. Append-only al changelog footer.
 
@@ -16,18 +16,20 @@ Docs operacionales siguen en lenguaje Admirals/literal-militar pre-pivot. Cada d
 
 | # | Doc | Estado actual | Trabajo pendiente |
 |---|---|---|---|
-| 1 | ~~`docs/design/02_admirals_tablet.md`~~ → `docs/design/02_sonar_tablet.md` v1.2 | � **PASS 1 + PASS 2 DONE S1.8** (100%) | ✅ Rename + NOTICE r1.1 + bulk identity purge + key sections Pass 1. ✅ Pass 2: §5.2 + §6.4/§6.5 + §10.5 + §11.4/§11.6 + §15.2 notif table canonical SFX mapping + §21.4 + §22.4 + §26 sounds tables canonical + §27.2 anti-patrones NEW post-pivot (9 items). **Ready-to-read para S2.0 planning** — Tablet shell + Bank app + Map app leen spec identidad SONAR canonical coherente. |
-| 2 | `docs/technical/02_events_catalog.md` | 🔴 Admirals refs | Surgical rewrite: mantener event contracts técnicos, renombrar prefijos `admirals:*` → `sonar:*` (si Phase 8 decide rename) o dejar legacy con NOTICE (si Phase 8 defer). |
-| 3 | `docs/technical/03_db_schema.md` | 🔴 `admirals_*` tables | Surgical: tablas SQL canonical names per decisión D3 (abajo). |
-| 4 | `docs/technical/04_api_contracts.md` | 🔴 Admirals refs | Surgical: callbacks/exports naming per D3. |
-| 5 | `docs/technical/05_state_machines.md` | 🔴 Admirals refs | Surgical: FSM table names per D3. |
-| 6 | `docs/technical/06_fivem_standards.md` | 🟡 Menor refs | Light refresh: performance budgets + standards agnósticos. |
-| 7 | `docs/technical/07_bridges_compatibility.md` | 🟡 Menor refs | Light refresh: mention SONAR rebrand + ADR-011. |
-| 8 | `docs/planning/01_roadmap.md` v1.4 → v1.5 | 🔴 Pre-pivot entries | Surgical bump v1.5: Sprint 2 goals rewritten SONAR-aware + §15 TL;DR update + changelog entry. |
+| 1 | ~~`docs/design/02_admirals_tablet.md`~~ → `docs/design/02_sonar_tablet.md` v1.2 | 🟢 **PASS 1 + PASS 2 DONE S1.8** (100%) | ✅ Rename + NOTICE r1.1 + bulk identity purge + key sections Pass 1. ✅ Pass 2: §5.2 + §6.4/§6.5 + §10.5 + §11.4/§11.6 + §15.2 notif table canonical SFX mapping + §21.4 + §22.4 + §26 sounds tables canonical + §27.2 anti-patrones NEW post-pivot (9 items). **Ready-to-read para S2.0 planning** — Tablet shell + Bank app + Map app leen spec identidad SONAR canonical coherente. |
+| 2 | `docs/technical/02_events_catalog.md` | 🔴 Admirals refs | Surgical rewrite: mantener event contracts técnicos, renombrar prefijos `admirals:*` → `sonar:*` (si Phase 8 decide rename) o dejar legacy con NOTICE (si Phase 8 defer). **DEPENDE D3.** |
+| 3 | `docs/technical/03_db_schema.md` | 🔴 `admirals_*` tables | Surgical: tablas SQL canonical names per decisión D3 (abajo). **DEPENDE D3.** |
+| 4 | `docs/technical/04_api_contracts.md` | 🔴 Admirals refs | Surgical: callbacks/exports naming per D3. **DEPENDE D3.** |
+| 5 | `docs/technical/05_state_machines.md` | 🔴 Admirals refs | Surgical: FSM table names per D3. **DEPENDE D3.** |
+| 6 | `docs/technical/06_fivem_standards.md` | 🟡 Menor refs | Light refresh: performance budgets + standards agnósticos. **Independiente D3** — ejecutable Sonnet ~1h. |
+| 7 | `docs/technical/07_bridges_compatibility.md` | 🟡 Menor refs | Light refresh: mention SONAR rebrand + ADR-011. **Independiente D3** — ejecutable Sonnet ~1h. |
+| 8 | `docs/planning/01_roadmap.md` v1.4 → v1.5 | � **DONE S1.9** (100%) | ✅ Title rebrand SONAR. ✅ NOTICE r1 top-level (~80 líneas) naming canonical + Sprint 2 DIFERIDO + pivot phases 1-12 status + reading guide. ✅ §0 + §2.1 tabla Oleada 1 row bumped (🟡 EN PROGRESO Sprint 0+1 ✅ + Sprint 2 DIFERIDO). ✅ §4.1 Visión MVP SONAR + §4.2 Sprint 2 full rewrite (3 scope options D1 + 8 done criteria propuestos + blockers B1-B5 + D1-D3). ✅ §5.1 + §6.1 + §14.2 + §14.3 changelog entry + §15 TL;DR 10→12 pts pivot-aware + §FIN bump. **NO touched:** §3 Oleada 0 histórico inmutable, Sprint 0+1 entries histórico, Sprints 3-8 gameplay pivot-agnostic, §7-§13 risk/KPIs/structure preserved. Code namespace legacy `admirals_*` preservado per ADR-011 §5.5.8 (pending D3). |
 
 **Ownership:** Sonnet 4.6 surgical por doc (1 doc/session, 3-4h cada) o Opus 4.7 si founder quiere batch completo en 1 session grande.
 
-**Done criterion:** grep `Admirals|Almirantazgo|capitán|silent service` en `docs/` retorna solo: `_archive/`, ADRs históricos, SESSION_LOG, NOTICE blocks, DEPRECATED tags.
+**Done criterion:** grep `Admirals|Almirantazgo|capitán|silent service` en `docs/` retorna solo: `_archive/`, ADRs históricos, SESSION_LOG, NOTICE blocks, DEPRECATED tags, code namespace legacy (`admirals_bank`/`admirals_core`/`admirals_bridges`/`admirals_*` tables/`admirals:*` events) pending Phase 8+9.
+
+**Progreso post-S1.9:** 2/8 done (1: `02_sonar_tablet.md` v1.2 + 8: `01_roadmap.md` v1.5). 6/8 pendientes. Ruta recomendada post-S1.9: (a) docs 6+7 light Sonnet ~2h — independientes D3 → cierra 4/8 sin founder decision. (b) D3 founder decision → desbloquea docs 2-5 técnicos.
 
 ---
 
@@ -194,9 +196,10 @@ ADR-011 §4 execution plan listó Phase 8 (code refactor) + Phase 9 (DB migratio
 | 1.1 | 2026-05-03 | Founder + Cascade (S1.7 close partial → S1.8 hygiene) | **D2 status update fact-only post logo v2 working canonical S1.7.** Logo `01_brief_logo.md` v2 🟢 RESUELTO IN-HOUSE (concept A "S-curl open" en `art/branding/logo_v2/` 8 SVGs + 27 PNG + favicon). Decisión founder S1.7: NO firma ADR-013 ni sync `01_art_direction.md` §3.3 / brief status durante período uso real ~2-4 semanas. Hard constraint añadido para futuras AI agents (NO arreglar unilateralmente conflict logo realidad vs docs firmados). Icons/sound/motion/marketing pendientes. Resto blockers B1-B5 + D1 + D3 + soft-opcionales sin cambio. |
 | 1.2 | 2026-05-03 | Founder + Cascade (S1.8 B1 attack partial) | **B1 status update: doc 1/8 Pass 1 done.** `02_admirals_tablet.md` renamed → `02_sonar_tablet.md` v1.1 (git mv). NOTICE r1.1 top-level (~70 líneas) + bulk identity purge 126 instances + surgical inline §2.4+§3+§3.2+§4.1+§4.2+§29. Pass 2 pendiente ~2h próxima sesión (§6-§19 apps detail-pass + §26 sounds + §27 anti-patterns). Resto 7 docs B1 sin cambio. |
 | 1.3 | 2026-05-03 | Founder + Cascade (S1.8 Pass 2 complete) | **B1 status update: doc 1/8 Pass 2 complete = 100%.** `02_sonar_tablet.md` v1.1 → v1.2 (Pass 1 + Pass 2 surgical completos). Pass 2 adicional: §5.2 lenguaje visual Geist Sans + §6.4/§6.5 Empresa depth_press + §10.5 stickers abstract + §11.4/§11.6 Banca canonical + §15.2 tipología notif table 12-row canonical SFX mapping + §21.4 docking canonical + §22.4 Costa Naval flag + §26 sounds 4 tablas canonical full rewrite + §27 split §27.1 v1.0 preserved + §27.2 NEW 9 anti-patrones identidad SONAR post-pivot. **Doc ready-to-read para S2.0 planning.** Resto 7 docs B1 pendientes. |
+| 1.4 | 2026-05-03 | Founder + Cascade (S1.9) | **B1 status update: doc 8/8 done = 2/8 total (25%).** `01_roadmap.md` v1.4 → v1.5 surgical post-pivot SONAR. NOTICE r1 top-level (~80 líneas) + Sprint 2 full rewrite DIFERIDO + scope options D1 + 8 done criteria propuestos + blockers B1-B5/D1-D3 + pivot phases 1-12 status + §14.3 changelog + §15 TL;DR pivot-aware. B1 docs dependency breakdown: **independientes D3** (docs 6+7 light ejecutables Sonnet ~2h cada) + **dependientes D3** (docs 2-5 técnicos, naming `admirals_*` vs `sonar_*` resolución namespace). Ruta recomendada post-S1.9: (a) founder resuelve D1+D3 conversación ~30min desbloquea docs 2-5 + B2 SPRINT_PLAN_S2; o (b) Sonnet ataca docs 6+7 light mientras founder reflexiona. Resto blockers B2-B5 + D2 sin cambio post-S1.9. |
 
 ---
 
 *"Antes de zarpar, verifica el casco."* — meta-regla S1 → S2.
 
-**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.3.**
+**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.4.**

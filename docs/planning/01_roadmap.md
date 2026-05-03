@@ -1,25 +1,73 @@
-# 🗺️ Admirals — Master Roadmap
+# 🗺️ SONAR — Master Roadmap
 
-> **Versión:** 1.4 (firmado — completo, 15 secciones, living document). 🏆 **SPRINT 1 CERRADO (2026-05-02).** `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008. Smoke S1.3 14/14 ✅. Tag `sprint-1-complete`. **Next: Sprint 2 — Tablet shell + Bank app (planning session dedicada pendiente).**
-> **Tipo:** Planning operacional. **Roadmap maestro del proyecto.** SSoT para fases, milestones, dependencias y criterios de "done".
-> **Documento padre:** `agents/00_BOOTSTRAP.md` v1.0 (firmado).
-> **Documento hermano:** `planning/02_decision_log.md` (próximo, ADRs).
-> **Documentos referenciados:** todos los docs `design/`, `art/`, `economy/`, `gameplay/`, `technical/` ya firmados.
-> **Estado:** firmado (living document — actualizar tras cada sprint Oleada 1+ y al firmar docs Oleada 0 pendientes).
+> **Versión:** 1.5 (refinement post-pivot SONAR — NOTICE r1 top-level establece interpretación canonical post-ADR-011/012; §1-§15 legacy v1.4 inline preserved con surgical surface rename + Sprint 2 bump DIFERIDO + pivot phase status).
+> 🏆 **SPRINT 1 CERRADO** (2026-05-02, Admirals heritage preserved). 🔄 **PIVOT IDENTITY Admirals → SONAR en ejecución multi-phase** (2026-05-03 ongoing — ADR-011 foundational + ADR-012 refinement). **Sprint 2 DIFERIDO** hasta Phase 10 smoke regression complete. Tablet shell + Bank app + Map app bloqueados por Phases 4-12.
+> **Tipo:** Planning operacional. **Roadmap maestro del proyecto SONAR (ex-Admirals).** SSoT para fases, milestones, dependencias y criterios de "done".
+> **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5 (firmado post-pivot).
+> **Documento hermano:** `planning/02_decision_log.md` v1.4 (12 ADRs incl. ADR-011 + ADR-012).
+> **Documentos referenciados:** todos los docs `design/`, `art/`, `economy/`, `gameplay/`, `technical/` ya firmados + briefs v2 `art/briefs/` (5/5 delivered).
+> **Estado:** firmado (living document — actualizar tras cada sprint + al completar cada Phase pivot 4-12).
 
-> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` completo, `00_PRODUCT_BIBLE.md` §4 (Pilares).
+> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.5 completo, `00_PRODUCT_BIBLE.md` v1.4 §1 identidad (post-pivot), **`docs/planning/02_decision_log.md` ADR-011 + ADR-012 (pivot foundational + refinement)**, **`docs/art/01_art_direction.md` v2.0-scaffold-r7 NOTICE r6** (canonical visual direction), **`progress/PRE_S2_CHECKLIST.md` v1.3+** (hard blockers + decisiones founder pendientes pre-S2).
+
+---
+
+## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012, 2026-05-03)
+
+**Este documento fue firmado v1.4 pre-pivot SONAR — naming "Admirals" + Sprint 2 "Next" immediate + criteria Tablet/Banco pre-pivot.** ADR-011 + ADR-012 refinan identity canonical foundational. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§15 abajo, **gana este NOTICE + ADR-011/012 + PRE_S2_CHECKLIST.md**.
+
+### NEW CANONICAL — vigente desde 2026-05-03
+
+#### Naming canonical (DEPRECATED heritage "Admirals" producto)
+- **Producto:** SONAR (no Admirals).
+- **Tablet:** SONAR Tablet (no Admirals Tablet).
+- **Sistema operativo:** SonarOS (no AdmiralsOS).
+- **App Banca:** SONAR Bank app (no Banca Admirals).
+- **Marketplace global Oleada 3+:** Marketplace SONAR.
+- **Code namespace legacy:** `admirals_bank`, `admirals_core`, `admirals_bridges`, tablas SQL `admirals_*`, eventos `admirals:*` — preservados legacy hasta **Phase 8 code refactor + Phase 9 DB migration 009** per ADR-011 §5.5.8 excepciones permitidas. Schedule Phase 8+9 pending D3 founder decision (ver `PRE_S2_CHECKLIST.md` §D3).
+
+#### Estado Sprint 2 — DIFERIDO (DEPRECATED "Next immediate")
+- Sprint 2 (Tablet shell + Bank app) **NO arranca** hasta completar Phases 4-12 pivot execution.
+- Hard blockers pre-S2 en `progress/PRE_S2_CHECKLIST.md` v1.3+ (5 blockers B1-B5 + 3 decisiones founder D1-D3 + 5 soft-opcionales S1-S5).
+- SPRINT_PLAN_S2.md redacción pending D1 (scope UI-heavy vs tech-balanced) + D3 (namespace migration timing) founder decisions.
+- B1 Phase 6 mass-purge operational docs 1/8 complete (`02_sonar_tablet.md` v1.2 done S1.8). Este doc 8/8 cierra con v1.5 surgical bump.
+
+#### Pivot phases roadmap resumido
+- **Phase 1 ADR-011** ✅ accepted 2026-05-03 (rebrand foundational Admirals→SONAR).
+- **Phase 1.5 ADR-012** ✅ accepted 2026-05-03 (refinement metáfora abstract + hybrid theme + voz neutral).
+- **Phase 2-4 art_direction scaffold + r6 NOTICE + r7 surgical** ✅.
+- **Phase 4.5 v2 specialist briefs (5/5)** ✅ (logo + icons + sound + motion + marketing).
+- **Phase 5 light Bible v1.4 + BOOTSTRAP v1.5** ✅.
+- **Phase 6 mass-purge operational docs** 🟡 1/8 done (`02_sonar_tablet.md`), 7/8 pending.
+- **Phase 7 full design/gameplay/economy docs rewrite** 🔴 pendiente.
+- **Phase 8 code refactor `admirals_*` → `sonar_*` namespace** 🔴 pendiente (depende D3).
+- **Phase 9 DB migration 009** 🔴 pendiente (depende D3).
+- **Phase 10 smoke regression** 🔴 pendiente (gate pre-S2).
+- **Phase 11 workspace migration** 🔴 pendiente.
+- **Phase 12 Sprint 2 arranque** 🔴 bloqueado por Phases 6-10.
+
+#### Cómo leer el resto del documento (§1-§15)
+
+1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + `00_BOOTSTRAP.md` v1.5.**
+2. **Filosofía planning + principios + dependencies + risk register + sprint structure + estimation + KPIs (§1, §7-§13) siguen válidos** — pivot-agnostic completo.
+3. **§3 Oleada 0 + §4.2 Sprint 0 + §4.2 Sprint 1 = HISTÓRICO inmutable** — Admirals heritage preservado (ADRs 008-010, commits, tags `v0.0.0`/`v0.1.0`/`sprint-1-complete`, entries SESSION_LOG) per ADR-011 §5.5.8 excepciones.
+4. **§4.2 Sprint 2 rewrite inline** refleja Sprint 2 DIFERIDO + scope options founder D1.
+5. **§4.2 Sprints 3-8 mantienen gameplay mechanics pivot-agnostic** (Granja / Empresa / Workplace / etc.). Refs "Tablet" = SONAR Tablet implícito. Refs code `admirals_*` = legacy namespace hasta Phase 8+9.
+6. **§5-§6 Oleadas 2+ mantienen visión pivot-agnostic.** Refs producto "Admirals" superseded → SONAR.
+7. **§14.3 changelog + §15 TL;DR actualizados v1.5** surgical.
+8. **Si duda → ADR-011 + ADR-012 + `PRE_S2_CHECKLIST.md` + NOTICE r1 mandan.**
 
 ---
 
 ## 0. Resumen ejecutivo
 
-Este documento es **el roadmap maestro del proyecto Admirals**. Consolida todos los roadmaps dispersos en otros docs y los organiza en **fases coherentes con dependencias claras**.
+Este documento es **el roadmap maestro del proyecto SONAR (ex-Admirals)**. Consolida todos los roadmaps dispersos en otros docs y los organiza en **fases coherentes con dependencias claras**.
 
 > **Filosofía:** **iterar en oleadas**, no waterfall. Cada oleada es **playable y vendible**, no solo "demo técnica". El founder puede pausar/parar tras cualquier oleada y tener un producto funcional.
 
 Define:
 
-- **Filosofía de planificación** Admirals (5 principios).
+- **Filosofía de planificación** SONAR (5 principios).
 - **Vista global de fases:**
   - **Oleada 0** — Documentación (casi cerrada).
   - **Oleada 1** — MVP playable (4-6 meses).
@@ -31,7 +79,7 @@ Define:
 - **Done criteria** — definición concreta de "completado".
 - **Risk register** — riesgos identificados + mitigaciones.
 - **Sprint structure** recomendada para solo-dev / small team.
-- **Estimation guide** — cómo estimar tareas Admirals.
+- **Estimation guide** — cómo estimar tareas SONAR.
 - **Anti-patterns planning** — errores que evitamos.
 - **KPIs roadmap** — métricas de progreso.
 
@@ -74,10 +122,10 @@ Define:
 
 | Oleada | Estado | Duración estim. | Output |
 |---|---|---|---|
-| **Oleada 0** — Documentación | 🏆 CERRADA 100% (29 firmados) | ~1 mes total | 29 docs / ~27.260 líneas, **ready-to-code** |
-| **Oleada 1** — MVP **Granja** + Tablet + Banco | 🔴 Pendiente | 4-6 meses | Servidor playable: nodo raíz Granja + Tablet + economía core + bridges multi-framework |
+| **Oleada 0** — Documentación | 🏆 CERRADA 100% (29 firmados + briefs v2) | ~1 mes total | 29 docs / ~27.260 líneas + 5 briefs v2 SONAR, **ready-to-code** (Admirals heritage) |
+| **Oleada 1** — MVP **Granja** + SONAR Tablet + SONAR Bank | 🟡 EN PROGRESO (Sprint 0+1 ✅, Sprint 2 🟡 DIFERIDO pending Phases 4-12 pivot) | 4-6 meses | Servidor playable: nodo raíz Granja + SONAR Tablet + economía core + bridges multi-framework |
 | **Oleada 2** — Multi-nodo (Molino + Bakery + Retail) + social | 🔴 Pendiente | 6-8 meses | 4 nodos completos end-to-end + features sociales avanzadas |
-| **Oleada 3+** — Federation + avanzado | 🔴 Pendiente | Ongoing | Cross-server, advanced governance, marketplaces |
+| **Oleada 3+** — Federation + avanzado | 🔴 Pendiente | Ongoing | Cross-server, advanced governance, Marketplace SONAR |
 
 ### 2.2 Critical path resumido
 
@@ -178,11 +226,11 @@ Oleada 1 Sprint 8: Polish + balance + bridges testing matrix + closed beta
 
 ### 4.1 Visión MVP
 
-> **El MVP de Admirals es:**
+> **El MVP de SONAR es:**
 >
 > Un servidor FiveM donde un player puede:
 > 1. Conectarse, recibir IBAN inicial 2.500 €.
-> 2. Abrir Tablet (TAB), navegar 3 apps (Bank, Map, Workplace).
+> 2. Abrir SONAR Tablet (TAB), navegar 3 apps (SONAR Bank, Map, Workplace).
 > 3. Aplicar a un job en Granja NPC.
 > 4. Trabajar shifts: preparar suelo, plantar trigo, regar, cosechar, ensacar.
 > 5. Recibir salary quincenal automático.
@@ -267,21 +315,41 @@ Oleada 1 Sprint 8: Polish + balance + bridges testing matrix + closed beta
 
 **Bloquea S2.**
 
-#### Sprint 2 — Tablet shell + Bank app (3 semanas)
+#### Sprint 2 — SONAR Tablet shell + SONAR Bank app (🟡 DIFERIDO pending Phases 4-12 pivot complete)
 
-**Goals:**
-- NUI shell Tablet (HTML/CSS/JS o React).
-- Apertura/cierre con `TAB` keybind.
-- Bank app: ver balance, ver transactions, transferir.
-- Map app: ver mapa servidor + GPS markers básicos.
+**Status post-S1.8:** planning pendiente. Hard blockers detallados en `progress/PRE_S2_CHECKLIST.md` v1.3+ (B1-B5) + decisiones founder pendientes (D1-D3). NO arranca hasta Phase 10 smoke regression complete.
 
-**Done criteria:**
-- ✅ Player presiona `TAB` → Tablet aparece smooth.
-- ✅ Bank app muestra IBAN + balance + 10 últimas transactions.
+**Goals propuestos (sujetos a founder D1 scope decision):**
+- NUI shell SONAR Tablet (React + TailwindCSS + shadcn/ui base) alineado `docs/design/02_sonar_tablet.md` v1.2 + `docs/art/01_art_direction.md` v2.0-scaffold-r7 NOTICE r6.
+- Apertura/cierre con `TAB` keybind (SonarOS boot + lock/home/app states).
+- SONAR Bank app: balance + transactions list + transfer UI (consume callbacks C001/C002 ya shipped S1 + C003 `getTransactions` pending scope D1).
+- Map app: GPS + markers básicos.
+- Scope balance options founder D1:
+  - **(A) tech-balanced:** Tablet shell minimal + SONAR Bank básico + T2 adapters ESX/QBCore + `admirals_companies`/`sonar_companies` DDL (naming per D3) + C003. ~3 semanas.
+  - **(B) UI-heavy:** Tablet shell refinado + SONAR Bank polished + Map app + motion signature + sound signature canonical 5 SFX. Deferir T2/C003 a S3. ~4 semanas.
+  - **(C) híbrido:** Tablet shell + SONAR Bank + T2 read-only. Defer DDL+C003 a S3. ~3 semanas.
+
+**Done criteria propuestos:**
+- ✅ Player presiona `TAB` → SONAR Tablet aparece con motion canonical (ver `art/briefs/04_brief_motion.md` v1).
+- ✅ SONAR Bank app muestra IBAN + balance + 10 últimas transactions.
 - ✅ Player puede transferir a otro IBAN desde Tablet UI.
 - ✅ Map app muestra ubicación player + markers admin-defined.
+- ✅ 5 SFX canonical integrados (`signal_emerge`/`depth_press`/`layer_dive`/`console_tap`/`panel_open`).
+- ✅ Paleta hybrid Tier A/B/C aplicada (NO dark-extremo 60% canvas; ~30-40% dark + ~30-40% white surfaces per ADR-012 §D2).
+- ✅ Voz neutral premium-tech en copy UI (NO militar/capitán/tactical per ADR-012 §D3).
+- ✅ Logo v2 working canonical integrado (boot splash + lock screen + dock per `02_sonar_tablet.md` §3/§4.2/§21).
 
-**Bloquea:** Workplace app, Comm app, etc. (todo Tablet downstream).
+**Blockers hard pre-S2 (ver `PRE_S2_CHECKLIST.md` v1.3+):**
+- 🔴 **B1** Phase 6 mass-purge operational docs: 1/8 done (`02_sonar_tablet.md` v1.2), 7/8 pendientes (`02_events_catalog.md`, `03_db_schema.md`, `04_api_contracts.md`, `05_state_machines.md`, `06_fivem_standards.md` light, `07_bridges_compatibility.md` light, `01_roadmap.md` v1.5 ← este doc).
+- 🔴 **B2** SPRINT_PLAN_S2.md redactado (requiere D1+D3 founder decisions + B1 complete).
+- 🟡 **B3** Memoria `SONAR Identity r2` confirmed al boot S2.0.
+- 🟡 **B4** Smoke regression `admirals_bank` 30/30 pre-S2 (verifica base sólida post-pivot antes de nuevo code).
+- 🟡 **B5** Tag `sonar-identity-canonical` marks identity lock.
+- 🟡 **D1** scope decision founder (A/B/C).
+- 🟡 **D2** creative outsourcing SÍ/NO icons (logo v2 resuelto in-house S1.7).
+- 🟡 **D3** namespace migration timing (Phase 8+9 AHORA vs DEFERIDA vs parcial).
+
+**Bloquea:** Workplace app, Comm app, etc. (todo Tablet downstream) + Phase 12 Sprint 2 arranque.
 
 #### Sprint 3 — Ítem físico + quality (2 semanas)
 
@@ -414,7 +482,7 @@ Oleada 1 Sprint 8: Polish + balance + bridges testing matrix + closed beta
 
 ### 5.1 Visión
 
-> **Tras Oleada 1 (Granja shipped), Admirals añade los otros 3 nodos descendentes + features sociales avanzadas + economía completa.** Oleada 2 construye cadenas reales sobre wheat producido por players Oleada 1 (no NPC stubs).
+> **Tras Oleada 1 (Granja shipped), SONAR añade los otros 3 nodos descendentes + features sociales avanzadas + economía completa.** Oleada 2 construye cadenas reales sobre wheat producido por players Oleada 1 (no NPC stubs).
 
 ### 5.2 Features Oleada 2
 
@@ -501,7 +569,7 @@ Oleada 1 Sprint 8: Polish + balance + bridges testing matrix + closed beta
 ### 6.1 Features futuras
 
 - 🔮 **Cross-server federation** — players move between servers.
-- 🔮 **Marketplace global Admirals** — cross-server trade.
+- 🔮 **Marketplace global SONAR** — cross-server trade.
 - 🔮 **Multi-empresa player groups** — conglomerates.
 - 🔮 **Hipermercado economics** + verticals nuevas (Lácteos, Carnicería).
 - 🔮 **Bonds / financial instruments**.
@@ -806,13 +874,15 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 
 ### 14.2 Estado del documento
 
-- **Versión:** 1.4 (firmado — completo, 15 secciones, Sprint 1 cerrado).
-- **Próxima revisión:** al cerrar Sprint 2 (Tablet shell + Bank app) → v1.5 con retro learnings.
-- **Documento padre:** `agents/00_BOOTSTRAP.md` v1.0.
-- **Documento hermano:** `planning/02_decision_log.md` (próximo).
+- **Versión:** 1.5 (refinement post-pivot SONAR — NOTICE r1 top-level + surgical inline §2.1 + §4.1 + §4.2 Sprint 2 + §5.1 + §6.1 + §14.3 changelog + §15 TL;DR + §FIN bump).
+- **Próxima revisión:** al completar B1 Phase 6 mass-purge docs 2-7 + Phase 8/9/10 (smoke regression) → v1.6 con pivot phases complete + SPRINT_PLAN_S2 redacted + Sprint 2 arranque + retro learnings.
+- **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5 (post-pivot).
+- **Documento hermano:** `planning/02_decision_log.md` v1.4 (12 ADRs incl. ADR-011 + ADR-012).
 - **Documentos relacionados:**
-  - Todos los `design/`, `art/`, `economy/`, `gameplay/`, `technical/` (input).
-  - `agents/00_BOOTSTRAP.md` (referencia obligatoria).
+  - Todos los `design/`, `art/`, `economy/`, `gameplay/`, `technical/` (input — Phase 6/7 mass-purge en progreso).
+  - `art/briefs/` 5 briefs v2 (logo + icons + sound + motion + marketing delivered).
+  - `agents/00_BOOTSTRAP.md` v1.5 (referencia obligatoria).
+  - `progress/PRE_S2_CHECKLIST.md` v1.3+ (operational blockers SSoT pre-S2).
 
 ### 14.3 Changelog
 
@@ -823,6 +893,7 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 | 1.2 | 2026-05-01 | Founder + Cascade | 🏆 **OLEADA 0 CERRADA 100%.** `technical/07_bridges_compatibility.md` v1.0 firmado + ADR-008 (Granja pivot) + ADR-009 (Bridges Layer) registrados en decision_log. §2.1 tabla + §3.2 completadas. Done criteria Oleada 0 todos cumplidos. Estado "ready-to-code" confirmado. |
 | 1.3 | 2026-05-02 | Founder + Cascade | 🏆 **SPRINT 0 CERRADO.** §4.2 Sprint 0 marcado ✅ con fecha + sessions ejecutadas (S0.0-S0.4) + ADR-010 (hybrid audit_log) añadido. `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 operativos. Smoke test 10 pasos listo. Next: Sprint 1 — Banco core. |
 | 1.4 | 2026-05-02 | Founder + Cascade | 🏆 **SPRINT 1 CERRADO** (mismo día — velocity 15×). §4.2 Sprint 1 marcado ✅ con deliverables detallados: `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008 + smokes 30/30 pasos cumulative. Tag `sprint-1-complete`. §15 TL;DR punto 6 bumped. Next: Sprint 2 — Tablet shell + Bank app (planning session dedicada pendiente). |
+| 1.5 | 2026-05-03 | Founder + Cascade (S1.9) | 🔄 **SURGICAL POST-PIVOT SONAR** (ADR-011 + ADR-012). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~80 líneas) establece: naming canonical (producto/Tablet/OS/Bank app), Sprint 2 DIFERIDO pending Phases 4-12, pivot phases roadmap 1-12 status, reading guide §1-§15 legacy vs canonical. §0 + §2.1 tabla Oleada 1 row bumped (🟡 EN PROGRESO Sprint 0+1 ✅ + Sprint 2 DIFERIDO). §4.1 Visión "El MVP de Admirals" → "El MVP de SONAR" + "Tablet" → "SONAR Tablet". §4.2 Sprint 2 full rewrite — DIFERIDO status + goals propuestos + 3 scope options D1 + done criteria propuestos 8 bullets (include 5 SFX canonical + paleta hybrid + voz neutral + logo v2) + blockers B1-B5 + D1-D3. §5.1 "Admirals" → "SONAR". §6.1 Marketplace global Admirals → SONAR. §14.2 estado bumped próxima revisión v1.6 post-Phase-6+8+9+10. §14.3 este entry. §15 TL;DR 10 puntos rewritten pivot-aware. §FIN versión bumped. **NO touched:** §3 Oleada 0 (histórico inmutable per ADR-011 §5.5.8), §4.2 Sprint 0+1 entries (histórico inmutable), §4.2 Sprints 3-8 gameplay mechanics (pivot-agnostic), §5.2-§5.4 Oleada 2 features, §7-§13 dependencies/done-criteria/risks/sprint-structure/estimation/KPIs, ADR refs 008-010 histórico. Code namespace `admirals_bank`/`admirals_core`/`admirals_bridges` preservado legacy hasta Phase 8+9 per ADR-011 §5.5.8. Cierra B1 doc 8/8 Phase 6 mass-purge (fase parcial — docs 2-5 técnicos requieren D3 founder decision; 6+7 light pendientes sesión futura). |
 
 ---
 
@@ -831,15 +902,17 @@ Bridges layer → Banco → Tablet shell → Item físico → Granja NPC → Emp
 Si lees solo este resumen:
 
 1. **Iteramos en oleadas, no waterfall.** Oleada 1 = MVP playable + monetizable.
-2. **Oleada 0 (docs) 🏆 CERRADA 100%** (29 docs / ~27.260 líneas). READY TO CODE.
-3. **Oleada 1 (MVP) = 4-6 meses, 9 sprints.** **Granja-only** (no Bakery — pivot v1.1) + Tablet 3 apps + Banco + Empresas básicas + Bridges layer.
-4. **Oleada 2 (multi-nodo) = 6-8 meses, 12 sprints.** Molino + Bakery + Retail construidos sobre wheat real de Granja + social.
-5. **Critical path Oleada 1:** Bridges → Banco → Tablet → Item → Granja NPC → Empresa → Workplace → Granja player → Polish.
-6. **Sprint 1 🏆 CERRADO** (2026-05-02, mismo día — velocity 15×). `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008 + smokes 30/30. Tag `sprint-1-complete`. **Next: Sprint 2** — Tablet shell + Bank app (planning session dedicada).
-7. **Done criteria explícitos** por feature/sprint/oleada.
-8. **Sprint length:** 2 semanas. Solo dev: ✅ skip dailies, do retros.
-9. **Risk top 3:** founder burnout, bridges abstracción incorrecta, AI agent quality drop.
-10. **Roadmap = living document.** Update al firmar docs + tras cada sprint Oleada 1+.
+2. **Oleada 0 (docs) 🏆 CERRADA 100%** (29 docs / ~27.260 líneas + 5 briefs v2 SONAR). READY TO CODE (Admirals heritage preserved).
+3. **🔄 PIVOT IDENTITY Admirals → SONAR en ejecución multi-phase** (2026-05-03 ongoing — ADR-011 foundational + ADR-012 refinement). 12 phases, 1-5 completas + 4.5 briefs v2 delivered, 6-12 pendientes. Ver NOTICE r1 top-level + `progress/PRE_S2_CHECKLIST.md` v1.3+.
+4. **Oleada 1 (MVP) = 4-6 meses, 9 sprints.** **Granja-only** (no Bakery — pivot v1.1) + SONAR Tablet 3 apps + SONAR Bank + Empresas básicas + Bridges layer.
+5. **Oleada 2 (multi-nodo) = 6-8 meses, 12 sprints.** Molino + Bakery + Retail construidos sobre wheat real de Granja + social.
+6. **Critical path Oleada 1:** Bridges → SONAR Bank → SONAR Tablet → Item → Granja NPC → Empresa → Workplace → Granja player → Polish.
+7. **Sprint 0+1 🏆 CERRADOS** (2026-05-02, Admirals heritage — velocity 15× S1). `admirals_bank` v0.4.0 + escrow FSM + C001/C002/C004/C005 + migrations 003-008 + smokes 30/30. Tags `v0.0.0`/`v0.1.0`/`sprint-1-complete` preserved histórico. **Sprint 2 🟡 DIFERIDO** pending Phases 4-12 pivot complete (hard blockers B1-B5 + decisiones founder D1-D3 per `PRE_S2_CHECKLIST.md`).
+8. **Code namespace legacy** `admirals_bank`/`admirals_core`/`admirals_bridges` + tablas SQL `admirals_*` + eventos `admirals:*` preservados hasta **Phase 8 code refactor + Phase 9 DB migration 009** per ADR-011 §5.5.8 excepciones. Rename timing pending D3 founder decision.
+9. **Done criteria explícitos** por feature/sprint/oleada.
+10. **Sprint length:** 2 semanas. Solo dev: ✅ skip dailies, do retros.
+11. **Risk top 5 actualizado post-pivot:** (1) founder burnout multi-phase pivot, (2) bridges abstracción incorrecta, (3) AI agent quality drop re-confundiendo metáfora literal-militar deprecated, (4) smoke regression post-pivot fallos, (5) D1/D3 decisiones retrasan B1-B2 execution.
+12. **Roadmap = living document.** Update al completar cada Phase pivot 4-12 + tras cada sprint Oleada 1+.
 
 ---
 
@@ -856,10 +929,10 @@ El **Master Roadmap** consolida toda la planificación dispersa:
 - **Done criteria explícitos** por feature/sprint/oleada — sin ambigüedad.
 - **Risk register completo** Oleada 0/1/2 con mitigaciones.
 - **Sprint structure** 2 semanas + anti-patterns documentados.
-- **Estimation T-shirt** + heurística × 1.5 + ejemplos Admirals.
+- **Estimation T-shirt** + heurística × 1.5 + ejemplos SONAR.
 - **KPIs roadmap** velocity + quality + scope + retention.
 
-> **Si en Oleada 1, founder + AI ship MVP en 4-6 meses con 5+ closed beta testers feedback positivo, server stable 4h+, bugs críticos <2, sprint goals hit >75%, y bridges layer compatible con QBox+QBCore minimum — el modelo planning Admirals habrá funcionado.**
+> **Si en Oleada 1, founder + AI ship MVP en 4-6 meses con 5+ closed beta testers feedback positivo, server stable 4h+, bugs críticos <2, sprint goals hit >75%, bridges layer compatible con QBox+QBCore minimum, y pivot SONAR Phases 4-12 complete sin regresiones funcionales — el modelo planning SONAR (ex-Admirals) habrá funcionado.**
 
 > El roadmap no es un contrato. Es un mapa. El terreno cambia, el mapa se actualiza.
 
@@ -867,4 +940,4 @@ El **Master Roadmap** consolida toda la planificación dispersa:
 
 *"Plan B siempre listo. Plan A es solo lo más probable hoy."*
 
-**FIN DEL DOCUMENTO `planning/01_roadmap.md` v1.4**
+**FIN DEL DOCUMENTO `planning/01_roadmap.md` v1.5**

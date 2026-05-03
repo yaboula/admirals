@@ -1330,3 +1330,148 @@ Founder acumula ~14h hoy con 5 sesiones consecutivas (S1.4 hygiene â†’ S1.5
 > *"eligo pass 2 sonar tablet, y es la ultima que me digas descanco"* (founder elecciÃ³n explÃ­cita Pass 2 sobre alternatives + tone correction).
 
 ---
+
+## Sesión S1.9 — Phase 6 B1 doc 8/8: `01_roadmap.md` v1.4 → v1.5 surgical post-pivot SONAR
+
+**Fecha:** 2026-05-04 (UTC+02:00 early hours)
+**Modelo:** Sonnet 4.6 (Cascade)
+**Duración:** ~1.5h (onboarding 20min + surgical rewrite multi_edit 30min + verification + PRE_S2 update + entry + summary)
+**Founder:** yaboula
+**Profile session:** 📝 SCRIBE — surgical doc work Phase 6 mass-purge (B1 Checklist).
+
+### Scope sesión
+
+(a) Onboarding obligatorio completado: BOOTSTRAP v1.5, founder_playbook §2.3+§4-§6+§5.3, SESSION_LOG últimas 5 entries (S1.4→S1.8), PRE_S2_CHECKLIST v1.3, ADR-011+ADR-012 (grep línea 660+864 decision_log), sonar_tablet v1.2 NOTICE r1.1 (SSoT canonical post-S1.8), art_direction v2.0-scaffold-r7 NOTICE r6, logo_v2 README working canonical.
+(b) Founder elige goal (a) roadmap v1.5 solo via ask_user_question (opciones a/b/c/d presentadas con dependency DAG + Sonnet-fit analysis). Scope strict IN: `01_roadmap.md` + `PRE_S2_CHECKLIST.md` + `SESSION_LOG.md`. OUT: todos los demás `docs/*`, code, DB, `.windsurf/*`, `art/branding/*`.
+(c) Surgical v1.4 → v1.5 per PRE_S2_CHECKLIST B1 done criterion ("Sprint 2 goals rewritten SONAR-aware + §15 TL;DR update + changelog entry"). Estrategia: NOTICE r1 top-level (pattern consistent con `02_sonar_tablet.md` v1.1 + `art_direction.md` r6) + surgical inline minimal-invasive en secciones pivot-sensitive + preservación legacy inmutable de §3 Oleada 0 + Sprint 0+1 entries históricas + §7-§13 pivot-agnostic.
+
+### Cambios
+
+- **Modified:**
+  - `docs/planning/01_roadmap.md` v1.4 → v1.5:
+    - Header lines 1-11: title rebrand Admirals → SONAR, version bump 1.4→1.5 con rationale, padre `00_BOOTSTRAP.md` v1.5, hermano `02_decision_log.md` v1.4 (12 ADRs), referenced docs ampliado con briefs v2, lectura obligatoria ampliada (ADR-011+012, art_direction r7, PRE_S2_CHECKLIST).
+    - NEW §NOTICE r1 top-level (~80 líneas) inserted entre line 13 y §0: naming canonical (producto/Tablet/OS/Bank/Marketplace + code namespace legacy per ADR-011 §5.5.8), estado Sprint 2 DIFERIDO (4 puntos), pivot phases 1-12 status (✅1-5 + 🟡6 + 🔴7-12), reading guide §1-§15 (8 puntos legacy vs canonical).
+    - §0 Resumen: "proyecto Admirals" → "proyecto SONAR (ex-Admirals)". §0 bullets §70/§82/§cierre: "planificación Admirals"/"tareas Admirals"/"ejemplos Admirals" → SONAR (3 surface renames).
+    - §2.1 tabla Oleada 1 row: estado 🔴 Pendiente → 🟡 EN PROGRESO (Sprint 0+1 ✅ + Sprint 2 DIFERIDO pending Phases 4-12). Tablet → SONAR Tablet + Banco → SONAR Bank + Marketplace global Admirals → Marketplace SONAR.
+    - §4.1 Visión MVP: "El MVP de Admirals es" → "El MVP de SONAR es", "Abrir Tablet" → "Abrir SONAR Tablet", "(Bank, Map, Workplace)" → "(SONAR Bank, Map, Workplace)".
+    - §4.2 Sprint 2 full rewrite (~40 líneas reemplazo ~14 líneas original): status 🟡 DIFERIDO + hard blockers pre-S2 ref PRE_S2_CHECKLIST + 3 goals propuestos SONAR-aware (stack React+TailwindCSS+shadcn/ui + SonarOS + callbacks shipped ref) + 3 scope options D1 (A tech-balanced / B UI-heavy / C híbrido) + 8 done criteria propuestos (include 5 SFX canonical + paleta hybrid Tier A/B/C ADR-012 D2 + voz neutral premium-tech ADR-012 D3 + logo v2 working canonical) + blockers hard B1-B5 + D1-D3 inline referenced.
+    - §5.1 Oleada 2 visión: "Admirals añade" → "SONAR añade".
+    - §6.1 Oleada 3+: "Marketplace global Admirals" → "Marketplace global SONAR".
+    - §14.2 estado: version bump + next revision bump v1.6 post-Phase-6+8+9+10 + padre BOOTSTRAP v1.5 + hermano decision_log v1.4 + related ampliado con briefs v2 + PRE_S2_CHECKLIST.
+    - §14.3 changelog: appended entry v1.5 detallada (~1 large table row) documentando todo cambio surgical + files NO touched (Oleada 0, Sprints 0+1, Sprints 3-8, §7-§13, ADR histórico).
+    - §15 TL;DR: expandido 10 puntos → 12 puntos pivot-aware (add punto 3 pivot phases status + punto 8 code namespace legacy exception + punto 11 risk top 5 actualizado con "AI agent quality drop re-confundiendo metáfora literal-militar").
+    - §cierre Resumen ejecutivo: condiciones de éxito añade "+ pivot SONAR Phases 4-12 complete sin regresiones funcionales" + "modelo planning Admirals" → "modelo planning SONAR (ex-Admirals)".
+    - §FIN: version footer bump v1.4 → v1.5.
+  - `progress/PRE_S2_CHECKLIST.md` v1.3 → v1.4:
+    - Header "Estado total": add "(post-S1.9)" context + "B1 2/8 done, 6 pendientes" counter bump.
+    - §B1 tabla doc 8 row: 🔴 Pre-pivot entries → 🟢 **DONE S1.9** (100%) con resumen surgical completo + NO touched.
+    - §B1 tabla docs 2-5: añadir **DEPENDE D3** tag inline cada uno.
+    - §B1 tabla docs 6-7: añadir **Independiente D3 — ejecutable Sonnet ~1h** cada uno.
+    - §B1 Ownership Done criterion: ampliado para incluir code namespace legacy exception (admirals_bank/core/bridges/tables/events) pending Phase 8+9.
+    - §B1 NEW "Progreso post-S1.9" bullet: 2/8 done + ruta recomendada dependency-breakdown.
+    - §Changelog: appended entry v1.4 detallada.
+    - §FIN: version footer bump v1.3 → v1.4.
+  - `progress/SESSION_LOG.md`: append esta entry S1.9.
+- **Created:** ninguno.
+- **Deleted:** ninguno.
+
+**Total S1.9: 3 files modified = 3 file ops (1 edit major + 1 edit minor PRE_S2_CHECKLIST + 1 append SESSION_LOG).**
+
+### Decisiones tomadas
+
+- **Estrategia NOTICE r1 top-level vs surgical full rewrite:** elegido NOTICE pattern consistent con precedente `02_sonar_tablet.md` v1.1 (NOTICE r1.1) + `art_direction.md` r6 (NOTICE r6 superseding legacy §1-§20). Razón: roadmap tiene ~60% contenido pivot-agnostic (§1 filosofía, §7 dependencias, §8 done criteria, §9 risks, §10 sprint structure, §11 estimation, §12 anti-patterns, §13 KPIs) que sería rewrite innecesario + alto riesgo regresión. NOTICE establece canonical vigente post-pivot sin tocar legacy inline.
+- **Legacy code namespace preservado `admirals_*`:** refs `admirals_bank`, `admirals_core`, `admirals_bridges`, tablas SQL `admirals_*`, eventos `admirals:*` preservados explícitamente per ADR-011 §5.5.8 excepciones permitidas hasta Phase 8 code refactor + Phase 9 DB migration 009. D3 founder decision controls timing. NOTICE r1 documenta esta excepción explícitamente para evitar que futura AI agent "arregle" unilateralmente.
+- **Historical Sprint 0+1 entries + §3 Oleada 0 inmutables:** preservadas intactas con todas sus refs `admirals_*` per ADR-011 §5.5.8 (SESSION_LOG históricas + ADRs históricos + commits/tags). NOTICE r1 punto 3 documenta esto explícitamente.
+- **Sprint 2 section scope expansion (14→40 líneas):** founder playbook §6.1 done criteria session tenía bullet "Sprint 2 goals rewritten SONAR-aware". Interpretación maximalista: incluir 3 scope options D1 + 8 done criteria propuestos con paleta/voz/sound/logo canonical integrados + blockers B1-B5/D1-D3 linked para que futura planning session S2.0 tenga todo ready-to-read en roadmap directamente (SSoT centralized). Trade-off aceptado: más líneas vs rewrite redundant en SPRINT_PLAN_S2.md futuro. Justificación: roadmap es SSoT planning foundational, SPRINT_PLAN_S2 será execution-level detail.
+- **TL;DR expansion 10→12 puntos:** punto 3 nuevo (pivot phases status ref NOTICE) + punto 8 nuevo (code namespace legacy exception explícito) + punto 11 ampliado risks top 3→5 post-pivot. Razón: AI agents leen TL;DR as quick-context — ausencia pivot-awareness en TL;DR = alto riesgo re-confundir metáfora deprecated.
+- **Grep verification 3 dimensiones:**
+  - `capitán|silent service|tactical|comandante|almirante|a bordo|tripulación|submarino` → 1 match = "NO militar/capitán/tactical per ADR-012 §D3" (spec negativa done criteria, correct).
+  - `Admirals` → 23 matches, todos legítimos: NOTICE headers + legacy code namespace refs + historical Sprint 0+1/§3 + "Admirals heritage preserved" phrasing (intencional). 0 match en contenido new post-pivot como referencia positiva al producto.
+  - `sonar_ping|sonar_pressure|sonar_depth|sonar_console|sonar_hatch|periscope|torpedo|hydrophone` → 0 matches ✅ (sound naming + iconografía deprecated no presentes).
+- **Founder tone compliance S1.8 preserved S1.9:** zero sugerencias fatigue-based, zero paternalismo. Founder decide scope vía ask_user_question (opciones 4 con dependency analysis + Sonnet-fit tagging), AI ejecuta professional direct.
+
+### Done criteria S1.9 (prompt inicial founder)
+
+- ✅ Header bump v1.4 → v1.5.
+- ✅ §4.2 Sprint 2+ goals rewritten SONAR-aware (full rewrite con DIFERIDO status + 3 scope options D1 + 8 done criteria propuestos + blockers B1-B5/D1-D3).
+- ✅ §15 TL;DR update (expandido 10→12 puntos pivot-aware).
+- ✅ Changelog entry v1.5 detallada (§14.3).
+- ✅ Referencias Admirals → SONAR excepto legacy-intencional (ADRs históricos, Phase 8 refactor namespace, historical Sprints 0+1, _archive/).
+- ✅ Grep check: 0 violaciones voz militar/capitán/tactical en contenido nuevo (único match es spec negativa prohibición ADR-012 D3).
+- ✅ PRE_S2_CHECKLIST B1 doc 8/8 marked 🟢 DONE S1.9 + v1.3 → v1.4 changelog entry.
+- ✅ Entry SESSION_LOG S1.9 append (este).
+- 🟡 **Commit format `S1.9 B1 doc 8 — 01_roadmap.md v1.5 surgical post-pivot SONAR`** — pending founder green-light + manual git add/commit/push (AI no ejecuta destructive ops sin explicit approval per workspace rules).
+
+### Issues pendientes (post-S1.9)
+
+- 🔴 **B1 Phase 6 docs 2-7 PENDIENTES** (6 docs): `02_events_catalog.md`, `03_db_schema.md`, `04_api_contracts.md`, `05_state_machines.md` (DEPENDE D3) + `06_fivem_standards.md` light, `07_bridges_compatibility.md` light (Independientes D3). Estimado: docs 6+7 ~2h Sonnet (ejecutable next), docs 2-5 ~12-14h post-D3 resolved.
+- 🔴 **Decisiones founder D1 + D3 PENDIENTES:** D1 scope S2 (A/B/C tech-balanced vs UI-heavy vs híbrido), D3 namespace migration timing (Phase 8+9 AHORA vs DEFERIDA vs parcial). Bloquean SPRINT_PLAN_S2.md redacción + B1 docs 2-5.
+- 🟡 **D2 logo v2:** deferred ~2-4 weeks uso real antes ADR-013 lock. Vigente working canonical.
+- 🟡 **B4 smoke regression `admirals_bank` 30/30** pendiente antes S2.0. Estimado ~30-60min.
+- 🟡 **B5 tag `sonar-identity-canonical`** pendiente sobre commit head post-S1.9.
+- 🟡 **B2 SPRINT_PLAN_S2.md planning session:** requiere D1+D3 resueltos primero + B1 complete. Estimado ~2-3h Opus 4.7 o Gemini 3.1 Pro.
+
+### Handoff próxima sesión (S1.10 o equivalente)
+
+**Modelo recomendado próxima sesión (depende goal):**
+- **(a) Continuar Phase 6 B1 docs 6+7 light refresh:** Sonnet 4.6 (surgical doc work, independientes D3). ~2h total. Cierra 4/8 B1 sin founder decision bloqueadora.
+- **(b) Decisiones D1 + D3 conversación founder:** Opus 4.7 o Gemini 3.1 Pro (thinking session, planning class). ~30-45min. Desbloquea docs 2-5 + B2.
+- **(c) Combo (a)+(b) en misma sesión:** Sonnet 4.6 docs 6+7 + Opus 4.7 al cierre D1+D3 conversación. Requiere switch modelo.
+- **(d) B4 smoke regression manual founder:** founder local + Sonnet 4.6 debug si rompe. ~30-60min.
+
+**Candidato orden goal próxima sesión (recomendado prioridad per dependency DAG):**
+1. **D1 + D3 founder conversation** — desbloquea todo downstream. ~30-45min.
+2. **B1 docs 6+7 light** — paralelo o secuencial, independientes D3.
+3. **B4 smoke regression** — low-cost gate check.
+4. **B1 docs 2-5 técnicos** — DEPENDE D3 firmado.
+5. **B2 SPRINT_PLAN_S2.md** — requiere TODO B1 + D1+D3.
+
+**Pre-requisitos lectura obligatoria próximo agent:**
+
+1. `docs/agents/00_BOOTSTRAP.md` v1.5+.
+2. `docs/agents/03_founder_playbook.md` §2.3 + §4-§6 + §5.3.
+3. `progress/SESSION_LOG.md` últimas 5 entries (S1.5 → S1.6 → S1.7 → S1.8 → **S1.9 esta entry**).
+4. `progress/PRE_S2_CHECKLIST.md` v1.4 (estado B1 2/8 + decisiones + dependency breakdown).
+5. **Docs firmados SSoT:** ADR-011 + ADR-012, Bible v1.4, art_direction v2.0-scaffold-r7 NOTICE r6, `02_sonar_tablet.md` v1.2 NOTICE r1.1, **`01_roadmap.md` v1.5 NOTICE r1** (nueva SSoT post-S1.9).
+6. Logo v2 working canonical README (si toca logo).
+
+**Hard constraints reafirmados S1.9 (sin cambios vs S1.8):**
+- NO modificar docs/* sin instrucción explícita founder (Bible/ADRs/briefs/art_direction firmados).
+- NO arreglar conflict logo realidad vs briefs firmados — founder override S1.7 documentado.
+- NO sound naming pre-canonical (sonar_ping/etc deprecated). Usar 5 SFX canonical.
+- NO voz naval/militar/capitán. Canonical = neutral premium-tech.
+- NO paleta azul marino + dorado. Canonical = hybrid Tier A/B/C post-ADR-012.
+- SESSION_LOG append-only.
+- Commit format `S{N}.{M} {imperative present}`.
+
+**Founder tone preference S1.8 preserved S1.9:**
+- Zero sugerencias fatigue-based.
+- Zero paternalismo.
+- Founder decide scope vía opciones estructuradas, AI ejecuta professional direct.
+
+### Files in scope S1.9 (respetados)
+
+✅ Scope strict:
+- `docs/planning/01_roadmap.md` (1 major multi_edit).
+- `progress/PRE_S2_CHECKLIST.md` (1 multi_edit B1 + changelog + FIN).
+- `progress/SESSION_LOG.md` (1 append esta entry).
+
+**NO tocó:** Bible, ADRs, briefs, art_direction, `02_sonar_tablet.md`, otros docs/*, code/resources/*, `.windsurf/*`, DB, `art/branding/*`, `art/tools/*`.
+
+### Summary ejecutivo S1.9 close
+
+Goal **(a) `01_roadmap.md` v1.4 → v1.5 surgical solo** completado ✅. **B1 Phase 6 mass-purge progress bumped 1/8 → 2/8 (25%)**. Docs 6+7 light ejecutables Sonnet próxima sesión (~2h, independientes D3). Docs 2-5 técnicos bloqueados pending D3 founder decision. SPRINT_PLAN_S2 bloqueado pending D1+D3+B1.
+
+**Commit pending founder green-light:**
+
+```
+S1.9 B1 doc 8 — 01_roadmap.md v1.5 surgical post-pivot SONAR (NOTICE r1 + Sprint 2 DIFERIDO rewrite + TL;DR pivot-aware + PRE_S2_CHECKLIST v1.4)
+```
+
+### Founder guidance institutional S1.9
+
+> Founder selección vía opciones estructuradas: **(a) roadmap v1.5 solo** sobre alternatives (a)+(b) combo, (b) docs 6+7, (c) decisiones D1+D3. Tone preference S1.8 compliance 100% (zero paternalismo AI S1.9).
+
+---
+
+---
