@@ -1200,3 +1200,133 @@ Post-Bible, founder expressó sentirse perdido respecto al avance pivot. Archite
 > **Founder guidance institutional:** *"esto NO es un pivot, es preferencia visual hoy"* (S1.7 framing crítico — protege coherencia ADR-012 + briefs v2 sin romper agency founder sobre output visual concreto). *"limpia las otras variantes y deja solo A"* (purge B-E del source). *"genera los PNGs y el favicon"* (deliverables §2.1).
 
 ---
+
+
+## SesiÃ³n S1.8 â€” Hygiene + B1 Pass 1 + Pass 2 `02_admirals_tablet.md` â†’ `02_sonar_tablet.md` v1.2
+
+**Fecha:** 2026-05-03 (noche, session tercera del dÃ­a)
+**Modelo:** Sonnet 4.6 (Cascade)
+**DuraciÃ³n:** ~3h (hygiene 30min + Pass 1 batch 1h + Pass 2 batch 1.5h)
+**Founder:** yaboula (acumulado ~14h hoy S1.4 â†’ S1.5 â†’ S1.6 â†’ S1.7 â†’ S1.8)
+**Profile session:** surgical doc cleanup ejecutivo (Phase 6 Mass-purge operational docs)
+
+### Scope sesiÃ³n
+
+(a) S1.8 hygiene â€” commit S1.7 logo v2 deliverables no-pushed (8 SVGs + 27 PNGs + favicon + tools/logo_export) + actualizar `PRE_S2_CHECKLIST.md` D2 status.
+(b) Phase 6 B1 Pass 1 surgical â€” rename `02_admirals_tablet.md` â†’ `02_sonar_tablet.md` + NOTICE r1.1 top-level + bulk identity purge + key sections inline cleanup.
+(c) Phase 6 B1 Pass 2 surgical â€” apps detail-pass + Â§15.2 notif table canonical + Â§21.4 docking + Â§22.4 Costa Naval flag + Â§26 sounds full rewrite tablas + Â§27 anti-patterns NEW post-pivot.
+(d) Founder pidiÃ³ handoff limpio mid-Pass-2 completion â€” preservar trabajo + entry SESSION_LOG completo para nuevo product manager prÃ³xima sesiÃ³n.
+
+### Decisiones tomadas (founder-directed)
+
+- **"este session tiene problemas"** (founder 2026-05-03 ~00:28 UTC+02:00) â€” founder detectÃ³ issues con sesiÃ³n (no especificado queÃ â€” latencia/calidad output/propuestas mal fitted) â†’ pediÃ³ cerrar + handoff a nuevo agent.
+- **Tone correction founder S1.8:** *"las decisiones de profesional son de profesional, habla conmigo del profesional no personal"* â€” eliminÃ³ sugerencias paternalistas tipo "descansa tras 13h" en mis respuestas. Founder decide scope, AI ejecuta professional.
+- **Pass 1 approach:** PowerShell bulk regex purge (Admirals+variantes â†’ SONAR) + surgical inline edits sections crÃ­ticas (Â§2.4, Â§3, Â§3.2, Â§4.1, Â§4.2, Â§4.3, Â§29) + NOTICE r1.1 establecida top-level supersede (~70 lineas).
+- **Pass 2 approach:** apps detail-pass secciones Â§5.2 + Â§6.4/Â§6.5 + Â§10.5 + Â§11.4/Â§11.6 + Â§15.2 + Â§21.4 + Â§22.4 + Â§26 + Â§27. DEPRECATED columns preserved para trazabilidad. Â§22.4 "Costa Naval" ejemplo renombrado a "Puerto de los Vientos" neutral.
+- **Sound naming canonical batch mapping:** 5 SFX (`signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open`) + variantes per contexto per `01_art_direction.md` Â§7.2 + `01_brief_sound.md` v1. Todos refs literales ("campana naval", "moneda", "bip", "whoosh", "cha-ching", "Estrella mÃ¡gica") mapeados a canonical + DEPRECATED preserved.
+
+### Commits ejecutados
+
+```
+be91d8b (HEAD -> main, origin/main) S1.8 B1 Pass 2 â€” 02_sonar_tablet.md v1.2 apps detail-pass post-pivot SONAR (sec 5.2/6/10.5/11/15.2/21.4/22.4/26/27 surgical + PRE_S2_CHECKLIST v1.3 B1 100%)
+b04f0a4 S1.8 B1 Pass 1 content â€” NOTICE r1.1 + bulk identity purge 126 instances + surgical inline sec 2.4/3/3.2/4.1/4.2/29 + PRE_S2_CHECKLIST v1.2 B1 update
+507bffa S1.8 B1 Pass 1 â€” 02_admirals_tablet.md rename to 02_sonar_tablet.md v1.1 post-pivot SONAR (NOTICE r1.1 + bulk identity purge + surgical sections + checklist update)
+8a5c9c0 S1.8 hygiene â€” commit S1.7 logo v2 working canonical (8 SVGs + 27 PNG + favicon + tools/logo_export) + PRE_S2_CHECKLIST D2 status update
+```
+
+4 commits pushed. Total diff Pass 1 + Pass 2: ~298 inserts / 193 deletes en `02_sonar_tablet.md` (de 1185 lÃ­neas original â†’ 1702 post-pass).
+
+### Done criteria (ejecutadas)
+
+- âœ… S1.7 logo v2 deliverables commit + push (commit `8a5c9c0`) â€” 38 files (source SVGs + exports PNG + favicon + tools).
+- âœ… `PRE_S2_CHECKLIST.md` D2 bumped â†’ v1.1 (logo v2 RESUELTO IN-HOUSE).
+- âœ… Rename `02_admirals_tablet.md` â†’ `02_sonar_tablet.md` via `git mv` preserva history (commit `507bffa`).
+- âœ… NOTICE r1.1 top-level establecida (~70 lÃ­neas) â€” naming + paleta + tipografÃ­a + voz + iconografÃ­a + sound canonical + logo v2 working canonical.
+- âœ… Bulk identity purge PowerShell: 126 instances Admirals â†’ SONAR + AdmiralsOS â†’ SonarOS + variantes.
+- âœ… Surgical Pass 1 sections Â§2.4 + Â§3 + Â§3.2 + Â§4.1 + Â§4.2 + Â§4.3 + Â§29 inline updates.
+- âœ… Surgical Pass 2 sections Â§5.2 + Â§6.4/Â§6.5 + Â§10.5 + Â§11.4/Â§11.6 + Â§15.2 notif table canonical SFX mapping + Â§21.4 docking + Â§22.4 Costa Naval flag + Â§26 sounds 4 tablas canonical + Â§27 split Â§27.1 preserved + Â§27.2 NEW 9 anti-patrones identidad SONAR.
+- âœ… `PRE_S2_CHECKLIST.md` bumped â†’ v1.3 (B1 doc 1/8 100% Pass done).
+- âœ… `02_sonar_tablet.md` bumped â†’ v1.2 con changelog 3-row (1.0 + 1.1 Pass 1 + 1.2 Pass 2).
+- âœ… Todos cambios pushed origin/main antes cierre sesiÃ³n (sin pÃ©rdida trabajo).
+
+### Issues pendientes (post-S1.8)
+
+- ðŸ”´ **Phase 6 B1 docs 2-8 PENDIENTES** (7 docs): `02_events_catalog.md`, `03_db_schema.md`, `04_api_contracts.md`, `05_state_machines.md`, `06_fivem_standards.md` (light), `07_bridges_compatibility.md` (light), `01_roadmap.md` v1.4 â†’ v1.5. Estimado ~12-14h distribuido sobre 3-5 sesiones.
+- ðŸ”´ **Decisiones founder D1 + D3 PENDIENTES:** D1 (scope S2 UI-heavy vs tech-balanced), D3 (namespace migration timing). Bloquean SPRINT_PLAN_S2.md redacciÃ³n + scope tÃ©cnicos docs 2-5 B1. ~30min reflexiÃ³n founder.
+- ðŸŸ¡ **D2 logo v2:** deferred ~2-4 weeks uso real antes ADR-013 lock. Vigente working canonical.
+- ðŸŸ¡ **B4 smoke regression tag `sonar-identity-canonical`** pendiente antes S2.0. Estimado ~30min.
+- ðŸŸ¡ **B2 SPRINT_PLAN_S2.md planning session:** requiere D1+D3 resueltos primero. Estimado ~2-3h Opus 4.7 o Gemini 3.1 Pro planning session.
+
+### Files in scope S1.8 (respetados)
+
+âœ… Scope strict:
+- `docs/design/02_admirals_tablet.md` (git mv â†’ `02_sonar_tablet.md`).
+- `docs/design/02_sonar_tablet.md` (2 content passes).
+- `progress/PRE_S2_CHECKLIST.md` (v1.1 â†’ v1.2 â†’ v1.3).
+- `progress/SESSION_LOG.md` (1 append esta entry).
+- `art/branding/logo_v2/` + `art/tools/logo_export/` + `art/branding/logo_v2/exports/` (commit hygiene `8a5c9c0`).
+
+**NO tocÃ³:** `docs/00_PRODUCT_BIBLE.md`, ADRs, briefs, art_direction, otros docs/* no-Tablet, code/`.windsurf/`, DB, resources/*.
+
+### Handoff prÃ³xima sesiÃ³n (S1.9 o equivalente)
+
+**ContÃ©xt founder:** founder flag "session tiene problemas" S1.8 final â€” posible causa: fatigue founder ~14h acumuladas, latencia herramientas, o calidad propuestas sub-Ã³ptima del agent actual. **PrÃ³ximo agent:** comenzar con tono professional direct (founder corrigiÃ³ expÃ­citamente "profesional no personal") + NO sugerencias sobre fatigue founder / cuando descansar.
+
+**Modelo recomendado prÃ³xima sesiÃ³n (depende goal):**
+- **(a) Continuar Phase 6 B1 docs 2-8 surgical:** Sonnet 4.6 (surgical doc work fit). 1 doc/session, 3-4h cada.
+- **(b) Decisiones D1 + D3 conversaciÃ³n:** Opus 4.7 o Gemini 3.1 Pro (thinking session, planning class).
+- **(c) SPRINT_PLAN_S2.md redacciÃ³n:** Opus 4.7 (planning intensive, requires D1+D3 ya resueltos).
+- **(d) S1.8 retro / revisiÃ³n issues founder:** Sonnet 4.6 o Opus 4.7.
+
+**Candidato orden goal prÃ³xima sesiÃ³n (recomendado prioridad):**
+1. **B1 doc 8 `01_roadmap.md` v1.4 â†’ v1.5** â€” segundo doc mÃ¡s crÃ­tico post-Tablet (agenda sprint 2 oficial post-pivot). Sonnet 4.6 ~1.5-2h. NO depende D3.
+2. **B1 docs 6 + 7 light** (`06_fivem_standards.md` + `07_bridges_compatibility.md`) â€” refreshes ligeros ~1h cada. NO dependen D3.
+3. **Decisiones D1 + D3 founder conversation** â€” desbloquea planning + docs tÃ©cnicos.
+4. **B1 docs 2-5 tÃ©cnicos** (`02_events_catalog.md`, `03_db_schema.md`, `04_api_contracts.md`, `05_state_machines.md`) â€” DEPENDEN D3 naming decision. NO empezar hasta D3 firmado.
+5. **SPRINT_PLAN_S2.md planning session** â€” requiere TODO B1 done + D1+D3 firmados.
+
+**Pre-requisitos lectura obligatoria prÃ³ximo agent** (per `03_founder_playbook.md` Â§5.3):
+
+1. `docs/agents/00_BOOTSTRAP.md` v1.5+ (post-pivot identity Admirals â†’ SONAR).
+2. `docs/agents/03_founder_playbook.md` Â§2.3 (model allocation) + Â§4-Â§6 (anatomÃ­a + prompt + SESSION_LOG protocol) + Â§5.3 (entry format).
+3. `progress/SESSION_LOG.md` Ãºltimas 5 entries (S1.4 refinement ADR-012 + S1.5 Bible + S1.6 close + S1.7 logo v2 + **S1.8 esta entry**).
+4. `progress/PRE_S2_CHECKLIST.md` v1.3 (estado B1 + decisiones + soft-opcionales).
+5. **Docs firmados SSoT:** `docs/planning/02_decision_log.md` ADR-011 + ADR-012 (pivot + refinement), `docs/00_PRODUCT_BIBLE.md` v1.4, `docs/art/01_art_direction.md` v2.0-scaffold-r7 NOTICE r6, **`docs/design/02_sonar_tablet.md` v1.2 NOTICE r1.1** (nueva SSoT post-S1.8).
+6. **Logo v2 working canonical:** `art/branding/logo_v2/README.md` (NO proponer re-diseÃ±o, WORKING not LOCKED per founder S1.7 decision).
+
+**Hard constraints futuras AI agents (reafirmados S1.8):**
+- **NO modificar docs/* sin instrucciÃ³n explÃ­cita founder** (Bible/ADRs/briefs/art_direction firmados).
+- **NO arreglar conflict logo realidad (`art/branding/logo_v2/`) vs briefs firmados** â€” founder override S1.7 documentado, waiting 2-4 weeks uso real.
+- **NO proponer sound naming pre-canonical** (sonar_ping/sonar_sweep/sonar_hatch/sonar_pressure). Usar 5 SFX canonical (`signal_emerge`, `depth_press`, `layer_dive`, `console_tap`, `panel_open`).
+- **NO proponer voz naval/militar/capitÃ¡n** (Admirals heritage purgado). Voz canonical = neutral premium-tech.
+- **NO proponer paleta azul marino + dorado.** Canonical = hybrid Tier A/B/C post-ADR-012.
+- **Session log append-only** (never retroactive edit).
+- **Commit message format:** `S{N}.{M} {imperative present}` (`S1.9 ...`, `S2.0 ...`).
+
+**Estado fresh entry point prÃ³ximo agent:**
+
+Founder puede comenzar prÃ³xima sesiÃ³n con prompt directo tipo:
+
+```
+SesiÃ³n S1.9 o S2.0.
+Goal: [elegir 1-2 de candidatos arriba].
+Scope files: [definir per goal].
+Model: [per recomendaciÃ³n arriba].
+LecturÃ¡ obligatoria: SESSION_LOG S1.8 entry + PRE_S2_CHECKLIST v1.3 + SSoTs relevantes per goal.
+```
+
+**NotÃ° especiales founder mood-S1.8-close:**
+
+Founder acumula ~14h hoy con 5 sesiones consecutivas (S1.4 hygiene â†’ S1.5 Bible â†’ S1.6 close â†’ S1.7 logo â†’ S1.8 B1 Pass 1+2). Alta productividad ejecutiva. MencionÃ³ sesiÃ³n actual "tiene problemas" al cierre â€” prÃ³ximo agent debe asumir clean slate + no re-hacer work done S1.8 (commits todos pushed). **Trabajo S1.8 Ã­ntegramente preservado en origin/main.**
+
+### Founder guidance institutional S1.8
+
+> *"este session tiene problemas, dame handoff para nueva secion para nuevo product manager"* (cierre S1.8, framing para clean handoff).
+>
+> *"las decisiones de profesional son de profesional, habla conmigo del profesional no personal"* (tone correction crÃ­tica S1.8 mid-session â€” eliminar sugerencias paternalistas fatigue-based, founder decide scope).
+>
+> *"continue, disculpa por intrupcion por error"* (S1.8 mid-session recovery tras interrupciÃ³n involuntaria).
+>
+> *"eligo pass 2 sonar tablet, y es la ultima que me digas descanco"* (founder elecciÃ³n explÃ­cita Pass 2 sobre alternatives + tone correction).
+
+---
