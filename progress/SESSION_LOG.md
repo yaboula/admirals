@@ -987,3 +987,85 @@ Architect documentó 7 banderas rojas (time, escalation pattern, SSoT contradict
 > **Architect compliance:** override accepted, 7 risks documented in ADR-011 per professional senior duty + workspace rules §red_flags protocol, executing per founder direction multi-phase to preserve "completo + seguro" while sacrificing "ahora" partially.
 
 ---
+
+### S1.5 — SONAR Pivot continuation: Phase 4 Sonnet scaffold + Phase 5 light Bible + Phase 4.5 partial briefs + ADR-012 refinement
+
+- **Fecha:** 2026-05-03 (continuación misma sesión post-S1.4)
+- **Duración:** ~5.5h (Phase 4 r2 + r3 + r4 → Phase 5 light Bible v1.3 surgical → Phase 4.5 partial briefs logo+icons → ADR-012 refinement → art_direction r6 NOTICE → Bible v1.4 surgical → briefs discard)
+- **Founder + Agent:** yaboula + Cascade
+- **Sprint:** post-S1 / pre-S2 (out-of-band — pivot ADR-011 execution multi-phase)
+- **Perfil:** 📝 SCRIBE (100% docs, cero code)
+- **Modelo:** Claude Sonnet 4.5
+- **Goal:** Maximizar progreso pivot SONAR mientras Sonnet sea modelo activo. Atacar slices Sonnet-compatibles de Phase 4 detail-pass (administrative + structural) + ejecutar Phase 5 light surgical rewrite Product Bible para alinear identidad foundational.
+- **Status:** ✅ Done — 8 commits pushed total. Bible v1.4 ✅ + art_direction r6 NOTICE-canonical ✅ + ADR-011 + ADR-012 paired SSoTs ✅. Briefs v1 (logo + icons) descartados post-ADR-012. Pendiente: Phase 4.5 v2 briefs reescritos clean + Phase 4 surgical full §1-§20 art_direction.
+
+> **🔄 Strategic refinement post-Phase 5 light:** founder revisó scaffold final + briefs y detectó 3 desviaciones interpretativas (metáfora literal-militar excesiva, dark-extremo 60% canvas, voz arquetipo capitán submarino). Architect ejecutó STOP per workspace §red_flags + 4-question sync explicit. Founder D1=abstract pure metáfora + D2=single hybrid theme dark+white + D3=voz neutral premium-tech + D4=process-all-now. Resultado: ADR-012 amendment (no supersede ADR-011) + art_direction r6 NOTICE top-level + Bible v1.4 surgical purge + briefs v1 discard. Detalle commits: `d0712cc` ADR-012, `27de1b6` art_direction r6 NOTICE, `7cf29f0` Bible v1.4 surgical, próximo SESSION_LOG close commit.
+
+### Contexto de la sesión
+
+S1.4 cerró con `art_direction.md` v2.0-scaffold-r1 (foundational decisiones firmes + 20 secciones planificadas + paleta hex 16 + glassmorphism/glow rules + sound + iconografía names). Founder pidió continuar atacando Phase 4 con Sonnet en lugar de esperar Opus, mediante "partial attacks" sobre slices Sonnet-compatibles (estructurales/administrativos, NO creative-density alta como logo construction o moodboard marketing).
+
+Tres iteraciones partial attacks ejecutadas (r2 → r3 → r4) cubrieron progresivamente todas las secciones Sonnet-compatibles. Founder solicitó luego pivot a Phase 5 light: **surgical rewrite Product Bible** preservando secciones pivot-agnostic (gameplay, técnico, riesgos, timeline, comercial) y reescribiendo solo identidad/metáfora/glossary/refs Tablet. Founder green-light explícito + override "es muy importante para mi acabar este pivot" — sesión continuada hasta close natural post-Bible v1.3.
+
+Adicionalmente: founder estratégicamente corrigió jerarquía paleta r1 → invertir Coloro 092-37-14 (Tier C structural support) ↔ Sonar Bright #2DD4BF (Tier B PRIMARY BRAND IDENTITY). Razón: bioluminescencia es firma marketing, deep-teal es soporte. Memoria persistente actualizada r1.
+
+Post-Bible, founder expressó sentirse perdido respecto al avance pivot. Architect respondió con mapa claro estado actual + roadmap restante 12 phases + admisión de gap propio: Phase 4 "creative-density" estaba mal categorizada como bloque indivisible. Real: 2 capas — (a) **briefs/prompts por especialidad** (Sonnet OK) + (b) **ejecución creativa output** (Opus/humano). Founder eligió ejecutar Phase 4.5 critical now (logo + icons briefs Sonnet). Briefs delivered como deliverable packages autocontenidos en `docs/art/briefs/`.
+
+### Cambios
+
+- **Modified:**
+  - `docs/art/01_art_direction.md` — 3 partial attacks (~770 líneas netas añadidas total scaffold-r1 → scaffold-r4):
+    - **r2** (commit `0b2b47e`): §4.2 type scale tokens (line-height per-size, letter-spacing, responsive breakpoints, font loading strategy, anti-patterns) + §15 glossary 28 términos canonical (cross-ref futuro `00_PRODUCT_BIBLE.md` §15 + `01_economic_model.md` §15) + §16 motion specs (ms-precise easing curves, 12 motion tokens, sonar ping animation spec, framer-motion examples).
+    - **r3** (commit `d0ecfeb`): §13 plan assets (matriz prioridades 3D+2D+sound+branding por Oleada 1-5, briefing equipo 3D, formatos asset, repo structure `art/`) + §14 governance (review protocol, designer collaboration workflow, signing thresholds, ownership matrix RACI, conflict resolution) + §17 verticales placeholders (Phases 1-5 stubs Tablet/Map/Marketing/Onboarding/Verticales-futuras con TODOs explícitos).
+    - **r4** (commit `2cecedc`): §18 Storybook integration (component library structure, story conventions, accessibility a11y addons, visual regression Chromatic) + §19 shader contracts (depth-fog WebGL/threejs spec, sonar-ripple shader, bioluminescence emissive map, performance budgets) + §20 roadmap iterations (v2.1 Q3-2026 polish + v2.2 Q4 marketing assets + v3.0 2027 expansion verticales). Final tagline + footer changelog r4.
+    - **Palette inversion fix** (durante r2): §3.4 META-BRAND table + §3.5 logo rules + §11 lock screen + §12 website refs — Coloro deep-teal → soporte estructural Tier C, Sonar Bright #2DD4BF → PRIMARY BRAND Tier B. Memoria persistente UI design re-aligned.
+  - `docs/art/01_art_direction.md` v2.0-scaffold-r4 → r5 (Phase 4.5 partial post-Bible commit): cross-refs §3.3 + §5.2 → `docs/art/briefs/01_brief_logo.md` + `docs/art/briefs/02_brief_icons.md`. Footer state + changelog r5 entry append.
+  - `docs/design/00_PRODUCT_BIBLE.md` v1.2 → v1.3 (commit `b480af5`): **surgical rewrite** Phase 5 light Admirals → SONAR. Tocados (11 secciones): header + §1 identidad (acrónimo + 3 taglines + tono silent service + Apple/Linear/Vercel inspiration + paleta canonical cross-ref + tipografía Geist/Inter/Geist Mono + 5 SFX firma) + §1.1 metáfora (submarine abisal + vocabulario instrumental Bridge/Bitácora/Console/Depth/Eco/Hatch/Manifiesto/Periscope/Ping/Signal) + §2 visión/misión/promesas (voz silent service + "operador") + §3 Pilar 5 (Tablet SONAR bridge command center) + §5 anti-features (Tablet SONAR exception) + §7 Granja SONAR + Tablet SONAR refs + §7.4 Tablet apps revised (Bridge/Manager/Mercado/Logística/Mensajes/Banca SONAR/Manifiestos/Tienda SONAR brushed steel aesthetic) + §10.2 protocolo SONAR común + §12 modelo comercial SONAR refs + §13.3 Regla SONAR + §15 Glossary cross-ref canonical art_direction §15 + términos producto + §16 próximos docs + §17 Changelog v1.3 + final tagline *"Hear the depth. Below the surface, every signal counts."*. Preservado intact (pivot-agnostic): §4 Wooow + §6 Targets + §8.3-§8.6 catálogo cultivos+roles+propiedad+narrativa + §9 Filosofía gameplay + §10.1 Stack + §10.3 Código + §10.4 Seguridad + §11 Principios económicos + §12 Showcase + §13 Timeline + 3D/Código + §14 Riesgos.
+
+- **Created (Phase 4.5 partial):**
+  - `docs/art/briefs/` directory + `README.md` (index + status table 2/5 briefs).
+  - `docs/art/briefs/01_brief_logo.md` — BRIEF-LOGO-001 (~270 líneas, deliverable autocontenido para designer humano o Opus 4.7 MAX): contexto SONAR para designer no-onboarded, 10 deliverables (SVGs canonical + monogram + wordmark + lockups H/V + reverse + glow variants + raster PNG @1x/@2x/@3x + favicons + guidelines PDF + Figma source + opcional video splash), specs técnicos vinculantes (concepto S-onda LOCKED, color tokens Tier B Sonar Bright identity / Coloro PROHIBIDO, Geist Sans wordmark, geometría 12×12 grid, 3 lockups + clear-space + tamaños mínimos), do/don't ✅×6 ❌×11 con misuse explicit, referencias visuales (5 convergir Linear/Stripe/Vercel/Apple/Arc + 5 anti cyberpunk/military/RGB/mascot/touristy + assembly moodboard), 5 review gates R0-R4 con sync/async cadence, licensing + NDA + presupuesto orientativo €1.5-3.5k EU freelance + alternativa AI Opus, founder pre-kickoff checklist ×6.
+  - `docs/art/briefs/02_brief_icons.md` — BRIEF-ICONS-001 (~280 líneas): los 8 iconos LOCKED desde art_direction §5.2 (sonar-ping/submarine/depth-gauge/hydrophone/bioluminescence/pressure-hull/periscope/torpedo-bay) + 2 stretch (manifiesto/bitacora), 32 SVG files target (8 × 4 sizes 16/20/24/32) + React TS component lib + Figma library + guidelines PDF + showcase PNG, specs canvas 24×24 + stroke 1.5px round Lucide-compatible (debe ser indistinguible visualmente de Lucide), guidance per-icon individual ×8 con concepto + dimensiones + reglas, do/don't ✅×7 ❌×10, 4 review gates R0-R3, licensing + presupuesto €1.2-2.8k, dependency: BRIEF-LOGO-001 R4 cerrado primero (sonar-ping deriva del logo monograma).
+
+**Total S1.5: 2 files modified + 3 files created (briefs/ pkg) + 5 commits = 5 file ops. Net diff Bible: +97 / −79 (+18 líneas). Net diff art_direction: ~+770 líneas (scaffold-r1 → scaffold-r5). Briefs total: ~580 líneas nuevas.**
+
+### Decisiones tomadas
+
+- **Phase 4 split por modelo capability** — Sonnet ataca scaffold completo (sections estructurales/administrativas/specs precise) hasta saturar capacidad. Opus 4.7 MAX queda reservado solo para slices restantes creative-density alta (§3.3 logo construction, §5.2 custom icon SVGs, §6 textures, §7.3 sound bibliography curation, §11 Tablet cross-ref, §12 marketing moodboard). Beneficio: Phase 4 ya 100% scaffolded, Opus puede entrar surgical en lugar de big-bang.
+- **Palette hierarchy inversion (founder strategic correction r1)** — Coloro 092-37-14 demoted Tier C structural support, Sonar Bright #2DD4BF promoted Tier B PRIMARY BRAND IDENTITY. Memoria persistente actualizada cross-session. Rationale documented inline `01_art_direction.md` §3.4. **Hard rule:** logo / branding marketing / CTA primary / app-icon = Sonar Bright SIEMPRE. Coloro Support = SOLO glassmorphism tints + inactive borders + deep-tier UI.
+- **Phase 5 light, NO full** — Bible v1.3 surgical NO big-bang rewrite. Solo identidad/metáfora/glossary/refs Tablet tocados. 60% del documento (gameplay, técnico, comercial, riesgos) preservado intact reduciendo risk regresión + cost. Phase 5 full puede deferred indefinidamente hasta encontrar contradicción explícita en sección preservada.
+- **Admirals refs intencionales en Bible v1.3** — 7 referencias residuales preservadas con contexto explícito: pivot historical notes, Phase 5 rename note `02_admirals_tablet.md`, Phase 8 code namespace `admirals:event:*`, Glossary entry "deprecated v1.0 Admirals", DB Phase 8 rename note `admirals_*` → `sonar_*`, Changelog v1.1/v1.2 inmutable. Founder validation: NO eliminar — son trazabilidad histórica + roadmap migration markers.
+
+### Issues pendientes (post-S1.5)
+
+- 🔴 **Phase 4.5 v2 — 5 briefs reescritos clean post-ADR-012** — todos descartados v1: BRIEF-LOGO-001 v2 (concepto NO ondas concéntricas; alternativas descent-layers/prisma profundidad/gradient depth/geometric depth-grid) + BRIEF-ICONS-001 v2 (3 conservados depth-gauge + pressure-hull reconceptualizado capas + bioluminescence + 5 nuevos abstractos: descent-layers/signal-clarity/depth-grid/observation-field/lineage-trace) + BRIEF-SOUND-001 (5 SFX naming refactored: signal_emerge/depth_press/layer_dive/console_tap/panel_open) + BRIEF-MOTION-001 (sin sonar ping animation — replace por depth-descent/layer-reveal patterns) + BRIEF-MARKETING-001 (voz neutral premium-tech samples Vercel/Linear/Stripe style). Sonnet-compatible, ~1.5-2h próxima sesión.
+- 🟡 **Phase 4 surgical full §1-§20 art_direction** — NOTICE r6 actualmente supersedes literal-militar refs en §1-§20 pero el contenido inline sigue interpretado v1.0-r5. Phase 4.5 v2 hará surgical rewrite limpio: §1 metaphórica re-escrita abstract pure + §2 anti-refs add literal-militar + §3 paleta ratios hybrid integrated + §3.6 voz neutral samples + §5.2 iconografía 8 abstract finalizada + §7 sound names integrated + §15 glossary cleanup términos deprecated. Modelo: Sonnet o Opus.
+- 🟢 **Phase 4 ejecución creativa (post-briefs v2)** — contratar designers humanos o ejecutar Opus 4.7 MAX para R1-R2 visual generation. Outputs creativos = SVGs/PNGs/MP4/audio assets reales. Modelo: Opus 4.7 MAX o human freelance designer EU senior.
+- 🟢 **Phase 5 full Foundation docs rewrite** — `docs/agents/00_BOOTSTRAP.md` (onboarding), `docs/design/02_admirals_tablet.md` (rename → `02_sonar_tablet.md`), `docs/technical/01_architecture.md`, `docs/economy/01_economic_model.md`, `docs/gameplay/*` (3 files). Cada uno surgical light o full según scope. Modelo: Sonnet adecuado para surgical, Opus para architecture-heavy.
+- 🟡 **Phase 6 Mass-purge docs operacionales** — `docs/technical/02_events_catalog.md` (333 event renames), `03_db_schema.md` (463 table refs), `04_api_contracts.md`, `05_state_machines.md`, `06_fivem_standards.md`, `07_bridges_compatibility.md`, `qa/01`, `art/02-04`, `planning/01_roadmap.md`. Multi-sesión. Posible automation grep+sed con dry-run obligatorio.
+- 🔴 **Phase 8 code refactor + Phase 9 DB migration 009 + Phase 10 smoke regression + Phase 11 workspace migration** — sin cambios desde S1.4 handoff.
+- 🟡 **Sprint 2 inicio diferido continúa** — Tablet shell + Bank app + Map app dependen Phases 4-12 complete.
+
+### Handoff próxima sesión
+
+> **NOTA:** próxima sesión decision tree según fatiga founder + capacity AI disponible:
+>
+> - **Opción A (Sonnet OK — recomendada):** Phase 4.5 v2 — 5 briefs reescritos clean alineados ADR-012 (LOGO + ICONS + SOUND + MOTION + MARKETING). ~1.5-2h. Cierra Sonnet-side de Phase 4.
+> - **Opción B (Sonnet OK):** Phase 4 surgical full §1-§20 art_direction (purga literal-militar inline + integrar NOTICE r6). ~2-3h. Sister de A.
+> - **Opción C (Sonnet OK):** Phase 5 light continuation — surgical rewrite `00_BOOTSTRAP.md` aligned ADR-011+ADR-012 (crítico onboarding cross-session AI agents). ~30-45min.
+> - **Opción D (Sonnet OK):** Phase 5 full — rename `02_admirals_tablet.md` → `02_sonar_tablet.md` + rewrite completo aligned art_direction r6 NOTICE + glossary. ~1.5-2h.
+> - **Opción E (Opus 4.7 MAX):** Phase 4 ejecución creativa post-briefs v2 — logo/icons SVG generation con MJ/Ideogram + Opus refinement. ~2-3h por asset.
+
+- **Modelo recomendado:** Sonnet 4.5 (Opciones A/B/C/D) o Opus 4.7 MAX (Opción E).
+- **Goal:** Avanzar Phase 4.5 v2 (A) o Phase 4 surgical full (B) o Phase 5 (C/D) o ejecutar creative outputs (E).
+- **Pre-requisitos LECTURA OBLIGATORIA:** ADR-011 + **ADR-012** + `01_art_direction.md` v2.0-scaffold-r6 NOTICE (top of doc) + Bible v1.4 §1 identidad. **NO leer briefs v1** (descartados).
+- **Files in scope:** Opción A → `docs/art/briefs/01-05_*.md` v2 (5 creates clean). Opción B → `docs/art/01_art_direction.md` (§1-§20 surgical). Opción C → `docs/agents/00_BOOTSTRAP.md` only. Opción D → `docs/design/02_admirals_tablet.md` (rename + rewrite) only. Opción E → `art/branding/logo_v1/` + `art/icons/sonar_icons_v1/`.
+- **Notas especiales:** **Bible v1.4** = SSoT identidad canonical post-ADR-012. **`01_art_direction.md` v2.0-scaffold-r6 NOTICE** = SSoT visual canonical (NOTICE supersedes literal-militar refs en §1-§20). **ADR-011 + ADR-012 lectura conjunta obligatoria** — ambos accepted, ADR-012 amends (no supersede). Memoria persistente SONAR identity requiere **update r2** post-ADR-012 (palette hybrid + iconografía abstract + voz neutral + lo que NO es SONAR purga literal). Briefs v1 (logo + icons) **NO LEER** — descartados, confunden con metáfora literal-militar.
+
+### Files in scope respetados
+
+✅ 3 modifications + 3 creates-then-deleted + 8 commits total = 6 net file ops (todos en `docs/` + SESSION_LOG). Scope strictly respected: `docs/planning/02_decision_log.md` (ADR-012) + `docs/art/01_art_direction.md` (r5+r6 NOTICE) + `docs/design/00_PRODUCT_BIBLE.md` (v1.3+v1.4 surgical) + `progress/SESSION_LOG.md` + `docs/art/briefs/` (created→deleted). NO tocó code, NO tocó DB, NO tocó `.windsurf/*`, NO tocó otros docs firmados. Pivot Phase 4 + Phase 4.5 partial + Phase 5 light **+ ADR-012 refinement** strict adherence ADR-011/ADR-012 paired execution plan.
+
+> **Founder mood quote (institutional memory):** *"vamoooooooooooooos , estoy muy felis esto es una locura wooooooow seguimooooooos"* — 2026-05-03 mid-session post-r2.
+
+---
