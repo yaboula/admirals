@@ -1,21 +1,21 @@
-# 🤖 Admirals — AI Agent Bootstrap (READ THIS FIRST)
+# 🤖 SONAR — AI Agent Bootstrap (READ THIS FIRST)
 
-> **Versión:** 1.4 (firmado — living document, 13 secciones). 1.4 update: **SPRINT 1 CERRADO** (2026-05-02). `admirals_bank` v0.4.0 (escrow FSM + C001/C002/C004/C005) + `admirals_core` v0.4.2 + migrations 003-008 + smokes 30/30 cumulative pasados. Tag `sprint-1-complete`. **Next: Sprint 2 — Tablet shell + Bank app (planning session dedicada pendiente).**
-> **Tipo:** Documento meta-organizacional. **Este es el primer fichero que debe leer cualquier AI agent que trabaje en el proyecto Admirals.**
+> **Versión:** 1.5 (firmado — living document). **PIVOT IDENTITY Admirals → SONAR** (2026-05-03): ADR-011 (rebrand foundational) + **ADR-012 (refinement: abstract metaphor + hybrid theme + neutral voice, AMENDS no supersede)** ambos accepted lectura conjunta obligatoria. Bible v1.4 + art_direction v2.0-scaffold-r6 NOTICE = SSoTs canonical post-pivot. Briefs v2 (5/5: logo + icons + sound + motion + marketing) delivered alineados ADR-012. **Sprint 1 cerrado preserved (sprint-1-complete tag).**
+> **Tipo:** Documento meta-organizacional. **Este es el primer fichero que debe leer cualquier AI agent que trabaje en el proyecto SONAR (ex-Admirals).**
 > **Audiencia:** AI agents (Cascade, Claude, GPT, otros). También útil para humanos onboarding.
 > **Estado:** firmado (living document — actualizar al firmar cada nuevo doc).
 
-> ⚠️ **STOP.** Si eres un AI y acabas de unirte a este proyecto: **NO empieces a escribir código ni docs todavía**. Lee este fichero entero primero. Luego sigue el reading order de §3. Solo después podrás contribuir efectivamente.
+> ⚠️ **STOP.** Si eres un AI y acabas de unirte a este proyecto: **NO empieces a escribir código ni docs todavía**. Lee este fichero entero primero. Luego sigue el reading order de §3 — **OBLIGATORIO ADR-011 + ADR-012 + art_direction r6 NOTICE + Bible v1.4 §1** ANTES de cualquier work post-2026-05-03. Sin esos 4, riesgo alto re-confundir metáfora literal-militar deprecated.
 
 ---
 
 ## 0. Por qué existe este documento
 
-> **El proyecto Admirals tiene 17.800+ líneas de documentación profesional firmada.** Sin este fichero, un AI agent nuevo se ahoga en el mar de docs y pierde días reorientándose.
+> **El proyecto SONAR (ex-Admirals) tiene 27.260+ líneas de documentación profesional firmada + 1.500+ líneas briefs v2 specialist deliverables.** Sin este fichero, un AI agent nuevo se ahoga en el mar de docs y pierde días reorientándose. **Adicionalmente post-2026-05-03 pivot identity (ADR-011 + ADR-012):** sin onboarding correcto AI agent puede re-confundir metáfora literal-militar deprecated y romper coherencia visual/voice canonical hybrid-theme + neutral premium-tech.
 
 Este BOOTSTRAP es la **única fuente de verdad** sobre:
 
-- **Qué es Admirals** (resumen 1-página).
+- **Qué es SONAR (ex-Admirals)** (resumen 1-página + identity post-pivot).
 - **Estado actual del proyecto** (dónde estamos).
 - **Cómo está organizada la documentación** (mapa completo).
 - **Orden de lectura recomendado** (no leer todo, leer lo correcto).
@@ -28,11 +28,13 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 
 ---
 
-## 1. Qué es Admirals (1 página)
+## 1. Qué es SONAR (1 página) — ex-Admirals post-pivot 2026-05-03
+
+> **Identity status:** marca **SONAR** (ADR-011 + ADR-012). Heritage Admirals deprecated en NEW work. Code namespace `admirals_*` pendiente Phase 8 refactor.
 
 ### 1.1 El producto
 
-**Admirals** es un servidor FiveM de roleplay con una mecánica core única: **economía profunda con cadenas de producción reales**.
+**SONAR** es un servidor FiveM de roleplay con una mecánica core única: **economía profunda con cadenas de producción reales**.
 
 - No es un script genérico de RP.
 - No es shooter PvP.
@@ -41,17 +43,27 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 ### 1.2 Los 4 pilares
 
 1. **Cadenas de producción físicas** — Granja → Molino → Bakery → Retail. Cada nodo es trabajo real, ítems físicos con quality A/B/C/D y lineage trazable.
-2. **Banco Admirals** — IBANs reales, escrows, tax retention 8%, ledger inmutable. Sin "economía mágica".
+2. **Banca SONAR** (code namespace `admirals_bank` hasta Phase 8 refactor) — IBANs reales, escrows, tax retention 8%, ledger inmutable. Sin "economía mágica".
 3. **Tablet (HUD operacional)** — 12 apps que el player abre con `TAB`. UI principal del producto.
 4. **Empresas player-driven** — founders, co-founders, employees, contracts B2B, governance.
 
-### 1.3 Principios irreductibles
+### 1.3 Principios irreductibles (gameplay/economía — pivot-agnostic)
 
 - **Trabajo real, no skill check.** No QTEs, no minigames abstractos.
 - **Economía es social.** Lineage chains requieren múltiples players cooperando.
 - **No PvP combat.** Disputas → governance, no violence.
 - **No pay-to-win.** No microtransactions que afecten balance.
 - **Cap superior generoso, no infinito.** Mastery alcanzable en 100-300h.
+
+### 1.3.1 Identity hard rules (post-ADR-012 — NEW work obligatorio)
+
+> Detalle completo en §5.5 + memoria persistente `SONAR Identity Direction r2`.
+
+- **Metáfora abstract pure.** Profundidad simbólica, exploración paciente, claridad bajo presión. **NO submarino militar literal**, NO radios/freq, NO periscopio/torpedo/hydrophone/sonar-ping concentric.
+- **Theme hybrid dark+white surfaces.** Target ~30-40% dark + ~30-40% white surfaces + ~10-15% Sonar Bright + ~10% structural + <5% signals. **NO dark-extremo 60% canvas** (deprecated scaffold-r1).
+- **Voz neutral premium-tech.** Estilo Vercel/Linear/Stripe/Apple Pro apps copy. **NO arquetipo militar**: cero "silent service", cero "capitán", cero "a bordo", cero "tactical".
+- **Sonar Bright `#2DD4BF`** = PRIMARY BRAND IDENTITY siempre. **Coloro `#175A5F`** = structural support solo, **PROHIBIDO** en logo/branding.
+- **Sound naming canonical**: `signal_emerge`/`depth_press`/`layer_dive`/`console_tap`/`panel_open`. NO `sonar_ping/pressure/depth/console/hatch` (deprecated).
 
 ### 1.4 Stack técnico
 
@@ -70,7 +82,24 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 
 ### 2.1 Fase actual
 
-**Fase: 🏆 SPRINT 1 CERRADO (2026-05-02). OLEADA 1 EN PROGRESO — 2/9 sprints cerrados.**
+**Fase: 🏆 SPRINT 1 CERRADO (2026-05-02) + 🔄 PIVOT IDENTITY Admirals→SONAR EN EJECUCIÓN MULTI-PHASE (2026-05-03 ongoing). Sprint 2 diferido hasta Phase 10 smoke regression complete.**
+
+#### 2.1.1 Pivot identity status (NEW v1.5)
+
+- **Phase 1 ADR-011** (rebrand foundational Admirals→SONAR) ✅ accepted 2026-05-03.
+- **Phase 1.5 ADR-012** (refinement: abstract metaphor + hybrid theme + neutral voice, AMENDS no supersede) ✅ accepted 2026-05-03.
+- **Phase 2-4 art_direction scaffold + r6 NOTICE** ✅ commits `6d3d96c`…`d0712cc`…`27de1b6`.
+- **Phase 5 light Bible v1.3 + v1.4** ✅ commits `b480af5` + `7cf29f0`.
+- **Phase 4.5 v2 specialist briefs (5/5)** ✅ commit `5838a79` — logo + icons + sound + motion + marketing alineados ADR-012.
+- **Phase 4 surgical full §1-§20 art_direction inline** 🟡 pendiente (NOTICE r6 supersedes pero contenido inline sigue v1.0-r5).
+- **Phase 5 full Tablet rename + rewrite** 🟡 pendiente.
+- **Phase 6 mass-purge docs operacionales** (events_catalog 333 refs, db_schema 463 refs, api_contracts, state_machines, fivem_standards, bridges_compatibility, qa, art/02-04, planning/01_roadmap) 🔴 pendiente multi-session.
+- **Phase 8 code refactor `admirals_*` namespace** 🔴 pendiente.
+- **Phase 9 DB migration 009** (rename `admirals_*` tables → `sonar_*`) 🔴 pendiente.
+- **Phase 10 smoke regression** 🔴 pendiente.
+- **Phase 11 workspace migration** 🔴 pendiente.
+
+#### 2.1.2 Sprint 1 cerrado (preserved historical)
 
 - **Oleada 0 docs:** 29/29 firmados (~27.260 líneas).
 - **Sprint 0:** cerrado con `git tag v0.0.0`. `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 + ADR-010.
@@ -83,23 +112,25 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
   - Smoke tests: S1.1 (6/6) + S1.2 (10/10) + S1.3 (14/14) = **30/30 ✅ cumulative**.
   - Retro: `progress/SPRINT_RETRO_S1.md`. Velocity real 15× (1 día vs 2 semanas estimado).
 
-**Next: Sprint 2** — Tablet shell + Bank app (NUI React + keybind TAB + Bank UI balance/transactions/transfer + Map app GPS). **Planning session dedicada pendiente** (founder + architect, cross-sprint + decisiones stack UI).
+**Next: Sprint 2 DIFERIDO** — Tablet shell + Bank app dependen Phase 10 smoke regression complete (post pivot Phases 4-12). Originalmente Tablet shell + Bank app (NUI React + keybind TAB + Bank UI balance/transactions/transfer + Map app GPS). Planning session dedicada pendiente post-pivot complete.
 
 ### 2.2 Inventario de documentación firmada
 
 | Categoría | Docs firmados | Líneas | Estado |
 |---|---|---|---|
-| `design/` | 6 | ~5.500 | ✅ CERRADA |
-| `technical/` foundational | 3 (architecture, events_catalog, db_schema) | ~3.200 | ✅ CERRADA |
-| `art/` | 4 | ~3.800 | ✅ CERRADA |
-| `economy/` | 3 | ~2.600 | ✅ CERRADA |
-| `gameplay/` | 3 | ~2.700 | ✅ CERRADA |
-| `agents/` | 3 (00_BOOTSTRAP v1.2, 02_working_conventions; 01_subagents_catalog archivado) | ~2.000 | ✅ CERRADA |
-| `planning/` | 2 (01_roadmap v1.1, 02_decision_log v1.1 con 9 ADRs) | ~3.100 | ✅ CERRADA |
-| `technical/` implementation | 4 / 4 (api_contracts, state_machines, fivem_standards, **bridges_compatibility v1.0**) | ~3.700 | ✅ CERRADA |
+| `design/` | 6 (00_PRODUCT_BIBLE **v1.4 post-ADR-012**, 01-05 nodos, 06_tablet_app_suite — nota: 02_admirals_tablet rename pendiente Phase 5) | ~5.500 | ✅ CERRADA (refresh v1.4) |
+| `technical/` foundational | 3 (architecture, events_catalog, db_schema) | ~3.200 | ✅ CERRADA (Phase 6 mass-purge pendiente) |
+| `art/` | 4 (01_art_direction **v2.0-scaffold-r6 NOTICE post-ADR-012**, 02-04) | ~3.800 + scaffold | ✅ CERRADA (refresh r6 NOTICE; §1-§20 Phase 4 surgical full pendiente) |
+| `art/briefs/` | 6 (README + 5 specialist briefs v2: logo + icons + sound + motion + marketing) | ~1.500 | 🏆 NEW v1.5 firmable |
+| `economy/` | 3 | ~2.600 | ✅ CERRADA (Phase 6 pendiente) |
+| `gameplay/` | 3 | ~2.700 | ✅ CERRADA (Phase 5 full pendiente) |
+| `agents/` | 3 (00_BOOTSTRAP **v1.5 post-ADR-012**, 02_working_conventions; 01_subagents_catalog archivado) | ~2.000 | ✅ CERRADA |
+| `planning/` | 2 (01_roadmap v1.4, 02_decision_log **v1.4 con 12 ADRs incl. ADR-011 + ADR-012**) | ~3.100 | ✅ CERRADA |
+| `technical/` implementation | 4 / 4 (api_contracts, state_machines, fivem_standards, bridges_compatibility v1.0) | ~3.700 | ✅ CERRADA (Phase 6 pendiente) |
 | `qa/` | 1 (testing_protocol) | ~760 | ✅ CERRADA |
+| `_archive/` | 1 (01_art_direction_v1_admirals.md — deprecated v1.0 preserved per ADR-011) | ~2.700 | 📖 ARCHIVE NO TOCAR |
 
-**Total firmado:** 29 docs / ~27.260 líneas. **Pendiente:** 0 docs. 🏆 **OLEADA 0 COMPLETA.**
+**Total firmado:** 29 + briefs v2 (5) / ~28.760 líneas. **Pendiente:** 0 docs nuevos firmables. 🏆 **OLEADA 0 COMPLETA. PIVOT EN EJECUCIÓN MULTI-PHASE.**
 
 ### 2.3 Qué hay pendiente para empezar a programar
 
@@ -155,21 +186,30 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 
 | # | Doc | Tiempo lectura | Por qué |
 |---|---|---|---|
-| 1 | `agents/00_BOOTSTRAP.md` | 15min | **Este fichero.** Identidad + estado proyecto. |
-| 2 | `agents/02_working_conventions.md` | 10min | Cómo interactuar con founder. |
-| 3 | `agents/01_subagents_catalog.md` | 10min | Roles AI especializados disponibles. |
-| 4 | `planning/01_roadmap.md` v1.1 | 10min | Qué se construye cuándo (Granja MVP pivot). |
-| 5 | `00_PRODUCT_BIBLE.md` | 30min | Filosofía completa del producto. |
+| 1 | `agents/00_BOOTSTRAP.md` v1.5 | 20min | **Este fichero.** Identidad post-pivot + estado proyecto. |
+| 2 | **`planning/02_decision_log.md` ADR-011 + ADR-012** | 15min | **CRÍTICO post-2026-05-03 — pivot identity foundational + refinement.** Sin esto AI re-confunde metáfora literal-militar deprecated. |
+| 3 | **`art/01_art_direction.md` v2.0-scaffold-r6 NOTICE** (top-level NOTICE solo, NO leer §1-§20 todavía hasta Phase 4 surgical full) | 15min | **CRÍTICO** — NEW canonical visual direction post-ADR-012. NOTICE supersedes §1-§20 inline en cualquier conflicto. |
+| 4 | **`design/00_PRODUCT_BIBLE.md` v1.4 §1 identidad** | 10min | **CRÍTICO** — voz + posicionamiento canonical post-ADR-012. |
+| 5 | `agents/02_working_conventions.md` | 10min | Cómo interactuar con founder. |
+| 6 | `planning/01_roadmap.md` v1.4 | 10min | Qué se construye cuándo (Granja MVP + pivot phases pendientes). |
+| 7 | `design/00_PRODUCT_BIBLE.md` v1.4 §2-§16 (resto Bible) | 30min | Filosofía completa del producto (preserved gameplay/economía/técnico/comercial pivot-agnostic). |
 
-**Total Round 1: ~75 min.** Después de esto el AI **entiende el proyecto**.
+**Total Round 1: ~110 min.** Después de esto el AI **entiende el proyecto post-pivot**.
+
+**⚠️ NO LEER:**
+- `docs/_archive/01_art_direction_v1_admirals.md` (deprecated v1.0 — confunde con identity vieja).
+- `docs/art/01_art_direction.md` §1-§20 inline sin haber leído NOTICE r6 antes (riesgo confusión con scaffold-r1..r5 legacy hasta Phase 4 surgical full).
+- Briefs v1 (eliminados) — ya no existen, NO buscar.
 
 ### 3.2 Round 2 — Foundational technical (si tarea técnica)
+
+> **Nota post-pivot:** estos docs siguen válidos foundational, pero contienen refs `admirals_*` que serán purged Phase 6 + 8 + 9. AI debe distinguir: code refactor activo (Phase 8) vs nuevo código nuevo (debe usar `sonar_*` directamente desde S2 post-pivot complete).
 
 | # | Doc | Por qué |
 |---|---|---|
 | 1 | `technical/01_architecture.md` | Cómo está estructurado el sistema. |
-| 2 | `technical/02_events_catalog.md` | Catálogo eventos sistema (cliente↔server). |
-| 3 | `technical/03_db_schema.md` | Esquema base de datos. |
+| 2 | `technical/02_events_catalog.md` | Catálogo eventos sistema (cliente↔server). 333 refs `admirals:*` Phase 6 mass-purge pendiente. |
+| 3 | `technical/03_db_schema.md` | Esquema base de datos. 463 refs `admirals_*` Phase 6 + Phase 9 migration 009 pendientes. |
 | 4 | `technical/04_api_contracts.md` | Callbacks, exports, NUI bridges, DB access. |
 | 5 | `technical/05_state_machines.md` | FSMs (status columnas DB). |
 | 6 | `technical/06_fivem_standards.md` | Reglas FiveM (State Bags, resmon, security). |
@@ -184,14 +224,15 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 |---|---|
 | Mecánica de un nodo | `design/0X_node_*.md` correspondiente |
 | Economía / pricing / balance | `economy/01_economic_model.md` + `economy/02_bakery_economy.md` o `03_retail_economy.md` |
-| UI Tablet / HUD | `design/06_tablet_app_suite.md` + `art/04_storybook_guide.md` |
-| Audio | `art/03_sound_bible.md` |
-| Estilo visual / shaders | `art/01_visual_pillars.md` + `art/02_shader_contracts.md` |
+| UI Tablet / HUD | `design/06_tablet_app_suite.md` + `art/04_storybook_guide.md` (Phase 5 full pendiente: rename `02_admirals_tablet.md`→`02_sonar_tablet.md`) |
+| Audio | `art/03_sound_bible.md` (legacy refs `sonar_ping/etc` deprecated; ver `art/briefs/03_brief_sound.md` v1 para nombres canonical post-ADR-012) |
+| Estilo visual / branding / iconografía / motion | **`art/01_art_direction.md` v2.0-scaffold-r6 NOTICE OBLIGATORIO PRIMERO** + briefs v2 específicos en `art/briefs/` + `art/02_shader_contracts.md` |
 | Gameplay loops / onboarding | `gameplay/01_gameplay_loops.md` |
 | Progresión / achievements | `gameplay/02_progression_systems.md` |
 | Empresa / chat / disputas | `gameplay/03_social_features.md` |
 | API endpoints | `technical/04_api_contracts.md` |
 | Estados / FSM | `technical/05_state_machines.md` |
+| Specialist creative deliverable (logo/icons/sound/motion/marketing) | `art/briefs/0X_brief_*.md` v2 correspondiente + ADR-012 + r6 NOTICE |
 
 ### 3.4 Anti-pattern: leer TODO
 
@@ -207,7 +248,18 @@ Este BOOTSTRAP es la **única fuente de verdad** sobre:
 docs/
 ├── 00_PRODUCT_BIBLE.md          ⭐ La biblia. Filosofía + 4 pilares.
 │
-├── agents/                       🤖 META — AI infrastructure (NEW)
+├── _archive/                      📖 ARCHIVE NO TOCAR (preserved per ADR-011)
+│   └── 01_art_direction_v1_admirals.md  Deprecated v1.0 Admirals (preserved trazabilidad)
+│
+├── art/briefs/                    🎨 NEW v1.5 — Specialist deliverables v2 post-ADR-012
+│   ├── README.md                  Index + status table 5/5 + v1→v2 diff
+│   ├── 01_brief_logo.md           BRIEF-LOGO-001 v2 (concept exploration NO ondas concéntricas)
+│   ├── 02_brief_icons.md          BRIEF-ICONS-001 v2 (3 conservados + 5 abstract nuevos)
+│   ├── 03_brief_sound.md          BRIEF-SOUND-001 v1 (5 SFX neutral signal_emerge etc)
+│   ├── 04_brief_motion.md         BRIEF-MOTION-001 v1 (12 tokens + 5 signature animations)
+│   └── 05_brief_marketing.md      BRIEF-MARKETING-001 v1 (voz neutral + Tebex + trailer + moodboard)
+│
+├── agents/                       🤖 META — AI infrastructure
 │   ├── 00_BOOTSTRAP.md           ← TÚ ESTÁS AQUÍ
 │   ├── 01_subagents_catalog.md   Roles AI especializados
 │   └── 02_working_conventions.md Cómo trabajar con el founder
@@ -255,31 +307,34 @@ docs/
 
 ### 4.1 Single Sources of Truth (SSoT)
 
-> **Si hay conflicto entre docs, ESTOS prevalecen:**
+> **Si hay conflicto entre docs, ESTOS prevalecen** (orden jerarquía v1.5 post-ADR-012):
 
-| Tema | SSoT |
-|---|---|
-| Filosofía proyecto | `00_PRODUCT_BIBLE.md` |
-| Números económicos (precios, salaries, markups) | `economy/01_economic_model.md` |
-| Eventos cliente↔server | `technical/02_events_catalog.md` |
-| Esquema DB | `technical/03_db_schema.md` |
-| APIs síncronas (callbacks, exports, NUI bridges) | `technical/04_api_contracts.md` |
-| FSMs (status entidades) | `technical/05_state_machines.md` |
-| Performance budgets + security + sync | `technical/06_fivem_standards.md` |
-| Compat scripts (bank/inventory/phone/etc.) | `technical/07_bridges_compatibility.md` v1.0 |
-| Mecánicas nodo X | `design/0X_node_*.md` |
-| Tokens visuales (color, spacing, motion) | `art/04_storybook_guide.md` |
-| Sonidos | `art/03_sound_bible.md` |
-| Loops gameplay | `gameplay/01_gameplay_loops.md` |
-| Roadmap + planning | `planning/01_roadmap.md` v1.1 |
-| Decisiones arquitectónicas (ADRs) | `planning/02_decision_log.md` |
-| Testing protocol | `qa/01_testing_protocol.md` |
+| # | Tema | SSoT |
+|---|---|---|
+| 1 | **Identity post-pivot (foundational + refinement)** | **ADR-011 + ADR-012 en `planning/02_decision_log.md` v1.4** — top de jerarquía en cualquier conflicto identity |
+| 2 | **Visual direction canonical post-ADR-012** | **`art/01_art_direction.md` v2.0-scaffold-r6 NOTICE** (top-level supersedes §1-§20 inline hasta Phase 4 surgical full) |
+| 3 | **Filosofía + identity producto** | **`design/00_PRODUCT_BIBLE.md` v1.4** (post-ADR-012 surgical purge literal-militar) |
+| 4 | Números económicos (precios, salaries, markups) | `economy/01_economic_model.md` |
+| 5 | Eventos cliente↔server | `technical/02_events_catalog.md` (refs `admirals:*` Phase 6 purge pendiente) |
+| 6 | Esquema DB | `technical/03_db_schema.md` (refs `admirals_*` Phase 6 + Phase 9 migration pendientes) |
+| 7 | APIs síncronas (callbacks, exports, NUI bridges) | `technical/04_api_contracts.md` |
+| 8 | FSMs (status entidades) | `technical/05_state_machines.md` |
+| 9 | Performance budgets + security + sync | `technical/06_fivem_standards.md` |
+| 10 | Compat scripts (bank/inventory/phone/etc.) | `technical/07_bridges_compatibility.md` v1.0 |
+| 11 | Mecánicas nodo X | `design/0X_node_*.md` |
+| 12 | Tokens visuales (color, spacing, motion) | `art/04_storybook_guide.md` (refresh pendiente alineado r6 NOTICE) |
+| 13 | Sonidos | `art/03_sound_bible.md` (refresh pendiente; nombres canonical post-ADR-012 ver `art/briefs/03_brief_sound.md` v1) |
+| 14 | Loops gameplay | `gameplay/01_gameplay_loops.md` |
+| 15 | Roadmap + planning | `planning/01_roadmap.md` v1.4 |
+| 16 | Decisiones arquitectónicas (ADRs) | `planning/02_decision_log.md` v1.4 (12 ADRs) |
+| 17 | Testing protocol | `qa/01_testing_protocol.md` |
+| 18 | **Specialist creative deliverable specs** | `art/briefs/0X_brief_*.md` v2 correspondientes |
 
 ---
 
 ## 5. Principios de trabajo (NON-NEGOTIABLE)
 
-### 5.1 Quality bar Admirals
+### 5.1 Quality bar SONAR
 
 Cada doc producido debe cumplir:
 
@@ -356,6 +411,70 @@ Cada doc producido debe cumplir:
 - ❌ No leer respuesta de tool calls antes de continuar.
 
 ✅ **Solución:** **verifica siempre.** Read after write. Confirma cambios visibles.
+
+### 5.4.7 Re-confundir metáfora literal-militar deprecated (NEW v1.5 — post-ADR-012)
+- ❌ Usar términos `silent service`, `capitán submarino`, `tactical-grade`, `bridge command center` militar, `silent service interface` en NEW work.
+- ❌ Proponer iconografía `sonar-ping`/`submarine`/`hydrophone`/`periscope`/`torpedo-bay` (deprecated).
+- ❌ Proponer sound names `sonar_ping/pressure/depth/console/hatch` (deprecated).
+- ❌ Proponer dark-extremo 60% canvas theme (deprecated scaffold-r1).
+- ❌ Inventar concepto logo "S-onda concentric" radio/freq (deprecated BRIEF-LOGO-001 v1).
+
+✅ **Solución:** **lectura obligatoria ADR-011 + ADR-012 + r6 NOTICE + Bible v1.4 §1** (Round 1 §3.1) ANTES de cualquier work post-2026-05-03. Memoria persistente `SONAR Identity Direction r2` debe estar cargada.
+
+---
+
+## 5.5 SONAR Identity hard rules (NEW v1.5 — post-ADR-012 obligatorio NEW work)
+
+> **Estas reglas son inviolables en NEW work post-2026-05-03.** Excepciones permitidas: Phase 8 code refactor activo (renaming legacy), SESSION_LOG históricas (append-only), ADRs históricos (inmutables), Migration 009 (DB rename), `_archive/` files (preservation), changelog entries inmutables.
+
+### 5.5.1 Metáfora obligatoria abstract pure (ADR-012 D1)
+
+- ✅ SONAR ES: profundidad simbólica abstracta. Valor oculto bajo capas. Calma metódica. Patterns que emergen al observar con atención. Claridad bajo presión.
+- ❌ SONAR NO ES: submarino militar literal, hardware señal acústica (hydrophones/sonar pings radio/waveforms/oscilloscope/instrument-panels), armamento (torpedos/depth charges), equipo cubierta literal (periscopios/bridge-as-command-center/hatches/casco remaches/crew submarino).
+
+### 5.5.2 Theme hybrid dark+white obligatorio (ADR-012 D2)
+
+- ✅ ~30-40% deep surfaces canvas dark + ~30-40% white/off-white surfaces panels/cards + ~10-15% Sonar Bright `#2DD4BF` identity + ~10% Coloro `#175A5F` structural support + <5% signals functional + glassmorphism panes signature selectivos.
+- ❌ NO dark-extremo 60% canvas (deprecated scaffold-r1).
+- ✅ Refs convergentes: Notion, Arc Browser, Stripe Dashboard, Linear, GitHub dark mode mixed.
+
+### 5.5.3 Voz neutral premium-tech obligatoria (ADR-012 D3)
+
+- ✅ Estilo Vercel/Linear/Stripe/Apple Pro apps copy. Preciso, terse, calmo, professional, atemporal.
+- ❌ CERO arquetipo militar/submarino: NO "silent service", NO "capitán", NO "comandante", NO "almirante", NO "a bordo", NO "tripulación", NO "tactical".
+- ❌ CERO gen-Z/exclamaciones/emojis-en-producto/hyperbole/comparaciones competidores explícitas.
+
+### 5.5.4 Color hierarchy inmutable
+
+- ✅ Sonar Bright `#2DD4BF` = PRIMARY BRAND IDENTITY siempre (logo, wordmark, CTA primary, app-icon, focus rings, marketing hero).
+- ✅ Sonar Glow `#5EEAD4` lighter sister hover/active. Sonar Pulse `#14E5DD` saturated deeper critical signals reservado.
+- ❌ Coloro `#175A5F` PROHIBIDO en logo/branding identity. Solo glassmorphism tints + inactive borders + deep-tier UI.
+- ❌ NUNCA gradientes rainbow/holográficos/RGB/cyberpunk neon.
+
+### 5.5.5 Iconografía canonical post-ADR-012
+
+- ✅ 8 iconos canonical: 3 conservados (depth-gauge, pressure-hull RECONCEPTUALIZADO capas concentricas, bioluminescence) + 5 abstract nuevos (descent-layers, signal-clarity, depth-grid, observation-field, lineage-trace).
+- ❌ PURGADOS deprecated NO usar: sonar-ping (radio concentric), submarine (silhouette literal), hydrophone (mic acústico), periscope (literal), torpedo-bay (armamento).
+
+### 5.5.6 Sound naming canonical post-ADR-012
+
+- ✅ 5 SFX firma: `signal_emerge` (notif), `depth_press` (firma/confirm), `layer_dive` (escritura UI), `console_tap` (premium click), `panel_open` (modal).
+- ❌ PURGADOS deprecated NO usar: `sonar_ping`, `sonar_pressure`, `sonar_depth`, `sonar_console`, `sonar_hatch`.
+
+### 5.5.7 Vocabulario canonical post-ADR-012
+
+- ✅ Console (UI activa) / Bitácora (audit trail) / Depth (tier/profundidad simbólica) / Eco (tx identifier) / Manifiesto (contrato firmado) / Signal (evento bus) / Lineage (cadena producción) / Patrón (anomalía emergiendo) / Bridge re-interpretado como "Tablet home view" abstract.
+- ❌ DEPRECATED NO usar: Periscope, Hatch, Hydrophone, Ping (radio), Sweep, Sumersión, Bridge-as-command-center militar, "silent service", "tactical-grade".
+
+### 5.5.8 Excepciones permitidas Admirals refs (per ADR-011)
+
+- ✅ Phase 8 code refactor activo (renaming `admirals_*` → `sonar_*`).
+- ✅ SESSION_LOG históricas (append-only).
+- ✅ ADRs históricos (inmutables).
+- ✅ Migration 009 (DB rename).
+- ✅ `_archive/` files (preservation).
+- ✅ Changelog entries inmutables.
+- ✅ Code namespace existing `admirals_*` hasta Phase 8 refactor cumplido.
 
 ---
 
@@ -563,8 +682,8 @@ Ver `agents/01_subagents_catalog.md` (archivado) para spec detallada de cada che
 
 ### 12.1 Estado
 
-- **Versión:** 1.2 (firmado, living document). **Oleada 0 CERRADA 100% (29/29 docs).**
-- **Próxima revisión:** post Sprint 0 Oleada 1 (bridges skeleton + admirals_core boot) con learnings reales + v1.3 incorporando path refinements.
+- **Versión:** 1.5 (firmado, living document). **Oleada 0 CERRADA 100% (29/29 docs) + briefs v2 (5/5) + Sprint 0 + Sprint 1 cerrados + PIVOT IDENTITY EN EJECUCIÓN MULTI-PHASE.**
+- **Próxima revisión:** post Phase 4 surgical full art_direction + Phase 5 full Tablet rename, con learnings + v1.6 incorporando refinements.
 
 ### 12.2 Maintenance
 
@@ -585,6 +704,7 @@ Ver `agents/01_subagents_catalog.md` (archivado) para spec detallada de cada che
 | 1.2 | 2026-05-01 | Founder + Cascade | **🏆 OLEADA 0 CERRADA 100%.** Firmado `technical/07_bridges_compatibility.md` v1.0 (último doc) + ADR-008 (Granja pivot) + ADR-009 (Bridges Layer). 29 docs / ~27.260 líneas. Fase actual cambiada a "READY TO CODE — Sprint 0 Oleada 1". Mapa §4 cierra technical/ categoría. SSoT table marca bridges_compatibility firmado. |
 | 1.3 | 2026-05-02 | Founder + Cascade | **🏆 SPRINT 0 CERRADO.** `admirals_bridges` v0.2.0 + `admirals_core` v0.1.0 + migrations 001/002 + ADR-010 (hybrid audit_log resolviendo inconsistencia SSoT §03↔§04) + smoke test 10 pasos. 4 sessions S0.1-S0.4 + 1 checkpoint S0.0 ejecutadas en 1 día (vs estimado 3 sem). §2.1 actualizado con resumen deliverables. **Next: Sprint 1 — Banco core.** |
 | 1.4 | 2026-05-02 | Founder + Cascade | **🏆 SPRINT 1 CERRADO** (mismo día — velocity 15× estimado). `admirals_bank` v0.4.0 (escrow FSM + C001/C002/C004/C005) + `admirals_core` v0.4.2 + migrations 003-008 + idempotency DB-backed promoted + smokes 30/30 cumulative. 3 sessions S1.1-S1.3 en 1 día (vs 2 sem estimado). Tag `sprint-1-complete`. §2.1 actualizado. **Next: Sprint 2 — Tablet shell (planning session dedicada pendiente).** |
+| 1.5 | 2026-05-03 | Founder + Cascade | **🔄 PIVOT IDENTITY Admirals→SONAR EN EJECUCIÓN MULTI-PHASE** (post-S1.4+S1.5+S1.6 sessions). **Cambios:** (a) Title rebrand Admirals→SONAR. (b) Header pivot ref ADR-011 + ADR-012 + r6 NOTICE + Bible v1.4 lectura conjunta obligatoria. (c) STOP banner expandido obligatoriedad 4 docs identity ANTES NEW work. (d) §0 expandido razón pivot identity. (e) §1 reescrita: Heritage Admirals deprecated + nueva §1.3.1 Identity hard rules summary (metáfora abstract + theme hybrid + voz neutral + color hierarchy + sound names canonical). (f) §2.1 reescrita: estado pivot multi-phase tracker (Phase 1→Phase 11) + Sprint 1 cerrado preserved historical + Sprint 2 diferido. (g) §2.2 inventario expandido: Bible v1.4 + art_direction r6 + briefs v2 + _archive/ marcados. (h) §3.1 Round 1 reading order ampliado (~75min→110min): obligatorio ADR-011+ADR-012 (#2), r6 NOTICE (#3), Bible v1.4 §1 (#4) ANTES de gameplay/técnico. NO LEER list (deprecated _archive + scaffold-r1..r5 inline + briefs v1). (i) §3.2 Round 2 nota refs `admirals_*` Phase 6/8/9 pendientes. (j) §3.3 Round 3 task table actualizada con r6 NOTICE OBLIGATORIO + briefs v2. (k) §4 mapa expanded: _archive/ + art/briefs/ secciones. (l) §4.1 SSoT jerarquía 18-row con ADR-011/012 (#1) + r6 NOTICE (#2) + Bible v1.4 (#3) top. (m) **Nueva §5.5 SONAR Identity hard rules** (8 sub-secciones: metáfora abstract / theme hybrid / voz neutral / color hierarchy / iconografía / sound naming / vocabulario / excepciones permitidas). (n) Nueva §5.4.7 anti-pattern re-confundir metáfora literal-militar deprecated. (o) §13 TL;DR reescrito completo post-pivot. **Preservado intact:** §5 quality bar/estilo/anti-patterns (excepto add 5.4.7), §6 decision boundaries, §7 workflows, §8 tooling, §9 comunicación, §10 métricas, §11 subagents archivados ADR-001, §12 maintenance. **Próximas sesiones AI requieren** ADR-011 + ADR-012 + r6 NOTICE + Bible v1.4 §1 lectura ANTES de cualquier work nuevo + memoria persistente `SONAR Identity Direction r2` cargada. |
 
 ---
 
@@ -592,21 +712,22 @@ Ver `agents/01_subagents_catalog.md` (archivado) para spec detallada de cada che
 
 Si por alguna razón solo puedes leer 5 minutos de este doc, lee **esto**:
 
-1. **Admirals** = servidor FiveM con economía profunda + cadenas producción + Tablet UI.
-2. **27.260 líneas docs firmados** (29 docs Oleada 0 CERRADA). **🏆 Sprint 0 + Sprint 1 Oleada 1 CERRADOS** (ambos 2026-05-02): `admirals_bridges` v0.2.0 + `admirals_core` v0.4.2 + `admirals_bank` v0.4.0 (IBAN + Accounts + Transfer + Escrow FSM + C001/C002/C004/C005) operativos. No reescribas docs firmados — léelos.
-3. **SSoTs canónicos** (§4.1 tabla completa): `00_PRODUCT_BIBLE.md`, `economy/01_economic_model.md`, `technical/02_events_catalog.md`, `technical/03_db_schema.md`, `technical/04_api_contracts.md`, `technical/05_state_machines.md`, `technical/06_fivem_standards.md`. **Si conflicto, ellos ganan.**
-4. **MVP Oleada 1 = Granja** (pivot v1.1). NO Bakery. Granja es nodo raíz cross-vertical (Bible §13.4).
-5. **NO XP genérico, NO PvP, NO pay-to-win, NO QTEs.**
-6. **Stack:** FiveM Lua + JS/TS React Tablet + MySQL + State Bags sync. **QBox primary + Bridges layer** para compat custom scripts (lb-phone, qs-inventory, custom banks).
-7. **Quality bar:** concreto > abstracto, operacional > teórico, cross-referenced.
-8. **Estilo respuesta:** directo, sin preámbulo, español + tecnicismos inglés OK.
-9. **Anti-patterns:** hallucinaciones, sobre-ingeniería, "¡Tienes razón!", recreate sobre modify, anunciar subagents (ADR-001 archivados).
-10. **Cuando dudes:** busca SSoT, lee doc relevante, pregunta founder solo en escalation matrix §6.4.
+1. **SONAR (ex-Admirals)** = servidor FiveM con economía profunda + cadenas producción + Tablet UI. **Pivot identity 2026-05-03** (ADR-011 + ADR-012). Code namespace `admirals_*` hasta Phase 8 refactor.
+2. **🔴 PRIMERO LEE: ADR-011 + ADR-012 + art_direction r6 NOTICE + Bible v1.4 §1** ANTES de cualquier work nuevo. Sin esos 4 risk re-confundir metáfora literal-militar deprecated.
+3. **SONAR identity hard rules (§5.5)**: metáfora abstract pure (NO submarino militar literal, NO radios/freq, NO periscopio/torpedo/hydrophone) + theme hybrid dark+white surfaces (~30-40% dark + ~30-40% white + ~10-15% Sonar Bright + ~10% Coloro + <5% signals) + voz neutral premium-tech (Vercel/Linear/Stripe class, NO "silent service"/"capitán"/"tactical") + Sonar Bright `#2DD4BF` PRIMARY identity + Coloro `#175A5F` PROHIBIDO logo + sound names canonical (`signal_emerge`/`depth_press`/`layer_dive`/`console_tap`/`panel_open`) + iconografía 8 canonical (3 conservados + 5 abstract nuevos).
+4. **28.760+ líneas docs firmados** (29 + 5 briefs v2). **🏆 Sprint 0 + Sprint 1 Oleada 1 CERRADOS** (2026-05-02): `admirals_bridges` v0.2.0 + `admirals_core` v0.4.2 + `admirals_bank` v0.4.0. **Pivot multi-phase EN EJECUCIÓN** (Phase 4 surgical full + Phase 5 full + Phase 6 mass-purge + Phase 8 code refactor + Phase 9 migration + Phase 10 smoke + Phase 11 workspace pendientes). No reescribas docs firmados — léelos.
+5. **SSoTs canónicos** (§4.1 jerarquía 18-row): top jerarquía = ADR-011/ADR-012 + art_direction r6 NOTICE + Bible v1.4. **Si conflicto, ellos ganan.**
+6. **MVP Oleada 1 = Granja** (pivot v1.1). NO Bakery. Granja es nodo raíz cross-vertical.
+7. **NO XP genérico, NO PvP, NO pay-to-win, NO QTEs.**
+8. **Stack:** FiveM Lua + JS/TS React Tablet + MySQL + State Bags sync. **QBox primary + Bridges layer.**
+9. **Quality bar + estilo:** concreto > abstracto, operacional > teórico, cross-referenced. Respuesta directa, sin preámbulo, español + tecnicismos inglés OK.
+10. **Anti-patterns:** hallucinaciones, sobre-ingeniería, "¡Tienes razón!", recreate sobre modify, anunciar subagents (ADR-001 archivados), **re-confundir metáfora literal-militar deprecated post-ADR-012 (§5.4.7)**.
+11. **Cuando dudes:** busca SSoT, lee doc relevante, pregunta founder solo en escalation matrix §6.4.
 
-> **Tu objetivo:** mantener la cadena de calidad establecida. Cada AI agent posterior debe poder continuar donde lo dejaste sin que se note diferencia.
+> **Tu objetivo:** mantener la cadena de calidad establecida + identity coherence post-ADR-012. Cada AI agent posterior debe poder continuar donde lo dejaste sin que se note diferencia, con identity SONAR (NOT Admirals, NOT submarino militar literal) consistently aplicada.
 
 ---
 
 *"Documentación sin meta-organización es ruido. Este BOOTSTRAP es la señal."*
 
-**FIN DEL DOCUMENTO `agents/00_BOOTSTRAP.md` v1.4**
+**FIN DEL DOCUMENTO `agents/00_BOOTSTRAP.md` v1.5 (post-pivot identity Admirals→SONAR + ADR-012 refinement)**
