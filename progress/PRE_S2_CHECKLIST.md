@@ -16,7 +16,7 @@ Docs operacionales siguen en lenguaje Admirals/literal-militar pre-pivot. Cada d
 
 | # | Doc | Estado actual | Trabajo pendiente |
 |---|---|---|---|
-| 1 | `docs/design/02_admirals_tablet.md` | 🔴 Pre-pivot | **Rename → `02_sonar_tablet.md`** + rewrite full identidad (Coloro 092-37-14 old → Sonar Bright Tier B + Coloro Tier C + hybrid theme + voz neutral + iconografía abstract + sound names canonical). **Este es el más crítico** — S2 implementa Tablet shell. |
+| 1 | ~~`docs/design/02_admirals_tablet.md`~~ → `docs/design/02_sonar_tablet.md` v1.1 | 🟡 **PASS 1 DONE S1.8** | ✅ Rename `02_admirals_tablet.md` → `02_sonar_tablet.md` (git mv). ✅ NOTICE r1.1 top (~70 líneas) + bulk identity purge 126 instances (Admirals→SONAR + AdmiralsOS→SonarOS) + key sections inline (§2.4 + §3 + §3.2 + §4.1 + §4.2 + §29 + footer changelog). ⬜ **PASS 2 pendiente** ~2h Sonnet: apps detail-pass §6-§19 + §26 sounds full + §27 anti-patterns. |
 | 2 | `docs/technical/02_events_catalog.md` | 🔴 Admirals refs | Surgical rewrite: mantener event contracts técnicos, renombrar prefijos `admirals:*` → `sonar:*` (si Phase 8 decide rename) o dejar legacy con NOTICE (si Phase 8 defer). |
 | 3 | `docs/technical/03_db_schema.md` | 🔴 `admirals_*` tables | Surgical: tablas SQL canonical names per decisión D3 (abajo). |
 | 4 | `docs/technical/04_api_contracts.md` | 🔴 Admirals refs | Surgical: callbacks/exports naming per D3. |
@@ -192,9 +192,10 @@ ADR-011 §4 execution plan listó Phase 8 (code refactor) + Phase 9 (DB migratio
 |---|---|---|---|
 | 1.0 | 2026-05-03 | Founder + Cascade (S1.6 close) | Documento creado. 5 hard blockers + 3 decisiones founder + 5 soft-opcionales. Ruta mínima estimada 12-18h founder time / ~1 semana calendario. |
 | 1.1 | 2026-05-03 | Founder + Cascade (S1.7 close partial → S1.8 hygiene) | **D2 status update fact-only post logo v2 working canonical S1.7.** Logo `01_brief_logo.md` v2 🟢 RESUELTO IN-HOUSE (concept A "S-curl open" en `art/branding/logo_v2/` 8 SVGs + 27 PNG + favicon). Decisión founder S1.7: NO firma ADR-013 ni sync `01_art_direction.md` §3.3 / brief status durante período uso real ~2-4 semanas. Hard constraint añadido para futuras AI agents (NO arreglar unilateralmente conflict logo realidad vs docs firmados). Icons/sound/motion/marketing pendientes. Resto blockers B1-B5 + D1 + D3 + soft-opcionales sin cambio. |
+| 1.2 | 2026-05-03 | Founder + Cascade (S1.8 B1 attack partial) | **B1 status update: doc 1/8 Pass 1 done.** `02_admirals_tablet.md` renamed → `02_sonar_tablet.md` v1.1 (git mv). NOTICE r1.1 top-level (~70 líneas) + bulk identity purge 126 instances + surgical inline §2.4+§3+§3.2+§4.1+§4.2+§29. Pass 2 pendiente ~2h próxima sesión (§6-§19 apps detail-pass + §26 sounds + §27 anti-patterns). Resto 7 docs B1 sin cambio. |
 
 ---
 
 *"Antes de zarpar, verifica el casco."* — meta-regla S1 → S2.
 
-**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.1.**
+**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.2.**

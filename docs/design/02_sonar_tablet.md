@@ -1,26 +1,96 @@
-# 📱 Admirals — Plataforma raíz: La Admirals Tablet
+# 📱 SONAR — Plataforma raíz: La SONAR Tablet
 
-> **Versión:** 1.0 (firmado)
-> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
-> **Documento hermano:** `01_node_farm.md` v1.1 (la Granja consume el Manager Panel y varias apps de la Tablet).
-> **Estado:** primera redacción completa de las 4 partes (29 secciones, ~1600 líneas).
+> **Versión:** 1.1 (refinement post-pivot SONAR — NOTICE r1.1 establishes new canonical identity layer; §1-§29 surgical Pass 1 inline cleanup ejecutado, Pass 2 pendiente para apps detail-pass §6-§19).
+> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (firmado post-pivot SONAR).
+> **Documento hermano:** `01_node_farm.md` v1.1 (la Granja consume el Manager Panel y varias apps de la SONAR Tablet).
+> **Estado:** redacción v1.0 firmada Admirals (1185 líneas, 29 secciones) + Pass 1 surgical post-pivot SONAR (S1.8, ~150 inline edits + bulk identity purge).
 
-> **Lectura previa obligatoria:** Product Bible §3 (5 Pilares — la Tablet es el Pilar 5), §13.4 (División 3D vs Código).
+> **Lectura previa obligatoria:** Product Bible v1.4 §1 + §3 (5 Pilares — la Tablet es Pilar 5), §13.4 (División 3D vs Código), **`docs/planning/02_decision_log.md` ADR-011 (pivot SONAR) + ADR-012 (refinement metáfora abstract)**, **`docs/art/01_art_direction.md` v2.0-scaffold-r7 NOTICE r6** (paleta canonical Tier A/B/C + voz neutral premium-tech + iconografía abstract + sound naming canonical), **`art/branding/logo_v2/README.md`** (logo v2 working canonical concept A "S-curl open").
+
+---
+
+## 🔄 REFINEMENT NOTICE r1.1 (post ADR-011 + ADR-012, 2026-05-03)
+
+**Este documento contiene redacción v1.0 escrita pre-pivot SONAR — naming Admirals + paleta heritage azul marino/dorado + iconografía naval-militar + tipografía Inter/Manrope sugerida + boot sound "campana naval" + wallpapers "motivos navales/militares/cinematográficos".** ADR-011 + ADR-012 cambian todo eso. **NOTICE r1.1 establece la interpretación canónica vigente**; en cualquier conflicto entre lo siguiente y el contenido §1-§29 abajo, **gana este NOTICE + ADRs 011+012 + `01_art_direction.md` v2.0-scaffold-r7**.
+
+### NEW CANONICAL — vigente desde 2026-05-03
+
+#### Naming canonical
+- **Producto:** SONAR (no Admirals).
+- **Tablet:** SONAR Tablet (no Admirals Tablet).
+- **Sistema operativo:** SonarOS (no AdmiralsOS).
+- **Cuenta cloud:** cuenta SONAR (no cuenta Admirals).
+- **Tienda app:** Tienda SONAR (no Tienda Admirals).
+- **Logo grabado dorso:** logo SONAR concept A "S-curl open" (ver `art/branding/logo_v2/`).
+
+#### Paleta canónica (DEPRECATED heritage Admirals "azul marino + dorado + blancos sobrios")
+Per `01_art_direction.md` v2.0-scaffold-r7 §3.4 (post-ADR-012 hybrid theme):
+- **Tier A canvas dark (~30-40%):** `#03070A` Abyss Black + `#0A1418` Depth Reduced (sidebar, hero dark, splash, modal backdrops).
+- **Tier A canvas light (~30-40%):** `#F0F4F4` Crew 100 (paneles, cards, content areas, drawer interiors, dashboard workspaces).
+- **Tier B identity pop (~10-15%):** `#2DD4BF` Sonar Bright (logo, CTAs primary, active states, focus rings, branding) + `#14E5DD` Sonar Pulse (glow accents).
+- **Tier C structural support (~10%):** `#175A5F` Coloro deep-teal (glassmorphism tints, inactive borders, dim instruments).
+- **Signal functional (<5%):** Critical/Warn/OK/Info reservados momentos atención.
+- **DEPRECATED Admirals heritage:** azul marino profundo + dorado discreto + blancos neutros — purgado.
+
+#### Tipografía canonical (DEPRECATED Inter/Manrope/SF Pro sugerencias)
+Per `01_art_direction.md` §4 (post-pivot):
+- **Display + UI:** Geist Sans (300/500/600). Fallback `Inter Tight → Inter → system-ui`.
+- **Mono / numerics:** Geist Mono.
+- **DEPRECATED:** Inter / Manrope / SF Pro como recomendación primary (Inter Tight queda solo como fallback secundario).
+
+#### Voz / copy canonical (DEPRECATED voz "naval / militar / capitán")
+Per ADR-012 D3 + `01_art_direction.md` §3.2:
+- **Tono:** neutral premium-tech (Vercel/Linear/Stripe/Apple Pro apps class). Preciso, terse, calmo, professional, atemporal.
+- **DEPRECATED:** voz "campana al subir a puente naval", "silent service", "almirante", "capitán", "comandante", "tripulación", "a bordo", "tactical-grade", "operación naval".
+- **Ejemplos canonical SONAR Tablet copy:** *"Console activated. Ready."* / *"Transferencia recibida: 1,240€"* / *"Manifesto signed."* / *"Hear the depth."*
+- **Ejemplos DEPRECATED:** *"Bienvenido a bordo, almirante."* / *"Console SONAR activada. Profundidad operativa."*
+
+#### Iconografía canonical (DEPRECATED iconos navales literales)
+Per ADR-012 D1 + `BRIEF-ICONS-001 v2`:
+- **Iconografía abstract:** capas profundidad + claridad de señal (NO submarinos / periscopios / sonar-pings radio / hydrophones / torpedos).
+- **App icons primarios SONAR Tablet:** `descent-layers` (drill-down), `signal-clarity` (notif), `depth-grid` (dashboard), `observation-field` (map), `lineage-trace` (audit), `bioluminescence` (active state), `pressure-hull` reconceptualizado (privacy/encrypted), `depth-gauge` (status). Preliminares Phase 4.5 v2 — designer pro pendiente per brief §7.
+- **DEPRECATED app icon emoji refs §5.1 (🏢 / 📊 / 🏷️ / 🚚 / etc.):** son placeholders v1.0 — replacement con custom abstract icons SONAR cuando entreguen (Lucide React acceptable como bridge S2-S3).
+
+#### Sound naming canonical (DEPRECATED "campana naval" + sounds Admirals heritage)
+Per ADR-012 D5 + `BRIEF-SOUND-001 v1` + `01_art_direction.md` §7.2 — 5 SFX firma canonical:
+- `signal_emerge` (notificación crítica primaria, 400-800ms premium-tech tonal Apple Mail/Vercel deploy class). DEPRECATED v1 `sonar_ping` literal radio.
+- `depth_press` (firma documento, confirmación, 200-400ms Apple Touch ID success class). DEPRECATED v1 `sonar_pressure`.
+- `layer_dive` (submit / escritura / drill-down, 150-300ms Notion page transition class). DEPRECATED v1 `sonar_depth`.
+- `console_tap` (confirmación premium click, 50-150ms Apple trackpad haptic class). DEPRECATED v1 `sonar_console`.
+- `panel_open` (abrir modal/drawer/panel, 200-400ms Apple notification center reveal class). DEPRECATED v1 `sonar_hatch`.
+- **Boot sound canonical:** premium-tech tonal class (Mac chime class moderna, neutral) — NO "campana al subir a puente naval" militar literal. ~1.2s con tonal rise + click decay (cero metáfora naval).
+
+#### Logo SONAR canonical (working v2)
+Per `art/branding/logo_v2/README.md` + decisión founder S1.7:
+- **Concept A "S-curl open"** working canonical adopted 2026-05-03. 3 arcs trazando una S con eco a la derecha.
+- **Lectura semántica founder:** los 3 arcs representan **capas de profundidad / trabajar a fondo** (NO ondas sonar radio literal).
+- **Status:** WORKING CANONICAL no firmado ADR (deferred ~2-4 semanas uso real). Si hold, formalizar ADR-013.
+- **Aplicado en SONAR Tablet:** boot splash logo reveal (§3 §4.2), lock screen logo discreto (§4.3), dorso grabado (§2 §2.4), dock con logo (§21).
+- **DEPRECATED en este doc:** "logo Admirals + ondas de señal naval expandiéndose / 3 anillos concéntricos" → reinterpretado como **3 arcs S-curl reveal** del logo concept A (la metáfora "anillos concéntricos" se mantiene visualmente PERO semántica = capas profundidad NO ondas señal).
+
+### Cómo navegar este doc post-pivot
+
+1. **Lee primero esta NOTICE r1.1 + ADRs 011/012 + `01_art_direction.md` v2.0-scaffold-r7 NOTICE r6.**
+2. **Funcionalidad/arquitectura/UX flows §1-§29 siguen válidos** — Tablet 5º Pilar + dispositivo físico + 4 estados + 8 apps base + dock despacho + multi-cuenta + permisos. La FUNCIÓN no cambia con el pivot.
+3. **Lo que cambia es el "wrapping" identidad/visual/voz/sound:** naming SONAR + paleta hybrid + tipografía Geist + voz neutral + iconografía abstract + sound canonical 5 SFX + logo v2 concept A.
+4. **Refs literales pre-pivot SUPERSEDED:** "Admirals" en cualquier forma → SONAR; "azul marino + dorado" → Sonar Bright + Tier A/B/C; "Inter/Manrope" → Geist Sans; "campana naval" → tonal premium-tech; "señal naval" → capas profundidad / signal abstract; "navales/militares/cinematográficos wallpapers" → wallpapers abstract depth/bioluminescence per moodboard `01_brief_marketing.md` v1.
+5. **Pass 1 ejecutado S1.8:** bulk identity purge (Admirals→SONAR + AdmiralsOS→SonarOS) + key sections inline (§2.4 + §3 + §4.1 + §4.2 + §4.3 + §29). **Pass 2 pendiente:** §6-§19 apps detail-pass + §26 sounds canonical full + §27 anti-patterns post-pivot.
+6. **Si duda interpretación → ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 mandan.**
 
 ---
 
 ## 0. Resumen ejecutivo
 
-La **Admirals Tablet** es la **plataforma raíz de software del ecosistema** y el **único "menú" aceptable de Admirals**.
+La **SONAR Tablet** es la **plataforma raíz de software del ecosistema** y el **único "menú" aceptable de SONAR**.
 
 Es a la vez:
 
 - **Un dispositivo físico** con modelo 3D propio, animaciones de manipulación, sonidos identitarios, variantes de hardware. Cuando un jugador lo saca del bolsillo, todo el mundo lo ve.
-- **Un sistema operativo** (AdmiralsOS) con boot, home, notificaciones, ajustes — diseñado como un sistema empresarial, no como un smartphone genérico.
-- **Una plataforma de apps modulares** que cada producto Admirals instala. La Granja añade su Manager Panel. El Molino añade su panel de molienda. Los Restaurantes añaden su panel de cocina. Etc.
+- **Un sistema operativo** (SonarOS) con boot, home, notificaciones, ajustes — diseñado como un sistema empresarial, no como un smartphone genérico.
+- **Una plataforma de apps modulares** que cada producto SONAR instala. La Granja añade su Manager Panel. El Molino añade su panel de molienda. Los Restaurantes añaden su panel de cocina. Etc.
 - **El gancho universal** que conecta jugadores entre sí y con el ecosistema: mensajes, contratos, banca, ofertas de trabajo, comercio.
 
-Sin la Tablet, Admirals sería un conjunto de scripts. **Con la Tablet, Admirals es un ecosistema unificado.**
+Sin la Tablet, SONAR sería un conjunto de scripts. **Con la Tablet, SONAR es un ecosistema unificado.**
 
 ---
 
@@ -45,7 +115,7 @@ Esto resuelve la tensión filosófica:
 
 Diferencias intencionadas con un phone genérico:
 
-| Phone genérico FiveM | Admirals Tablet |
+| Phone genérico FiveM | SONAR Tablet |
 |---|---|
 | Vida personal del personaje | Vida profesional / empresarial del jugador |
 | Twitter / Instagram in-game | Mercado laboral, contratos B2B |
@@ -55,7 +125,7 @@ Diferencias intencionadas con un phone genérico:
 | 1 app de banca básica | Banca empresarial real con cuentas, contratos, libros |
 | 1 app de fotos | Cámara para documentar (uso profesional, no selfies) |
 
-**Convivencia con phones de terceros:** la Tablet es opcional — un servidor puede usar phone genérico para vida social + Tablet Admirals para vida empresarial. **No competimos por el mismo espacio mental del jugador.**
+**Convivencia con phones de terceros:** la Tablet es opcional — un servidor puede usar phone genérico para vida social + Tablet SONAR para vida empresarial. **No competimos por el mismo espacio mental del jugador.**
 
 ### 1.3 La Tablet NO es un menú
 
@@ -77,9 +147,9 @@ Lo que la Tablet **NO hace**:
 - ❌ **Apps con UIs cada una a su rollo.** El sistema operativo impone consistencia: tipografía, paleta, controles, transiciones — todos comparten librería de componentes.
 - ❌ **Notificaciones genéricas tipo "tienes 1 mensaje".** Cada notificación tiene icono, color, sonido, contexto.
 - ❌ **Boot instantáneo.** El boot es parte del wooow — no se salta.
-- ❌ **App icons mal pensados.** Cada app tiene un icono propio diseñado, coherente con la paleta y el lenguaje visual Admirals.
-- ❌ **No tener identidad de marca en la UI.** El logo Admirals aparece en el boot, en el lock screen, en el dorso de la tablet. La marca está omnipresente sin ser invasiva.
-- ❌ **Apps imposibles de quitar.** Aunque las apps de Admirals son las predeterminadas, el jugador puede ocultar/reordenar.
+- ❌ **App icons mal pensados.** Cada app tiene un icono propio diseñado, coherente con la paleta y el lenguaje visual SONAR.
+- ❌ **No tener identidad de marca en la UI.** El logo SONAR aparece en el boot, en el lock screen, en el dorso de la tablet. La marca está omnipresente sin ser invasiva.
+- ❌ **Apps imposibles de quitar.** Aunque las apps de SONAR son las predeterminadas, el jugador puede ocultar/reordenar.
 
 ---
 
@@ -95,13 +165,13 @@ Lo que la Tablet **NO hace**:
 
 **Elementos físicos visibles:**
 - **Pantalla** (frontal, ocupa ~85% del frente).
-- **Marco** delgado con el nombre **ADMIRALS** grabado en la parte inferior (sutil, no llamativo).
+- **Marco** delgado con el nombre **SONAR** grabado en la parte inferior (sutil, no llamativo).
 - **Cámara frontal** pequeña en el bisel superior (selfie / video-llamadas).
 - **Cámara trasera** en esquina superior izquierda (para documentación in-world: fotos de campos, productos).
 - **Botón físico de power** en lateral derecho.
 - **Botón físico de volumen** (subir/bajar) en lateral derecho.
 - **Puerto de carga** en lateral inferior (decorativo, no funcional gameplay).
-- **Logo Admirals** grabado en el dorso (con acabado especular sutil).
+- **logo SONAR** grabado en el dorso (con acabado especular sutil).
 - **Identificador del propietario** opcional — el jugador puede grabar su nombre en el dorso desde Settings (texto plano).
 
 **Materiales por variante (ver §2.2):**
@@ -116,12 +186,12 @@ Lo que la Tablet **NO hace**:
 | Tier | Coste in-game | Hardware | Beneficios extra |
 |---|---|---|---|
 | **Básica** | Bajo (o gratis al crear personaje) | Aluminio mate, color gris | Acceso a todas las apps base. 6 wallpapers. 3 ringtones. |
-| **Pro** | Medio | Aluminio cepillado, 4 colores (gris, negro, dorado, plata) | + 20 wallpapers premium. + 10 ringtones. + Skin "Premium" para AdmiralsOS. + Animación de boot premium. |
+| **Pro** | Medio | Aluminio cepillado, 4 colores (gris, negro, dorado, plata) | + 20 wallpapers premium. + 10 ringtones. + Skin "Premium" para SonarOS. + Animación de boot premium. |
 | **Enterprise** | Alto | Titanio + dorso carbono, 2 acabados (negro mate / champagne) | + 50 wallpapers exclusivos. + 25 ringtones. + Skin "Enterprise" (paleta más sobria, tipografía más fina). + **Dock-ready certificado** (anim distinta al docking). + Grabado personalizado del dorso (logo de empresa). + Soporte para **2 cuentas simultáneas** (útil para gerentes de varias empresas). |
 
-**Compra:** desde la **Tienda Admirals** (la propia app, ver §13). NPC vendedor opcional + entrega física (caja con animación de unboxing — wooow).
+**Compra:** desde la **Tienda SONAR** (la propia app, ver §13). NPC vendedor opcional + entrega física (caja con animación de unboxing — wooow).
 
-**Pérdida/robo:** la Tablet puede perderse o ser robada. Si pasa, el jugador puede comprar una nueva en la Tienda y **toda su data se restaura** (cuenta cloud Admirals — ver §16). Los archivos privados (notas, fotos) se restauran si tenía sync activo; si no, se pierden.
+**Pérdida/robo:** la Tablet puede perderse o ser robada. Si pasa, el jugador puede comprar una nueva en la Tienda y **toda su data se restaura** (cuenta cloud SONAR — ver §16). Los archivos privados (notas, fotos) se restauran si tenía sync activo; si no, se pierden.
 
 ### 2.3 Estados físicos de la Tablet
 
@@ -138,18 +208,18 @@ La Tablet tiene **4 estados físicos** distintos que el mundo ve:
 
 ### 2.4 Identidad visual de la marca
 
-- **Logo Admirals** grabado en dorso — siempre visible cuando otro jugador ve la Tablet de espaldas.
-- **Splash screen de boot** — logo Admirals + ondas de "señal naval" expandiéndose.
-- **Wallpapers oficiales** — todos con motivos navales/militares/cinematográficos sobrios.
-- **Tipografía** — sans-serif moderna pero con peso (sugerencia: Inter / Manrope / SF Pro). Nunca tipografía playful.
-- **Paleta** — azul marino profundo + dorado discreto + blanco/gris neutros. La paleta está fijada en el `art_direction.md`.
-- **Sonidos identitarios** — boot sound naval (ver §3.2), notification sound suave, app launch click discreto.
+- **logo SONAR** grabado en dorso — siempre visible cuando otro jugador ve la Tablet de espaldas.
+- **Splash screen de boot** — logo SONAR concept A "S-curl open" + 3 arcs reveal sequential (capas profundidad). DEPRECATED v1.0: "ondas de señal naval expandiéndose". Ver §3 §4.2 + `art/branding/logo_v2/README.md` + `01_brief_motion.md` v1 §4.5 `logo_descent_reveal`.
+- **Wallpapers oficiales** — motivos abstractos profundidad (`depth-grid`, `bioluminescence`, `descent-layers`, `signal-clarity` per `01_brief_marketing.md` v1 moodboard). DEPRECATED v1.0: "navales/militares/cinematográficos".
+- **Tipografía** — **Geist Sans** (300/500/600) primary canonical per `01_art_direction.md` §4. Mono/numerics: Geist Mono. Fallback `Inter Tight → Inter → system-ui`. DEPRECATED v1.0 sugerencias Inter/Manrope/SF Pro como primary.
+- **Paleta** — hybrid theme post-ADR-012: Tier A canvas (~30-40% Abyss Black `#03070A` + ~30-40% Crew 100 `#F0F4F4`) + Tier B identity pop (~10-15% Sonar Bright `#2DD4BF` + Sonar Pulse `#14E5DD`) + Tier C structural (~10% Coloro `#175A5F`) + signals <5%. SSoT canonical: `01_art_direction.md` v2.0-scaffold-r7 §3.4. DEPRECATED v1.0: "azul marino profundo + dorado discreto + blanco/gris neutros".
+- **Sonidos identitarios** — 5 SFX canonical post-ADR-012: `signal_emerge` (notif primary), `depth_press` (firma/confirm), `layer_dive` (submit/drill-down), `console_tap` (click premium), `panel_open` (modal/drawer). Boot sound = tonal premium-tech class (Mac chime moderna neutral). DEPRECATED v1.0: "boot sound naval" + "campana naval". Ver `01_art_direction.md` §7.2 + `01_brief_sound.md` v1.
 
 ---
 
 ## 3. La animación de saque/guarde — el wooow del primer segundo
 
-> **Esta animación es lo primero que ve un jugador nuevo de Admirals.** Tiene que ser memorable.
+> **Esta animación es lo primero que ve un jugador nuevo de SONAR.** Tiene que ser memorable.
 
 ### 3.1 Sacar la Tablet
 
@@ -161,7 +231,7 @@ La Tablet tiene **4 estados físicos** distintos que el mundo ve:
 3. Saca la Tablet (visible). **Animación 2: extraer**.
 4. Lleva la Tablet a posición de uso (frente al pecho, ligeramente inclinada). **Animación 3: posicionar**.
 5. Pulsa botón de power con el pulgar. **Animación 4: encender**.
-6. Pantalla pasa de negro a logo Admirals (boot).
+6. Pantalla pasa de negro a logo SONAR (boot).
 7. Boot completo en 1.5-2 segundos.
 8. Aparece **lock screen** o, si está desbloqueada, **home**.
 
@@ -175,12 +245,12 @@ La Tablet tiene **4 estados físicos** distintos que el mundo ve:
 
 ### 3.2 Boot sound — el sonido identitario
 
-> **Comparable a la campana al subir a un puente naval.** Distintivo, breve, profesional.
+> **Premium-tech tonal class.** Distintivo, breve, professional. Apple/Vercel/Linear class — cero metáfora militar/naval. DEPRECATED v1.0: "campana al subir a puente naval".
 
-- **Sonido:** ~1.2 segundos. Una nota grave de campana naval suavizada + un acorde sintético sobrio que sube. Termina con un click discreto.
-- **No es alegre.** Es serio, profesional, naval. Como un Mac chime pero con identidad propia.
+- **Sonido:** ~1.2 segundos. Tonal rise mid-frequency con leve pitch-emerging + acorde sintético sobrio + click discreto al final. Carácter premium-tech neutral (Apple chime moderno class). Ver `01_brief_sound.md` v1 §2.4 boot sequence sound spec.
+- **No es alegre.** Es preciso, calmo, professional. Como un Mac chime moderno con identidad propia SONAR — cero connotación naval/militar.
 - **No se puede silenciar al 100%** — el volumen mínimo es bajo pero perceptible. Es parte del branding.
-- **Variantes Pro / Enterprise:** versiones con más capas armónicas, más "ricas". Mismo motivo, calidad de mezcla mayor.
+- **Variantes Pro / Enterprise:** versiones con más capas armónicas tonales, más "ricas". Mismo motivo premium-tech, calidad de mezcla mayor.
 
 ### 3.3 Guardar la Tablet
 
@@ -201,17 +271,17 @@ La Tablet tiene **4 estados físicos** distintos que el mundo ve:
 
 ---
 
-## 4. AdmiralsOS — el sistema operativo
+## 4. SonarOS — el sistema operativo
 
 ### 4.1 Filosofía: tablet empresarial, no smartphone
 
-AdmiralsOS está diseñado como un **sistema operativo de productividad empresarial**, no como un sistema social-personal.
+SonarOS está diseñado como un **sistema operativo de productividad empresarial premium-tech**, no como un sistema social-personal. Voz neutral premium-tech (Vercel/Linear/Stripe/Apple Pro apps class) per `01_art_direction.md` §3.2 — cero arquetipo naval/militar.
 
 - **Layout horizontal por defecto** (la Tablet vive horizontal — formato dashboard).
 - **Densidad de información alta** — caben varios paneles a la vez. No es minimalismo decorativo; es información útil empaquetada con jerarquía clara.
-- **Colores sobrios** — azul marino, dorado, blancos. Cero saturación gratuita.
-- **Animaciones contenidas** — transiciones suaves de 200-300ms, nunca rebotes ni "spring" llamativos. Profesional, no juguetón.
-- **Sonidos discretos** — clicks suaves, sin chimes alegres.
+- **Colores hybrid theme post-ADR-012** — Tier A canvas (Abyss Black + Crew 100) + Tier B identity (Sonar Bright + Sonar Pulse) + Tier C structural (Coloro) + signals <5%. Cero saturación gratuita. SSoT: `01_art_direction.md` §3.4. DEPRECATED: azul marino + dorado + blancos.
+- **Animaciones contenidas** — transiciones suaves 200-300ms (`motion-base`), nunca rebotes ni "spring" llamativos. Per `01_art_direction.md` §16 + `01_brief_motion.md` v1. Easing default `ease-depth-descent` (deprecated v1 `submarine-ease-out`).
+- **Sonidos discretos** — clicks tonales premium-tech (`console_tap` 50-150ms canonical), sin chimes alegres ni metáfora naval.
 
 ### 4.2 Boot sequence
 
@@ -220,10 +290,10 @@ AdmiralsOS está diseñado como un **sistema operativo de productividad empresar
 | Fase | Duración | Visual | Audio |
 |---|---|---|---|
 | **0 — Pantalla negra** | 0.2s | Negro absoluto | Silencio |
-| **1 — Logo Admirals aparece** | 0.4s | Logo en blanco fundido al centro | Inicio del boot sound |
-| **2 — Ondas de señal naval expandiéndose** | 0.5s | 3 anillos concéntricos brevemente desde el logo | Climax del boot sound |
-| **3 — Texto "AdmiralsOS"** debajo del logo | 0.3s | Aparece tipografía fina + versión OS muy pequeña | Decay del sonido |
-| **4 — Fade a home/lock** | 0.4s | Cross-fade limpio | Click discreto al final |
+| **1 — logo SONAR aparece** | 0.4s | Logo SONAR concept A "S-curl open" (`art/branding/logo_v2/`) reveal por capas (3 arcs sequential) en Sonar Bright `#2DD4BF` sobre Abyss Black `#03070A` | Inicio del boot sound (tonal rise) |
+| **2 — 3 arcs S-curl reveal completo** | 0.5s | Los 3 arcs del logo concept A se completan + leve glow halation Sonar Bright. **DEPRECATED v1.0: "ondas de señal naval expandiéndose / 3 anillos concéntricos"** — reinterpretado: los 3 arcs son **capas profundidad** (ver NOTICE r1.1 §Logo SONAR canonical), NO ondas radio/sonar literal. Per `01_brief_motion.md` v1 §4.5 `logo_descent_reveal` signature animation | Climax del boot sound |
+| **3 — Texto "SonarOS"** debajo del logo | 0.3s | Aparece tipografía Geist Sans 300 thin + versión OS muy pequeña Geist Mono | Decay del sonido |
+| **4 — Fade a home/lock** | 0.4s | Cross-fade limpio (`ease-depth-descent`) | `console_tap` discreto al final |
 
 Total boot: ~1.8 segundos. **No skippable** — es parte de la firma.
 
@@ -239,7 +309,7 @@ Total boot: ~1.8 segundos. **No skippable** — es parte de la firma.
 - **Wallpaper** (configurable, ver §2.4).
 - **Hora grande** en la esquina superior izquierda (fuente fina elegante).
 - **Fecha** debajo de la hora.
-- **Logo Admirals** sutil en esquina superior derecha.
+- **logo SONAR** sutil en esquina superior derecha.
 - **Indicador de notificaciones** si hay alguna pendiente (badges en los iconos abajo).
 - **Indicador de estado** (señal in-world, batería decorativa, modo silencio).
 - **Texto inferior**: *"Toca para desbloquear"* o equivalente.
@@ -335,7 +405,7 @@ Acceso a configuración global del dispositivo. Incluye:
 - Personalización (wallpaper, ringtones, theme).
 - Sonidos (volumen general, ringtones por app, vibración).
 - Notificaciones (qué apps notifican, qué tipos).
-- Cuenta(s) (gestionar cuenta(s) Admirals — ver §16).
+- Cuenta(s) (gestionar cuenta(s) SONAR — ver §16).
 - Privacidad (PIN, qué apps son visibles a otros jugadores que vean tu pantalla).
 - Almacenamiento (qué apps ocupan más espacio — uso narrativo / RP).
 - Acerca de (versión OS, modelo, número de serie, soporte).
@@ -346,15 +416,15 @@ Acceso a configuración global del dispositivo. Incluye:
 Estos no son detalles internos — son cosas que **el jugador percibe**:
 
 - **Apps siempre disponibles si están instaladas.** No hay "no tengo cobertura". Solo el toggle WiFi cambia la disponibilidad de funciones online (mensajes, mercado).
-- **Sincronización cloud Admirals.** Los datos de cuenta (banca, contratos, mensajes, notas) se guardan en cuenta cloud. Cambias de Tablet → todo restaurado (ver §16).
-- **Apps modulares.** Cada producto Admirals añade su(s) app(s) sin tocar el OS. Si un servidor instala solo Granja, en la Tablet se ven las apps base + las apps de Granja. Si añade Molino, aparecen las apps de Molino.
+- **Sincronización cloud SONAR.** Los datos de cuenta (banca, contratos, mensajes, notas) se guardan en cuenta cloud. Cambias de Tablet → todo restaurado (ver §16).
+- **Apps modulares.** Cada producto SONAR añade su(s) app(s) sin tocar el OS. Si un servidor instala solo Granja, en la Tablet se ven las apps base + las apps de Granja. Si añade Molino, aparecen las apps de Molino.
 - **Updates de apps in-world.** Visualmente: cuando un servidor actualiza un producto, el jugador ve un breve splash *"App Manager Panel actualizada"* la próxima vez que abra la Tablet. Detalle de inmersión.
 
 ---
 
 ## 5. Catálogo de apps de lanzamiento — visión general
 
-> Las apps siguientes son las **apps base** que cualquier jugador del ecosistema Admirals tiene instaladas desde el momento que adquiere su primera Tablet. Son apps **transversales** — no dependen de un nodo concreto. Los productos Admirals (Granja, Molino, Restaurantes…) **añaden** apps adicionales (como Manager Panel del granjero, panel del molinero, etc.).
+> Las apps siguientes son las **apps base** que cualquier jugador del ecosistema SONAR tiene instaladas desde el momento que adquiere su primera Tablet. Son apps **transversales** — no dependen de un nodo concreto. Los productos SONAR (Granja, Molino, Restaurantes…) **añaden** apps adicionales (como Manager Panel del granjero, panel del molinero, etc.).
 
 ### 5.1 Mapa de apps de lanzamiento
 
@@ -367,7 +437,7 @@ Estos no son detalles internos — son cosas que **el jugador percibe**:
 | 5 | **Mensajes** | 💬 burbuja | Comunicación profesional 1-a-1 y grupal entre jugadores y empresas |
 | 6 | **Banca** | 🏦 columna | Cuentas personales y empresariales, transferencias, contratos financieros |
 | 7 | **Notas & Contratos** | 📋 pergamino | Documentos personales y contratos B2B con firma digital |
-| 8 | **Tienda Admirals** | 🛒 carro | Compra de productos Admirals (variantes Tablet, licencias, skins, apps) |
+| 8 | **Tienda SONAR** | 🛒 carro | Compra de productos SONAR (variantes Tablet, licencias, skins, apps) |
 | 9 | **Settings** | ⚙ engranaje | Configuración global del dispositivo |
 
 > **Nota sobre Manager Panel:** la app es **una sola** pero su contenido **se compone dinámicamente** según las empresas a las que el jugador pertenezca. Un dueño de Granja ve el Manager Panel del granjero (descrito en `01_node_farm.md` §12). Un dueño de Molino verá el del molinero (futuro). Un jugador con Granja + Molino verá un selector de empresa al abrir la app y luego el panel correspondiente.
@@ -380,7 +450,7 @@ Estos no son detalles internos — son cosas que **el jugador percibe**:
 - **Tab bar** lateral izquierda (rara) o superior (común) para sub-secciones.
 - **Tipografía**: la misma del OS (sans-serif corporativa).
 - **Colores**: cada app puede tener un color de acento, pero todas comparten la paleta base.
-- **Botones primarios**: estilo Admirals (azul marino + dorado al hover).
+- **Botones primarios**: estilo SONAR (azul marino + dorado al hover).
 - **Tablas**: estilo dashboard, filas alternadas, sortable, filtrable.
 - **Modales**: con fade + slight scale-in (200ms).
 - **Toasts**: arriba a la derecha, fade out en 4s.
@@ -457,7 +527,7 @@ Botón **[+ Nueva]** → wizard:
 
 ### 7.1 Propósito
 
-> **Esta es la app que más identifica a Admirals.**
+> **Esta es la app que más identifica a SONAR.**
 
 El **ERP de gestión empresarial** del ecosistema. Cuando una empresa tiene complejidad (empleados, parcelas, inventario, finanzas), el jugador la opera desde el Manager Panel.
 
@@ -495,7 +565,7 @@ Cambiar empresa = recargar el panel con sus datos. **Wooow:** transición suave 
 
 ### 7.4 Datos en tiempo real
 
-> Toda la información se actualiza en vivo. El bus de eventos del ecosistema (`admirals:state_change`) garantiza que cualquier cambio en el mundo aparece en la Tablet inmediatamente.
+> Toda la información se actualiza en vivo. El bus de eventos del ecosistema (`SONAR:state_change`) garantiza que cualquier cambio en el mundo aparece en la Tablet inmediatamente.
 
 Esto permite escenas wooow: el dueño está en la oficina viendo el Manager Panel y, **al mismo tiempo que su empleado termina una cosecha**, el silo se llena en la pantalla. Sin refrescar.
 
@@ -666,13 +736,13 @@ Comunicación profesional entre jugadores y empresas. **Mensajes 1-a-1**, **grup
 ### 10.4 Privacidad
 
 - Los mensajes son **privados**. Solo participantes del chat los ven.
-- **Cifrado simulado** (visual: indicador 🔒 que dice *"Mensajes cifrados de extremo a extremo Admirals"*) — RP, no implementación real, pero refuerza profesionalismo.
+- **Cifrado simulado** (visual: indicador 🔒 que dice *"Mensajes cifrados de extremo a extremo SONAR"*) — RP, no implementación real, pero refuerza profesionalismo.
 - **Borrar mensaje** disponible (deja "mensaje eliminado" como placeholder).
 
 ### 10.5 Wooow específicos
 
 - **Notificación cuando contacto importante escribe** — los jugadores VIP del jugador (ej. su jefe, sus empleados) tienen prioridad alta y notifican incluso en modo silencio (configurable).
-- **Sticker pack Admirals**: 12 stickers con motivos navales / agricolas (futuro) — el lado humano del profesionalismo.
+- **Sticker pack SONAR**: 12 stickers con motivos navales / agricolas (futuro) — el lado humano del profesionalismo.
 
 ---
 
@@ -699,7 +769,7 @@ Gestión financiera personal y empresarial. Cuentas, transferencias, contratos f
 Cada cuenta tiene:
 - Nombre (ej. "Cuenta personal Marcos", "Cuenta Granja del Valle").
 - Saldo actual.
-- IBAN ficticio Admirals (formato `AD-XXXX-XXXX-XXXX`).
+- IBAN ficticio SONAR (formato `AD-XXXX-XXXX-XXXX`).
 - Tipo (personal / empresarial / cooperativa).
 - Permisos (quién puede operar — relevante en empresarial).
 
@@ -724,7 +794,7 @@ Vista del estado de la caja fuerte de mi empresa:
 ### 11.6 Wooow específicos
 
 - **Animación de moneda al transferir** — sutil, no festiva.
-- **Recibos auto-archivados** en Notas & Contratos. Cada transferencia genera un PDF con el sello Admirals.
+- **Recibos auto-archivados** en Notas & Contratos. Cada transferencia genera un PDF con el sello SONAR.
 - **Alertas anti-fraude** (RP): si hay un pago grande inesperado, el sistema pregunta confirmación adicional. Detalle de profesionalismo.
 
 ---
@@ -794,20 +864,20 @@ Cuando un contrato requiere firma:
 1. Apertura del PDF en pantalla completa.
 2. El sistema resalta los campos pendientes de firma.
 3. Tap en el campo → **animación de firma** (el jugador "dibuja" su firma con el dedo en pantalla, o usa una firma guardada).
-4. Sello Admirals se aplica con timestamp.
+4. Sello SONAR se aplica con timestamp.
 5. Notificación a la otra parte si ya cerraron por ambos lados.
 6. **Si docking + impresora física en oficina:** el contrato se imprime físicamente al cerrarse.
 
 ### 12.5 Wooow específicos
 
-- **Sello Admirals con timestamp visible** en cada documento firmado.
+- **Sello SONAR con timestamp visible** en cada documento firmado.
 - **Animación de impresora** cuando se imprime físicamente.
 - **Búsqueda potente** dentro de los documentos (tipo Apple Notes — buscas "trigo 200kg" y aparecen los contratos relevantes).
 - **OCR de fotos** (futuro): si el jugador toma una foto de un papel del mundo, la Tablet la guarda como nota con texto reconocido.
 
 ---
 
-## 13. App Tienda Admirals
+## 13. App Tienda SONAR
 
 ### 13.1 Propósito
 
@@ -824,7 +894,7 @@ Tienda oficial dentro del ecosistema. Donde se compran:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ Tienda Admirals                       [Carrito] │
+│ Tienda SONAR                       [Carrito] │
 ├─────────────────────────────────────────────────┤
 │ Categorías:                                     │
 │ [Hardware] [Skins] [Apps] [Licencias] [Premium] │
@@ -851,7 +921,7 @@ Tienda oficial dentro del ecosistema. Donde se compran:
 4. Confirmación de pago (cuenta personal o empresarial).
 5. **Animación de compra** (carro avanzando + check verde).
 6. Entrega:
-   - **Hardware (Tablet)**: NPC delivery → camión Admirals llega a la dirección registrada del jugador → animación de unboxing wooow.
+   - **Hardware (Tablet)**: NPC delivery → camión SONAR llega a la dirección registrada del jugador → animación de unboxing wooow.
    - **Skins / digital**: aplicado instantáneamente.
    - **Licencias**: añadidas a Notas & Contratos > Certificados, accesibles por el sistema de validación de la vertical correspondiente.
 
@@ -865,7 +935,7 @@ Algunas licencias requieren un **mini-curso** antes de obtenerse:
 
 - **Entrega de Tablet por NPC delivery** — animación de unboxing en la oficina/casa del jugador.
 - **Mini-cursos de licencias** físicos en mundo, no en menú.
-- **Integración total con verticales** — al comprar la "Licencia de Mecánico Admirals" desde la Tienda, automáticamente se desbloquea el rol en el nodo Mecánico (futuro).
+- **Integración total con verticales** — al comprar la "Licencia de Mecánico SONAR" desde la Tienda, automáticamente se desbloquea el rol en el nodo Mecánico (futuro).
 
 ---
 
@@ -879,7 +949,7 @@ Algunas licencias requieren un **mini-curso** antes de obtenerse:
 | **Sonido** | Volumen general, ringtone por app, vibración on/off, modo silencio horario |
 | **Notificaciones** | Lista de apps con toggle y prioridad por app |
 | **Privacidad** | PIN, modo huella (futuro), apps ocultas a vista externa, sync cloud |
-| **Cuenta(s)** | Mi cuenta Admirals, cambiar de cuenta (Enterprise: 2 simultáneas) |
+| **Cuenta(s)** | Mi cuenta SONAR, cambiar de cuenta (Enterprise: 2 simultáneas) |
 | **Almacenamiento** | Uso por app, limpieza de cache (RP) |
 | **Hardware** | Modelo Tablet, número serie, tier, accesorios (dock, teclado futuro) |
 | **Acerca de** | Versión OS, créditos, soporte |
@@ -900,7 +970,7 @@ Algunas licencias requieren un **mini-curso** antes de obtenerse:
 
 > Las notificaciones son la **voz del ecosistema** entrando al jugador. Mal hechas, son ruido. Bien hechas, son **el latido del juego**.
 
-Reglas Admirals:
+Reglas SONAR:
 - **Cada notificación tiene contexto, no solo texto.** Icono + color + sonido + acción profunda.
 - **Cada notificación es accionable.** Tap → abre la app en el contexto exacto (parcela afectada, mensaje nuevo, contrato pendiente).
 - **Cada notificación tiene caducidad.** Si pasa N tiempo sin atender, se archiva como "no leída antigua" (no se pierde, pero no presiona).
@@ -963,9 +1033,9 @@ Cada tipo de notificación tiene su modo por defecto, y el jugador lo puede ajus
 
 ## 16. Sistema multi-cuenta y multi-empresa
 
-### 16.1 Cuenta Admirals (cloud)
+### 16.1 cuenta SONAR (cloud)
 
-> **Cada personaje tiene una cuenta Admirals**. Es la identidad del personaje en el ecosistema.
+> **Cada personaje tiene una cuenta SONAR**. Es la identidad del personaje en el ecosistema.
 
 La cuenta guarda:
 - Datos personales (nombre, alias, foto de perfil).
@@ -979,10 +1049,10 @@ La cuenta guarda:
 
 ### 16.2 Sincronización cloud
 
-- Toda la cuenta vive en el servidor (Admirals Cloud — RP).
+- Toda la cuenta vive en el servidor (SONAR Cloud — RP).
 - Cambias de Tablet → todo restaurado al hacer login.
 - Si pierdes la Tablet, los datos no se pierden.
-- **Detalle inmersivo:** hay una breve animación de "Sincronizando con Admirals Cloud" al hacer login en una Tablet nueva (~5s). Recuerda al primer setup de un iPhone.
+- **Detalle inmersivo:** hay una breve animación de "Sincronizando con SONAR Cloud" al hacer login en una Tablet nueva (~5s). Recuerda al primer setup de un iPhone.
 
 ### 16.3 Multi-empresa (jugador único, varias empresas)
 
@@ -1000,7 +1070,7 @@ Un jugador puede ser:
 
 ### 16.4 Multi-cuenta (Tablet Enterprise)
 
-> **Solo tier Enterprise (§2.2).** Permite **dos cuentas Admirals simultáneas** en el mismo dispositivo.
+> **Solo tier Enterprise (§2.2).** Permite **dos cuentas SONAR simultáneas** en el mismo dispositivo.
 
 Caso de uso: jugadores que mueven multi-personaje muy estructurado (admin RP, periodista que cubre dos empresas, etc.). Excepción RP — no es default.
 
@@ -1053,30 +1123,30 @@ Cuando inactivo, todos pueden ver lo mismo que el dueño.
 
 ## 18. Capa de personalización por servidor
 
-> **Los servidores que compren Admirals deben poder retocar la marca para encajar con su universo.** Pero sin destruir la identidad Admirals.
+> **Los servidores que compren SONAR deben poder retocar la marca para encajar con su universo.** Pero sin destruir la identidad SONAR.
 
 ### 18.1 Qué pueden personalizar los servidores
 
 | Personalizable | Cómo |
 |---|---|
-| **Boot logo splash** | Servidor puede añadir su logo en una sub-pantalla "Servidor: [Nombre]" antes del logo Admirals. Pero el logo Admirals siempre está. |
+| **Boot logo splash** | Servidor puede añadir su logo en una sub-pantalla "Servidor: [Nombre]" antes del logo SONAR. Pero el logo SONAR siempre está. |
 | **Wallpapers default** | Servidor puede añadir wallpapers propios al pack base. |
 | **Idiomas de UI** | Servidor selecciona idioma default. Multi-idioma soportado. |
 | **Coste de Tablet básica** | Configurable (gratis a alto). |
 | **Disponibilidad de tiers** | Servidor puede deshabilitar Pro / Enterprise si quiere homogeneidad. |
-| **Apps disponibles** | Servidor activa/desactiva apps según los productos Admirals que tenga. |
-| **Apps de terceros** | Servidor puede instalar **apps de terceros compatibles** con el SDK Admirals (oleada 2 — ver §20). |
-| **Branding de impresión** | Los PDFs (contratos, albaranes) pueden llevar logo del servidor además del de Admirals. |
+| **Apps disponibles** | Servidor activa/desactiva apps según los productos SONAR que tenga. |
+| **Apps de terceros** | Servidor puede instalar **apps de terceros compatibles** con el SDK SONAR (oleada 2 — ver §20). |
+| **Branding de impresión** | Los PDFs (contratos, albaranes) pueden llevar logo del servidor además del de SONAR. |
 
 ### 18.2 Qué NO pueden personalizar
 
-- ❌ Quitar el logo Admirals del boot.
+- ❌ Quitar el logo SONAR del boot.
 - ❌ Cambiar la fuente del OS (consistencia de marca).
 - ❌ Cambiar el sonido de boot a otro genérico (es identidad).
 - ❌ Reemplazar la app Manager Panel por otra (es la app insignia).
 - ❌ Skins que ridiculicen la marca (TOS de licencia).
 
-> **Filosofía:** queremos que servidores sientan la Tablet **suya** sin destruir lo que la hace **Admirals**.
+> **Filosofía:** queremos que servidores sientan la Tablet **suya** sin destruir lo que la hace **SONAR**.
 
 ---
 
@@ -1111,7 +1181,7 @@ Cuando inactivo, todos pueden ver lo mismo que el dueño.
 
 Si el servidor tiene phone genérico instalado:
 - **Phone:** vida personal — Twitter, mensajes informales, llamadas privadas, fotos casuales.
-- **Tablet:** vida profesional — empresa, contratos, banca, marketplace, apps Admirals.
+- **Tablet:** vida profesional — empresa, contratos, banca, marketplace, apps SONAR.
 - Algunos datos pueden duplicarse (Mensajes pueden estar en ambos — el jugador elige a qué responde desde dónde).
 - Numeros de teléfono y mensajes son interoperables (oleada 2 — bridge configurable).
 
@@ -1127,7 +1197,7 @@ Si el servidor solo tiene Tablet: la Tablet asume todas las funciones, incluyend
 
 ## 20. Integración con apps de servidor (compatibilidad con stack)
 
-### 20.1 Filosofía: Admirals como ciudadano modelo del servidor
+### 20.1 Filosofía: SONAR como ciudadano modelo del servidor
 
 > La Tablet **no impone**. Se integra elegantemente con QBox, QBCore, ESX, ox_inventory, ox_target, pma-voice, sistemas de phone existentes, etc.
 
@@ -1135,7 +1205,7 @@ Si el servidor solo tiene Tablet: la Tablet asume todas las funciones, incluyend
 
 | Sistema | Cómo se integra Tablet |
 |---|---|
-| **QBox / QBCore** | Detecta automáticamente. Cuentas se sincronizan. Roles de empresa Admirals interopera con jobs/gangs nativos. |
+| **QBox / QBCore** | Detecta automáticamente. Cuentas se sincronizan. Roles de empresa SONAR interopera con jobs/gangs nativos. |
 | **ox_inventory** | Tablet es item físico estándar. Se ve en inventario, se puede dar/quitar. |
 | **ox_target** | Interacción con docks, dispensadores, lectores de tarjeta usa ox_target. |
 | **pma-voice** | Llamadas y mensajes de voz usan el voice nativo del servidor. |
@@ -1144,14 +1214,14 @@ Si el servidor solo tiene Tablet: la Tablet asume todas las funciones, incluyend
 
 ### 20.3 SDK para apps de terceros (oleada 2-3)
 
-> **Visión a futuro: la Admirals Tablet será una plataforma con SDK público.**
+> **Visión a futuro: la SONAR Tablet será una plataforma con SDK público.**
 
 Cualquier desarrollador puede crear apps que se instalan en la Tablet:
 - **Definidas por API**: estructura de datos, eventos, layout.
-- **Distribuidas vía Tienda Admirals** (o sideload por servidor).
+- **Distribuidas vía Tienda SONAR** (o sideload por servidor).
 - **Sandboxed**: no pueden romper apps del core ni acceder a datos de otras apps sin permiso explícito del usuario.
 
-Esto convierte a Admirals en **plataforma**, no solo en producto. Estratégicamente clave a largo plazo.
+Esto convierte a SONAR en **plataforma**, no solo en producto. Estratégicamente clave a largo plazo.
 
 ---
 
@@ -1186,7 +1256,7 @@ Cuando el dueño llega a su despacho:
 | **Dock pro** | Despachos premium | Dock + monitor curvo grande + teclado físico + impresora |
 | **Dock enterprise** | Sala de juntas | Dock + pantalla 65" + sistema de proyección a mesa de reuniones |
 
-Vendidos en Tienda Admirals.
+Vendidos en Tienda SONAR.
 
 ### 21.4 Animación del docking
 
@@ -1222,7 +1292,7 @@ Vendidos en Tienda Admirals.
 >
 > Va al despacho. Mete la Tablet en el dock. Monitor grande se enciende. Empieza a planificar el día desde el panel ampliado: marca las tareas (regar parcela 5 antes del medio día, tratar parcela 3 ya), revisa la previsión meteorológica detallada.
 >
-> Saca la Tablet del dock. Va al granero. Engancha la fumigadora al tractor. Trata la parcela 3 (acción física — fuera de Tablet). Vuelve. Recibe push: "Granja Marcos — Reputación subió a 88. Nuevo descuento del 5% en Tienda Admirals."
+> Saca la Tablet del dock. Va al granero. Engancha la fumigadora al tractor. Trata la parcela 3 (acción física — fuera de Tablet). Vuelve. Recibe push: "Granja Marcos — Reputación subió a 88. Nuevo descuento del 5% en Tienda SONAR."
 >
 > Sonríe.
 
@@ -1256,16 +1326,16 @@ Vendidos en Tienda Admirals.
 
 ### 22.4 Caso D — Servidor "Costa Naval" personalizando
 
-> Server "Costa Naval" tiene tema marino-portuario. Compran Admirals.
+> Server "Costa Naval" tiene tema marino-portuario. Compran SONAR.
 >
 > Configuran:
 > - Wallpapers default: añaden 5 imágenes de barcos del puerto.
-> - Boot splash: muestra "Costa Naval" antes del logo Admirals (~0.5s).
+> - Boot splash: muestra "Costa Naval" antes del logo SONAR (~0.5s).
 > - Idiomas: español + portugués (la comunidad es ibérica).
 > - Apps disponibles: solo Granja oleada 1 + Cadena Pan.
 > - Coste Tablet básica: gratis (la entregan con el contrato de personaje).
 >
-> El branding se siente personal para sus jugadores, sin destruir la identidad Admirals.
+> El branding se siente personal para sus jugadores, sin destruir la identidad SONAR.
 
 ---
 
@@ -1279,7 +1349,7 @@ Vendidos en Tienda Admirals.
 |---|---|---|
 | **NUI (frontend Tablet)** | React + TypeScript + Vite | UI moderna, hot-reload en dev, ecosistema rico |
 | **Estilos** | TailwindCSS + componentes propios (estilo shadcn/ui) | Velocidad de desarrollo, consistencia |
-| **Iconos** | Lucide + set propio Admirals | Profesional + identidad de marca |
+| **Iconos** | Lucide + set propio SONAR | Profesional + identidad de marca |
 | **Animaciones** | Framer Motion | Transiciones AAA |
 | **Estado global** | Zustand o Redux Toolkit | Reactivo, simple |
 | **Sockets / eventos** | NUI ↔ Lua bridge estándar FiveM | Compatible con QBox/QBCore |
@@ -1297,14 +1367,14 @@ La pantalla del modelo 3D **renderiza la UI real**. Esto se consigue con:
 - Cuando otro jugador mira la Tablet del dueño, ve **literalmente lo mismo** (salvo modo Pantalla Privada §17.3).
 - Esto es el **wooow técnico crítico** — sin esto, la Tablet sería una excusa.
 
-#### B — Bus de eventos `admirals:*`
+#### B — Bus de eventos `SONAR:*`
 
 Toda la integración entre nodos y la Tablet pasa por un bus de eventos único:
-- `admirals:state_change` — algo en el mundo cambió, las Tablets afectadas refrescan.
-- `admirals:notification` — empujar una notificación a una o varias Tablets.
-- `admirals:tablet_action` — algo se ejecutó desde una Tablet (firma, transferencia, oferta).
-- `admirals:dock_in` / `admirals:dock_out` — Tablet se acopla / desacopla.
-- `admirals:account_login` / `admirals:account_logout` — cambio de sesión.
+- `SONAR:state_change` — algo en el mundo cambió, las Tablets afectadas refrescan.
+- `SONAR:notification` — empujar una notificación a una o varias Tablets.
+- `SONAR:tablet_action` — algo se ejecutó desde una Tablet (firma, transferencia, oferta).
+- `SONAR:dock_in` / `SONAR:dock_out` — Tablet se acopla / desacopla.
+- `SONAR:account_login` / `SONAR:account_logout` — cambio de sesión.
 
 Diseño: pub/sub eficiente, escalable, con throttling en eventos chatty.
 
@@ -1316,23 +1386,23 @@ Cada app es un **paquete** con:
 - Componentes de widget (opcional, para Home).
 - Listeners de eventos del bus (qué events consume).
 
-Productos Admirals (Granja, Molino, etc.) registran sus apps en el bootstrap del OS. Si un servidor desinstala el resource de Granja, su app desaparece del OS automáticamente.
+productos SONAR (Granja, Molino, etc.) registran sus apps en el bootstrap del OS. Si un servidor desinstala el resource de Granja, su app desaparece del OS automáticamente.
 
 #### D — Cuenta cloud
 
-Tabla `admirals_accounts` en MySQL guarda estado por cuenta. La Tablet consulta y muta vía API Lua → MySQL.
+Tabla `SONAR_accounts` en MySQL guarda estado por cuenta. La Tablet consulta y muta vía API Lua → MySQL.
 
 Estructura simplificada:
 ```sql
-admirals_accounts (account_id, char_id, alias, profile_data_json, ...)
-admirals_tablets (tablet_serial, owner_account_id, tier, customizations_json, ...)
-admirals_notifications (notif_id, account_id, type, data_json, read, created_at, ...)
-admirals_messages (msg_id, chat_id, sender_id, body, attachments_json, ...)
-admirals_documents (doc_id, account_id, type, content_json, signatures_json, ...)
-admirals_companies (company_id, owner_account_id, name, vertical, ...)
-admirals_company_members (company_id, account_id, role, ...)
-admirals_market_offers (offer_id, type, publisher_id, data_json, ...)
-admirals_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...)
+SONAR_accounts (account_id, char_id, alias, profile_data_json, ...)
+SONAR_tablets (tablet_serial, owner_account_id, tier, customizations_json, ...)
+SONAR_notifications (notif_id, account_id, type, data_json, read, created_at, ...)
+SONAR_messages (msg_id, chat_id, sender_id, body, attachments_json, ...)
+SONAR_documents (doc_id, account_id, type, content_json, signatures_json, ...)
+SONAR_companies (company_id, owner_account_id, name, vertical, ...)
+SONAR_company_members (company_id, account_id, role, ...)
+SONAR_market_offers (offer_id, type, publisher_id, data_json, ...)
+SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...)
 ```
 
 #### E — Performance
@@ -1383,7 +1453,7 @@ admirals_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, 
 | PRP-02 | Tarjeta de empleado / cliente | Custom propio | Alta | 1 |
 | PRP-03 | Impresora de oficina (con animación papel saliendo) | Custom propio | Alta | 1 |
 | PRP-04 | Documento físico / contrato impreso | Custom propio | Media | 1 |
-| PRP-05 | Camión Admirals delivery (livery propia) | GTA V tuneo | Media | 1 |
+| PRP-05 | Camión SONAR delivery (livery propia) | GTA V tuneo | Media | 1 |
 
 ### 24.4 Lo que NO se pide al 3D
 
@@ -1538,7 +1608,7 @@ admirals_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, 
 - Multi-idioma (ES, EN — base; resto como overlay).
 
 **Apps de lanzamiento (8):**
-- Empresa, Manager Panel, Mercado, Logística, Mensajes, Banca, Notas & Contratos, Tienda Admirals + Settings.
+- Empresa, Manager Panel, Mercado, Logística, Mensajes, Banca, Notas & Contratos, Tienda SONAR + Settings.
 
 **Apps de productos:**
 - Manager Panel del Granjero (incluido con resource Granja).
@@ -1569,7 +1639,7 @@ admirals_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, 
 
 - **App Drones** (con la vertical de drones agrícolas — Granja oleada 3).
 - **OCR** sobre fotos de papeles → notas.
-- **SDK público** para apps de terceros + Tienda Admirals con sección "Apps de la comunidad" (curado).
+- **SDK público** para apps de terceros + Tienda SONAR con sección "Apps de la comunidad" (curado).
 - **Sistema de notaría** (compra/venta de empresas vía Mercado + escritura digital).
 - **Pago cara a cara con QR físico** (variante alternativa al inter-Tablet).
 - **Modo facial** (cámara frontal escanea al personaje).
@@ -1577,22 +1647,35 @@ admirals_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, 
 
 ### Oleada 4+ — visión a largo plazo
 
-- **Plataforma:** Admirals Tablet como SO público con cientos de apps de terceros.
-- **Mercado de apps Admirals:** developers cobran, comparten ingreso con Admirals.
+- **Plataforma:** SONAR Tablet como SO público con cientos de apps de terceros.
+- **Mercado de apps SONAR:** developers cobran, comparten ingreso con SONAR.
 - **Tablet for Server Admins:** versión especial con apps administrativas (gestión de jugadores, métricas, intervención RP).
 
 ---
 
 ## 29. Estado del documento
 
-- **Versión:** 1.0 (firmado).
-- **Próxima revisión:** evolución cuando se añadan apps de nuevas verticales.
+- **Versión:** 1.1 (Pass 1 surgical post-pivot SONAR — NOTICE r1.1 top + bulk identity purge Admirals→SONAR + AdmiralsOS→SonarOS + key sections inline §2.4 + §3 + §3.2 + §4.1 + §4.2; Pass 2 pendiente para apps detail-pass §6-§19).
+- **v1.0 firmada original:** archivada en commit history pre-S1.8 (Admirals heritage 1185 líneas, naval/militar identity pre-pivot).
+- **Próxima revisión:** Pass 2 surgical apps detail-pass §6-§19 (Bank, Manager Panel, Mensajes, Banca, etc. con identidad SONAR + 5 SFX canonical inline + iconografía abstract refs) + §26 sounds canonical full + §27 anti-patterns post-pivot. Estimación ~2h Sonnet 4.6 próxima sesión.
 - **Documentos derivados pendientes:**
   - `technical/01_architecture.md` — arquitectura técnica completa (NUI, render target, bus de eventos, schema DB).
-  - `art/01_art_direction.md` — guía visual: paleta exacta, tipografía exacta, iconos, wallpapers oficiales, estilo de animaciones.
-  - `economy/01_economic_model.md` — precios de Tablet por tier, precios de licencias, sinks económicos, márgenes de tienda.
-  - `02_admirals_tablet_apps_spec.md` (futuro) — especificaciones de cada app a nivel de UI/UX detallado (mockups, flows).
+  - `art/01_art_direction.md` v2.0-scaffold-r7 — **YA FIRMADO post-pivot.** SSoT canonical visual.
+  - `economy/01_economic_model.md` — precios de SONAR Tablet por tier, precios de licencias, sinks económicos, márgenes de tienda.
+  - `02_sonar_tablet_apps_spec.md` (futuro) — especificaciones de cada app a nivel de UI/UX detallado (mockups, flows). **NOTA:** post-rename (no más `02_SONAR_tablet_apps_spec.md` upper-case).
+- **Reemplaza:** `02_admirals_tablet.md` v1.0 (rename git mv en S1.8 → `02_sonar_tablet.md` v1.1).
+- **ADR origen pivot:** ADR-011 + ADR-012 (`docs/planning/02_decision_log.md`).
+- **NOTICE canonical top-level:** §🔄 REFINEMENT NOTICE r1.1 supersede cualquier conflict §1-§29.
+
+### Changelog
+
+| Versión | Fecha | Autor | Cambios |
+|---|---|---|---|
+| 1.0 | 2026 (varias) | Founder + Cascade | v1.0 firmada Admirals/Almirantazgo (1185 líneas, 29 secciones). Identidad: Tablet 5º Pilar + dispositivo físico + 4 estados + 8 apps base + AdmiralsOS + voz naval/militar + paleta azul marino+dorado + Inter/Manrope tipografía + boot sound "campana naval". Archivado por ADR-011 + ADR-012. |
+| 1.1 | 2026-05-03 | Founder + Cascade (S1.8) | **Pass 1 surgical post-pivot SONAR.** (a) **File rename** `02_admirals_tablet.md` → `02_sonar_tablet.md` (git mv preserva history). (b) **NOTICE r1.1 top-level** establecida (~70 líneas) con NEW CANONICAL: naming SONAR + paleta hybrid Tier A/B/C + tipografía Geist Sans + voz neutral premium-tech + iconografía abstract + sound canonical 5 SFX + logo v2 working canonical concept A. (c) **Bulk identity purge** PowerShell (Admirals→SONAR + AdmiralsOS→SonarOS + Tablet Admirals→Tablet SONAR + Tienda Admirals→Tienda SONAR + cuenta Admirals→cuenta SONAR + producto/s Admirals→producto/s SONAR + logo/marca/ecosistema/apps Admirals → SONAR + ADMIRALS uppercase → SONAR) — 126 instances replaced. (d) **Surgical inline edits secciones críticas:** §2.4 Identidad visual (5 bullets refactored: wallpapers abstract + Geist Sans canonical + paleta hybrid + 5 SFX canonical + splash logo v2 ref); §3.2 Boot sound (premium-tech tonal class, deprecated "campana naval"); §4.1 Filosofía OS (voz neutral premium-tech + paleta hybrid + motion §16 + sounds canonical); §4.2 Boot sequence (Fase 1+2: logo v2 concept A reveal por capas 3 arcs + glow halation, deprecated "ondas señal naval"; Fase 3: Geist Sans + Geist Mono; Fase 4: ease-depth-descent + console_tap). (e) **§29 footer + changelog** bumped. **Pass 2 pendiente:** §6-§19 apps detail-pass + §26 sounds full + §27 anti-patterns. **Cross-refs:** ADR-011 + ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 + `01_brief_logo.md` v2 + `01_brief_motion.md` v1 + `01_brief_sound.md` v1 + `01_brief_marketing.md` v1 + `art/branding/logo_v2/README.md` + Bible v1.4. |
 
 ---
 
-*"Open the bridge."*
+*"Hear the depth. Understand the patterns."*
+
+**FIN DEL DOCUMENTO `docs/design/02_sonar_tablet.md` v1.1 (Pass 1 surgical post-pivot SONAR — Pass 2 pendiente).**
