@@ -1400,4 +1400,28 @@ El **Decision Log** es la memoria institucional de SONAR (ex-Admirals):
 
 *"Decisiones sin registro son decisiones perdidas. El log es memoria permanente."*
 
-**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.5**
+---
+
+## 8. Continuación del documento
+
+> **🔗 Continúa en:** `@docs/planning/02_decision_log_part2.md` v1.0+
+>
+> **Razón split:** este documento alcanzó ~1404 líneas tras ADR-015 + meta secciones. Para mantener navegabilidad, diff-friendly edits y reducir tiempo de búsqueda en sesiones AI, **toda decisión nueva (ADR-016 en adelante) vive en `02_decision_log_part2.md`**.
+>
+> **Reglas split:**
+> - Numeración ADR continua sin reset (ADR-016 sigue inmediatamente a ADR-015).
+> - Filosofía ADR (formato §1, workflow §3, anti-patterns §4) heredada del padre — NO duplicar en part2.
+> - `02_decision_log.md` (este file) queda **append-only inviolable** — NO editar entries antiguas, NO añadir ADRs nuevos aquí.
+> - Cuando `part2` supere ~1000 líneas, splittear `part3` análogamente.
+>
+> **Bump:** v1.5 → v1.5.1 (este pointer + changelog row §6.3).
+
+### 8.1 Changelog v1.5.1
+
+| Versión | Fecha | Autor | Cambios |
+|---|---|---|---|
+| 1.5.1 | 2026-05-04 | Founder + Cascade (S1.10 EXTENDED post-commit) | **Split documento.** Añadido §8 Continuación + pointer cruzado a `@docs/planning/02_decision_log_part2.md` v1.0. ADR-016 (SONAR Identity v3 firmable + doctrine palette/dark/stack/perf locked) registrado en `part2`. NO modificación entries v1.5 — append-only respetado. |
+
+---
+
+**FIN DEL DOCUMENTO `planning/02_decision_log.md` v1.5.1** (split → continúa en `02_decision_log_part2.md`)

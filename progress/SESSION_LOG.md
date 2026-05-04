@@ -1953,3 +1953,69 @@ Founder abrirá nueva session con Manager AI agent (recomendado: Gemini 2.5 Pro 
 ✅ Esta entry no toca code ni docs (solo SESSION_LOG append). Decisión + handoff scope capture.
 
 ---
+
+## S1.10.4 — ADR-016 firmed (Identity v3 doctrine locked) + decision_log split part2
+
+- **Fecha:** 2026-05-04 (continuación marathón S1.10 EXT addendum, mismo día)
+- **Duración:** ~1h
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.5)
+- **Sprint:** S1 tail / pre-S2 gate execution (Manager AI session priority #1)
+- **Perfil:** 📝 SCRIBE + 🏗️ ARCHITECT (ADR redaction + decision capture)
+- **Modelo:** Sonnet 4.5
+- **Goal:** Firmar ADR-016 (SONAR Identity v3 firmable + doctrine palette/dark/stack/perf locked, amends ADR-011 + ADR-012) capturando 6 decisiones founder D-S1.10E-4 a D-S1.10E-9 + resolución D-S1.10E-A (monogram_s_black.svg).
+- **Status:** ✅ Done — scope priority #1 cerrado. Items #2-#7 handoff diferidos próxima Manager AI continuation.
+
+### Cambios
+
+**Created:**
+- `docs/planning/02_decision_log_part2.md` v1.0 (~253 líneas) — archivo continuación documento padre (split por tamaño operativo gestionable). Header continuación clara + reglas split + meta secciones (tags delta + estado + changelog + TL;DR). Primer ADR registrado: ADR-016.
+  - **ADR-016 SONAR Identity v3 firmable + doctrine palette/dark/stack/perf locked** — accepted, amends ADR-011 + ADR-012. 6 decisiones founder firmadas:
+    - **D1 Paleta v3 locked:** Black `#060607` + Orange `#FF5100` + White `#FAFAFA`. SSoT canonical `docs/art/branding/01_brief_logo.md` v2 §3.
+    - **D2 Dark-mode-only doctrine** product. Excepción única: `monogram_s_black.svg` print/external (resolución D-S1.10E-A). NO uso product UI.
+    - **D3 3-color strict.** No accent colors add. Re-evaluable post-MVP S2.
+    - **D4 Trend stack 2026 tiered T1/T2/T3.**
+    - **D5 Tablet UI stack frozen S2-S8** (React 18.3 + Vite 5 + TS strict + Tailwind v4 `@theme` + shadcn dark-only + Framer Motion 11 + Lucide + Recharts).
+    - **D6 NUI performance hard constraints** (≤4ms paint, ≤500KB JS gzipped, ≤80MB heap, lazy-loading obligatorio, GPU-only animations, react-window virtualization >50 items).
+  - 6 alternatives considered (A-F).
+  - 5 risks accepted founder (R1-R5: Tailwind v4 inestabilidad / Framer bundle cost / D3 friccion UX / React 19 missed / D6 budgets too strict).
+  - 5 re-evaluation triggers explícitos.
+
+**Modified:**
+- `docs/planning/02_decision_log.md` v1.5 → **v1.5.1** — añadido §8 Continuación + pointer cruzado claro a `02_decision_log_part2.md` + reglas split + changelog row §8.1. Append-only inviolable respetado (cero modificación entries v1.5 anteriores).
+
+### Decisiones tomadas
+
+- **D-S1.10.4-1: Split documento decision_log** vs continuar inflando `02_decision_log.md`. Razón: padre alcanzó ~1404 líneas, navegabilidad / diff-friendly edits comprometida. Split en `part2` mantiene numeración ADR continua (ADR-016 sigue ADR-015) + filosofía heredada (NO duplicar §1/§3/§4) + padre append-only.
+- **D-S1.10E-A resuelta opción B (founder):** preservar `monogram_s_black.svg` como print/external exception, NO obsoleto/drop como handoff S1.10 EXT addendum #6 indicaba. Capturado ADR-016 D2 + invalida item #6 del 7-item scope handoff Manager AI. Razón founder: print papelería + fondos blancos third-party donde dark monogram ilegible.
+- **D-S1.10.4-2: Write en bloques pequeños** sustituye intento inicial multi_edit fallido (JSON escaping error). 6 bloques secuenciales: stub → header+context → decision D1-D6 → alternatives+consequences+risks+impact+re-eval → meta (tags+estado+TL;DR) → pointer padre.
+
+### Issues pendientes (handoff próxima session)
+
+- **#2-#5 docs bumps deferred:** `01_art_direction.md` v3.0 + Bible v1.5 + `02_sonar_tablet.md` v1.3 + `01_brief_logo.md` v3 — Manager AI continuation scope.
+- **#6 invalidado:** `export.mjs` config NO drop `monogram_s_black.svg` (D-S1.10E-A override). Si pipeline necesita ajuste futuro será para rebrand naming sólo, no remove.
+- **BOOTSTRAP v1.5 → v1.6:** añadir referencia ADR-016 §SSoTs canónicos + part2 split awareness para AI sessions futuras.
+- **PRE_S2_CHECKLIST v1.5 → v1.6:** Phase 8+9 + docs v1.2 + ADR-016 done; restantes B2 SPRINT_PLAN_S2 + bumps Bible/art_direction/sonar_tablet/brief_logo.
+- **`resources/admirals_tablet/` orphan directory:** rename `sonar_tablet/` o delete (S2 scope decision).
+- **SPRINT_PLAN_S2.md redactable:** B2 final pre-S2 gate. Debe incorporar ADR-016 D5 stack install + D6 perf budgets en setup tasks + design system D3 patterns docs.
+
+### Handoff próxima sesión (Manager AI continuation o BUILDER S2 prep)
+
+- **Modelo recomendado:** Gemini 2.5 Pro (1M context, docs lead) o Opus 4.7 si batch bumps grande.
+- **Goal primario:** Bumps docs identity v3 propagation (art_direction v3.0 + Bible v1.5 + sonar_tablet v1.3 + brief_logo v3) + BOOTSTRAP v1.6 + admirals_tablet orphan decision + PRE_S2_CHECKLIST v1.6 + SPRINT_PLAN_S2 redactable.
+- **Pre-requisitos:** leer `docs/planning/02_decision_log_part2.md` v1.0 ADR-016 completo + esta entry + `docs/agents/00_BOOTSTRAP.md` v1.5 + playbook §4-§6 + SESSION_LOG últimas 4 entries (S1.10 → S1.10 EXT → S1.10 EXT addendum → esta).
+- **Files in scope:** `docs/art/01_art_direction.md` + `docs/00_PRODUCT_BIBLE.md` + `docs/design/02_sonar_tablet.md` + `docs/design/01_brief_logo.md` + `docs/agents/00_BOOTSTRAP.md` + `progress/PRE_S2_CHECKLIST.md` + `progress/SPRINT_PLAN_S2.md` (nuevo) + `progress/SESSION_LOG.md` (append).
+- **Files OUT of scope:** code/resources/* (BUILDER agent territorio S2 setup), DB, ADRs históricos firmados, `_archive/`, art/branding/* assets (logo v3 ya firmable), `02_decision_log.md` v1.5.1 (append-only inviolable).
+- **Notas especiales:**
+  - ADR-016 D2 dark-only doctrine product + `monogram_s_black.svg` excepción única print/external — propagar correctamente en docs identity (no eliminar referencia ni obsoletar).
+  - ADR-016 D5 stack frozen — devs SPRINT_PLAN_S2 setup tasks deben pin exact versions.
+  - Decision log split: NO añadir ADRs nuevos a `02_decision_log.md` v1.5.1 — todo va a `part2`.
+
+### Files in scope respetados
+
+✅ Scope strict: solo `docs/planning/02_decision_log_part2.md` (created) + `docs/planning/02_decision_log.md` (§8 append, v1.5 → v1.5.1) + `progress/SESSION_LOG.md` (esta entry append). **NO tocó:** code/resources/* (Phase 8+9 baseline green preserved), DB, art/branding/* (logo v3 ya firmable, no toques), art/tools/* (export.mjs working tree del founder pre-sesión, NO mío), `_archive/`, ADRs históricos 001-015, docs technical 02-07 v1.2, Bible v1.4, art_direction v2.0-scaffold-r6, briefs, sonar_tablet, BOOTSTRAP, PRE_S2_CHECKLIST, `.windsurf/*`.
+
+### Resumen ejecutivo session S1.10.4
+
+ADR-016 firmado captura 6 decisiones doctrinales identity v3 que destrabean Sprint 2 día-1 (palette + dark-only + 3-color + stack frozen + perf budgets). Decision log splitteado en `part2` con regla clara split `part3` cuando supere ~1000 líneas — escalable. D-S1.10E-A resuelta clean (monogram_s_black.svg print/external preserved). Pre-S2 gate restante: docs bumps propagation identity v3 + BOOTSTRAP v1.6 + PRE_S2_CHECKLIST v1.6 + SPRINT_PLAN_S2 redactable + tablet orphan decision (~4-5h Manager AI continuation).
+
+---
