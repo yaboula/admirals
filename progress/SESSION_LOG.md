@@ -1822,3 +1822,93 @@ S1.9 EXT ADRs 013+015 firmed + docs 2-7 v1.1 NOTICE r1 + PRE_S2_CHECKLIST v1.5 (
 ✅ Scope strict: code resources + migrations + smoke harness + scripts/*.md + server.cfg.example. **NO tocó:** docs/* (firmados), `_archive/`, art/*, `.windsurf/*`, branding.
 
 ---
+
+## S1.10 EXTENDED — Post-Phase-8 residuals cleanup + docs v1.2 Phase 1 auto-rewrite + Phase 2 surgical (NOTICE r1 removed + prose canonical)
+
+- **Fecha:** 2026-05-04
+- **Duración:** ~2.5h continuación post S1.10 close (founder-AI pair, marathón nocturno)
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.5)
+- **Sprint:** S1 tail / pre-S2 gate execution (sub-commits S1.10.1 + S1.10.2 + S1.10.3)
+- **Perfil:** 🔧 BUILDER + 📝 DOCUMENTATIONIST (docs v1.1 → v1.2 hybrid auto + AI surgical)
+- **Modelo:** Sonnet 4.5
+- **Goal:** Residuals cleanup post-Phase-8 (server.cfg.example + 004 seed brand leak + migration comments) + docs technical 02-07 v1.1 → v1.2 rewrite (NOTICE r1 obsoleto removed + prose `Admirals` → `SONAR` canonical + Versión + FIN + v1.2 changelog row).
+- **Status:** ✅ Done — 4 commits pushed origin/main (60890b6 + d07a740 + 3b8d815 + 0113ed2).
+
+### Cambios
+
+**S1.10.1 — Residuals cleanup (commit `d07a740`):**
+
+- `server.cfg.example` (24 refs): `admirals_db_*` / `admirals_env` / `admirals_bridge_*` convars → `sonar_*`. `sv_hostname "Admirals — Dev Server"` → `"SONAR — Dev Server"`. Resources `ensure admirals_bridges/core` → `sonar_*`. **CRITICAL** — afectaba template para nuevos deploys.
+- `resources/sonar_core/migrations/004_bank_seed_system_account.sql`: seed alias row SYSTEM treasury account `'Admirals System'` → `'SONAR System'` (brand leak en `sonar_accounts.alias` visible en counterpart UI).
+- `resources/sonar_core/config.lua`: 2 comments referencing rename ADR + obsolete 009 filename actualizados.
+- `resources/sonar_core/migrations/002+003+005`: comments docs legacy actualizados (`Admirals.DB.Execute`, `nombre mostrado Admirals`, `producción Admirals targets MariaDB`).
+- `scripts/smoke_test_s0.md`: 1 ref `Admirals.Log.Size()` → `SONAR.Log.Size()`.
+
+**S1.10.2 — Docs v1.2 Phase 1 auto-rewrite (commit `3b8d815`):**
+
+- Docs technical 02-07 (6 docs, 1075 identifiers replaced bulk regex deterministic):
+  - `admirals_bridges/core/bank/companies/tablet/granja/market/logistics/documents/jobs` → `sonar_*`.
+  - Table names: `admirals_accounts/schema_versions/audit_log/idempotency_keys/bank_accounts/bank_movements/escrows/fsm_transitions/company_balances` → `sonar_*`.
+  - Generic `admirals_*` catch-all + `admirals:*` event prefixes → `sonar:*`.
+  - API namespace `Admirals.DB/Log/Bus/Core/Metrics/Rate/Identity/Bank` → `SONAR.X`.
+  - Exports `exports['admirals_*']` / `exports.admirals_*` → `sonar_*`.
+- Diff: 1075 insertions + 1075 deletions (1:1 simétrico = pure line-replace, zero structural change).
+- **Preservado intencional para AI Phase 2:** prose `\bAdmirals\b` standalone refs (127 total cross-docs).
+
+**S1.10.3 — Docs v1.2 Phase 2 surgical (commit `0113ed2`):**
+
+- NOTICE r1 blocks **removidos completamente** en 6 docs (336 líneas obsoletas eliminadas):
+  - `02_events_catalog.md` lines 13-71 (59 lines).
+  - `03_db_schema.md` lines 14-109 (96 lines).
+  - `04_api_contracts.md` lines 16-63 (48 lines).
+  - `05_state_machines.md` lines 17-74 (58 lines).
+  - `06_fivem_standards.md` lines 16-48 (33 lines).
+  - `07_bridges_compatibility.md` lines 15-56 (42 lines).
+- Prose `\bAdmirals\b` → `SONAR` canonical en pre-changelog content (TL;DR, resumen ejecutivo, estado documento, body §N).
+- Header `**Versión:** 1.1` → `1.2` + parenthetical descriptor actualizado a `(post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x)`.
+- `FIN DEL DOCUMENTO ... v1.1` → `v1.2` en los 6 docs.
+- Changelog table: appended row v1.2 con descripción Phase 2 surgical work.
+- §17.2/§14.x "Próxima revisión: tras Phase 8+9 execution" → "tras Sprint 2 (Granja MVP + companies + T2 adapters) + smoke regression + post-S2 learnings (→ v1.3 si cambios estructurales)".
+- 07 §18 TL;DR Regla 4 + Regla 5: 2 prose refs `Admirals` → `SONAR` finales (post-changelog content que pre-changelog cut excluyó).
+- **Preservado correctamente (whitelist intencional):**
+  - `ex-Admirals` historical brand mention en resúmenes ejecutivos (1-2 per doc).
+  - `ADR-011 (pivot Admirals → SONAR)` ADR ref name (todos docs).
+  - `rebrand Admirals → SONAR` en changelog v1.1 rows (historical).
+  - `prose Admirals → SONAR` y `"Admirals" → "SONAR"` en changelog v1.2 rows (descripción work).
+- Diff: 107 insertions + 437 deletions (net -330 líneas = NOTICE r1 obsoleto removido).
+- Final integrity: 0 NOTICE remaining + all 6 docs v=1.2 + FIN=v1.2 + v1.2 row present + 0 unaccounted Admirals refs.
+
+### Decisiones tomadas
+
+- **D-S1.10E-1:** Hybrid approach Opción B (auto naming-only + AI surgical prose) elegido sobre full-auto (Opción A — alta corrupción NOTICE r1) o full-AI surgical (Opción C — 6-8h vs 2.5h actual). Trade-off: ahorra ~50% tiempo sin sacrificar safety. Auto-pass aplicó deterministic identifier replacements (safe), AI Phase 2 surgical aplicó prose contextual (semantic-aware).
+- **D-S1.10E-2:** NOTICE r1 blocks **eliminados completamente** en lugar de actualizar a "NOTICE r2" o similar. Razón: NOTICE r1 fue diseñado precisamente como **bridge temporal pre→post Phase 8+9**. Phase 8+9 ya ejecutado → NOTICE r1 obsoleto by design. v1.2 docs ahora estado canonical sin compatibility layer.
+- **D-S1.10E-3:** Whitelist preservation strategy para `Admirals` refs históricos (changelog entries v1.0/v1.1, ADR-011 ref name, ex-Admirals brand mentions). Razón: append-only changelog discipline + accuracy ADR refs + historical brand context preservation per ADR-011 §5.5.8 excepciones.
+
+### Issues pendientes (handoff a next session)
+
+- ADR-014 placeholder S1.9 EXT firmado (candidato: Smoke harness inline pattern Opción C documentation post S1.10 implementation experience). **~45min.**
+- `docs/agents/00_BOOTSTRAP.md` v1.5 → v1.6 (post-Phase-8+9 closed + docs technical 02-07 v1.2 status). **~30min.**
+- `resources/admirals_tablet/` orphan directory decision: rename `sonar_tablet/` o delete (S2 scope). **~15min.**
+- `progress/PRE_S2_CHECKLIST.md` v1.5 → v1.6 (Phase 8+9 + docs v1.2 done; restantes B2 SPRINT_PLAN_S2). **~30min.**
+- `progress/SPRINT_PLAN_S2.md` redactable (B2 final pre-S2 gate, scope: T2 adapters QBCore+ESX + sonar_companies DDL + C003 getTransactions + Granja MVP foundation + Tablet UI scaffold). **~2-3h.**
+- Sprint S2.0 arranque post pre-S2 gate green. **Oleada 1 sigue.**
+
+### Files in scope respetados
+
+✅ Scope strict: `docs/technical/02-07_*.md` (rewrite v1.1 → v1.2) + `server.cfg.example` + `resources/sonar_core/migrations/002-005` (comments) + `resources/sonar_core/config.lua` (comments) + `scripts/smoke_test_s0.md` (1 ref). **NO tocó:** code resources Lua functional (Phase 8 ya cerrado), DB schema (Phase 9 ya cerrado), `docs/00_PRODUCT_BIBLE.md` v1.4, `docs/economy/01_economic_model.md`, `docs/art/*`, `docs/agents/00_BOOTSTRAP.md`, `progress/PRE_S2_CHECKLIST.md`, `_archive/`, ADRs.
+
+### Handoff próxima sesión (Manager AI — pre-S2 + S2 documentation lead)
+
+- **Modelo recomendado:** Gemini 2.5 Pro (1M context window) o equivalente high-context model.
+- **Goal primario:** Gestor documentación + product context completo. **NO escribir código.** Manage docs cleanup + ADRs + planning + handoffs.
+- **Scope inmediato:** ADR-014 firmado + BOOTSTRAP v1.6 + admirals_tablet orphan decision + PRE_S2_CHECKLIST v1.6 + SPRINT_PLAN_S2 redactable.
+- **Scope continuación:** S2 documentation lead (specs nuevas resources sonar_companies + sonar_granja + sonar_tablet + T2 adapters QBCore/ESX docs + DDL migrations 010+ docs).
+- **Files in scope:** `docs/agents/00_BOOTSTRAP.md` + `docs/planning/*` + `progress/PRE_S2_CHECKLIST.md` + `progress/SPRINT_PLAN_S2.md` + `progress/SESSION_LOG.md` (append-only) + nuevas specs S2 docs.
+- **Files OUT of scope:** code/resources/* (BUILDER agent territorio), DB migrations functional SQL, smoke harness code.
+- **Notas especiales:** Founder yaboula directo español + tecnicismos inglés OK, sin preámbulos/paternalismo, profesional only. Código `sonar_*` ya 100% canonical en repo. Docs technical 02-07 v1.2 firmado clean. Pivot Admirals → SONAR completo (ADR-011 + ADR-012 + ADR-013).
+
+### Resumen ejecutivo session S1.10 EXTENDED
+
+Sprint 1 cerrado **100% canonical** post Phase 8+9 + docs v1.2. Workspace ahora coherente namespace `sonar_*` en code + DB + config + docs technical. Únicas excepciones legítimas: `_archive/` files, ADRs históricos (immutable), SESSION_LOG (append-only), changelog historical entries, brand "ex-Admirals" mentions (ADR-011 §5.5.8). Pre-S2 gate restantes ~3-4h en próximas 1-2 sessions. Workflow shift: BUILDER agent (Sonnet 4.5/4.6) → Manager AI agent (1M context model) para docs lead pre-S2 + S2.
+
+---
