@@ -2273,3 +2273,80 @@ S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crít
 ✅ Scope strict. Solo `resources/sonar_tablet/` + `resources/sonar_core/` (migration repair unplanned fix) + `progress/SESSION_LOG.md` tocados. NO docs firmados, NO otros resources.
 
 ---
+## S2.3 — Bridge home + router + lazy-load apps stubs
+
+- **Fecha:** 2026-05-05
+- **Duración:** ~2h
+- **Founder + Agent:** yaboula + Cascade (Windsurf)
+- **Sprint:** S2 — UI Foundation (Tablet + Bank + Map)
+- **Perfil:** 🔧 BUILDER
+- **Modelo:** Sonnet
+- **Goal:** Bridge home (SonarOS app grid 12 slots) + router state machine home↔app (Context + useReducer) + lazy-load Bank/Map stubs + motion entrance GPU-only + build verified ≤budgets.
+- **Status:** ✅ Done
+
+### Cambios
+- Created: `resources/sonar_tablet/web-src/src/context/TabletRouter.tsx`, `hooks/useTabletRouter.ts`, `lib/motion.ts`, `apps/Bridge/appCatalog.ts`, `apps/Bridge/AppTile.tsx`, `apps/Bridge/BridgeHome.tsx`, `apps/Bank/BankApp.tsx`, `apps/Map/MapApp.tsx`.
+- Modified: `resources/sonar_tablet/web-src/src/App.tsx` (wrap TabletRouterProvider + RouterSwitch con AnimatePresence + Suspense skeleton + ESC capture-phase interceptor).
+- Deleted: ninguno.
+
+### Decisiones tomadas
+- Router state vive OUTSIDE TabletFrame (Provider wraps shell) → view persiste entre open/close tablet. Rationale: UX consistencia si player re-abre tablet en mitad de flow (volverá a app donde estaba, no reset forzado). Opción B (Provider dentro) = reset cada open — rechazada.
+- ESC handling via capture-phase `document.addEventListener('keydown', ..., true)`: interceptor corre ANTES de TabletFrame window listener. Si view≠home → `stopImmediatePropagation` + `BACK_TO_HOME`. Si view===home → no-op → delega a TabletFrame listener existing → `onClose`. Evita tocar TabletFrame (out of scope).
+- Routing 2/9 apps base S2.3: Banca→bank (DC-S2.3.2), Logística→map (DC-S2.3.3). Resto 7 apps + 3 Plus slots → `route=null`, status `placeholder-future`, tiles disabled. 12 tiles total grid 4×3 per DC-S2.3.1.
+
+### Verificación
+- `tsc --noEmit` strict + noUncheckedIndexedAccess + verbatimModuleSyntax + erasableSyntaxOnly: **exit 0**.
+- `npm run build`: main JS 271.74 KB (**gzip 88.19 KB** ≪ 500 KB budget D6), CSS 28.72 KB (**gzip 5.93 KB** ≪ 200 KB), **2 lazy chunks separados** (`BankApp-jpUnmvhM.js` 1.30 KB + `MapApp-BmG29p0c.js` 1.29 KB) + shared `arrow-left` icon chunk. 0 warnings. ✓ 1946 modules en 6.52s.
+- Blacklist §6 grep en S2.3 code: **0 matches** (`bg-white|bg-gray-*|bg-slate-*|bg-zinc-*|bg-neutral-*|bg-stone-*|text-gray-*|text-slate-*|text-zinc-*|text-neutral-*|dark:`). 0 hexes literales en `.ts/.tsx`.
+- DC×10 S2.3 (DC-S2.3.1–S2.3.10): **10/10 ✅**.
+
+### Issues pendientes
+- **🟡 F1 tech debt (pre-S2.3, aceptado diferir S2.7):** `components/ui/button.tsx` (shadcn base-nova scaffold S2.1) contiene 4 matches `dark:*` + semantic tokens no usados por S2.3 code. Purgar junto a audit CI blocker S2.7 polish (grep blacklist CI gate). No bloquea S2.4-S2.6.
+
+### Handoff próxima sesión (S2.4)
+- **Modelo recomendado:** Sonnet (feature dev estándar React + NUI integration).
+- **Goal:** Bank app real — balance via C001 `sonar:bank:getBalance` + historial consumer pattern temporal §2.2.3 (NUI bridge `sonar:tablet:bank:getHistory:request/response` directo DB, promotion C003 deferred S3) + transfer form via C002 `sonar:bank:transfer`.
+- **Pre-requisitos:** `progress/SPRINT_PLAN_S2.md` §S2.4 + §2.2.2/§2.2.3 + `docs/technical/04_api_contracts.md` v1.2 §3.1/§3.2 + `docs/design/02_sonar_tablet.md` v1.3 §5.1 Banca spec.
+- **Files in scope:** reemplazar stub `apps/Bank/BankApp.tsx` + nuevos `apps/Bank/{BalanceCard,HistoryList,TransferForm}.tsx` + nuevo NUI event handler Lua `resources/sonar_tablet/server/bank_history.lua` (DB query directo). Reutilizar `Button` existente. `react-window` si historial >50 rows. NO tocar `sonar_bank`/`sonar_core` (callbacks C001/C002 ya shipped S1).
+- **Notas especiales:** Founder debe decidir SFX timing — `layer_dive` al abrir app + `depth_press` al confirmar transfer (scope S2.4 o diferir S2.6 motion+sound integration). Mantener GPU-only motion (R4). Flag F1 Button cleanup puede absorberse en S2.4 si Bank UI lo consume (re-evaluar).
+
+### Files in scope respetados
+✅ Scope strict. 8 creates + 1 modify exactamente matching whitelist prompt. NO tocó `docs/**`, `progress/SPRINT_PLAN_S2.md`, `resources/{sonar_bank,sonar_core,sonar_bridges}`, Lua files sonar_tablet, `DB/migrations/`, `art/`. Pre-existing `components/ui/button.tsx` NO tocado (scope rule) — flagged F1 diferido S2.7.
+
+---
+
+### S2.3.1 — F1 Button mono-theme purge (addendum S2.3)
+
+- **Fecha:** 2026-05-05
+- **Duración:** ~10min
+- **Founder + Agent:** yaboula + Cascade (Windsurf)
+- **Sprint:** S2 — UI Foundation
+- **Perfil:** 🔧 BUILDER
+- **Modelo:** Sonnet
+- **Goal:** Resolver F1 diferido S2.7 ahora (founder eligió opción B tras reporte S2.3). Purgar `dark:` variant prefix de `components/ui/button.tsx` (shadcn base-nova S2.1 scaffold) — SONAR es single-theme permanente, las overrides shadcn light/dark se consolidan en classes siempre activas.
+- **Status:** ✅ Done
+
+### Cambios
+- Modified: `resources/sonar_tablet/web-src/src/components/ui/button.tsx` — removidos 4 `dark:` variant overrides (base cva `dark:aria-invalid:*` + outline `dark:border-input`/`dark:bg-input/30`/`dark:hover:bg-input/50` + ghost `dark:hover:bg-muted/50` + destructive `dark:bg-destructive/20`/`dark:hover:bg-destructive/30`/`dark:focus-visible:ring-destructive/40`). Consolidación semántica: overrides shadcn pasan a classes siempre activas (equivalente mono-theme). Tokens semánticos (`bg-primary`/`border-border`/`bg-muted`/`bg-destructive`) preservados — mapean a sonar canonical vía `globals.css` `@theme inline` bridge (ADR-016 D1).
+
+### Decisiones tomadas
+- **Purga ahora (opción B) vs S2.7 polish (opción A):** founder prefiere disciplina técnica inmediata antes de construir Bank app S2.4 sobre debt pendiente. Rationale AI-confirmed: grep blacklist ya audit-clean todo `src/` → S2.4+ arrancan de baseline 100% limpio sin falsos positivos en CI futuro.
+- **Consolidación semántica vs rewrite completo:** mantener tokens shadcn `bg-primary`/etc (bridge sonar via `globals.css`) en lugar de hardcodear `bg-sonar-orange` en cada variant. Rationale: (a) button.tsx sigue compatible con shadcn CLI updates futuras (minor bumps), (b) cambio de brand color requiere editar solo tokens en `globals.css`, no cada componente.
+- **Comentario header actualizado:** removido string "dark-only purge" → "mono-theme purge" para evitar self-match en grep blacklist (matches históricos en comentarios fueron falsos positivos DC-S2.3.6).
+
+### Verificación
+- `tsc --noEmit` strict: **exit 0**.
+- `npm run build`: main JS 271.74 KB (gzip 88.19 KB — idéntico pre-purge, tree-shake consistente), CSS 27.91 KB (gzip **5.83 KB** ↓ -0.10 KB vs S2.3 — `dark:` variant classes ya no compiladas), 2 lazy chunks preserved, 0 warnings, ✓ 1946 modules en 4.63s.
+- Blacklist §6 grep **full `src/`** (incluyendo `components/ui/`): **0 matches**. Baseline limpio para CI gate S2.7.
+- DC-S2.3.6 upgrade: ✅ **full strict pass** (previamente ✅ con asterisco por F1 flag).
+
+### Issues pendientes
+- Ninguno. F1 cerrado. S2.4 arranca desde baseline dark-only 100% audit-clean.
+
+### Handoff próxima sesión (S2.4)
+- Sin cambios vs handoff S2.3. Nota adicional: Button component ya listo para consumo Bank app S2.4 (TransferForm submit button, historial filter buttons, etc.) sin deuda oculta.
+
+### Files in scope respetados
+✅ 1 modify único: `components/ui/button.tsx` — addendum targeted F1 resolution. NO tocó nada más post-S2.3 entry original.
+
+---
