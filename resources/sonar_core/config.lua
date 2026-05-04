@@ -162,8 +162,8 @@ Config.MigrationsChecksumCheck = true
 -- Lista explícita de migrations a aplicar en orden. Esto es más robusto que
 -- listar el directorio (FiveM no tiene ls reliable cross-platform via NUI).
 -- Cada nueva migration se añade AQUÍ explícitamente.
--- Phase 8+9 (ADR-013) — post-rename `admirals_*` → `sonar_*` directo en 001-008.
--- 009_rename_admirals_to_sonar.sql obsoleto post Phase 8 (era para preserve S0+S1 data;
+-- Phase 8+9 (ADR-013) — post-rename `sonar_*` → `sonar_*` directo en 001-008.
+-- 009_rename_sonar_to_sonar.sql obsoleto post Phase 8 (era para preserve S0+S1 data;
 -- en dev path fresh start, 001-008 crean `sonar_*` desde cero).
 Config.MigrationsFiles = {
   '001_schema_versions.sql',

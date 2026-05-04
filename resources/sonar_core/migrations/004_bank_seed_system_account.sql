@@ -71,7 +71,7 @@ VALUES (
   '00000000-0000-0000-0000-000000000001',
   'SYSTEM',
   'sonar_core',
-  'Admirals System',
+  'SONAR System',
   UNIX_TIMESTAMP(),
   UNIX_TIMESTAMP(),
   NULL

@@ -35,7 +35,7 @@
 --
 --   D2. MariaDB 10.2+ y MySQL 8.0.16+ enforce CHECK nativamente. Versiones
 --       previas lo IGNORAN silenciosamente — degrade gracefully a S1.2 race
---       behavior previo. Producción Admirals targets MariaDB 10.6+ per
+--       behavior previo. Producción SONAR targets MariaDB 10.6+ per
 --       SSoT §03 §1.2 (a verificar — no es S1.2 scope confirm exact ver).
 --
 --   D3. Constraint name explicit (chk_sonar_bank_accounts_balance_nonneg)

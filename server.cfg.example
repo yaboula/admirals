@@ -1,5 +1,5 @@
 # =============================================================================
-#  Admirals — server.cfg.example
+#  SONAR — server.cfg.example
 #
 #  Copy this file to server.cfg, fill in your values, then start the server.
 #  NEVER commit server.cfg — it contains secrets (see .gitignore).
@@ -14,7 +14,7 @@ endpoint_add_udp "0.0.0.0:30120"
 # -----------------------------------------------------------------------------
 # Server identity
 # -----------------------------------------------------------------------------
-sv_hostname "Admirals — Dev Server"
+sv_hostname "SONAR — Dev Server"
 
 # Your FiveM Keymaster license key — https://keymaster.fivem.net/
 sv_licenseKey "YOUR_LICENSE_KEY_HERE"
@@ -30,25 +30,25 @@ sv_scriptHookAllowed 0
 # -----------------------------------------------------------------------------
 set mysql_connection_string "mysql://root@127.0.0.1:3306/sonar?charset=utf8mb4"
 
-# Admirals DB convars (used by admirals_core migrations runner + DB wrappers)
-set admirals_db_host     "localhost"
-set admirals_db_user     "root"
-set admirals_db_password "YOUR_DB_PASSWORD"
-set admirals_db_database "admirals"
+# SONAR DB convars (used by sonar_core migrations runner + DB wrappers)
+set sonar_db_host     "localhost"
+set sonar_db_user     "root"
+set sonar_db_password "YOUR_DB_PASSWORD"
+set sonar_db_database "sonar"
 
 # -----------------------------------------------------------------------------
-# Admirals environment
+# SONAR environment
 # Values: development | staging | production
 #   development — verbose logs, debug overlays enabled, rate limits relaxed
 #   staging     — production-like, verbose logs
 #   production  — minimal logs, strict rate limits
 # -----------------------------------------------------------------------------
-setr admirals_env "development"
+setr sonar_env "development"
 
 # -----------------------------------------------------------------------------
-# Admirals Bridges — manual override (optional)
+# SONAR Bridges — manual override (optional)
 #
-# By default, Admirals auto-detects which scripts are running on boot and
+# By default, SONAR auto-detects which scripts are running on boot and
 # selects the best available adapter per module (priority order per
 # docs/technical/07_bridges_compatibility.md §10.1).
 #
@@ -63,19 +63,19 @@ setr admirals_env "development"
 #   target:    ox_target | qb_target | qtarget | native
 #   notify:    ox_lib | qb | esx | native
 #
-# "native" = Admirals built-in fallback (no external script required).
+# "native" = SONAR built-in fallback (no external script required).
 # -----------------------------------------------------------------------------
-#setr admirals_bridge_bank      "qbox"
-#setr admirals_bridge_inventory "ox_inventory"
-#setr admirals_bridge_phone     "lb_phone"
-#setr admirals_bridge_identity  "qbox"
-#setr admirals_bridge_target    "ox_target"
-#setr admirals_bridge_notify    "ox_lib"
+#setr sonar_bridge_bank      "qbox"
+#setr sonar_bridge_inventory "ox_inventory"
+#setr sonar_bridge_phone     "lb_phone"
+#setr sonar_bridge_identity  "qbox"
+#setr sonar_bridge_target    "ox_target"
+#setr sonar_bridge_notify    "ox_lib"
 
 # Bank mode:
-#   standalone — Admirals manages all finances independently (recommended)
-#   synced     — Admirals syncs balances with framework money (legacy compat)
-#setr admirals_bridge_bank_mode "standalone"
+#   standalone — SONAR manages all finances independently (recommended)
+#   synced     — SONAR syncs balances with framework money (legacy compat)
+#setr sonar_bridge_bank_mode "standalone"
 
 # -----------------------------------------------------------------------------
 # Resources
@@ -94,6 +94,6 @@ ensure qbx_core
 # --- Phone -------------------------------------------------------------------
 ensure lb-phone
 
-# --- Admirals (always last — depend on everything above) --------------------
-ensure admirals_bridges
-ensure admirals_core
+# --- SONAR (always last — depend on everything above) --------------------
+ensure sonar_bridges
+ensure sonar_core

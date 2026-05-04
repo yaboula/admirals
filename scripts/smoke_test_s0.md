@@ -1,4 +1,4 @@
-﻿# Sprint 0 — Smoke Test Protocol (10 pasos)
+# Sprint 0 — Smoke Test Protocol (10 pasos)
 
 > **Scope:** valida que `sonar_bridges` v0.2.0 + `sonar_core` v0.1.0 + migrations 001/002 + subsistemas (Logger, Metrics, DB, EventBus, RateLimiter, Migrations) arrancan, interoperan y cumplen performance budgets.
 >
@@ -201,7 +201,7 @@ end
 - En RCON/console (source=0): `sonar_log_dump 20`
 - Como player no-admin: intenta `/sonar_log_dump 5` desde chat.
 - `sonar_log_level debug` → `sonar_log_level info` (toggle).
-- `sonar_log_clear` → verify `Admirals.Log.Size() == 0` post-clear (requiere comando custom o log siguiente línea para verificar).
+- `sonar_log_clear` → verify `SONAR.Log.Size() == 0` post-clear (requiere comando custom o log siguiente línea para verificar).
 
 **Expectativa:**
 - Console (admin): imprime últimas 20 entries ordenadas, formato `[timestamp] [LEVEL] [resource] message`.

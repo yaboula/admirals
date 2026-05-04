@@ -3,7 +3,7 @@
 -- Author: Cascade + yaboula
 -- Date: 2026-05-02
 -- Description:
---   Crea las 3 tablas foundation Admirals per ADR-010 (opción C híbrido):
+--   Crea las 3 tablas foundation SONAR per ADR-010 (opción C híbrido):
 --     1. sonar_accounts            (minimal subset — SSoT §3.1 trimmed)
 --     2. sonar_audit_log           (new operational audit — ADR-010)
 --     3. sonar_bridge_idempotency  (DB-backed replacement de S0.2 in-memory)
@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS sonar_accounts (
   id                CHAR(36)      NOT NULL COMMENT 'UUID v4',
   char_id           VARCHAR(64)   NOT NULL COMMENT 'citizenId framework',
   framework_source  VARCHAR(32)   NOT NULL COMMENT 'qbox|qbcore|esx|native',
-  alias             VARCHAR(64)   NOT NULL COMMENT 'nombre mostrado Admirals',
+  alias             VARCHAR(64)   NOT NULL COMMENT 'nombre mostrado SONAR',
   created_at        INT UNSIGNED  NOT NULL DEFAULT (UNIX_TIMESTAMP()),
-  -- updated_at: app-managed (Admirals.DB.Execute sets on UPDATE).
+  -- updated_at: app-managed (SONAR.DB.Execute sets on UPDATE).
   -- ON UPDATE (UNIX_TIMESTAMP()) is MariaDB-illegal for non-TIMESTAMP columns.
   updated_at        INT UNSIGNED  NOT NULL DEFAULT (UNIX_TIMESTAMP()),
   last_login_at     INT UNSIGNED  NULL,

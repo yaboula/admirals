@@ -30,7 +30,7 @@
 --       MariaDB-compat consistente con migration 002 (locked en S0.4).
 --
 --   D2. `updated_at ON UPDATE (UNIX_TIMESTAMP())` OMITIDO — MariaDB-illegal
---       para columnas non-TIMESTAMP. App-managed via Admirals.DB.Execute.
+--       para columnas non-TIMESTAMP. App-managed via SONAR.DB.Execute.
 --       Ver migration 002 línea 42 para el mismo patrón.
 --
 --   D3. FK `sonar_bank_accounts.owner_company_id → sonar_companies(id)`
