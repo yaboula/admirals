@@ -1,6 +1,6 @@
 # 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `sonar_*` (pre-migration-009 legacy)
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§20 legacy v1.0 inline preserved con 28 tablas `sonar_*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). Table prefix `sonar_*` scheduled rename `sonar_*` Phase 9 migration 009 per ADR-013.
+> **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). Table prefix `sonar_*` scheduled rename `sonar_*` Phase 9 migration 009 per ADR-013.
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
 > **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
@@ -11,102 +11,6 @@
 
 ---
 
-## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
-
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + 28 tablas prefijo `sonar_*` (`sonar_accounts`, `sonar_bank_accounts`, etc.).** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§20 abajo, **gana este NOTICE + ADR-011/012/013**.
-
-### NEW CANONICAL — vigente desde 2026-05-04
-
-#### Naming canonical tables (DEPRECATED heritage `sonar_*` prefix)
-- **Producto:** SONAR (no Admirals).
-- **Table prefix canonical post-Phase-9 (ADR-013 scheduled):** `sonar_*` reemplaza `sonar_*`. Mapping 1:1 las 28 tablas:
-  - `sonar_accounts` → `sonar_accounts`
-  - `sonar_tablets` → `sonar_tablets`
-  - `sonar_companies` → `sonar_companies`
-  - `sonar_company_members` → `sonar_company_members`
-  - `sonar_bank_accounts` → `sonar_bank_accounts`
-  - `sonar_bank_movements` → `sonar_bank_movements`
-  - `sonar_bank_escrows` → `sonar_bank_escrows`
-  - `sonar_audit_log` → `sonar_audit_log`
-  - `sonar_bridge_idempotency` → `sonar_bridge_idempotency`
-  - `sonar_event_log` → `sonar_event_log`
-  - `sonar_schema_versions` → `sonar_schema_versions`
-  - `sonar_documents` / `sonar_document_signatures` / `sonar_document_templates` → `sonar_document*`
-  - `sonar_chats` / `sonar_chat_participants` / `sonar_messages` → `sonar_chat*` + `sonar_messages`
-  - `sonar_notifications` → `sonar_notifications`
-  - `sonar_market_offers` / `sonar_market_reviews` → `sonar_market_*`
-  - `sonar_reputation` → `sonar_reputation`
-  - `sonar_logistics_jobs` → `sonar_logistics_jobs`
-  - `sonar_granja_*` (4 tablas: plots/silos/machines/licenses) → `sonar_granja_*`
-  - `sonar_molino_*` (3 tablas: silos/machines/batches) → `sonar_molino_*`
-  - `sonar_settings` → `sonar_settings`
-- **Índices + FKs + constraint names:** rename 1:1 coherentemente per tabla. Ejemplo: `idx_sonar_bank_accounts_iban` → `idx_sonar_bank_accounts_iban`. `fk_sonar_bank_movements_account` → `fk_sonar_bank_movements_account`.
-- **Schema DDL + columns + types + defaults + constraints = INVARIANTES.** Pre/post migration-009 identical. Solo names actualizan.
-
-#### Migration 009 `009_rename_sonar_to_sonar.sql` (Phase 9 scheduled per ADR-013)
-- **Migration type:** DDL rename batch atomic. Mitigable si falla (rollback script documented).
-- **Content target:**
-  ```sql
-  -- UP (apply)
-  RENAME TABLE
-    sonar_accounts TO sonar_accounts,
-    sonar_tablets TO sonar_tablets,
-    sonar_companies TO sonar_companies,
-    sonar_company_members TO sonar_company_members,
-    sonar_bank_accounts TO sonar_bank_accounts,
-    sonar_bank_movements TO sonar_bank_movements,
-    sonar_bank_escrows TO sonar_bank_escrows,
-    sonar_audit_log TO sonar_audit_log,
-    sonar_bridge_idempotency TO sonar_bridge_idempotency,
-    sonar_event_log TO sonar_event_log,
-    sonar_schema_versions TO sonar_schema_versions,
-    -- ... resto 28 tablas rename en batch atomic
-    sonar_settings TO sonar_settings;
-
-  -- Indexes + FKs coherentemente renamed (InnoDB renamea FKs automatically con RENAME TABLE, verify post-migration con INFORMATION_SCHEMA).
-
-  -- Registrar migration 009 en sonar_schema_versions con checksum SHA-256.
-
-  -- DOWN (rollback emergency)
-  RENAME TABLE
-    sonar_accounts TO sonar_accounts,
-    -- ... resto 28 tablas reverse;
-  ```
-- **Checksum SHA-256** calculated + registered (Phase 9 execution).
-- **Audit trail preserved:** data rows intact, zero data loss. Solo metadata DDL names change.
-- **Pre-migration verify:** `SELECT COUNT(*) FROM sonar_bank_movements` = N rows. Post-migration: `SELECT COUNT(*) FROM sonar_bank_movements` = N rows (identical).
-
-#### Hybrid `audit_log` + `event_log` (ADR-010) unchanged semantics
-- `sonar_audit_log` (wrapper operational) → `sonar_audit_log`. Schema + indexes + write pattern identical.
-- `sonar_event_log` (append-only event sourcing) → `sonar_event_log`. Schema + indexes + polymorphic refs identical.
-- ADR-010 dual-table strategy preserved 1:1 post-migration.
-
-#### ERD + FKs + cardinality
-- ERD textual §2 del doc: refs `sonar_*` legacy. Post-migration lecturable con mental mapping 1:1 to `sonar_*`.
-- FKs cascade policies + ON DELETE/UPDATE = identical.
-
-#### Reference data (seeds) post-migration
-- `sonar_settings` key/value rows: key strings (e.g., `'starter_balance'`) unchanged; solo tabla name bumped.
-- System treasury seed `AD-SYS0-0000-0001` (migration 004) preserved en `sonar_bank_accounts` post-rename. IBAN value unchanged para preservar continuidad ledger.
-
-#### Migration execution schedule (ADR-013 authoritative)
-- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). DB NO tocada.
-- **Phase 9 execution session (próxima sesión founder-available):** crear `resources/sonar_core/migrations/009_rename_sonar_to_sonar.sql` (con rollback DOWN documented) + ejecutar via migrations runner + verify INFORMATION_SCHEMA + checksum registered.
-- **Post-Phase-9 doc bump v1.1 → v1.2:** refs inline `sonar_*` → `sonar_*` en DDL + índices + queries + diccionario datos (28 tablas actualizadas 1:1).
-- **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica queries + FKs + particionado con nuevas names.
-
-#### Cómo leer el resto del documento (§1-§20)
-
-1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
-2. **Filosofía + ERD + DDL + índices + queries + migrations strategy + particionado + backup + diccionario (§1-§20) siguen válidos pivot-agnostic** — foundational schema design sin cambios.
-3. **28 tablas documentadas (§3-§12, §14-§16) — refs `sonar_*` prefix = LEGACY estado actual DB.** Post-migration-009 ejecutada = canonical `sonar_*`. Mapping 1:1 aplicable.
-4. **índices + FKs + constraint names `sonar_*`:** legacy estado actual. Post-migration-009 = `sonar_*` coherentemente.
-5. **DDL columns + types + defaults + constraints = INVARIANTES.** Pre/post migration-009 identical.
-6. **§20.1 Resumen 28 tablas:** counts unchanged. Solo prefix actualiza.
-7. **ADR-010 hybrid audit_log + event_log semantics:** preserved 1:1.
-8. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
-
----
 
 ## 0. Resumen ejecutivo
 
@@ -135,7 +39,7 @@ Cubre:
 
 | # | Principio | Significado práctico |
 |---|---|---|
-| **D1** | **Prefijo `sonar_` obligatorio** | Todas las tablas Admirals empiezan con `sonar_`. Cero colisión con framework, addons o terceros. |
+| **D1** | **Prefijo `sonar_` obligatorio** | Todas las tablas SONAR empiezan con `sonar_`. Cero colisión con framework, addons o terceros. |
 | **D2** | **UUID v4 como id primario por defecto** | Los `id` de entidades de negocio (accounts, companies, tablets, etc.) son UUID v4 (CHAR(36)). Las tablas con alto volumen de inserts (movements, messages, event_log) usan BIGINT autoincrement. |
 | **D3** | **Charset y collation:** `utf8mb4` + `utf8mb4_0900_ai_ci` | Soporte completo Unicode (emojis, idiomas). MySQL 8 default. |
 | **D4** | **Engine InnoDB** | Transacciones ACID, foreign keys, row-level locking. Cero MyISAM. |
@@ -160,7 +64,7 @@ Cubre:
 
 > **Reproducimos los tipos canónicos de `02_events_catalog.md` §1.6 mapeados a MySQL 8.**
 
-| Tipo Admirals | MySQL | Descripción |
+| Tipo SONAR | MySQL | Descripción |
 |---|---|---|
 | `AccountId`, `CompanyId`, `TabletSerial`, `BankAccountId` | `CHAR(36)` | UUID v4. |
 | `IBAN` | `VARCHAR(20)` | `AD-XXXX-XXXX-XXXX` formato. |
@@ -404,14 +308,14 @@ sonar_settings_per_account       (preferencias usuario)
 
 ### 3.1 sonar_accounts
 
-> **La cuenta Admirals.** Vinculada a un personaje del framework. Es el "DNI digital" del jugador en el ecosistema.
+> **La cuenta SONAR.** Vinculada a un personaje del framework. Es el "DNI digital" del jugador en el ecosistema.
 
 ```sql
 CREATE TABLE sonar_accounts (
   id                    CHAR(36)        NOT NULL,
   char_id               VARCHAR(64)     NOT NULL COMMENT 'citizenid QBox / identifier ESX / character_id manual',
   framework_source      ENUM('qbox','qbcore','esx','manual') NOT NULL,
-  alias                 VARCHAR(64)     NOT NULL COMMENT 'nombre mostrado público en Admirals',
+  alias                 VARCHAR(64)     NOT NULL COMMENT 'nombre mostrado público en SONAR',
   reputation_global     TINYINT UNSIGNED NOT NULL DEFAULT 50 COMMENT '0-100',
   preferred_locale      VARCHAR(8)      NOT NULL DEFAULT 'es-ES',
   developer_mode        TINYINT(1)      NOT NULL DEFAULT 0,
@@ -430,7 +334,7 @@ CREATE TABLE sonar_accounts (
 
 **Notas:**
 - `id` es UUID v4 generado en `sonar_core` al primer login del jugador.
-- `char_id` + `framework_source` es único — un personaje del framework solo tiene una cuenta Admirals.
+- `char_id` + `framework_source` es único — un personaje del framework solo tiene una cuenta SONAR.
 - `reputation_global` se actualiza vía `sonar:core:reputation_changed`.
 - `meta` puede contener: `{ "wallpaper": "...", "theme": "...", ... }`.
 
@@ -480,7 +384,7 @@ CREATE TABLE sonar_tablets (
 
 ### 3.3 sonar_companies
 
-> **Empresa Admirals.** Entidad jurídica RP, dueña de assets físicos, contratos, cuenta empresarial.
+> **Empresa SONAR.** Entidad jurídica RP, dueña de assets físicos, contratos, cuenta empresarial.
 
 ```sql
 CREATE TABLE sonar_companies (
@@ -588,7 +492,7 @@ CREATE TABLE sonar_company_members (
 
 ### 4.1 sonar_bank_accounts
 
-> **Cuenta bancaria** personal o empresarial. IBAN único formato Admirals.
+> **Cuenta bancaria** personal o empresarial. IBAN único formato SONAR.
 
 ```sql
 CREATE TABLE sonar_bank_accounts (
@@ -692,7 +596,7 @@ CREATE TABLE sonar_bank_movements (
 
 ### 5.1 sonar_documents
 
-> **Repositorio documental Admirals.** Notas, contratos, albaranes, recibos, certificados.
+> **Repositorio documental SONAR.** Notas, contratos, albaranes, recibos, certificados.
 
 ```sql
 CREATE TABLE sonar_documents (
@@ -1282,7 +1186,7 @@ CREATE TABLE sonar_logistics_disputes (
 
 ## 10. DDL — Dominio Granja
 
-> **Tablas del nodo Granja Admirals.** Cada empresa Granja tiene sus parcelas, silos, máquinas. Las licencias son por jugador, no por empresa.
+> **Tablas del nodo Granja SONAR.** Cada empresa Granja tiene sus parcelas, silos, máquinas. Las licencias son por jugador, no por empresa.
 
 ### 10.1 sonar_granja_plots
 
@@ -1746,7 +1650,7 @@ INSERT INTO sonar_companies (id, vertical, name, status, owner_account_id, hq_lo
 VALUES (
   'a0000000-0000-0000-0000-000000000001',
   'cooperativa',
-  'Cooperativa Admirals NPC',
+  'Cooperativa SONAR NPC',
   'active',
   'a0000000-0000-0000-0000-000000000099',  -- cuenta NPC sistema
   '{"x": 1234.5, "y": 5678.9, "z": 30.0, "heading": 90}',
@@ -1760,7 +1664,7 @@ INSERT INTO sonar_companies (id, vertical, name, status, owner_account_id, hq_lo
 VALUES (
   'a0000000-0000-0000-0000-000000000002',
   'mill',
-  'Molino Admirals NPC',
+  'Molino SONAR NPC',
   'active',
   'a0000000-0000-0000-0000-000000000099',
   '{"x": 2345.6, "y": 6789.0, "z": 35.0, "heading": 180}',
@@ -1778,7 +1682,7 @@ VALUES (
   'a0000000-0000-0000-0000-000000000099',
   'NPC_SYSTEM',
   'manual',
-  'Admirals System',
+  'SONAR System',
   100,
   'es-ES'
 );
@@ -2260,7 +2164,7 @@ ALTER TABLE sonar_messages DROP PARTITION p_2025_04;
 
 ### 18.1 Estrategia recomendada
 
-> **Admirals no implementa backup propio en oleada 1** — recomienda al admin del servidor configurar uno externo. La doc lo indica claramente.
+> **SONAR no implementa backup propio en oleada 1** — recomienda al admin del servidor configurar uno externo. La doc lo indica claramente.
 
 **Stack recomendado:**
 
@@ -2439,7 +2343,8 @@ Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admir
 |---|---|---|---|
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 20 secciones, ~2335 líneas, 28 tablas DDL completo + ~60 índices justificados + queries hot path + migrations strategy + particionado + backup + diccionario datos. **Firmable Oleada 0.** |
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `sonar_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_sonar_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `sonar_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
+| 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.1**
+**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.2**

@@ -1,6 +1,6 @@
 # 🔌 SONAR — Bridges & Compatibility Layer
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§18 legacy v1.0 inline preserved con surface rebrand). **SSoT bridges vigente** — arquitectura + interfaces + tier system + adapters + SDK + anti-patterns sin cambios foundational (pivot-agnostic). Namespace code rename `sonar_bridges` → `sonar_bridges` scheduled Phase 8 post-S1.9 EXTENDED per ADR-013.
+> **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x). **SSoT bridges vigente** — arquitectura + interfaces + tier system + adapters + SDK + anti-patterns sin cambios foundational (pivot-agnostic). Namespace code rename `sonar_bridges` → `sonar_bridges` scheduled Phase 8 post-S1.9 EXTENDED per ADR-013.
 > **Tipo:** Technical/Implementation. **Último doc Oleada 0 antes de Sprint 1.** Define el **Bridges Layer** — capa de abstracción que permite a SONAR funcionar sobre múltiples frameworks FiveM (QBox, QBCore, ESX) y scripts custom (lb-phone, qs-inventory, Renewed-Banking, etc.) sin acoplarse a ninguno.
 > **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5 (firmado post-pivot).
 > **Documento hermano SSoT:** `technical/01_architecture.md` (Bridges layer mencionado §Layers), `technical/04_api_contracts.md` (todo API SONAR que toca dinero/items/fono pasa por aquí).
@@ -12,54 +12,12 @@
 
 ---
 
-## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
-
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + code namespace `sonar_bridges`/`sonar_core`.** ADR-011 (pivot) + ADR-012 (refinement) + ADR-013 (namespace migration Phase 8+9 execution scheduled) refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§18 abajo, **gana este NOTICE + ADR-011/012/013**.
-
-### NEW CANONICAL — vigente desde 2026-05-04
-
-#### Naming canonical (DEPRECATED heritage "Admirals" producto)
-- **Producto:** SONAR (no Admirals).
-- **Bridges Layer:** SONAR Bridges Layer.
-- **Code resources target state post-Phase-8 (ADR-013 scheduled):**
-  - `resources/sonar_bridges/` → `resources/sonar_bridges/`
-  - `resources/sonar_bank/` → `resources/sonar_bank/`
-  - `resources/sonar_core/` → `resources/sonar_core/`
-- **Export calls target state post-Phase-8:** `exports['sonar_bridges']:*` → `exports['sonar_bridges']:*`. `exports['sonar_core']:*` → `exports['sonar_core']:*`. `exports['sonar_bank']:*` → `exports['sonar_bank']:*`.
-- **Event prefixes target state post-Phase-8:** `sonar:bank:*` → `sonar:bank:*` + equivalentes bridges/core.
-- **Regla 1 (§18) anti-pattern grep actualizada post-Phase-8:** `grep -r "exports\['qb-" resources/sonar_core/` → 0 matches (antes `sonar_core`).
-
-#### Phase 8+9 execution schedule (ADR-013 authoritative)
-- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Code + DB NO tocados.
-- **Phase 8 execution session (próxima sesión founder-available):** git mv resources sonar_* → sonar_* + fxmanifest + config.lua + internal refs + exports + event prefixes + server.cfg.example + smoke manuals.
-- **Phase 9 execution session (misma o siguiente):** migration `009_rename_sonar_to_sonar.sql` rename 6 tablas SQL DDL + FKs + index names + registrar en `sonar_schema_versions`/`sonar_schema_versions` final.
-- **Phase 10 smoke regression:** manual founder 30/30 pasos cumulative S0+S1 post-refactor.
-- **Phase 11 workspace migration (opcional):** `d:\theBigProject` → `d:\sonar` si founder decide.
-- **Pre-Sprint 2 gate:** Phase 10 green + BOOTSTRAP v1.5 → v1.6 + B2 SPRINT_PLAN_S2 redactable.
-
-#### §12 Custom Adapter SDK — customer-facing renaming
-- Config customer path post-Phase-8: `resources/sonar_bridges/config.lua` (no `sonar_bridges`).
-- SDK templates `sdk/template_bank.lua` / `template_inventory.lua` / `template_phone.lua` sin cambios interfaces (métodos + tipos + errores iguales).
-- Readme `sdk/README.md` rename references. Customers que hayan escrito adapters pre-Phase-8 = 1-time `Bridges.RegisterAdapter` path change sobre `sonar_bridges`.
-- Versioning SEMVER preservado — Bridges Layer v0.2.0 (pre-rename) → v0.3.0 (post-rename) major-minor bump documenting migration per ADR-013.
-
-#### Cómo leer el resto del documento (§1-§18)
-
-1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
-2. **Arquitectura + tier system + 6 bridges + adapters + auto-detection + native fallbacks + lifecycle hooks + testing matrix + versioning + anti-patterns (§1-§11, §13-§16) siguen válidos pivot-agnostic** — foundational design no cambia.
-3. **Refs producto "Admirals" en §1-§18 = legacy** → leer "SONAR".
-4. **Refs code `sonar_bridges`/`sonar_core`/`sonar_bank`/`exports['sonar_*']`/`sonar:*` events = LEGACY estado actual código.** Post-Phase-8 ejecutada = canonical `sonar_*`.
-5. **§12 SDK customer refs:** post-Phase-8, usar `sonar_bridges` path. Pre-Phase-8 (estado actual), `sonar_bridges` path funciona.
-6. **§18 TL;DR reglas absolutas:** semantics intact, solo naming actualiza post-Phase-8.
-7. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
-
----
 
 ## 0. Resumen ejecutivo
 
-El **Bridges Layer** es la capa que desacopla Admirals de cualquier framework o script externo específico. Sin ella, Admirals solo funcionaría en QBox (o en QBCore, o en ESX — pero **no los tres**). Con ella, Admirals es un producto premium vendible a **cualquier servidor FiveM serio**, sin importar qué banco/inventario/teléfono/target usen.
+El **Bridges Layer** es la capa que desacopla SONAR de cualquier framework o script externo específico. Sin ella, SONAR solo funcionaría en QBox (o en QBCore, o en ESX — pero **no los tres**). Con ella, SONAR es un producto premium vendible a **cualquier servidor FiveM serio**, sin importar qué banco/inventario/teléfono/target usen.
 
-> **Regla de oro:** ningún archivo de Admirals, nunca, jamás, llama directamente a una API externa (`exports['qb-banking']:AddMoney(...)`). **Siempre** pasa por `Bridges.Bank.AddMoney(...)`.
+> **Regla de oro:** ningún archivo de SONAR, nunca, jamás, llama directamente a una API externa (`exports['qb-banking']:AddMoney(...)`). **Siempre** pasa por `Bridges.Bank.AddMoney(...)`.
 
 Define:
 
@@ -70,9 +28,9 @@ Define:
 - **Interfaces exactas** de cada bridge (método, tipos, contrato, errores, idempotencia).
 - **Adapters concretos** para frameworks/scripts populares.
 - **Auto-detection** de scripts instalados al boot + config overrides convars.
-- **Native fallbacks** — si nada detectado, Admirals provee mínimo funcional nativo.
+- **Native fallbacks** — si nada detectado, SONAR provee mínimo funcional nativo.
 - **Custom Adapter SDK** — customers escriben su adapter siguiendo template + test harness.
-- **Lifecycle hooks** bidireccionales (Admirals↔external).
+- **Lifecycle hooks** bidireccionales (SONAR↔external).
 - **Testing matrix** — qué combos CI-tested, manual-tested, community-tested.
 - **Versioning policy** — SEMVER bridges + deprecation 1 minor.
 - **Anti-patterns** — errores que evitan el colapso de la abstracción.
@@ -89,7 +47,7 @@ Define:
 |---|---|---|
 | **B1** | **Nunca llamar external directo** | 0 ocurrencias de `exports['qb-*']:...` o `ESX.GetPlayerFromId()` fuera de `bridges/adapters/*.lua`. |
 | **B2** | **Interface estable, implementación variable** | La firma de `Bridges.Bank.AddMoney()` no cambia. Los adapters sí. |
-| **B3** | **Detection + fallback, nunca crash** | Si el script esperado no está, Admirals usa native fallback + log warning, **no crashea**. |
+| **B3** | **Detection + fallback, nunca crash** | Si el script esperado no está, SONAR usa native fallback + log warning, **no crashea**. |
 | **B4** | **Single-responsibility bridges** | Cada bridge hace UNA cosa (Bank = dinero, Inventory = items). No "UtilityBridge" god-object. |
 | **B5** | **Async-by-default, sync opt-in** | Todas las operaciones devuelven promise/callback. El caller decide sync si necesita. |
 | **B6** | **Idempotent siempre que sea posible** | `AddMoney(citizenId, 100, tx_id)` con mismo `tx_id` es no-op 2ª vez. |
@@ -97,7 +55,7 @@ Define:
 
 ### 1.2 Anti-principios
 
-- ❌ **Abstracción por abstracción.** Un bridge con 30 métodos "por si acaso" es basura. Solo los que Admirals realmente usa.
+- ❌ **Abstracción por abstracción.** Un bridge con 30 métodos "por si acaso" es basura. Solo los que SONAR realmente usa.
 - ❌ **Bridge que leak types externos.** Si `QBCore.Player` aparece en la firma, la abstracción falló.
 - ❌ **Feature detection en runtime por call.** Se detecta al boot, se cachea, se usa. No `if QBCore then ... else if ESX then ...` en cada llamada.
 - ❌ **Bridge que hace más que pasar.** Si tiene lógica de negocio, esa lógica pertenece a `sonar_core`, no al bridge.
@@ -174,7 +132,7 @@ sonar_bridges/
       yseries.lua
       qb_phone.lua
       npwd.lua
-      native.lua          -- usa el propio Tablet Admirals
+      native.lua          -- usa el propio Tablet SONAR
     identity/
       qbox.lua
       qbcore.lua
@@ -237,7 +195,7 @@ end
 
 ### 3.1 Tier 1 — Oficialmente soportado (garantizado)
 
-> **Admirals garantiza que funciona + smoke tested cada release.**
+> **SONAR garantiza que funciona + smoke tested cada release.**
 
 | Módulo | Script | Razón |
 |---|---|---|
@@ -246,14 +204,14 @@ end
 | Target | **ox_target** | Modern, performant, API estable |
 | Lib | **ox_lib** | Asumido (dialog, callbacks, util) |
 | Phone | **lb-phone** | Leader premium phone, API estable, widely adopted |
-| Notify | **ox_lib.notify** | Default Admirals |
+| Notify | **ox_lib.notify** | Default SONAR |
 | Bank | **qbx_management + qbx_core** | Bank nativo QBox |
 
 **Stack recomendado "admirals-ready":** QBox + ox_* + lb-phone. Customer con este stack tiene 100% funcionalidad out-of-the-box.
 
 ### 3.2 Tier 2 — Compat layer provisto (best-effort)
 
-> **Admirals provee adapter + smoke tested menos frecuentemente. Puede tener limitaciones documentadas.**
+> **SONAR provee adapter + smoke tested menos frecuentemente. Puede tener limitaciones documentadas.**
 
 | Módulo | Scripts |
 |---|---|
@@ -266,8 +224,8 @@ end
 
 **Limitaciones típicas T2:**
 - Metadata items menos rica → quality A/B/C/D serializada en description si inventory no soporta metadata nativa.
-- Phone sin SDK → Admirals envía via chat si no hay API phone.
-- Bank sin history API → Admirals mantiene su propio ledger parallel.
+- Phone sin SDK → SONAR envía via chat si no hay API phone.
+- Bank sin history API → SONAR mantiene su propio ledger parallel.
 
 ### 3.3 Tier 3 — Customer SDK (DIY)
 
@@ -275,7 +233,7 @@ end
 
 Ver §12 "Custom Adapter SDK".
 
-Admirals provee:
+SONAR provee:
 - Template files (`sdk/template_*.lua`).
 - Spec interface exacta.
 - Test harness automático (`scripts/test_adapter.lua`).
@@ -294,20 +252,20 @@ Admirals provee:
 
 ### 4.1 Responsabilidad
 
-Todas las operaciones de dinero en accounts **distintos del ledger Admirals interno**. Admirals tiene su propio ledger (`sonar_bank_accounts` + `sonar_bank_movements`). Bridges.Bank se usa cuando el customer quiere que Admirals **mirror/sync** con el banco del framework externo (p.ej. el "cash/bank" de QBox).
+Todas las operaciones de dinero en accounts **distintos del ledger SONAR interno**. SONAR tiene su propio ledger (`sonar_bank_accounts` + `sonar_bank_movements`). Bridges.Bank se usa cuando el customer quiere que SONAR **mirror/sync** con el banco del framework externo (p.ej. el "cash/bank" de QBox).
 
 **Dos modos operacionales:**
 
 #### Modo A — Standalone (recomendado)
-Admirals usa **solo** su ledger propio. IBANs `ES00 ADML XXXX` son la SSoT. Bridges.Bank es **no-op** (adapter `native`). El dinero en el cash/bank del framework externo es separado — no se toca.
+SONAR usa **solo** su ledger propio. IBANs `ES00 ADML XXXX` son la SSoT. Bridges.Bank es **no-op** (adapter `native`). El dinero en el cash/bank del framework externo es separado — no se toca.
 
-**Ventaja:** cero conflictos, ledger Admirals puro, perfect economic integrity.
-**Desventaja:** player tiene "dos carteras" (la del framework + la de Admirals). Requiere UX onboarding clear.
+**Ventaja:** cero conflictos, ledger SONAR puro, perfect economic integrity.
+**Desventaja:** player tiene "dos carteras" (la del framework + la de SONAR). Requiere UX onboarding clear.
 
 #### Modo B — Synced (avanzado, opt-in)
-Admirals usa su ledger como SSoT pero **sincroniza** cambios con el bank del framework (bidirectionally). Cuando Admirals paga salario, el balance del framework bank sube.
+SONAR usa su ledger como SSoT pero **sincroniza** cambios con el bank del framework (bidirectionally). Cuando SONAR paga salario, el balance del framework bank sube.
 
-**Ventaja:** UX unificado (player ve mismo saldo en Tablet Admirals y en phone del framework).
+**Ventaja:** UX unificado (player ve mismo saldo en Tablet SONAR y en phone del framework).
 **Desventaja:** complejidad sync, race conditions posibles, requiere cron de reconciliación.
 
 **Default:** Modo A. Modo B opt-in via `convar sonar_bridge_bank_mode = synced`.
@@ -425,9 +383,9 @@ Cada adapter debe pasar el test harness (§12.5):
 
 ### 5.1 Responsabilidad
 
-Operaciones sobre el inventario del **player** (carry, pockets) y de containers (vehicles, stashes). Admirals tiene ítems propios (`sonar_items` table con quality + lineage + atributos) pero necesita darlos/quitarlos del inventario activo del player para que los vea en su UI del framework.
+Operaciones sobre el inventario del **player** (carry, pockets) y de containers (vehicles, stashes). SONAR tiene ítems propios (`sonar_items` table con quality + lineage + atributos) pero necesita darlos/quitarlos del inventario activo del player para que los vea en su UI del framework.
 
-> **Decisión clave:** Admirals **almacena** los ítems en su tabla (SSoT atributos). El bridge **refleja** la presencia del ítem en el inventario del framework (para UI/carry mechanics). Sync bidireccional.
+> **Decisión clave:** SONAR **almacena** los ítems en su tabla (SSoT atributos). El bridge **refleja** la presencia del ítem en el inventario del framework (para UI/carry mechanics). Sync bidireccional.
 
 ### 5.2 Interface
 
@@ -453,7 +411,7 @@ Bridges.Inventory.GetItems(citizenId, filter)
 
 --- Bridges.Inventory.RegisterItem(item_spec)
 --- @param item_spec table { name, label, weight, stack, close_on_use, description }
---- Call al boot para registrar items Admirals en el inventory.
+--- Call al boot para registrar items SONAR en el inventory.
 Bridges.Inventory.RegisterItem(item_spec)
 
 --- Bridges.Inventory.GetCapacity(citizenId)
@@ -469,7 +427,7 @@ Bridges.Inventory.IsMetadataSupported()
 
 | Campo | Tipo | Propósito |
 |---|---|---|
-| `sonar_item_id` | string UUID | Link al row `sonar_items`. **Obligatorio** si Admirals-owned. |
+| `sonar_item_id` | string UUID | Link al row `sonar_items`. **Obligatorio** si SONAR-owned. |
 | `quality` | 'A'\|'B'\|'C'\|'D' | Quality tier. |
 | `quality_score` | number 0-100 | Score numérico. |
 | `lineage_origin` | table | `{ granja_id, plot_id, harvest_ts }` para wheat/crops. |
@@ -485,7 +443,7 @@ Si `IsMetadataSupported() == false` (p.ej. qb-inventory vanilla), el adapter ser
 Description: "Wheat — Quality A\n[adm:eyJhIjoiQSIsIm9fZCI6MTIzNDV9]"
 ```
 
-Admirals decoda al leer. Trade-off: no visible bonito al user pero funcional.
+SONAR decoda al leer. Trade-off: no visible bonito al user pero funcional.
 
 ### 5.5 Adapters
 
@@ -519,17 +477,17 @@ Usa `exports['qs-inventory']` API. Soporta metadata básica. Puede requerir conf
 
 #### 5.5.3 `adapter_qb_inventory.lua` (T2)
 
-Vanilla qb-inventory: metadata serializada en info field (JSON). Admirals decoda.
+Vanilla qb-inventory: metadata serializada en info field (JSON). SONAR decoda.
 
 #### 5.5.4 `adapter_native.lua` (fallback)
 
-Sin inventory script → Admirals provee inventario minimal propio via Tablet "Inventory app" + carry mechanic simple.
+Sin inventory script → SONAR provee inventario minimal propio via Tablet "Inventory app" + carry mechanic simple.
 
 ### 5.6 Edge cases
 
 - **Player offline:** `PLAYER_OFFLINE` error. Caller debe encolar (p.ej. salary accrual pendiente reconnect).
 - **Inventory lleno:** `INVENTORY_FULL` error. Caller notifica player.
-- **Item no registrado:** boot-time check que todos los items Admirals están registered. Si no → warning log.
+- **Item no registrado:** boot-time check que todos los items SONAR están registered. Si no → warning log.
 
 ---
 
@@ -537,9 +495,9 @@ Sin inventory script → Admirals provee inventario minimal propio via Tablet "I
 
 ### 6.1 Responsabilidad
 
-Envío de notifications, SMS, llamadas desde Admirals al phone del player **si el customer tiene phone script separado**. Si no, Admirals usa el propio Tablet como único device (fallback native).
+Envío de notifications, SMS, llamadas desde SONAR al phone del player **si el customer tiene phone script separado**. Si no, SONAR usa el propio Tablet como único device (fallback native).
 
-**Importante:** Tablet Admirals NO es un phone. Es un device corporativo adicional. El player puede tener ambos.
+**Importante:** Tablet SONAR NO es un phone. Es un device corporativo adicional. El player puede tener ambos.
 
 ### 6.2 Interface
 
@@ -569,7 +527,7 @@ Bridges.Phone.IsAvailable()
 ### 6.3 Comportamiento si phone no disponible
 
 Adapter `native`:
-- `SendNotification` → envía al Tablet Admirals (app "Inbox").
+- `SendNotification` → envía al Tablet SONAR (app "Inbox").
 - `SendSMS` → chat message server-only al player destinatario + persisted en ledger Tablet.
 - `StartCall` → ❌ unsupported (error), porque calls voice requieren script dedicado.
 
@@ -580,11 +538,11 @@ Adapter `native`:
 - `adapter_yseries.lua` (T2).
 - `adapter_qb_phone.lua` (T2).
 - `adapter_npwd.lua` (T2).
-- `adapter_native.lua` (fallback al Tablet Admirals).
+- `adapter_native.lua` (fallback al Tablet SONAR).
 
 ### 6.5 Anti-patterns phone
 
-- ❌ **Usar phone como canal crítico de negocio.** (p.ej. escrow release requires phone delivery). → Admirals usa Tablet + audit log como SSoT. Phone es opcional notificación nice-to-have.
+- ❌ **Usar phone como canal crítico de negocio.** (p.ej. escrow release requires phone delivery). → SONAR usa Tablet + audit log como SSoT. Phone es opcional notificación nice-to-have.
 - ❌ **Esperar respuesta del phone.** Bridges.Phone es fire-and-forget. Player replies van via Tablet o framework chat.
 
 ---
@@ -593,7 +551,7 @@ Adapter `native`:
 
 ### 7.1 Responsabilidad
 
-Resolver identidad del player — `src` (server id efímero) ↔ `citizenId` (stable) ↔ datos player (name, job, etc.). Admirals usa `citizenId` como SSoT en toda su DB. Bridges.Identity es el único que sabe cómo obtenerlo del framework externo.
+Resolver identidad del player — `src` (server id efímero) ↔ `citizenId` (stable) ↔ datos player (name, job, etc.). SONAR usa `citizenId` como SSoT en toda su DB. Bridges.Identity es el único que sabe cómo obtenerlo del framework externo.
 
 ### 7.2 Interface
 
@@ -612,7 +570,7 @@ Bridges.Identity.GetSource(citizenId)
 Bridges.Identity.GetPlayerData(citizenId)
 
 --- Bridges.Identity.GetJob(citizenId)
---- @return table|nil { name, grade, label } del framework (no jobs Admirals)
+--- @return table|nil { name, grade, label } del framework (no jobs SONAR)
 Bridges.Identity.GetJob(citizenId)
 
 --- Bridges.Identity.IsOnline(citizenId)
@@ -629,20 +587,20 @@ Bridges.Identity.OnPlayerLoaded(callback)
 Bridges.Identity.OnPlayerDropped(callback)
 ```
 
-### 7.3 Diferenciación jobs framework vs empresas Admirals
+### 7.3 Diferenciación jobs framework vs empresas SONAR
 
 **Crítico:** un player puede tener:
 - Un **job framework** (police, ambulance, mechanic) — gestionado por el framework.
-- Uno o más **empresa Admirals** membership (Granja La Roja, Panadería X) — gestionado por Admirals.
+- Uno o más **empresa SONAR** membership (Granja La Roja, Panadería X) — gestionado por SONAR.
 
-`Bridges.Identity.GetJob()` devuelve **solo** el job framework. Los empresa Admirals se consultan via `sonar_core` APIs.
+`Bridges.Identity.GetJob()` devuelve **solo** el job framework. Los empresa SONAR se consultan via `sonar_core` APIs.
 
 ### 7.4 Adapters
 
 - `adapter_qbox.lua` (T1): `QBX:GetPlayerByCitizenId()`, `QBX:GetPlayer()`, eventos `QBCore:Server:OnPlayerLoaded`.
 - `adapter_qbcore.lua` (T2): similar.
 - `adapter_esx.lua` (T2): `ESX.GetPlayerFromIdentifier()`. ESX usa `identifier` (license:xxx) en lugar de citizenId — adapter normaliza a string citizenId.
-- `adapter_native.lua`: usa license como citizenId, sin framework. Permite Admirals standalone.
+- `adapter_native.lua`: usa license como citizenId, sin framework. Permite SONAR standalone.
 
 ---
 
@@ -650,7 +608,7 @@ Bridges.Identity.OnPlayerDropped(callback)
 
 ### 8.1 Responsabilidad
 
-Registrar puntos de interacción (zones, entities) que el player ve con ox_target (o equivalente). Admirals registra interactions para: plots granja, mixer bakery, POS retail, ovens, silos, etc.
+Registrar puntos de interacción (zones, entities) que el player ve con ox_target (o equivalente). SONAR registra interactions para: plots granja, mixer bakery, POS retail, ovens, silos, etc.
 
 ### 8.2 Interface
 
@@ -778,18 +736,18 @@ setr sonar_bridge_bank_mode "standalone"    # "standalone" (Modo A) | "synced" (
 
 ### 10.3 Conflict detection
 
-Si 2 scripts del mismo módulo activos (p.ej. qb-inventory + ox_inventory), Admirals:
+Si 2 scripts del mismo módulo activos (p.ej. qb-inventory + ox_inventory), SONAR:
 1. Usa el **primero en priority order** por default.
 2. Logs **WARNING** explícito.
 3. Recomienda al customer usar convar override explícito.
 
 ### 10.4 Boot report
 
-Al acabar detection, Admirals prints reporte al console server:
+Al acabar detection, SONAR prints reporte al console server:
 
 ```
 ═══════════════════════════════════════════════
-  Admirals Bridges — Configuration Report
+  SONAR Bridges — Configuration Report
 ═══════════════════════════════════════════════
   Bank      → qbox             ✅
   Inventory → ox_inventory     ✅
@@ -810,7 +768,7 @@ Al acabar detection, Admirals prints reporte al console server:
 
 ### 11.1 Filosofía fallback
 
-> **Admirals debe arrancar y ser usable incluso sin ningún script externo.** Fallbacks nativos proveen mínimo funcional. UX puede ser inferior pero **nada crashea**.
+> **SONAR debe arrancar y ser usable incluso sin ningún script externo.** Fallbacks nativos proveen mínimo funcional. UX puede ser inferior pero **nada crashea**.
 
 ### 11.2 Tabla fallbacks nativos
 
@@ -818,7 +776,7 @@ Al acabar detection, Admirals prints reporte al console server:
 |---|---|---|
 | **Bank** | Usa solo `sonar_bank_accounts`. No-op sync externo. | Player no ve su saldo en su phone framework (pero sí en Tablet). |
 | **Inventory** | Tabla `sonar_items_carry` + UI Tablet "Inventory app". Carry limit simple por peso. | Sin drag-drop HUD framework-native. |
-| **Phone** | Notifications al Tablet Admirals (app "Inbox"). SMS → chat message + ledger. Calls → unsupported. | No voice calls. |
+| **Phone** | Notifications al Tablet SONAR (app "Inbox"). SMS → chat message + ledger. Calls → unsupported. | No voice calls. |
 | **Identity** | Usa `GetPlayerIdentifiers(source)` directo, license como citizenId. | No jobs/charinfo framework-level. |
 | **Target** | Distance-check + keypress E. Marker ground visible. | No eye-target polish. |
 | **Notify** | `chat:addMessage` simple. | Sin colores/iconos rich. |
@@ -826,7 +784,7 @@ Al acabar detection, Admirals prints reporte al console server:
 ### 11.3 Cuándo native es OK
 
 - **Dev / testing:** yes, saves framework dependencies.
-- **Small private server Admirals-centric:** yes, si el valor es el loop económico y no carry inventory.
+- **Small private server SONAR-centric:** yes, si el valor es el loop económico y no carry inventory.
 - **Public premium server:** ❌ no, se espera stack premium.
 
 ---
@@ -844,7 +802,7 @@ Customer usa un script:
 #### `sdk/template_bank.lua`
 
 ```lua
--- Admirals Bridges SDK — Custom Bank Adapter Template
+-- SONAR Bridges SDK — Custom Bank Adapter Template
 -- Copy to sonar_bridges/adapters/bank/my_bank.lua
 -- Implement los 5 métodos. Register at bottom.
 
@@ -911,7 +869,7 @@ Config.CustomAdapters = {
 }
 ```
 
-Al boot, si config lista custom adapter, Admirals lo usa (prioriza sobre auto-detection).
+Al boot, si config lista custom adapter, SONAR lo usa (prioriza sobre auto-detection).
 
 ### 12.5 Test harness
 
@@ -955,12 +913,12 @@ Customer runs: `exec resources/sonar_bridges/scripts/test_adapter.lua` + console
 
 ## 13. Lifecycle hooks bidireccional
 
-### 13.1 Admirals → External (outbound)
+### 13.1 SONAR → External (outbound)
 
-Admirals emite eventos cuando cambia estado relevante, para que externa sincronice si quiere:
+SONAR emite eventos cuando cambia estado relevante, para que externa sincronice si quiere:
 
 ```lua
--- Admirals emite tras pagar salario:
+-- SONAR emite tras pagar salario:
 TriggerEvent('sonar:bridge:moneyChanged', {
   citizenId = '...',
   delta = 2000,
@@ -981,9 +939,9 @@ Eventos emitidos:
 - `sonar:bridge:empresaJoined` / `sonar:bridge:empresaLeft`
 - `sonar:bridge:contractSigned`
 
-### 13.2 External → Admirals (inbound)
+### 13.2 External → SONAR (inbound)
 
-Si external script cambia dinero/items del player directamente (bypass Admirals), Admirals necesita saberlo para keep ledger consistent. Convention:
+Si external script cambia dinero/items del player directamente (bypass SONAR), SONAR necesita saberlo para keep ledger consistent. Convention:
 
 ```lua
 -- External script paga al player (p.ej. robo al banco, evento custom)
@@ -995,10 +953,10 @@ TriggerEvent('sonar:external:moneyAdded', {
   source = 'my_heist_script',
 })
 
--- Admirals registra en audit log pero NO modifica ledger Admirals (que es separate SSoT).
+-- SONAR registra en audit log pero NO modifica ledger SONAR (que es separate SSoT).
 ```
 
-**Importante:** este hook es **advisory**. Admirals lo audita pero no lo reconcilia automáticamente con su ledger propio (Modo A). En Modo B, reconciliation cron runs diario.
+**Importante:** este hook es **advisory**. SONAR lo audita pero no lo reconcilia automáticamente con su ledger propio (Modo A). En Modo B, reconciliation cron runs diario.
 
 ---
 
@@ -1039,7 +997,7 @@ Customers reportan issues con combo específico via Discord + issue template:
 **Logs:** ...
 ```
 
-Admirals maintainers reproducen si posible.
+SONAR maintainers reproducen si posible.
 
 ---
 
@@ -1047,7 +1005,7 @@ Admirals maintainers reproducen si posible.
 
 ### 15.1 SEMVER bridges
 
-Las interfaces Bridges son SEMVER independiente del versioning Admirals general:
+Las interfaces Bridges son SEMVER independiente del versioning SONAR general:
 
 - **MAJOR** — breaking change en firma (rompe adapters existentes).
 - **MINOR** — añadir método nuevo (backward-compatible).
@@ -1129,8 +1087,8 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 
 ### 17.2 Estado del documento
 
-- **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level + header + hermanos + ADRs refs + lectura obligatoria; §1-§18 legacy inline preserved).
-- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `sonar_*` refs legacy actualizadas a `sonar_*` canonical en §1-§18, o v2.0 si cambio estructural bridges post-S2 learnings).
+- **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x).
+- **Próxima revisión:** tras Sprint 2 (S2 Granja MVP + companies + T2 adapters) + smoke regression + post-S2 learnings (→ v1.3 si cambios estructurales o nuevos bridges T3).
 - **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5.
 - **Documentos hermanos:** `technical/01_architecture.md`, `technical/04_api_contracts.md`, `technical/06_fivem_standards.md` v1.1+, `planning/01_roadmap.md` v1.5.
 - **ADRs relacionados:** ADR-009 (Bridges Layer foundational) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9)**.
@@ -1141,6 +1099,7 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción. 17 secciones: filosofía + arquitectura + tier system + 6 bridges (Bank/Inventory/Phone/Identity/Target/Notify) con interfaces exactas + adapters T1/T2/native + auto-detection + config overrides + native fallbacks + Custom Adapter SDK + lifecycle hooks + testing matrix + versioning policy + anti-patterns + roadmap. **Firmable.** |
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~50 líneas) establece: naming canonical producto + code namespace target state post-Phase-8 (`sonar_bridges`/`sonar_core`/`sonar_bank` + `exports['sonar_*']` + `sonar:*` events) per ADR-013 scheduled + Phase 8+9 execution schedule (next session founder-available) + §12 SDK customer-facing rename guidance + reading guide §1-§18 legacy vs canonical. §0 resumen + headers `00_BOOTSTRAP.md` v1.1 → v1.5 + ADR-007 ref → ADR-009/011/012/013. §17.2 bumped + próxima revisión post-Phase-8+9. **NO touched:** §1-§16 arquitectura + tier + 6 bridges + adapters + SDK interfaces + testing matrix + versioning + anti-patterns (pivot-agnostic). Code namespace `sonar_*` preservado legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
+| 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
 
 ---
 
@@ -1173,10 +1132,10 @@ grep -r "ESX\." sonar_core/ → 0 matches
 - **T3 customer:** SDK + templates.
 
 ### Regla 4: Fallback always works
-Sin scripts externos → Admirals boota y funciona con native fallbacks. UX degradada pero no crashea.
+Sin scripts externos → SONAR boota y funciona con native fallbacks. UX degradada pero no crashea.
 
 ### Regla 5: Config-driven
-Convars overriding auto-detection. Customer nunca edita código Admirals.
+Convars overriding auto-detection. Customer nunca edita código SONAR.
 
 ### Regla 6: Versioned + deprecated con aviso
 1 minor version warning antes de cualquier breaking. Customers happy.
@@ -1219,4 +1178,4 @@ Este doc define:
 
 *"Una abstracción bien diseñada es dinero en el banco. Una abstracción mal diseñada es un banco que quiebra."*
 
-**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.1**
+**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.2**

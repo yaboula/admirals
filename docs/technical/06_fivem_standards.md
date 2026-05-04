@@ -1,6 +1,6 @@
 # ⚙️ SONAR — FiveM Standards
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§11 legacy v1.0 inline preserved). **SSoT vigente** — performance budgets + realtime sync + security threat model + anti-patterns + code review + monitoring + emergency procedures sin cambios foundational (pivot-agnostic). State Bag namespace `sonar_*` scheduled rename `sonar_*` Phase 8 per ADR-013.
+> **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x). **SSoT vigente** — performance budgets + realtime sync + security threat model + anti-patterns + code review + monitoring + emergency procedures sin cambios foundational (pivot-agnostic). State Bag namespace `sonar_*` scheduled rename `sonar_*` Phase 8 per ADR-013.
 > **Tipo:** Technical/Implementation. **Consolidado:** realtime sync + security threat model + performance budgets. Reglas absolutas para código FiveM de SONAR.
 > **Documento padre:** `technical/01_architecture.md` v1.0 (firmado).
 > **Documento hermano:** `technical/04_api_contracts.md` v1.1+ (post-pivot).
@@ -13,39 +13,6 @@
 
 ---
 
-## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
-
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + State Bag namespace `sonar_` §6.1 code review checklist.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§11 abajo, **gana este NOTICE + ADR-011/012/013**.
-
-### NEW CANONICAL — vigente desde 2026-05-04
-
-#### Naming canonical (DEPRECATED heritage "Admirals" producto)
-- **Producto:** SONAR (no Admirals).
-- **FiveM Standards apply to:** `resources/sonar_bridges/` + `resources/sonar_core/` + `resources/sonar_bank/` + `resources/sonar_tablet/` (new S2 UI) + `resources/sonar_companies/` (S3+) post-Phase-8 per ADR-013.
-- **State Bag namespace canonical post-Phase-8:** `sonar_*` prefix (no `sonar_*`). E.g., `SetStateBagValue('player:123', 'sonar_bank_balance', 1500)` target state.
-- **Event prefixes canonical post-Phase-8:** `sonar:bank:*` + `sonar:core:*` + `sonar:bridges:*` + `sonar:tablet:*` (no `sonar:*`).
-- **DB tables canonical post-Phase-9 migration 009:** `sonar_accounts`, `sonar_audit_log`, `sonar_bridge_idempotency`, `sonar_bank_accounts`, `sonar_bank_movements`, `sonar_bank_escrows`.
-- **Code review checklist §6.1 Sync subsection:** `Namespace "sonar_" en state bags` → post-Phase-8 `Namespace "sonar_" en state bags`.
-
-#### Voz + copy-in-production (ADR-012 §D3 applied)
-- Logging messages + error strings + NUI copy siguen voz neutral premium-tech.
-- NO militar/capitán/tactical/silent-service en logs ni error messages.
-- Error codes semantic unchanged (e.g., `INSUFFICIENT_FUNDS`, `FSM_INVALID_TRANSITION`) — technical identifiers pivot-agnostic.
-
-#### Performance budgets applicability
-- **Resmon budgets, FPS targets, DB p99, NUI timing** = identical pre/post pivot. Foundational engineering metrics sin cambios.
-- **Naming only changes** affect code review checklist surface + logging prefixes + state bag keys.
-
-#### Cómo leer el resto del documento (§1-§11)
-
-1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
-2. **Performance budgets + realtime sync patterns + security threat model + anti-patterns + code review + monitoring + emergency procedures + TL;DR (§1-§11) siguen válidos pivot-agnostic** — foundational engineering no cambia.
-3. **Refs producto "Admirals" en §1-§11 = legacy** → leer "SONAR".
-4. **§6.1 Sync checklist `Namespace "sonar_" en state bags`:** post-Phase-8 = `sonar_`. Pre-Phase-8 (estado actual) = `sonar_` funciona.
-5. **Ejemplo code `sonar_bank_balance` en §4 State Bags / §5 DB:** legacy names, post-Phase-8 será `sonar_bank_balance` / `sonar_bank_accounts`.
-6. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
-
----
 
 ## 0. Resumen ejecutivo
 
@@ -63,7 +30,7 @@ Define:
 - **Monitoring tooling** — resmon, profiler, log aggregation.
 - **Emergency procedures** — qué hacer cuando server degrada.
 
-> **Por qué este doc importa:** sin estas reglas, Admirals shipea lag, crashes, o server vulnerable a modders. **Estas reglas no son opcionales** — son contrato de calidad minimum.
+> **Por qué este doc importa:** sin estas reglas, SONAR shipea lag, crashes, o server vulnerable a modders. **Estas reglas no son opcionales** — son contrato de calidad minimum.
 
 ---
 
@@ -206,7 +173,7 @@ Review diario. Cada slow query → index missing o rewrite.
 
 > **Uso:** valores que cambian frequently, varios clients necesitan saber, persistentes a la entity.
 
-**Ejemplos Admirals:**
+**Ejemplos SONAR:**
 - Ítem quality visible (graffiti color en bolsa harina).
 - Empresa current shift open/closed (visible en letrero tienda).
 - Player tier badge visible en HUD.
@@ -248,7 +215,7 @@ Ver `technical/04_api_contracts.md`.
 | Cross-resource coordination | Event bus |
 | Persistent state | DB + event emit when change |
 
-### 3.2 State Bags — reglas Admirals
+### 3.2 State Bags — reglas SONAR
 
 #### 3.2.1 Namespace
 
@@ -803,7 +770,7 @@ Export JSON hourly / Grafana si advanced.
 
 ---
 
-## 9. Validation tooling Admirals-specific
+## 9. Validation tooling SONAR-specific
 
 ### 9.1 Dev smoke tests
 
@@ -874,8 +841,8 @@ Expected: 0. If > 0 → bug.
 
 ### 10.2 Estado del documento
 
-- **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level + header + hermanos + §6.1 sync checklist dual + §cierre rebrand + §FIN bump; §1-§11 legacy inline preserved).
-- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `sonar_*` refs legacy actualizadas a `sonar_*` canonical en §4/§5/§6.1 ejemplos code) o tras primer sprint Oleada 1 con real code + metrics.
+- **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x).
+- **Próxima revisión:** tras Sprint 2 (S2 Granja MVP + companies + T2 adapters) + smoke regression + post-S2 learnings (→ v1.3 si cambios estructurales o nuevos bridges T3).
 - **Documento padre:** `technical/01_architecture.md`.
 - **Documentos hermanos:** `04_api_contracts.md` v1.1+, `05_state_machines.md` v1.1+.
 - **ADRs relacionados:** ADR-006 + ADR-011 + ADR-012 + **ADR-013**.
@@ -886,6 +853,7 @@ Expected: 0. If > 0 → bug.
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción consolidando 3 temas (realtime sync, security threat model, performance budgets) per ADR-006. 10 secciones. **Firmable.** |
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~45 líneas) establece: naming canonical producto + state bag namespace target state post-Phase-8 (`sonar_*`) + event prefixes canonical + DB tables canonical post-migration-009 per ADR-013 scheduled + voz + copy-in-production alineada ADR-012 §D3 (NO militar/capitán) + reading guide §1-§11 legacy vs canonical. §0 resumen + §6.1 sync checklist dual pre/post-Phase-8 + hermanos refs bumped v1.1+ + ADRs 006/011/012/013 linked + §FIN bump. **NO touched:** §1-§10 performance budgets + realtime sync patterns + security threat model + anti-patterns + code review + monitoring + emergency procedures (pivot-agnostic foundational engineering). Code namespace `sonar_*` preservado legacy ejemplos hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
+| 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
 
 ---
 
@@ -960,4 +928,4 @@ Los **FiveM Standards SONAR (ex-Admirals)** son las reglas de calidad absolutas 
 
 *"FiveM tiene límites duros. Respetarlos desde sprint 1 es la diferencia entre un server que escala y uno que colapsa."*
 
-**FIN DEL DOCUMENTO `technical/06_fivem_standards.md` v1.1**
+**FIN DEL DOCUMENTO `technical/06_fivem_standards.md` v1.2**

@@ -1,6 +1,6 @@
 # 🔄 SONAR — State Machines (FSMs)
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§14 legacy v1.0 inline preserved). **SSoT vigente** — filosofía + 16 FSMs core + transitions + guards + actions + persistence + recovery + testing + anti-patterns sin cambios foundational (pivot-agnostic). FSM table refs `sonar_*` + event triggers `sonar:*` scheduled rename `sonar_*` / `sonar:*` Phase 8+9 per ADR-013.
+> **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x). **SSoT vigente** — filosofía + 16 FSMs core + transitions + guards + actions + persistence + recovery + testing + anti-patterns sin cambios foundational (pivot-agnostic). FSM table refs `sonar_*` + event triggers `sonar:*` scheduled rename `sonar_*` / `sonar:*` Phase 8+9 per ADR-013.
 > **Tipo:** Technical/Implementation. Define todas las **Finite State Machines (FSM)** del producto — estados válidos, transiciones permitidas, guards, actions, persistence.
 > **Documento padre:** `technical/01_architecture.md` v1.0 (firmado).
 > **Documento hermano:** `technical/02_events_catalog.md` v1.1+ (post-pivot) — transiciones FSM disparan eventos.
@@ -14,64 +14,6 @@
 
 ---
 
-## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
-
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + FSM audit table `sonar_fsm_transitions` + columnas `status` en tablas `sonar_*` + eventos bus `sonar:*` como triggers transiciones.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§14 abajo, **gana este NOTICE + ADR-011/012/013**.
-
-### NEW CANONICAL — vigente desde 2026-05-04
-
-#### Naming canonical FSMs (DEPRECATED heritage `sonar_*` + `sonar:*`)
-- **Producto:** SONAR (no Admirals).
-- **FSM audit table canonical post-Phase-9 (ADR-013 scheduled):** `sonar_fsm_transitions` → `sonar_fsm_transitions`. Columns + indexes identical.
-- **FSM entity tables canonical post-Phase-9:** las 16 FSMs persisten `status` en tablas `sonar_*` (ver `03_db_schema.md` v1.1+). Post-migration-009 todas renamed `sonar_*`. Ejemplos:
-  - `sonar_companies.status` → `sonar_companies.status` (FSM empresa_lifecycle)
-  - `sonar_bank_escrows.status` → `sonar_bank_escrows.status` (FSM escrow_lifecycle)
-  - `sonar_granja_plots.status` → `sonar_granja_plots.status` (FSM plot_lifecycle)
-  - `sonar_molino_batches.status` → `sonar_molino_batches.status` (FSM batch_lifecycle)
-  - + 12 FSMs adicionales.
-- **Event triggers canonical post-Phase-8:** eventos que disparan transiciones FSM renamed coherentemente. Ejemplo:
-  - `sonar:bank:escrow_created` (FSM escrow `pending → locked`) → `sonar:bank:escrow_created`.
-  - `sonar:bank:escrow_released` (FSM escrow `locked → released`) → `sonar:bank:escrow_released`.
-  - Mapping 1:1 aplicable a todos los triggers documentados en transition tables.
-- **FSM states (strings) = INVARIANTES.** Pre/post Phase-8+9 identical (`pending`, `locked`, `released`, `failed`, `active`, `closed`, etc.). Solo table names + event triggers actualizan.
-
-#### Escrow FSM shipped S1 (reference)
-- FSM `escrow_lifecycle` implementada S1.3 en `sonar_bank_escrows` table (post-Phase-9 → `sonar_bank_escrows`).
-- 5 estados: `pending → locked → released → (failed|cancelled)`.
-- Transitions whitelist + guards + FSM_INVALID_TRANSITION error mapping shipped S1.
-- Post-Phase-8+9: table name + event triggers rename, state strings + transitions + guards INVARIANT.
-
-#### Transaction atomicity pattern unchanged
-- `DB.Transaction([SELECT status, UPDATE status, INSERT audit_log, side_effects])` pattern IDENTICAL pre/post migration.
-- Solo tablas + event names rename coherentemente.
-- Emit event post-commit pattern preserved (con nuevo prefix `sonar:*` post-Phase-8).
-
-#### Recovery + edge cases pattern unchanged
-- Watcher processes + alerting + auto-recovery patterns IDENTICAL.
-- Timeouts config values + thresholds IDENTICAL (solo tablas queried rename).
-
-#### Voz neutral error messages (ADR-012 §D3)
-- FSM error strings (e.g., `FSM_INVALID_TRANSITION: cannot transition from X to Y`) voz neutral técnica.
-- NO militar/capitán/tactical en FSM logging o audit reasons.
-
-#### Migration execution schedule (ADR-013 authoritative)
-- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Código FSM + DB NO tocados.
-- **Phase 8+9 execution session (próxima sesión founder-available):** code refactor FSM logic + DB rename tables + event triggers sync.
-- **Post-Phase-8+9 doc bump v1.1 → v1.2:** refs inline `sonar_*` → `sonar_*` + `sonar:*` → `sonar:*` en transition tables + audit table + §9 code ejemplos (16 FSMs actualizadas 1:1).
-- **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica escrow FSM S1 transitions funcionan con nuevo table name + event triggers.
-
-#### Cómo leer el resto del documento (§1-§14)
-
-1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
-2. **Filosofía + 16 FSMs definiciones + transitions + guards + actions + cross-FSM cascade + persistence + recovery + testing + anti-patterns (§1-§14) siguen válidos pivot-agnostic** — foundational FSM design sin cambios.
-3. **16 FSMs documentadas (§3-§8) — refs tabla `sonar_*` + event `sonar:*` triggers = LEGACY estado actual código/DB.** Post-Phase-8+9 ejecutadas = canonical `sonar_*` / `sonar:*`. Mapping 1:1 aplicable.
-4. **§9.2 FSM audit table `sonar_fsm_transitions`:** legacy estado actual. Post-migration-009 = `sonar_fsm_transitions` coherentemente.
-5. **§9.4 Transaction atomicity ejemplos SQL:** refs `sonar_*` legacy en params. Post-migration-009 = `sonar_*`.
-6. **State strings + transitions whitelist + guards + cascade rules = INVARIANTES.** Pre/post Phase-8+9 identical.
-7. **Escrow FSM S1 shipped reference:** state machine + guards + transitions operacionalmente probadas 14/14 smoke S1.3 + S1.2. Phase 8+9 no altera semantics.
-8. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
-
----
 
 ## 0. Resumen ejecutivo
 
@@ -101,7 +43,7 @@ Define:
 
 ---
 
-## 1. Filosofía FSMs Admirals
+## 1. Filosofía FSMs SONAR
 
 ### 1.1 Principios
 
@@ -826,6 +768,7 @@ Scenarios end-to-end combining FSMs:
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción. 13 secciones, 16 FSMs core (empresa, employee, item, session, escrow, contract, dispute, bakery_mixer, oven, granja_plot, molino_batch, retail_shift, tablet, app, logistics), cross-FSM cascade rules, persistence, recovery, testing, anti-patterns. **Firmable.** |
+| 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
 
 ---
 
@@ -903,4 +846,4 @@ Las **State Machines SONAR (ex-Admirals)** formalizan el ciclo de vida de cada e
 
 ---
 
-**FIN DEL DOCUMENTO `technical/05_state_machines.md` v1.1**
+**FIN DEL DOCUMENTO `technical/05_state_machines.md` v1.2**

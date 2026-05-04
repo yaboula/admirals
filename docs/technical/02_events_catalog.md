@@ -1,6 +1,6 @@
 # 📡 SONAR — Catálogo de Eventos `sonar:*` (post-Phase-8) / `sonar:*` (pre-Phase-8 legacy)
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§17 legacy v1.0 inline preserved con 88 eventos `sonar:*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + schemas + audit/throttle policies + tipos (state/command/push/callback) + naming conventions + tier system + RFC governance sin cambios foundational (pivot-agnostic). Event prefix `sonar:*` scheduled rename `sonar:*` Phase 8 per ADR-013.
+> **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x). **SSoT vigente** — filosofía + schemas + audit/throttle policies + tipos (state/command/push/callback) + naming conventions + tier system + RFC governance sin cambios foundational (pivot-agnostic). Event prefix `sonar:*` scheduled rename `sonar:*` Phase 8 per ADR-013.
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§5 define la arquitectura del bus).
 > **ADRs relacionados:** ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)**.
@@ -10,65 +10,6 @@
 
 ---
 
-## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
-
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + event prefix `sonar:*` en todos los 88 eventos.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§17 abajo, **gana este NOTICE + ADR-011/012/013**.
-
-### NEW CANONICAL — vigente desde 2026-05-04
-
-#### Naming canonical events (DEPRECATED heritage `sonar:*` prefix)
-- **Producto:** SONAR (no Admirals).
-- **Event prefix canonical post-Phase-8 (ADR-013 scheduled):** `sonar:*` reemplaza `sonar:*`. Mapping 1:1:
-  - `sonar:bank:transfer_completed` → `sonar:bank:transfer_completed`
-  - `sonar:bank:escrow_created` → `sonar:bank:escrow_created`
-  - `sonar:granja:harvest_completed` → `sonar:granja:harvest_completed`
-  - `sonar:tablet:notification_pushed` → `sonar:tablet:notification_pushed`
-  - ... aplicar 1:1 rename a los 88 eventos shipped + placeholders.
-- **Emisor canonical post-Phase-8:** `sonar_bank` → `sonar_bank`. `sonar_granja` → `sonar_granja`. `sonar_tablet` → `sonar_tablet`. `sonar_molino` → `sonar_molino`. `sonar_core` → `sonar_core`.
-- **Schema fields sin cambios:** payloads, types, validators, rangos, side effects — identical pre/post Phase-8. Solo prefix + emitter name bumped.
-- **Schema version NO bumped:** el prefix rename per ADR-013 es surgical mechanical refactor, no breaking contract. Versión per evento permanece 1 (unless semantic change applicable).
-
-#### Events shipped S1 affected by Phase 8 rename (reference list)
-- `sonar:bank:account_created` → `sonar:bank:account_created`
-- `sonar:bank:balance_changed` → `sonar:bank:balance_changed`
-- `sonar:bank:transfer_requested` → `sonar:bank:transfer_requested`
-- `sonar:bank:transfer_completed` → `sonar:bank:transfer_completed`
-- `sonar:bank:transfer_failed` → `sonar:bank:transfer_failed`
-- `sonar:bank:escrow_created` → `sonar:bank:escrow_created`
-- `sonar:bank:escrow_released` → `sonar:bank:escrow_released`
-- `sonar:bank:escrow_failed` → `sonar:bank:escrow_failed`
-- + eventos core bootstrap/ready/shutdown + audit log.
-- **Refactor execution Phase 8 target:** grep-based sed rename en `resources/sonar_bank/**/*.lua` + `resources/sonar_core/**/*.lua` + `resources/sonar_bridges/**/*.lua`. Estimate ~30 emit + ~40 handler attach sites.
-
-#### Callback events (§15 del doc) post-Phase-8
-- C001 `sonar:bank:callback:get_balance` → `sonar:bank:callback:get_balance`
-- C002 `sonar:bank:callback:get_movements` → `sonar:bank:callback:get_movements`
-- C003 `sonar:bank:callback:get_transactions` → **DEFERRED S3 per ADR-015** (NO shipped S2 UI-heavy pivot). Placeholder preservado en doc sin scope active.
-- C004 `sonar:bank:callback:pre_transfer` → `sonar:bank:callback:pre_transfer`
-- C005 `sonar:bank:callback:audit_log` → `sonar:bank:callback:audit_log`
-
-#### Migration execution schedule (ADR-013 authoritative)
-- **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Code + event emit sites NO tocados.
-- **Phase 8 execution session (próxima sesión founder-available):** grep + sed rename events + emitter names + handler attachments + schema version docs.
-- **Post-Phase-8 doc bump v1.1 → v1.2:** refs inline `sonar:*` → `sonar:*` en todo el cuerpo (88+ eventos actualizados 1:1).
-- **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica events emit correctly con nuevos prefijos.
-
-#### Voz neutral en logging messages (ADR-012 §D3)
-- Logging event emission + error handlers siguen voz neutral premium-tech.
-- NO militar/capitán/tactical en event payload strings ni log messages.
-
-#### Cómo leer el resto del documento (§1-§17)
-
-1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
-2. **Filosofía + schemas + tipos (state/command/push/callback) + tier system + RFC + governance (§1-§4, §6, §16) siguen válidos pivot-agnostic** — foundational design bus sin cambios.
-3. **88 eventos documentados (§5, §7-§15) — refs `sonar:*` prefix = LEGACY estado actual código S0+S1.** Post-Phase-8 ejecutada = canonical `sonar:*`. Mapping 1:1 aplicable.
-4. **Emisor canonical strings `sonar_*`:** legacy estado actual. Post-Phase-8 = `sonar_*`.
-5. **Schema payloads + validators + tipos + rangos + audit + throttle policies = INVARIANTES.** Pre/post Phase-8 identical.
-6. **§17.1 Inventory por vertical:** counts ünicos identical. Prefix solo actualiza.
-7. **C003 §15 callback `get_transactions`:** DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot). Marcado en rewrite futuro v1.2 post-Phase-8.
-8. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
-
----
 
 ## 0. Resumen ejecutivo
 
@@ -129,7 +70,7 @@ sonar:<dominio>:<acción>
 
 ### 1.4 Estructura canónica de un payload
 
-Todo payload Admirals incluye **siempre** estos campos meta cuando aplica:
+Todo payload SONAR incluye **siempre** estos campos meta cuando aplica:
 
 ```ts
 {
@@ -185,7 +126,7 @@ Los campos `_event_*` son **automáticos** — los añade `Bus.Publish` en `sona
 
 Para mantener concisión usamos estos tipos en los schemas:
 
-| Tipo Admirals | Definición | Validación |
+| Tipo SONAR | Definición | Validación |
 |---|---|---|
 | `AccountId` | UUID v4 | regex UUID v4 |
 | `CompanyId` | UUID v4 | regex UUID v4 |
@@ -728,7 +669,7 @@ Para mantener concisión usamos estos tipos en los schemas:
   permissions_required: string[],
   component_url: string,           // URL al bundle JS
   schema_version: number,
-  publisher: string,               // 'Admirals' | 'Studio externo'
+  publisher: string,               // 'SONAR' | 'Studio externo'
 }
 ```
 
@@ -1905,7 +1846,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ## 10. Catálogo — Dominio `granja`
 
-> **Eventos del nodo Granja Admirals.** Ciclo agrícola completo. Ver `01_node_farm.md` para semántica de gameplay.
+> **Eventos del nodo Granja SONAR.** Ciclo agrícola completo. Ver `01_node_farm.md` para semántica de gameplay.
 
 ### 10.1 sonar:granja:plot_prepared
 
@@ -2440,7 +2381,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ## 11. Catálogo — Dominio `molino`
 
-> **Eventos del nodo Molino Admirals.** Ver `03_node_mill.md` para semántica.
+> **Eventos del nodo Molino SONAR.** Ver `03_node_mill.md` para semántica.
 
 ### 11.1 sonar:molino:grain_received
 
@@ -3114,7 +3055,7 @@ end)
 
 | Tipo de cambio | Quién | Proceso |
 |---|---|---|
-| **Añadir nuevo evento** | Cualquier developer del equipo Admirals | PR con entry catálogo + validator + tests + suscriptores |
+| **Añadir nuevo evento** | Cualquier developer del equipo SONAR | PR con entry catálogo + validator + tests + suscriptores |
 | **Modificar schema (compatible)** | Maintainer del resource | PR con bump schema_version si breaking, sin si compatible |
 | **Modificar schema (breaking)** | Founder + maintainer del resource | RFC + revisión + bump MAJOR |
 | **Deprecar evento** | Maintainer del resource | RFC + plan de migración + reemplazo |
@@ -3237,7 +3178,8 @@ Este documento es **el contrato de comunicación** del ecosistema SONAR (ex-Admi
 |---|---|---|---|
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 17 secciones, ~3170 líneas, 88 eventos canónicos + placeholders 6 verticales futuras. Filosofía + schemas + 4 tipos + naming convention + tier system + RFC governance. **Firmable Oleada 0.** |
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar:*` post-Phase-8 / `sonar:*` pre-Phase-8 legacy). NOTICE r1 top-level (~70 líneas) establece: naming canonical events (mapping 1:1 ejemplos + 88 eventos shipped S1 affected + emisor strings), schema fields invariant pre/post, C003 DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot), voz neutral logging messages ADR-012 §D3, migration execution schedule Phase 8 (next session), reading guide §1-§17 legacy vs canonical. §0 resumen + §cierre rebrand + §Pilar 4 SONAR. **NO touched:** §1-§17 filosofía + schemas + 88 eventos payloads + tipos + tier system + RFC + governance (pivot-agnostic foundational bus). Event prefix `sonar:*` + emitter names `sonar_*` preservados legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8: 88 eventos rename 1:1 inline body. |
+| 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/02_events_catalog.md` v1.1**
+**FIN DEL DOCUMENTO `technical/02_events_catalog.md` v1.2**
