@@ -1,13 +1,126 @@
 # 🌊 SONAR — Art Direction (Studio + Ecosystem)
 
-> **Versión:** 2.0-scaffold-r6 (refinement post-ADR-012 — abstract metaphor + hybrid theme + neutral voice).
-> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-ADR-012 cleanup).
-> **Documentos hermanos:** `02_sonar_tablet.md` (rename + rewrite pendiente Phase 5) · `01_node_farm.md` (purge pendiente Phase 7).
-> **ADR origen:** `planning/02_decision_log.md` ADR-011 (rebrand foundational) **+ ADR-012 (refinement amendment)**. Lectura conjunta obligatoria.
+> **Versión:** **3.0-locked** (post-ADR-016 — palette tokens canónicos + dark-only doctrine + 3-color strict + trend stack tiered + Tablet UI stack frozen + NUI perf budgets).
+> **Documento padre:** `00_PRODUCT_BIBLE.md` (post v1.5 bump pendiente Item E).
+> **Documentos hermanos:** `02_sonar_tablet.md` v1.3 (post bump Item D) · `01_node_farm.md` (purge pendiente Phase 7).
+> **ADR origen:** `planning/02_decision_log.md` ADR-011 (rebrand foundational) **+ ADR-012 (refinement amendment) + ADR-016 (identity v3 doctrine — `02_decision_log_part2.md` v1.0)**. Lectura conjunta obligatoria.
+> **SSoT canonical palette:** `@docs/art/branding/01_brief_logo.md` v3 §4.1 (3 tokens canonical Black/Orange/White).
 > **Reemplaza:** `docs/_archive/01_art_direction_v1_admirals.md` (v1.0 Admirals/Almirantazgo, archivado 2026-05-03).
-> **Estado:** 🚧 en redacción (NO firmable hasta Phase 4 complete + Phase 4.5 v2 briefs delivered).
+> **Estado:** 🟢 **FIRMABLE** — palette + dark-only + stack frozen + perf budgets locked post-ADR-016. Phase 4.5 v2 briefs (icons/sound/motion/marketing) y Phase 5+ rewrites quedan post-MVP S2.
 
-> **Lectura previa obligatoria:** ADR-011 + **ADR-012**. **NO leer `_archive/01_art_direction_v1_admirals.md` para implementación SONAR — está deprecated.**
+> **Lectura previa obligatoria:** ADR-011 + ADR-012 + **ADR-016 D1+D2+D3+D4+D5+D6**. **NO leer `_archive/01_art_direction_v1_admirals.md` para implementación SONAR — está deprecated.**
+
+---
+
+## 🟢 IDENTITY V3 LOCK NOTICE (per ADR-016, 2026-05-04)
+
+**Este NOTICE es la capa canónica más reciente.** Supersedes NOTICE r6 (ADR-012) + scaffold-r1..r7 inline §1-§20 en cualquier conflicto. Lectura obligatoria ANTES de cualquier implementación visual product UI.
+
+### Precedencia (top → bottom)
+
+1. **🟢 IDENTITY V3 LOCK NOTICE** (este — post-ADR-016 D1-D6).
+2. **🔄 REFINEMENT NOTICE r6** (post-ADR-012 — preservada para contexto histórico voice/metaphor/iconografía/sound naming).
+3. **§1-§20 inline scaffold-r1..r7** (legacy contenido — referencia técnica tokens motion/typography/storybook/shaders preservados; pero palette + theme + stack + perf override por v3.0).
+
+### NEW CANONICAL v3.0 — vigente desde 2026-05-04
+
+#### Palette tokens — 3 colores canónicos LOCKED (ADR-016 D1)
+
+> **SSoT:** `@docs/art/branding/01_brief_logo.md` v3 §4.1. Esta tabla replica el SSoT — si conflicto, gana brief v3.
+
+| Token | Hex | Rol | Uso |
+|---|---|---|---|
+| `--sonar-black` | `#060607` | **CANVAS BASE** dark-only product | Background TODA superficie product (Tablet NUI, marketing web, hero, splash). |
+| `--sonar-orange` | `#FF5100` | **SIGNAL / BRAND PRIMARY** | Logo identity, CTAs primary, focus rings, alerts críticos, signal active states, marketing accent único. |
+| `--sonar-white` | `#FAFAFA` | **FOREGROUND / PURE** | Texto primario sobre Black, iconografía Lucide, surfaces alpha layers high-emphasis. |
+
+**Implementación:** Tailwind v4 `@theme` directive (per D5 stack) + CSS custom properties. **NUNCA hardcodear hex** — siempre via token.
+
+**Tokens DEPRECATED v2 (purgados v3.0 — ignorar ocurrencias §1-§20 + NOTICE r6):**
+- ❌ `--sonar-bright` `#2DD4BF` (teal Tier B v2) — ELIMINADO post ADR-016 D1.
+- ❌ `--sonar-pulse` `#14E5DD` — ELIMINADO.
+- ❌ `--sonar-glow` `#5EEAD4` — ELIMINADO.
+- ❌ `--abyss-black` `#03070A` — REPLACED por `--sonar-black` `#060607`.
+- ❌ `--crew-100` `#F0F4F4` — ELIMINADO (no light canvas product).
+- ❌ Crew neutrals tier (#B8C5C5 / #6B7878 / #2A3438) — ELIMINADOS.
+- ❌ `--coloro-support` `#175A5F` — ELIMINADO (Tier C structural support v2 obsoleto).
+- ❌ Signal functional tier (Critical #F87171 / Warn #FBBF24 / OK #34D399 / Info #60A5FA) — ELIMINADOS post ADR-016 D3 3-color strict. Estados se comunican via Lucide icons + typography weight + motion (no via color).
+
+#### Theme — DARK-ONLY DOCTRINE PRODUCT (ADR-016 D2)
+
+- **Tablet UI (in-game NUI):** **dark-only**. NO toggle light/dark. NO media query `prefers-color-scheme: light` honor.
+- **Marketing web (futuro):** dark-only consistent con product.
+- **Excepción única:** `monogram_s_black.svg` permanece como variante print/external (impresión papelería formal, fondos blancos third-party donde dark monogram es ilegible). **NO uso product UI** (resolución D-S1.10E-A).
+- **Justificación:** identity v2 (ADR-012 D2) hybrid theme dark+white surfaces DEPRECATED. v3 endurece a 100% product Black canvas + excepción print única.
+- **Reemplaza ratios scaffold + NOTICE r6:**
+  - ❌ DEPRECATED `~30-40% dark + ~30-40% white surfaces + ~10-15% Sonar Bright + ~10% Coloro + <5% signals` (NOTICE r6 hybrid).
+  - ❌ DEPRECATED `60% canvas abyss + 25% crew + 10% coloro + 5% signals` (scaffold-r1).
+  - ✅ CANONICAL v3.0: **100% dark-only product** + Orange brand identity siempre + White foreground texto.
+
+#### Color count — 3-COLOR STRICT (ADR-016 D3)
+
+- Producto NO añade colores adicionales (NO green success, NO red error, NO yellow warning, NO blue info).
+- Estados se comunican via:
+  - **Iconografía Lucide** (`<CheckCircle2/>` success, `<AlertTriangle/>` warning, `<XCircle/>` error, `<Info/>` info).
+  - **Typography weight + opacity** (semantic emphasis sin color).
+  - **Layout / motion** (shake on error, fade-in on success, pulse on alert).
+  - **Orange como único accent semántico** (CTAs primary, alerts críticos, signal active).
+- **Re-evaluable post-MVP S2** si UX research / playtesting reveals friccion semantic genuine → ADR-XXX 4ª color (probable red `#E63946`).
+- Esta restricción endurece NOTICE r6 hybrid 5-tier — todas las demás "tiers" eliminadas.
+
+#### Trend stack 2026 — TIERED T1/T2/T3 (ADR-016 D4)
+
+Stack tecnológico classification para adopción priorizada visual + technical:
+
+- **T1 (oficial — adopt heavy):** Bento Grid layout, Microinteractions Framer Motion, Glassmorphism selectivo (chrome layer only — NO content cards), Focus glows orange (a11y + brand), Smooth springs, Animated data viz (sparklines + counters Recharts), Geist Sans + Inter Tight + Geist Mono typography.
+- **T2 (selective — case-by-case approval):** Aurora gradients (hero/transitions only — NO product UI), Kinetic type (marketing only), Cmd+K palette (post-MVP S3+), Spatial depth shadows (low-emphasis only).
+- **T3 (prohibited — DO NOT use):** Skeuomorphism, Brutalist Y2K, Multi-color gradient overload, Heavy Lottie animations, Heavy parallax scroll, Neon glow excess, Backdrop-blur en cards content (chrome only), Multiple accents simultáneos, Material Design 2 raised buttons.
+
+#### Tablet UI implementation stack — FROZEN S2-S8 (ADR-016 D5)
+
+> **SSoT:** `@resources/sonar_tablet/web-src/package.json` (downgraded post S1.10.5 Item A para reflejar D5 spec exacto).
+
+Stack inmutable durante Sprint 2-8 (Oleada 1 completa):
+
+- **Framework:** React 18.3 (NO React 19 durante S2 aunque ship stable mid-sprint).
+- **Build:** Vite 5.x (pin `^5.4.0` package.json, NO Vite 6+ hasta post-Oleada 1).
+- **Lang:** TypeScript strict (`"strict": true` tsconfig + `noUncheckedIndexedAccess: true`).
+- **Styling:** Tailwind CSS v4 con `@theme` directive (NO v3 fallback). Tokens en `tailwind.config.ts` referenciando D1 paleta canonical.
+- **Components:** shadcn/ui (CLI install per-component, dark-only variant baseline).
+- **Motion:** Framer Motion 11.
+- **Icons:** Lucide React (NO emoji, NO custom SVG salvo brand assets `@art/branding/logo_v3/*`).
+- **Charts:** Recharts (sólo si Tablet apps requieren visualización data — Bank app candidato S3).
+- **State:** React Context + `useReducer` Sprint 2 (NO Zustand / Redux salvo gap real S3+).
+- **NUI Bridge:** lb-phone NUI message API per `@resources/sonar_tablet/*` setup S0.
+
+**Cambios stack durante S2-S8 → ADR firmable obligatorio.**
+
+#### NUI performance — HARD CONSTRAINTS (ADR-016 D6)
+
+Budgets de obligatorio cumplimiento cliente FiveM (60 FPS target):
+
+- **Frame budget Tablet UI:** ≤ 4ms paint per frame (target 60 FPS = 16.67ms total budget; 75% reservado al juego).
+- **Bundle size production:** ≤ 500KB JS gzipped (initial load), ≤ 200KB CSS gzipped.
+- **Memory ceiling NUI:** ≤ 80MB heap (Chrome devtools profile).
+- **Lazy-loading obligatorio:** rutas Tablet apps (Bank, Map, Phone) via `React.lazy()` + Suspense. Initial bundle = shell + Home only.
+- **Animaciones:** GPU-only (`transform`, `opacity`). Prohibido animar `width/height/top/left/margin/padding`.
+- **Re-render guard:** componentes lista (transactions, contacts) MUST `React.memo` + virtualization si >50 items (react-window).
+- **Asset budget:** brand SVGs ≤ 8KB cada uno (verificable export tool `@art/tools/logo_export/export.mjs` warn threshold).
+- **Performance test:** Sprint 2 setup incluye Chrome DevTools Performance profile baseline + regression check pre-merge cualquier PR Tablet UI.
+
+#### Logo system v3 — FIRMABLE (`@art/branding/logo_v3/`)
+
+- **Inventario firmado:** 4 monogramas SVG (`monogram_s.svg` + `_solid` + `_white` + `_light`) + 1 excepción print (`_black`) + wordmark Geist + 2 lockups + preview HTML + export pipeline.
+- **Pipeline export:** `@art/tools/logo_export/export.mjs` (Node.js + Puppeteer) genera PNG @1x/@2x/@3x multi-density (16-1024px).
+- **Brief firmable:** `@docs/art/branding/01_brief_logo.md` v3 (post Item B bump S1.10.5).
+- **Excepción print/external:** `monogram_s_black.svg` Black sobre fondos blancos third-party (NON-product). Resolución D-S1.10E-A.
+
+### Cómo leer el resto del documento (post-v3.0)
+
+1. **Lee primero IDENTITY V3 LOCK NOTICE (este) + ADR-016.**
+2. **Lee NOTICE r6 (debajo) para context histórico** voice/metaphor/iconografía/sound naming canonical (preservado vigente, NO supersedido por v3.0 en esos aspectos).
+3. **§1-§20 inline scaffold:** tokens técnicos siguen válidos para motion specs ms-precise, type scale, storybook, shaders, governance. **Override v3.0:** palette + theme + stack + perf budgets — gana esta NOTICE.
+4. **Si hay duda interpretación → ADR-016 manda.**
 
 ---
 
@@ -1458,11 +1571,15 @@ Este doc es **living document** — se actualiza continuamente post-firma v2.0 s
 
 ## Estado del documento
 
-- **Versión:** 2.0-scaffold-r7 (Phase 4 surgical full inline cleanup post-ADR-012 — §1-§20 inline rewritten alineado NOTICE r6 + ADR-012; principales secciones §0-§3 + §4.3 + §7.1-§7.2 + §15 + §16 + §19.5 purged literal-militar inline).
-- **Próxima revisión:** v2.0 firma (post Phase 4 ejecución creativa = logo SVG + icons set + sound files + motion patterns + marketing assets delivered) → bump v2.0 firmable.
-- **Briefs operacionales (v2):** ✅ 5/5 delivered en `docs/art/briefs/` post-ADR-012 (LOGO + ICONS + SOUND + MOTION + MARKETING). Briefs v1 descartados (locked en metáfora literal-militar).
+- **Versión:** **3.0-locked** (post-ADR-016 — palette tokens canónicos + dark-only doctrine + 3-color strict + trend stack tiered + Tablet UI stack frozen + NUI perf budgets locked via IDENTITY V3 LOCK NOTICE top-level).
+- **Próxima revisión:** v3.1 minor bump si Phase 4.5 v2 briefs (icons/sound/motion/marketing) entregados en S2 prep, o post-MVP S2 retro si D3 3-color re-evaluación trigger fire.
+- **Briefs operacionales:**
+  - ✅ Brief logo v3 firmable `@docs/art/branding/01_brief_logo.md` (post Item B S1.10.5).
+  - 🟡 Briefs v2 icons/sound/motion/marketing delivered S1 — pendientes update v3 para identity v3 doctrine alignment (post Sprint 2 prep).
+- **Logo system v3 firmable:** `@art/branding/logo_v3/` (4 monogramas + wordmark + 2 lockups + preview + export pipeline).
+- **Stack Tablet UI:** `@resources/sonar_tablet/web-src/package.json` (downgrade D5 spec post Item A S1.10.5).
 - **Reemplaza:** `_archive/01_art_direction_v1_admirals.md` v1.0 (deprecated).
-- **ADR origen:** ADR-011 (`planning/02_decision_log.md` §11).
+- **ADR origen:** ADR-011 + ADR-012 + **ADR-016** (`planning/02_decision_log.md` §11 + `02_decision_log_part2.md` v1.0 ADR-016).
 
 ### Changelog
 
@@ -1477,9 +1594,10 @@ Este doc es **living document** — se actualiza continuamente post-firma v2.0 s
 | 2.0-scaffold-r5 | 2026-05-03 | Founder + Cascade | **Phase 4.5 partial — Specialist briefs delivered (Sonnet)** post-commit b480af5: (a) Created `docs/art/briefs/` directory + README index. (b) **BRIEF-LOGO-001** — paquete encargo completo logo SONAR (~270 líneas): contexto proyecto, 10 deliverables (SVGs + PNGs + lockups + glow variants + guidelines PDF + Figma source), specs técnicos vinculantes (concepto S-onda locked, color tokens Tier B, tipografía wordmark Geist Sans, geometry 12×12 grid, 5 lockups), do/don't ✅×6 ❌×11, referencias visuales (5 convergir + 5 anti), 5 review gates R0-R4, licensing + NDA + presupuesto orientativo €1.5-3.5k, founder pre-kickoff checklist ×6. (c) **BRIEF-ICONS-001** — paquete encargo iconografía custom 8 esenciales (~280 líneas): los 8 iconos locked (sonar-ping/submarine/depth-gauge/hydrophone/bioluminescence/pressure-hull/periscope/torpedo-bay) + 2 stretch (manifiesto/bitacora), 32 SVG files target + React TS lib + Figma + guidelines PDF + showcase PNG, specs canvas 24×24 stroke 1.5px round Lucide-compatible, guidance per-icon individual ×8, do/don't, 4 review gates R0-R3, licensing + presupuesto €1.2-2.8k. (d) Cross-refs §3.3 + §5.2 → briefs/. Pendiente Phase 4.5: BRIEF-SOUND-001 + BRIEF-MOTION-001 + BRIEF-MARKETING-001. |
 | 2.0-scaffold-r6 | 2026-05-03 | Founder + Cascade | **REFINEMENT NOTICE r6 (per ADR-012)** post-commit d0712cc: top-level NOTICE establece NEW CANONICAL vigente desde hoy: (a) **Metáfora abstracta pura** (profundidad + exploración simbólica, NO submarino militar literal NO radios/freq) — explicit purga `sonar-ping`/`submarine`/`hydrophone`/`periscope`/`torpedo-bay` icons + voz capitán submarino + sound names sub-acoustic. (b) **Hybrid theme dark+white surfaces** (Notion/Arc/Stripe Dashboard ratio ~30-40% dark + ~30-40% white surfaces + ~10-15% Sonar Bright + ~10% structural + <5% signals) reemplaza dark-extremo 60% scaffold-r1. (c) **Voz neutral premium-tech** (Vercel/Linear/Stripe copy style) elimina arquetipo militar. (d) **Iconografía 3/8 conservados** (depth-gauge + pressure-hull reconceptualizado capas + bioluminescence) + 5 candidatos abstractos a definir Phase 4.5 v2. (e) **Sound naming refactored** sin radio/freq. (f) **Glossary cleanup** Console/Bridge/Depth/Eco OK; Periscope/Hatch/Hydrophone/Ping/Sweep deprecated. §1-§20 NO surgical rewrite todavía — NOTICE supersedes en cualquier conflicto, Phase 4.5 v2 hará surgical full. Briefs v1 (logo + icons + README) descartados. |
 | 2.0-scaffold-r7 | 2026-05-03 | Founder + Cascade | **Phase 4 surgical full inline cleanup post-ADR-012** post-commits `5838a79` (briefs v2) + `a879c45` (BOOTSTRAP v1.5). Surgical inline rewrite §1-§20 alineado NOTICE r6 + ADR-012 (NOTICE r6 sigue vigente como top-level canonical, pero ahora contenido inline también purged). **Cambios secciones:** (a) **§0.1 Tesis central** rewrite ("infrastructure premium-tech... metáfora simbólica de profundidad NO submarino militar literal"; lema canonical "Hear the depth."). (b) **§1.2 Anti-references table**: 4 NEW deprecated rows (submarino militar literal + voz arquetipo militar + theme dark-extremo 60% + tactical operator). (c) **§1.3 Comparativa competidores**: SONAR row purged ("Hybrid theme + neutral premium-tech + Cero arquetipo militar"). (d) **§2 Metáfora central** full rewrite: "Profundidad simbólica abstracta" (§2.1 razón abstract + §2.2 elements canonical/deprecated table 10 rows + §2.3 ecosystem grid re-frased). (e) **§3.1 Tagline operacional** "Production-grade" (deprecated "Tactical-grade"). (f) **§3.2 Voz de marca** full rewrite (neutral premium-tech + vocabulario canonical + DEPRECATED + 5 ejemplos canonical r6 + 4 anti-ejemplos). (g) **§3.3 Logo** concepto NO-LOCKED (5 candidatos preliminares Phase 4.5 v2; deprecated S-onda concéntrica). (h) **§3.4 Paleta**: Tier A heading ratios actualizado (~30-40% pantalla post-ADR-012); ratios CANONICAL hybrid theme (5 buckets: dark ~30-40% + white ~30-40% + Sonar Bright ~10-15% + Coloro ~10% + signals <5%); deprecated scaffold-r1 60% explícito. Sonar Glow + glow rules updated `signal_emerge_pulse` (no concentric expanding). (i) **§4.3 Type rules** ALL CAPS examples premium-tech (deprecated DIVE/SURFACE sub-acoustic). (j) **§7.1-§7.2 Sound** filosofía "El silencio es diseño" (deprecated "silent service"); 5 SFX descriptions canonical r6 + DEPRECATED v1 mapping + character refs Apple/Vercel/Notion/Stripe. (k) **§15 Glossary**: Origen léxico re-frased; §15.A Bridge re-interpretado + Silent service deprecated; §15.B Hatch/Periscope/Porthole deprecated entries; §15.G/§15.H deprecated mappings updated. (l) **§16 Motion**: easing curves rebrand (`ease-depth-descent`/`ease-depth-enter`/`ease-deliberate`/`ease-snap`/`ease-signal-emerge` con DEPRECATED v1 submarine-* names); duration token `motion-signal-emerge`; default reference updated. (m) **§19.5 Anti-pattern shader** "premium-tech neutral" (deprecated "silent service"). **PowerShell bulk-replace step:** ejecutado para `sonar_ping/pressure/depth/console/hatch` SFX + `sonar-ping`/`hydrophone`/`periscope`/`torpedo-bay` icons → canonical post-ADR-012 names; restoración manual NOTICE r6 mapping table + r6 changelog entry afectados (corrupción contained, fix in-session). **Footer state + tagline + FIN line** actualizados v2.0-scaffold-r7. Cross-refs: ADR-012 + BRIEF-LOGO-001 v2 + BRIEF-ICONS-001 v2 + BRIEF-SOUND-001 v1 + BRIEF-MOTION-001 v1 + BRIEF-MARKETING-001 v1. **Pendiente Phase 4 ejecución creativa**: logo SVG real + icons set real + sound files real + motion patterns real + marketing assets real → bump v2.0 firmable. |
+| **3.0-locked** | 2026-05-04 | Founder + Cascade (Sonnet 4.5, S1.10.5 Item C) | **🟢 IDENTITY V3 LOCK NOTICE inserted top-level** post-ADR-016 (`@docs/planning/02_decision_log_part2.md` v1.0). Capa canónica más reciente — supersedes NOTICE r6 + scaffold-r1..r7 inline en cualquier conflicto palette/theme/stack/perf. **6 doctrines locked:** (D1) Palette tokens canónicos `--sonar-black` `#060607` + `--sonar-orange` `#FF5100` + `--sonar-white` `#FAFAFA` (REPLACES Sonar Bright teal `#2DD4BF` + Coloro `#175A5F` + hybrid 5-tier). Tokens DEPRECATED v2 explicit (8 tokens purged). (D2) Dark-only doctrine product (REPLACES hybrid theme dark+white surfaces NOTICE r6). Excepción única `monogram_s_black.svg` print/external (D-S1.10E-A). (D3) 3-color strict — no green/red/yellow/blue accents. Estados via Lucide icons + typography weight + motion. Re-evaluable post-MVP S2. (D4) Trend stack 2026 tiered T1 adopt heavy / T2 selective / T3 prohibited. (D5) Tablet UI stack frozen S2-S8: React 18.3 + Vite 5.x + TS strict + Tailwind v4 `@theme` + shadcn dark-only + Framer Motion 11 + Lucide React + Recharts + React Context+useReducer (NO Zustand). (D6) NUI perf hard constraints: ≤4ms paint, ≤500KB JS gzipped, ≤80MB heap, GPU-only animations, react-window virtualization >50 items. **Logo system v3 firmable** `@art/branding/logo_v3/` referenced. **Brief logo v3 firmable** `@docs/art/branding/01_brief_logo.md` v3 cross-link. **Cómo leer post-v3.0**: NOTICE v3 → NOTICE r6 (histórico voice/metaphor/iconografía/sound) → §1-§20 inline (motion/typography/storybook/shaders válidos; palette+theme+stack+perf override por v3.0). Header version + estado + ADR origen + reemplaza + FIN line bumped a v3.0-locked. |
 
 ---
 
 *"Hear the depth. Understand the patterns."*
 
-**FIN DEL DOCUMENTO `art/01_art_direction.md` v2.0-scaffold-r7 (Phase 4 surgical full inline cleanup post-ADR-012 — §1-§20 alineado NOTICE r6 + ADR-012).**
+**FIN DEL DOCUMENTO `art/01_art_direction.md` v3.0-locked (post-ADR-016 IDENTITY V3 LOCK — palette + dark-only + 3-color strict + trend stack tiered + Tablet UI stack frozen + NUI perf budgets canonical).**

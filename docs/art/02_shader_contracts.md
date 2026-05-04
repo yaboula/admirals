@@ -3,7 +3,7 @@
 > **Versión:** 1.0 (firmado — completo, 14 secciones, 2 partes publicadas).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2 (§13.4 — División 3D vs Código)
 > **Documento hermano principal:** `art/01_art_direction.md` v1.0 (§15 Materiales en mundo).
-> **Documentos referenciados:** todos los nodos §11.4 (`01_node_farm.md`, `03_node_mill.md`, `04_node_bakery.md`, `05_node_retail.md`) + `02_admirals_tablet.md` §12 (NUI design system) + `technical/01_architecture.md` §13 (NUI técnico).
+> **Documentos referenciados:** todos los nodos §11.4 (`01_node_farm.md`, `03_node_mill.md`, `04_node_bakery.md`, `05_node_retail.md`) + `02_sonar_tablet.md` §12 (NUI design system) + `technical/01_architecture.md` §13 (NUI técnico).
 > **Estado:** firmado.
 
 > **Lectura previa obligatoria:** Bible §13.4 (3D vs Código), Art Direction §15-§17 (materiales + escenografía), cada node doc §11 (assets 3D) + §11.4 (uniforms expuestos).
@@ -305,7 +305,7 @@ mat_bakery_oven_door @schema 1.1
 | `mat_farm_seed_storage_glass` | `fill_count` (0-N sacos visibles) | `admirals_farm_storage` |
 | `mat_farm_warehouse_floor` | `dirt_level`, `wet_level` | `admirals_farm_visuals` |
 | `mat_farm_irrigation_pipe` | `flow_active` | `admirals_farm_irrigation` |
-| `mat_farm_tablet_dock_brass` | `is_docked`, `glow_subtle` | `admirals_tablet` |
+| `mat_farm_tablet_dock_brass` | `is_docked`, `glow_subtle` | `sonar_tablet` |
 
 > **Total Farm: ~12 materiales custom oleada 1.**
 
@@ -540,7 +540,7 @@ mat_bakery_oven_door @schema 1.1
 
 ## 9. Shaders de la Admirals Tablet (NUI / device)
 
-> **Fuente:** `02_admirals_tablet.md` §12 (design system NUI) + `technical/01_architecture.md` §13 (NUI técnico) + Art Direction §12.
+> **Fuente:** `02_sonar_tablet.md` §12 (design system NUI) + `technical/01_architecture.md` §13 (NUI técnico) + Art Direction §12.
 
 ### 9.1 Filosofía específica Tablet
 
@@ -557,7 +557,7 @@ mat_bakery_oven_door @schema 1.1
 
 | Uniform | Tipo | Range | Default | Owner |
 |---|---|---|---|---|
-| `nui_render_target` | texture_id | – | NUI default | `admirals_tablet` |
+| `nui_render_target` | texture_id | – | NUI default | `sonar_tablet` |
 | `screen_brightness` | float | 0-1 | 0.85 | id. |
 | `screen_color_temp` | float | -1 to 1 | 0 | id. |
 | `is_locked` | bool | – | true | id. |
@@ -584,7 +584,7 @@ mat_bakery_oven_door @schema 1.1
 
 | Uniform | Tipo | Range | Default | Owner |
 |---|---|---|---|---|
-| `is_charging` | bool | – | false | `admirals_tablet` |
+| `is_charging` | bool | – | false | `sonar_tablet` |
 | `charge_glow_color` | vec3 | RGB | (1.0, 0.85, 0.4) | id. |
 | `pulse_rate` | float | Hz 0-2 | 0.5 | id. |
 
@@ -596,14 +596,14 @@ mat_bakery_oven_door @schema 1.1
 
 | Uniform | Tipo | Range | Default | Owner |
 |---|---|---|---|---|
-| `blur_strength` | float | 0-15 | 0 | `admirals_tablet` (NUI side) |
+| `blur_strength` | float | 0-15 | 0 | `sonar_tablet` (NUI side) |
 | `tint_color` | vec4 | RGBA | (1,1,1,1) | id. |
 
 ### 9.6 Otros materiales Tablet
 
 | Material | Uniforms clave | Owner |
 |---|---|---|
-| `mat_tablet_speaker_mesh` | `audio_active` | `admirals_tablet` |
+| `mat_tablet_speaker_mesh` | `audio_active` | `sonar_tablet` |
 | `mat_tablet_camera_lens` | `camera_active` | id. |
 
 > **Total Tablet: ~6 materiales custom oleada 1.**
@@ -737,7 +737,7 @@ mat_bakery_oven_door @schema 1.1
 | `admirals_retail_pos` | `mat_retail_pos_*`, `mat_retail_scale_*` | `retail:sale_*`, `retail:scan_*` |
 | `admirals_retail_finance` | `mat_retail_safe_*` | `retail:cashbox_*` |
 | `admirals_retail_visuals` | `mat_retail_signage_*`, `mat_retail_floor_*` | varios |
-| `admirals_tablet` | `mat_tablet_*` | `tablet:*` |
+| `sonar_tablet` | `mat_tablet_*` | `tablet:*` |
 | `admirals_branding` | `mat_admirals_logo_emissive` | `core:server_state` |
 | `admirals_environment` | uniforms ambientales cross-cutting (`glare_strength`, `wet_level` global) | `weather:*`, `time:*` |
 | `admirals_weather` | `wind_strength`, `wet_level` en materiales outdoor | `weather:*` |

@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 (firmado — completo, 14 secciones, 2 partes publicadas).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
-> **Documento hermano principal:** `02_admirals_tablet.md` v1.0 (§12 — design system overview), `art/01_art_direction.md` v1.0 (§12 — design system NUI completo).
+> **Documento hermano principal:** `02_sonar_tablet.md` v1.0 (§12 — design system overview), `art/01_art_direction.md` v1.0 (§12 — design system NUI completo).
 > **Documentos técnicos referenciados:** `technical/01_architecture.md` v1.0 (§13 NUI técnico), `technical/02_events_catalog.md` v1.0 (eventos `tablet:*`).
 > **Estado:** firmado.
 
@@ -1296,7 +1296,7 @@ describe('TabletButton', () => {
 - **Próxima revisión:** evolución cuando se añadan componentes de oleada 2 (verticales nuevas + theme switcher).
 - **Documentos hijos pendientes:** ninguno — terminal-leaf del subsistema NUI.
 - **Documentos relacionados:**
-  - `02_admirals_tablet.md` v1.0 — anatomía Tablet + apps detalladas.
+  - `02_sonar_tablet.md` v1.0 — anatomía Tablet + apps detalladas.
   - `art/01_art_direction.md` v1.0 — design tokens visual.
   - `art/02_shader_contracts.md` v1.0 — shaders del device físico Tablet.
   - `art/03_sound_bible.md` v1.0 — UI sounds + notif chimes.

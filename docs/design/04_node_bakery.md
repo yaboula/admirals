@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 (firmado — completo, 15 secciones, 3 partes publicadas).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
-> **Documentos hermanos:** `01_node_farm.md` v1.1 · `02_admirals_tablet.md` v1.0 · `03_node_mill.md` v1.0 · `art/01_art_direction.md` v1.0.
+> **Documentos hermanos:** `01_node_farm.md` v1.1 · `02_sonar_tablet.md` v1.0 · `03_node_mill.md` v1.0 · `art/01_art_direction.md` v1.0.
 > **Estado:** firmado.
 
 > **Lectura previa obligatoria:** Bible §3 (5 Pilares), §13.4 (3D vs Código), Molino §0-§4 (qué llega), Tablet §7 (Manager Panel modular), Art Direction §15-§17.

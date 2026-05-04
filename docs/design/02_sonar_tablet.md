@@ -1,11 +1,124 @@
 # 📱 SONAR — Plataforma raíz: La SONAR Tablet
 
-> **Versión:** 1.1 (refinement post-pivot SONAR — NOTICE r1.1 establishes new canonical identity layer; §1-§29 surgical Pass 1 inline cleanup ejecutado, Pass 2 pendiente para apps detail-pass §6-§19).
-> **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (firmado post-pivot SONAR).
+> **Versión:** **1.3** (post-ADR-016 — Tablet UI implementation stack frozen S2-S8 + NUI perf budgets locked + palette tokens canonical Black/Orange/White + dark-only doctrine product).
+> **Documento padre:** `00_PRODUCT_BIBLE.md` (post v1.5 bump pendiente Item E).
 > **Documento hermano:** `01_node_farm.md` v1.1 (la Granja consume el Manager Panel y varias apps de la SONAR Tablet).
-> **Estado:** redacción v1.0 firmada Admirals (1185 líneas, 29 secciones) + Pass 1 surgical post-pivot SONAR (S1.8, ~150 inline edits + bulk identity purge).
+> **Estado:** v1.0 firmada Admirals (archivada ADR-011) + v1.1+v1.2 surgical Pass 1+2 post-pivot SONAR (S1.8) + **v1.3 IDENTITY V3 LOCK NOTICE top-level** (S1.10.5 Item D).
 
-> **Lectura previa obligatoria:** Product Bible v1.4 §1 + §3 (5 Pilares — la Tablet es Pilar 5), §13.4 (División 3D vs Código), **`docs/planning/02_decision_log.md` ADR-011 (pivot SONAR) + ADR-012 (refinement metáfora abstract)**, **`docs/art/01_art_direction.md` v2.0-scaffold-r7 NOTICE r6** (paleta canonical Tier A/B/C + voz neutral premium-tech + iconografía abstract + sound naming canonical), **`art/branding/logo_v2/README.md`** (logo v2 working canonical concept A "S-curl open").
+> **Lectura previa obligatoria:** Product Bible §1 + §3 (5 Pilares — la Tablet es Pilar 5), §13.4 (División 3D vs Código), **`docs/planning/02_decision_log.md` ADR-011 (pivot SONAR) + ADR-012 (refinement metáfora abstract) + `02_decision_log_part2.md` v1.0 ADR-016 D1+D2+D3+D4+D5+D6 (identity v3 doctrine — palette + dark-only + 3-color strict + trend stack + stack frozen + perf budgets)**, **`docs/art/01_art_direction.md` v3.0-locked IDENTITY V3 LOCK NOTICE** (palette canonical 3-token + dark-only + trend stack T1/T2/T3), **`@art/branding/logo_v3/`** (logo v3 firmable post ADR-016).
+
+> **SSoT canonical palette:** `@docs/art/branding/01_brief_logo.md` v3 §4.1 (3 tokens canonical Black `#060607` + Orange `#FF5100` + White `#FAFAFA`).
+> **SSoT canonical stack:** `@resources/sonar_tablet/web-src/package.json` (downgrade D5 spec post Item A S1.10.5).
+
+---
+
+## 🟢 IDENTITY V3 LOCK NOTICE (per ADR-016, 2026-05-04)
+
+**Este NOTICE es la capa canónica más reciente.** Supersedes NOTICE r1.1 (ADR-011+ADR-012) + redacción v1.0 inline §1-§29 en cualquier conflicto palette/theme/stack/perf. Lectura obligatoria ANTES de implementar Tablet UI Sprint 2.
+
+### Precedencia (top → bottom)
+
+1. **🟢 IDENTITY V3 LOCK NOTICE** (este — post-ADR-016 D1-D6).
+2. **🔄 REFINEMENT NOTICE r1.1** (post-ADR-011 + ADR-012 — preservada para naming SONAR/SonarOS/Tienda/cuenta + voz neutral premium-tech + iconografía abstract + sound naming canonical).
+3. **§1-§29 inline** redacción v1.0 + Pass 1+2 surgical (functional/architecture/UX flows válidos; palette + stack + perf override por v1.3).
+
+### NEW CANONICAL v1.3 — vigente desde 2026-05-04
+
+#### Palette tokens — 3 colores LOCKED (ADR-016 D1)
+
+> **SSoT:** `@docs/art/branding/01_brief_logo.md` v3 §4.1 + `@docs/art/01_art_direction.md` v3.0-locked.
+
+| Token Tablet UI | Hex | Rol Tablet | Implementación Tailwind v4 |
+|---|---|---|---|
+| `--sonar-black` | `#060607` | Background canvas (TODA superficie Tablet UI) | `bg-sonar-black` baseline default |
+| `--sonar-orange` | `#FF5100` | Brand identity, CTAs primary, focus rings, alerts críticos, signal active states, app-icons primarios | `bg-sonar-orange`, `text-sonar-orange`, `ring-sonar-orange` |
+| `--sonar-white` | `#FAFAFA` | Texto primario, iconografía Lucide, surfaces alpha layers high-emphasis | `text-sonar-white`, `border-sonar-white/[opacity]` |
+
+**Implementación obligatoria post Sprint 2:**
+- Definir 3 tokens en `tailwind.config.ts` via `@theme` directive (D5 stack).
+- CSS custom properties fallback en `globals.css`.
+- **NUNCA hardcodear hex** en componentes — siempre via Tailwind utility class o CSS var.
+
+**Tokens DEPRECATED v1.0+v1.1+v1.2 (purgados v1.3 — ignorar refs §1-§29 + NOTICE r1.1):**
+- ❌ Tier A canvas: `#03070A` Abyss Black + `#0A1418` Depth Reduced — REPLACED por `--sonar-black` `#060607`.
+- ❌ Tier A canvas light: `#F0F4F4` Crew 100 — ELIMINADO (no light canvas product post D2).
+- ❌ Tier B identity: `#2DD4BF` Sonar Bright + `#14E5DD` Sonar Pulse — REPLACED por `--sonar-orange` `#FF5100`.
+- ❌ Tier C structural: `#175A5F` Coloro deep-teal — ELIMINADO.
+- ❌ Crew neutrals tier (#B8C5C5 / #6B7878 / #2A3438) — ELIMINADOS.
+- ❌ Signal functional tier (Critical/Warn/OK/Info colored) — ELIMINADOS post D3 3-color strict.
+- ❌ Heritage Admirals "azul marino + dorado" — purgado v1.1 (preserved deprecated).
+
+#### Theme — DARK-ONLY DOCTRINE (ADR-016 D2)
+
+- **Tablet UI in-game:** **dark-only**. NO toggle light/dark. NO `prefers-color-scheme: light` honor.
+- **NO hybrid theme dark+white surfaces** (DEPRECATED post v1.1 NOTICE r1.1 hybrid 5-tier).
+- **100% dark canvas product** + Orange brand siempre + White foreground texto.
+- **Excepción única:** `monogram_s_black.svg` Black sobre fondos blancos — print/external NON-product (D-S1.10E-A). NO uso Tablet UI.
+
+#### 3-color strict (ADR-016 D3)
+
+- Tablet apps NO usan green success / red error / yellow warning / blue info colored.
+- **Estados via:**
+  - **Lucide icons:** `<CheckCircle2/>` success, `<AlertTriangle/>` warning, `<XCircle/>` error, `<Info/>` info.
+  - **Typography weight + opacity** (semantic emphasis sin color).
+  - **Layout / motion:** Framer Motion shake on error, fade-in success, pulse on alert.
+  - **Orange como único accent semántico** (CTAs primary, alerts críticos, signal active).
+- **Re-evaluable post-MVP S2** — si UX research reveals friccion semantic genuine → ADR-XXX.
+
+#### Tablet UI implementation stack — FROZEN S2-S8 (ADR-016 D5) ⭐
+
+> **SSoT:** `@resources/sonar_tablet/web-src/package.json` post downgrade S1.10.5 Item A.
+
+Stack inmutable durante Sprint 2-8 (Oleada 1 completa):
+
+| Tier | Dependencia | Versión pin | Razón inclusion |
+|---|---|---|---|
+| Framework | React | `^18.3.1` | Stable + ecosystem maturity. NO React 19 durante S2. |
+| Build | Vite | `^5.4.10` | Fast HMR + plugin ecosystem. NO Vite 6+ hasta post-Oleada 1. |
+| Lang | TypeScript | `^5.6.3` | Strict mode + `noUncheckedIndexedAccess: true`. |
+| Styling | Tailwind CSS | `^4.0.0` (`@theme`) | Tokens-first paleta D1 + class-based dark-only. |
+| Components | shadcn/ui | CLI install per-component | Dark-only variant baseline. |
+| Motion | Framer Motion | `^11.11.0` | Microinteractions + spring physics premium-tech. |
+| Icons | Lucide React | `^0.460.0` | Iconography universal — NO emoji, NO custom SVG salvo `@art/branding/logo_v3/*`. |
+| Charts | Recharts | `^2.13.0` | Data viz Bank app S3+ (NO needed Sprint 2 shell). |
+| State | React Context + `useReducer` | (built-in) | Sprint 2 — NO Zustand / Redux salvo gap real S3+. |
+| NUI Bridge | lb-phone NUI message API | (resource externo) | Comunicación cliente Lua ↔ NUI per S0 setup. |
+
+**Cambios stack durante S2-S8 → ADR firmable obligatorio.**
+
+**DEPRECATED stack v1.0/v1.1 (purgados v1.3):**
+- ❌ Inter Tight como primary font — REPLACED por Geist Sans (per art_direction §4 post-pivot, preserved v1.3).
+- ❌ Stack flexible / sin pin — REPLACED por D5 stack frozen pin exact versions.
+- ❌ Zustand state management — eliminado (D5 Context + useReducer).
+
+#### NUI performance — HARD CONSTRAINTS (ADR-016 D6) ⭐
+
+Budgets de obligatorio cumplimiento Sprint 2 onwards (60 FPS target cliente FiveM):
+
+| Budget | Límite | Verificación |
+|---|---|---|
+| Frame budget paint | ≤ 4ms per frame | Chrome DevTools Performance profile (75% reservado al juego) |
+| Bundle size JS gzipped initial | ≤ 500KB | `vite build` + analyzer |
+| Bundle size CSS gzipped | ≤ 200KB | idem |
+| Memory ceiling NUI heap | ≤ 80MB | Chrome DevTools Memory profile |
+| Lazy-loading apps | Obligatorio (Bank/Map/Phone via `React.lazy()` + Suspense) | Initial bundle = shell + Home only |
+| Animaciones | GPU-only (`transform`, `opacity`) | NO animar `width/height/top/left/margin/padding` |
+| Re-render guard listas | `React.memo` + virtualization react-window si >50 items | transactions, contacts, notifs feed |
+| Asset budget brand SVGs | ≤ 8KB cada uno | `@art/tools/logo_export/export.mjs` warn threshold |
+| Performance baseline | Sprint 2 setup includes Chrome DevTools Performance profile baseline + regression check pre-merge | Cualquier PR Tablet UI |
+
+#### App icons primarios — Lucide React + brand assets (D5 + Logo v3)
+
+- **Iconografía universal:** Lucide React v0.460+ canonical (per D5).
+- **App-icons SONAR Tablet:** SVGs custom abstract pendientes Phase 4.5 v2 (post-MVP). Sprint 2 baseline = Lucide icons como bridge ESHA aceptable.
+- **Brand assets:** `@art/branding/logo_v3/*` (4 monogramas + wordmark + 2 lockups). Favicon Tablet = `monogram_s.svg` Orange solid sobre Black canvas.
+
+### Cómo navegar este doc post-v1.3
+
+1. **Lee primero IDENTITY V3 LOCK NOTICE (este) + ADR-016.**
+2. **Lee NOTICE r1.1** para naming canonical (SONAR/SonarOS/Tienda/cuenta) + voz neutral + iconografía abstract + sound naming (preservado vigente, NO supersedido por v1.3 en esos aspectos).
+3. **§1-§29 inline:** funcionalidad/arquitectura/UX flows válidos. **Override v1.3:** palette + theme + stack + perf — gana esta NOTICE.
+4. **Si duda interpretación → ADR-016 manda.**
 
 ---
 
@@ -1693,9 +1806,10 @@ SONAR_logistics_jobs (job_id, origin_id, destination_id, vehicle_id, status, ...
 | 1.0 | 2026 (varias) | Founder + Cascade | v1.0 firmada Admirals/Almirantazgo (1185 líneas, 29 secciones). Identidad: Tablet 5º Pilar + dispositivo físico + 4 estados + 8 apps base + AdmiralsOS + voz naval/militar + paleta azul marino+dorado + Inter/Manrope tipografía + boot sound "campana naval". Archivado por ADR-011 + ADR-012. |
 | 1.1 | 2026-05-03 | Founder + Cascade (S1.8 Pass 1) | **Pass 1 surgical post-pivot SONAR.** (a) **File rename** `02_admirals_tablet.md` → `02_sonar_tablet.md` (git mv preserva history). (b) **NOTICE r1.1 top-level** establecida (~70 líneas) con NEW CANONICAL: naming SONAR + paleta hybrid Tier A/B/C + tipografía Geist Sans + voz neutral premium-tech + iconografía abstract + sound canonical 5 SFX + logo v2 working canonical concept A. (c) **Bulk identity purge** PowerShell (Admirals→SONAR + AdmiralsOS→SonarOS + Tablet Admirals→Tablet SONAR + Tienda Admirals→Tienda SONAR + cuenta Admirals→cuenta SONAR + producto/s Admirals→producto/s SONAR + logo/marca/ecosistema/apps Admirals → SONAR + ADMIRALS uppercase → SONAR) — 126 instances replaced. (d) **Surgical inline edits secciones críticas:** §2.4 Identidad visual (5 bullets refactored: wallpapers abstract + Geist Sans canonical + paleta hybrid + 5 SFX canonical + splash logo v2 ref); §3.2 Boot sound (premium-tech tonal class, deprecated "campana naval"); §4.1 Filosofía OS (voz neutral premium-tech + paleta hybrid + motion §16 + sounds canonical); §4.2 Boot sequence (Fase 1+2: logo v2 concept A reveal por capas 3 arcs + glow halation, deprecated "ondas señal naval"; Fase 3: Geist Sans + Geist Mono; Fase 4: ease-depth-descent + console_tap). (e) **§29 footer + changelog** bumped. **Pass 2 pendiente:** §6-§19 apps detail-pass + §26 sounds full + §27 anti-patterns. **Cross-refs:** ADR-011 + ADR-012 + `01_art_direction.md` v2.0-scaffold-r7 + `01_brief_logo.md` v2 + `01_brief_motion.md` v1 + `01_brief_sound.md` v1 + `01_brief_marketing.md` v1 + `art/branding/logo_v2/README.md` + Bible v1.4. |
 | 1.2 | 2026-05-03 | Founder + Cascade (S1.8 Pass 2) | **Pass 2 surgical apps detail-pass post-pivot SONAR.** (a) **§5.2 Lenguaje visual común** — Geist Sans canonical + Tier B Sonar Bright accent + panel_open modales + ease-deliberate toasts (DEPRECATED azul marino + dorado hover). (b) **§6.4 + §6.5 Empresa** — depth_press ceremonial al fundar empresa (DEPRECATED "sello" literal) + iconografía bioluminescence/depth-gauge para reputación insignia. (c) **§10.5 Mensajes sticker pack** — motivos abstractos SONAR (profundidad/capas/bioluminescence) + sector-specific (DEPRECATED "navales"). (d) **§11.4 + §11.6 Banca** — Sonar Bright pulse + depth_press canonical + signal_emerge warning anti-fraude (DEPRECATED "moneda" literal monetaria). (e) **§15.2 Tipología notif table** — mapping canonical completo 12 tipos a 5 SFX canonical variants (signal_emerge urgency/critical/medium/soft/ambient/positive + depth_press success/firma + console_tap light/neutral/soft) + DEPRECATED v1.0 column preserved + color tokens functional Signal tier. (f) **§21.4 Animación docking** — console_tap magnet click + panel_open monitor reveal + ease-deliberate UI redraw (DEPRECATED "conexión periférica" genérica). (g) **§22.4 Costa Naval** — flag ejemplo v1.0 como server-branding ortogonal a SONAR canonical (server temático NO impone metáfora naval sobre SONAR). Ejemplo renombrado a "Puerto de los Vientos" neutral. (h) **§26 Sonidos requeridos** — rewrite completo con tablas canonical 4 tablas (§26.1 dispositivo + §26.3 docking + §26.4 inter-tablet + §26.5 ambient). Mapping 5 SFX + DEPRECATED v1.0 vernacular preserved. (i) **§27 Anti-patrones** — split en §27.1 structural/UX (preserved v1.0) + §27.2 identidad SONAR NEW post-pivot (9 anti-patrones: voz naval/militar, boot campana naval, iconografía sonar-ping/periscope, paleta azul marino+dorado, tipografía Inter/Manrope, sound naming radio, wallpapers navales, metáfora submarino literal, logo alternativo unilateral). (j) **§25.3 + NOTICE r1.1 line 77** minor status updates. **Doc 1/8 Phase 6 100% Pass done**, ready-to-read para S2.0 planning. |
+| **1.3** | 2026-05-04 | Founder + Cascade (Sonnet 4.5, S1.10.5 Item D) | **🟢 IDENTITY V3 LOCK NOTICE inserted top-level** post-ADR-016 (`@docs/planning/02_decision_log_part2.md` v1.0). Capa canónica más reciente — supersedes NOTICE r1.1 + redacción v1.0 inline §1-§29 en cualquier conflicto palette/theme/stack/perf. **6 doctrines locked Tablet UI:** (D1) Palette tokens canonical 3-color: `--sonar-black` `#060607` + `--sonar-orange` `#FF5100` + `--sonar-white` `#FAFAFA` con tabla implementación Tailwind v4 utility classes. Tokens DEPRECATED v1.0+v1.1+v1.2 explicit purgados (Tier A/B/C hybrid + Crew + Sonar Bright/Pulse/Coloro + Signal functional). (D2) Dark-only doctrine product — Tablet UI in-game 100% dark canvas, NO light variant, NO `prefers-color-scheme` honor. Excepción única `monogram_s_black.svg` print/external NON-product. (D3) 3-color strict — estados via Lucide icons + typography weight + motion. (D5 ⭐) **Tablet UI implementation stack FROZEN S2-S8** con tabla 10 dependencias pinned: React 18.3 + Vite 5.4 + TS 5.6 strict + Tailwind v4 `@theme` + shadcn dark-only + Framer Motion 11 + Lucide React 0.460+ + Recharts 2.13 + React Context+useReducer (NO Zustand) + lb-phone NUI bridge. Cambios stack S2-S8 → ADR firmable obligatorio. DEPRECATED stack v1.0/v1.1: Inter Tight primary, Stack flexible sin pin, Zustand. (D6 ⭐) **NUI performance hard constraints** tabla 9 budgets: ≤4ms paint/frame, ≤500KB JS gzipped, ≤200KB CSS gzipped, ≤80MB heap, lazy-loading apps obligatorio, animaciones GPU-only, react-window virtualization >50 items, brand SVGs ≤8KB, Performance baseline pre-merge. **Header bumped v1.1 → v1.3** (skip header/footer desync existing). **SSoT cross-refs** brief logo v3 + art_direction v3.0 + package.json downgrade. Logo v3 firmable referenced. **Cómo navegar post-v1.3:** NOTICE v3 → NOTICE r1.1 (naming/voz/iconografía/sound preserved) → §1-§29 inline (functional/architecture/UX válidos; palette+theme+stack+perf override por v1.3). |
 
 ---
 
 *"Hear the depth. Understand the patterns."*
 
-**FIN DEL DOCUMENTO `docs/design/02_sonar_tablet.md` v1.2 (Pass 1 + Pass 2 surgical completos post-pivot SONAR — doc 1/8 Phase 6 ready-to-read para S2.0 planning).**
+**FIN DEL DOCUMENTO `docs/design/02_sonar_tablet.md` v1.3 (post-ADR-016 IDENTITY V3 LOCK NOTICE — Tablet UI implementation stack frozen S2-S8 + NUI perf budgets locked + palette tokens canonical Black/Orange/White + dark-only doctrine product).**

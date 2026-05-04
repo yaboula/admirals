@@ -619,7 +619,7 @@ vs un pan sin lineage, quality C:
 
 - **Member contract** define salary + role + permissions.
 - **Salary pago quincenal** desde IBAN empresa al IBAN member.
-- **Permissions** granulares (ver `02_admirals_tablet.md` Manager Panel).
+- **Permissions** granulares (ver `02_sonar_tablet.md` Manager Panel).
 
 ### 9.4 Dividends (corporation model)
 

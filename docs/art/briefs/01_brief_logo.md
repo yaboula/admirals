@@ -1,14 +1,13 @@
-# Brief — Logo SONAR (design package v2)
+# Brief — Logo SONAR (identity v3 firmado)
 
-- **ID:** BRIEF-LOGO-001 v2 (post-ADR-012)
-- **Versión:** v2.0 (2026-05-03)
-- **Status:** 🟡 Draft firmable — pending founder green-light + designer assignment
-- **Owner:** Founder yaboula · Designer TBD
-- **Reviewer:** Founder (final sign-off)
-- **Source SSoT:** ADR-011 + **ADR-012** + `docs/art/01_art_direction.md` v2.0-scaffold-r6 NOTICE + `docs/design/00_PRODUCT_BIBLE.md` v1.4 §1
-- **Reemplaza:** BRIEF-LOGO-001 v1 (descartado — concepto "S-como-onda sonar concéntrica" era radio/freq literal, contradice ADR-012 D1).
-- **Deadline sugerido:** ~2 semanas post-kickoff (4 rondas review).
-- **Precedencia:** este brief es SSoT operacional. Si conflicto con `01_art_direction.md` r6 NOTICE → gana NOTICE + ADR-012.
+- **ID:** BRIEF-LOGO-001 v3 (post-ADR-016)
+- **Versión:** v3.0 (2026-05-04)
+- **Status:** � **FIRMADO / LOCKED** — logo v3 entregado en `@art/branding/logo_v3/` (4 monogramas SVG + wordmark + 2 lockups + preview.html + exports pipeline)
+- **Owner:** Founder yaboula
+- **Reviewer:** Founder (sign-off ejecutado 2026-05-04 S1.10 EXTENDED post-commit)
+- **Source SSoT:** ADR-011 + ADR-012 + **ADR-016** (`@docs/planning/02_decision_log_part2.md` v1.0 D1+D2+D3) + `@docs/art/01_art_direction.md` (post v3.0 bump)
+- **Reemplaza:** BRIEF-LOGO-001 v2 (descartado — paleta teal Sonar Bright + hybrid theme dark+white obsoleta post-ADR-016 D1+D2).
+- **Precedencia:** este brief es **SSoT operacional canónico** para palette tokens (D1) + dark-only doctrine product (D2) + 3-color strict (D3). Si conflicto con `01_art_direction.md` → gana ADR-016.
 
 ---
 
@@ -35,12 +34,13 @@
 
 **Voz de marca (canonical post-ADR-012):** **neutral premium-tech**. Estilo Vercel/Linear/Stripe copy. Preciso, terse, calmo, professional, atemporal. Cero arquetipo (no "silent service", no "capitán", no "a bordo", no "tactical"). Cero gen-Z/exclamaciones/vibes/emojis-en-producto.
 
-**Qué debe transmitir el logo:**
+**Qué debe transmitir el logo (firmado v3):**
 1. **Profundidad simbólica** — sugerir capas/dimensión/algo "más allá de la superficie" sin literal.
 2. **Precisión técnica** — geometric purity, proportional rigor.
 3. **Calma autoridad** — confidence sin gritar.
-4. **Atemporal** — debe sobrevivir 5+ años sin refresh. Nada de trends 2026.
-5. **Bioluminescent identity** — el color Sonar Bright `#2DD4BF` es la firma marketing en mercado FiveM.
+4. **Atemporal** — debe sobrevivir 5+ años sin refresh.
+5. **Signal identity** — Orange `#FF5100` es la firma marketing 2026+ (post ADR-016 D1, replaces Sonar Bright teal v2).
+6. **Dark-only product** — logo product UI siempre sobre Black `#060607` canvas (post ADR-016 D2).
 
 **Qué NUNCA debe transmitir:**
 - ❌ Submarino, periscopio, casco, torpedo, hydrophone, sonar ping radio.
@@ -48,70 +48,75 @@
 - ❌ Cartoon gaming, mascot, RGB rainbow, gradient holográfico.
 - ❌ Vintage/retro, motivational corporate.
 - ❌ Tactical operator masculino agresivo (CoD UI style).
+- ❌ **Light variant del logo en product UI** (post ADR-016 D2 — excepción única `monogram_s_black.svg` print/external, NO product).
 
 ---
 
-## 2. Deliverables exactos
+## 2. Deliverables firmados (inventario real `@art/branding/logo_v3/`)
 
-### 2.1 Archivos finales (formato entrega)
+### 2.1 Archivos finales entregados
 
-| # | Archivo | Formato | Uso destino |
+> **Status:** ✅ Todos los SVG sources firmables. Pipeline export automatizado vía `@art/tools/logo_export/export.mjs` (Puppeteer SVG→PNG multi-density).
+
+| # | Archivo SVG (sources) | Variante | Uso destino canónico |
 |---|---|---|---|
-| 1 | `sonar_logo_full.svg` | SVG vector (paths only, no raster) | Web hero, Tebex page, trailer |
-| 2 | `sonar_logo_monogram.svg` | SVG vector | Favicon, app icon Tablet, watermark |
-| 3 | `sonar_wordmark.svg` | SVG vector | Footer, créditos |
-| 4 | `sonar_logo_lockup_horizontal.svg` | SVG vector | Banners horizontales, signatures |
-| 5 | `sonar_logo_lockup_vertical.svg` | SVG vector | Avatar cuadrado, packaging vertical |
-| 6 | `sonar_logo_dark_canvas.svg` | SVG vector | Sonar Bright sobre Abyss Black `#03070A` (canonical primary) |
-| 7 | `sonar_logo_white_canvas.svg` | SVG vector | Sonar Bright sobre Crew 100 `#F0F4F4` (hybrid theme white surfaces) |
-| 8 | `sonar_logo_reverse.svg` | SVG vector | Abyss Black sobre Crew 100 (B&W print contexts) |
-| 9 | Raster exports PNG @1x/@2x/@3x en 64/128/256/512/1024px + 16/32 favicons | PNG con alpha | Multi-density |
-| 10 | `sonar_logo_guidelines.pdf` | PDF 10-14 páginas | Normativa do/don't + specs + misuse + hybrid theme application |
-| 11 | `sonar_logo_source.fig` | Figma community file | Editable source + variantes + color tokens |
-| 12 | `sonar_logo_splash_hero.mp4` o `.webm` | Vídeo 4s loop 1080p60 | Marketing hero + Tablet splash (stretch goal) |
+| 1 | `monogram_s.svg` | Solid Orange `#FF5100` sobre transparente | Favicon, app icon Tablet (D2 dark canvas baseline), watermark product UI |
+| 2 | `monogram_s_solid.svg` | Solid Orange filled stroke variant | Marketing hero, social avatars |
+| 3 | `monogram_s_white.svg` | Pure white `#FAFAFA` | Overlay sobre fondos foto/video dark uniformes |
+| 4 | `monogram_s_light.svg` | White light variant para hover/active states | Tablet UI interactivos focus rings |
+| 5 | `monogram_s_black.svg` | Black `#060607` solid | **EXCEPCIÓN ÚNICA print/external** (papelería, fondos blancos third-party donde dark monogram es ilegible). **NO uso product UI** (per ADR-016 D2 + D-S1.10E-A) |
+| 6 | `wordmark_sonar.svg` | Wordmark "SONAR" Geist Sans Orange | Footer, créditos, signatures, banners horizontales |
+| 7 | `lockup_horizontal.svg` | Monograma + gap + wordmark horizontal | Hero banners, web headers, signatures email |
+| 8 | `lockup_vertical.svg` | Monograma encima + wordmark debajo | Avatar cuadrado, packaging vertical, social profile |
+| 9 | `preview.html` | Preview interactiva all variants | QA visual + handoff |
+| 10 | `exports/` (folder) | PNG @1x/@2x/@3x multi-density (16/32/64/128/256/512/1024) | Multi-density product + marketing |
+| 11 | `README.md` | Inventario + uso + ADR refs | Onboarding nuevos contributors |
 
-**Repo destino:** `art/branding/logo_v1/` + `docs/art/branding/` (normativa).
+**Repo source canónico:** `@art/branding/logo_v3/`. **Pipeline export:** `@art/tools/logo_export/export.mjs` (Node.js + Puppeteer headless rendering).
 
-### 2.2 Estados requeridos del logo (hybrid theme aware — ADR-012 D2)
+### 2.2 Estados canónicos del logo (post ADR-016 D2 dark-only)
 
-> **Importante v2:** SONAR usa **hybrid theme** (~30-40% dark + ~30-40% white surfaces). El logo debe funcionar primario en **ambos canvases con paridad visual**.
+> **Cambio v2 → v3:** SONAR product UI es **dark-only** post ADR-016 D2. El logo NO necesita "hybrid theme parity" porque NO existe light variant del producto. Excepción única: `monogram_s_black.svg` para contextos print/external NON-product.
 
-- **Canonical Primary A — Sonar Bright sobre Abyss Black** `#2DD4BF` sobre `#03070A`. Contraste AAA 9.8:1 ✅. Uso: dark surfaces (sidebar, hero dark mode, splash).
-- **Canonical Primary B — Sonar Bright sobre Crew 100 off-white** `#2DD4BF` sobre `#F0F4F4`. Contraste 2.7:1. **Designer debe verificar y posiblemente añadir thin abyss-black border 1px o slight darkening del teal a `#1FB39E` para AA compliance** sobre white surfaces. Uso: white panels, content areas, light hero, docs pages.
-- **Reverse contrast-forced** — Abyss Black `#03070A` sobre Crew 100 `#F0F4F4` (o viceversa) — SOLO para print docs formales B&W obligatorios.
-- **Monochrome Crew** — Crew 100 `#F0F4F4` solid (uso raro — overlay sobre video dark).
-- **Monochrome Abyss** — Abyss Black `#03070A` solid (uso raro — print 1-tinta).
-- ❌ **Coloro Support `#175A5F` PROHIBIDO en logo** — Coloro es Tier C estructural, NO identity. Documenta explícitamente como misuse.
+- **Canonical Primary — Orange sobre Black** `#FF5100` sobre `#060607`. Contraste AAA ~6.5:1 ✅ (Orange large text + non-text graphic). Uso: TODA UI product (Tablet NUI, marketing web dark, splash, hero).
+- **White variant — White sobre Black** `#FAFAFA` sobre `#060607`. Contraste AAA 19.5:1 ✅. Uso: contextos donde Orange compite con otros signals (e.g., critical alerts overlay).
+- **Light hover variant** — `monogram_s_light.svg` (white tonal shift). Uso: focus rings + hover states Tablet UI per D5 stack.
+- **Print/external EXCEPCIÓN ÚNICA** — `monogram_s_black.svg` Black sobre fondos blancos third-party (papelería formal, presentaciones partners, impresión). **PROHIBIDO product UI**.
+- ❌ **Light canvas product UI PROHIBIDO** post ADR-016 D2 — NO existe light variant Tablet/marketing-web.
+- ❌ **Colores no-canónicos PROHIBIDOS** — solo Black/Orange/White (post ADR-016 D3 3-color strict). NO teal, NO Coloro support, NO accent colors.
 
-### 2.3 Variantes glow (marketing only, preserved)
+### 2.3 Variantes glow (marketing hero only, preserved)
 
 - **Glow signature OPCIONAL** para hero marketing / reveal trailer:
-  - Radial Sonar Bright `#2DD4BF` 12% opacity behind logo, radius ~1.5× logo width, soft falloff.
+  - Radial Orange `#FF5100` 12% opacity behind logo, radius ~1.5× logo width, soft falloff.
   - Test del 50%: si reduces glow 50% y jerarquía visual sigue clara → OK.
-- ❌ NO glow en favicon, UI in-app, packaging físico.
+- ❌ NO glow en favicon, UI in-app product, packaging físico.
 
 ---
 
-## 3. Concepto base — DESIGN SPACE EXPLORATION (NOT locked)
+## 3. Concepto base — FIRMADO LOCKED v3
 
-> **Crítico v2:** founder NO especifica concepto base único. Designer **debe explorar 4-5 direcciones distintas** en R1, todas alineadas con metáfora abstracta de profundidad. **CERO ondas concéntricas** (radio/frecuencia literal — purga ADR-012).
+> **Status:** ✅ Concepto cerrado. Logo v3 entregado en `@art/branding/logo_v3/`. Esta sección documenta el concepto firmado; NO es exploration brief.
 
-### 3.1 Candidatos preliminares (no-exhaustivos — designer puede proponer alternativas)
+### 3.1 Concepto firmado
 
-| # | Concepto | Idea formal |
-|---|---|---|
-| **C1** | **Descent-layers** | Letra "S" formada por 3-4 capas horizontales descendiendo, cada capa con leve offset. Sugiere "descender en capas". |
-| **C2** | **Prisma profundidad** | "S" estructurada como prisma geométrico con profundidad isométrica leve (3D minimalist), sugiriendo dimensión oculta. |
-| **C3** | **Gradient depth** | "S" sólida con gradient muy sutil de Sonar Bright a Sonar Pulse (top→bottom), sugiriendo "descenso de luz". Riesgo: debe pasar test favicon 16px sin perder identidad. |
-| **C4** | **Geometric depth-grid** | "S" construida como grid isométrico stripped-down — líneas paralelas perspective sugiriendo "profundidad medida". |
-| **C5** | **Geometric S-descent** | "S" con curvas tradicionales pero las 2 curvas claramente diferenciadas en weight/style sugiriendo "superficie + profundidad". Más simple y atemporal. |
+**Monograma "S" geométrico minimalista** + wordmark "SONAR" Geist Sans Orange.
 
-**Designer puede:**
-- Combinar elementos (ej. C1 descent + C5 weight differentiation).
-- Proponer C6+ alternativas siempre que respeten anti-patterns ADR-012.
-- Descartar candidatos preliminares completamente si trae propuesta más fuerte.
+- **Construcción:** "S" formada por curvas geométricas precisas (proportional rigor + depth simbólica abstracta — NO ondas, NO sub-militar).
+- **Variantes:** 4 monogramas firmables (`monogram_s.svg` solid + `_solid` filled stroke + `_white` pure + `_light` hover variant) + 1 excepción print/external (`_black`).
+- **Wordmark:** "SONAR" all-caps Geist Sans Bold tracking tight (-2% a -4%).
+- **Lockups:** horizontal (banners) + vertical (avatares cuadrados).
 
-### 3.2 Anti-patterns concepto (PROHIBIDOS — ADR-012 D1)
+### 3.2 Tests pasados (firmable)
+
+- ✅ Favicon 16px legible — monograma `S` reconocible a tamaño mínimo.
+- ✅ Contraste AAA Orange `#FF5100` sobre Black `#060607`.
+- ✅ Contraste AAA White `#FAFAFA` sobre Black `#060607`.
+- ✅ Atemporal — geometry-only, NO trends 2026 (no glassmorphism logo, no gradient holográfico, no aurora wash).
+- ✅ Voz neutral premium-tech preservada — NO arquetipo militar/submarino literal.
+- ✅ Versatility — funciona desde 16px favicon hasta 1024px+ marketing hero sin perder identity.
+
+### 3.3 Anti-patterns concepto (PROHIBIDOS — ADR-012 D1 + ADR-016 D3)
 
 - ❌ Ondas concéntricas (sonar ping radio/frecuencia).
 - ❌ Submarino silhouette literal.
@@ -120,74 +125,95 @@
 - ❌ Acoustic waveform/oscilloscope.
 - ❌ Compass/navigation symbols literales.
 - ❌ "Eye that sees" eye-with-rays (literal "ver escuchando").
+- ❌ **Multi-color variants logo** (post ADR-016 D3 — solo Black/Orange/White existen).
+- ❌ **Gradient holográfico/mercurio** logo (timeless principle preserved).
 
 ---
 
-## 4. Specs técnicos vinculantes
+## 4. Specs técnicos vinculantes (firmados v3)
 
-### 4.1 Color tokens
+### 4.1 Color tokens canónicos (ADR-016 D1 — SSoT canonical)
 
-| Token | Hex | Uso logo |
-|---|---|---|
-| `--sonar-bright` | `#2DD4BF` | **PRIMARY IDENTITY** del logo siempre |
-| `--sonar-bright-shifted` | `#1FB39E` | Variant para white canvases si AA contrast falla |
-| `--sonar-pulse` | `#14E5DD` | ONLY si C3 gradient depth concept elegido (top of gradient) |
-| `--abyss-black` | `#03070A` | Canvas primario detrás del logo (dark surfaces) |
-| `--crew-100` | `#F0F4F4` | Canvas hybrid white surfaces |
-| `--coloro-support` | `#175A5F` | ❌ **PROHIBIDO en logo** |
+> **Esta tabla ES el SSoT de palette tokens product SONAR.** Todos los demás docs (`01_art_direction.md` v3.0, `02_sonar_tablet.md` v1.3, Bible v1.5, Tablet UI Tailwind `@theme`) referencian aquí.
 
-Contraste mínimo logo-sobre-canvas: **AAA ≥7:1 dark canvas, AA ≥4.5:1 white canvas**.
+| Token | Hex | Rol | Uso |
+|---|---|---|---|
+| `--sonar-black` | `#060607` | **CANVAS BASE** dark-only product | Background Tablet UI, marketing web, hero, splash. Default canvas TODA superficie product. |
+| `--sonar-orange` | `#FF5100` | **SIGNAL / BRAND PRIMARY** | Logo identity, CTAs primary, focus rings, alerts críticos, signal active states, marketing accent único. |
+| `--sonar-white` | `#FAFAFA` | **FOREGROUND / PURE** | Texto primario sobre Black, iconografía Lucide neutral, surfaces alpha layers high-emphasis. |
 
-### 4.2 Tipografía wordmark
+**Implementación stack (post ADR-016 D5):**
+- **Tailwind v4 `@theme` directive** — definir 3 tokens en `tailwind.config.ts` Tablet UI.
+- **CSS custom properties** — fallback for non-Tailwind contexts (marketing static HTML, NUI bridges raw).
+- **NUNCA hardcodear hex** en componentes — siempre via token (`bg-sonar-black`, `text-sonar-orange`, `text-sonar-white`).
+
+**Contraste mínimos firmable:**
+- AAA `text-sonar-white` sobre `bg-sonar-black`: **19.5:1** ✅
+- AAA `text-sonar-orange` sobre `bg-sonar-black` (large text + non-text graphic): **~6.5:1** ✅ (suficiente per WCAG 2.2 AAA non-text + AA large text)
+- ❌ `text-sonar-orange` body small (<18px) sobre Black: usar Orange solo CTAs/headings/icons, NO body copy small.
+
+**Tokens DEPRECATED v2 (purgados v3):**
+- ❌ `--sonar-bright` `#2DD4BF` (teal v2) — eliminado post ADR-016 D1.
+- ❌ `--sonar-pulse` `#14E5DD` — eliminado.
+- ❌ `--abyss-black` `#03070A` — replaced by `--sonar-black` `#060607`.
+- ❌ `--crew-100` `#F0F4F4` — eliminado (no light canvas product).
+- ❌ `--coloro-support` `#175A5F` — eliminado.
+- ❌ Crew neutrals tier (#B8C5C5 / #6B7878 / #2A3438) — eliminado.
+
+### 4.2 Tipografía wordmark (preserved v3)
 
 - **Familia:** Geist Sans (Vercel — free, variable font, OFL 1.1 SIL).
-- **Peso base wordmark:** SemiBold 600 o Bold 700 según proporción final.
+- **Peso base wordmark:** Bold 700 (firmado v3).
 - **Tracking wordmark SONAR:** tight (-2% a -4%) para compactness técnica.
 - **Caja:** all-caps "SONAR". Nunca lowercase. Nunca mixed case.
 - **Fallback:** Inter Tight Bold (si Geist no embeddable en medio físico).
+- **Marketing-only display alternativa:** Syncopate (Google Fonts) considerada para hero marketing pages — evaluable post-Sprint 2 close (NO product UI).
 
-### 4.3 Geometría + construction
+### 4.3 Geometría + construction (firmable)
 
-- **Grid:** designer entrega construction diagram en grid 12×12 o 16×16 modular.
-- **Stroke linecap/linejoin:** round (coherente con iconografía Lucide round usada en SONAR).
-- **Espacio libre alrededor del logo:** mínimo = ancho de la "S" del monograma. Documentar visualmente.
-- **Tamaño mínimo pantalla:** 24px alto. Por debajo, usar solo monogram (favicon 16px).
+- **Grid:** monograma `S` construido sobre grid modular preservado en `wordmark_sonar.svg` + `monogram_s*.svg` SVG sources.
+- **Stroke linecap/linejoin:** round (coherente con iconografía Lucide round usada en SONAR Tablet UI per D5).
+- **Espacio libre alrededor del logo:** mínimo = ancho de la "S" del monograma. Documentar visualmente en future guidelines PDF.
+- **Tamaño mínimo pantalla:** 24px alto. Por debajo, usar solo monograma (favicon 16px).
 - **Tamaño mínimo print:** 8mm alto.
 
-### 4.4 Lockups
+### 4.4 Lockups (firmados — files reales)
 
-| Lockup | Composición | Espaciado |
-|---|---|---|
-| **Horizontal** | Monograma · gap · wordmark "SONAR" | Gap = 0.5× altura monograma |
-| **Vertical** | Monograma encima · gap · wordmark "SONAR" | Gap = 0.3× altura monograma |
-| **Tagline (opcional)** | Lockup + línea debajo wordmark: *"Hear the depth."* en Inter Tight Medium 14px tracking +4% | Solo hero marketing |
+| Lockup | File | Composición | Espaciado |
+|---|---|---|---|
+| **Horizontal** | `lockup_horizontal.svg` | Monograma · gap · wordmark "SONAR" | Gap = 0.5× altura monograma |
+| **Vertical** | `lockup_vertical.svg` | Monograma encima · gap · wordmark "SONAR" | Gap = 0.3× altura monograma |
+| **Tagline (opcional)** | TBD post-S2 | Lockup + línea debajo wordmark: *"Hear the depth."* en Inter Tight Medium 14px tracking +4% | Solo hero marketing |
 
 ---
 
-## 5. Do ✅ / Don't ❌
+## 5. Do ✅ / Don't ❌ (uso post-firmable)
 
-### 5.1 ✅ Hacer
+### 5.1 ✅ Hacer (operacional product + marketing)
 
-- Explorar 4-5 conceptos divergentes en R1 (no quedarse en variantes minor de uno).
-- Mantener simplicidad geométrica: el logo debe leerse a 16px favicon sin perder identidad.
-- Validar AAA dark canvas + AA white canvas ANTES de presentar.
-- Probar el logo en 4 contextos: favicon Chrome tab, app-icon Tablet, Tebex store hero 1920px, **white panel surface** (hybrid theme test).
-- Documentar grid + clear-space + misuse en PDF guidelines (10-14 páginas).
-- Entregar SVG con paths optimizados (SVGO), nunca embedded raster, nunca text not-outlined.
+- **Product UI:** usar `monogram_s.svg` solid Orange para favicon Chrome tab + app-icon Tablet + watermarks (D2 dark-only baseline).
+- **Marketing hero:** usar `lockup_horizontal.svg` o `lockup_vertical.svg` según composición.
+- **Focus rings + hover states Tablet UI:** `monogram_s_light.svg` o `text-sonar-orange` ring-2 per D5 stack patterns.
+- **Multi-density product:** rasterizar via `@art/tools/logo_export/export.mjs` pipeline (PNG @1x/@2x/@3x 16-1024px).
+- **Print/external NON-product:** `monogram_s_black.svg` Black sobre fondos blancos third-party (única excepción D2 + D-S1.10E-A).
+- **Tokens canónicos:** referenciar siempre `--sonar-black` / `--sonar-orange` / `--sonar-white` via Tailwind v4 `@theme` o CSS custom properties.
 
-### 5.2 ❌ No hacer (misuse documentar en PDF)
+### 5.2 ❌ No hacer (misuse explícito)
 
-- ❌ Stretch horizontal/vertical.
-- ❌ Rotar el logo (ni 2º).
-- ❌ Drop-shadow gaming.
+- ❌ Stretch horizontal/vertical del monograma o lockup.
+- ❌ Rotar el logo (ni 2°).
+- ❌ Drop-shadow gaming / glow excessive.
 - ❌ Outline stroke alrededor del logo.
 - ❌ Gradient rainbow / holográfico / mercurio.
-- ❌ Versiones rojas/amarillas/verdes/moradas.
-- ❌ Logo sobre fondo fotográfico caótico sin backplate.
+- ❌ **Versiones colored fuera de Black/Orange/White** (post ADR-016 D3 — no rojas/amarillas/verdes/moradas/teal/etc).
+- ❌ Logo sobre fondo fotográfico caótico sin backplate Black.
 - ❌ Logo con bevel/emboss.
 - ❌ Wordmark en script/cursiva/serif.
 - ❌ **Concepto ondas concéntricas** (radio/freq — explicit purga ADR-012).
 - ❌ **Concepto submarino silhouette** (literal militar — explicit purga ADR-012).
+- ❌ **`monogram_s_black.svg` en product UI** (post ADR-016 D2 — solo print/external NON-product).
+- ❌ **Light variant fondo product** — Tablet UI + marketing web siempre Black canvas (post ADR-016 D2).
+- ❌ **Hardcodear hex** en componentes Tablet UI — siempre via Tailwind tokens.
 
 ---
 
@@ -223,47 +249,49 @@ Contraste mínimo logo-sobre-canvas: **AAA ≥7:1 dark canvas, AA ≥4.5:1 white
 
 ---
 
-## 7. Proceso review (gates)
+## 7. Proceso review (gates) — TODAS CERRADAS
 
 | Ronda | Deliverable | Founder review | Outcome |
 |---|---|---|---|
-| **R0 — Kickoff** | Moodboard PDF + cuestionario dudas | Sync 30 min | Green-light dirección |
-| **R1 — Conceptos** | 4-5 direcciones monograma thumbnails B&W (incluyendo ≥3 candidatos preliminares §3.1) | Async 48h | Elige 2 para R2 |
-| **R2 — Refinamiento** | 2 direcciones refined + aplicadas en favicon/app-icon/hero dark/hero white (hybrid test) | Async 48h | Elige 1 final + lockups |
-| **R3 — Sistema completo** | Logo final + lockups + reverse + glow + variants dark/white canvas + guidelines PDF draft | Sync 45 min | Ajustes menores + sign-off |
-| **R4 — Delivery** | Package completo repo-ready + source files + guidelines PDF final | Founder firma | ✅ Locked |
+| **R0 — Kickoff** | Moodboard refs + dirección abstracta | Founder confirmed | ✅ Green-light dirección post-ADR-012 |
+| **R1 — Conceptos** | Direcciones monograma thumbnails | Founder review | ✅ Elegida dirección geométrica abstracta |
+| **R2 — Refinamiento** | Iteraciones aplicadas favicon/Tablet/hero | Founder review | ✅ Elegido monograma `S` final + lockups |
+| **R3 — Sistema completo** | 4 monogramas + wordmark + 2 lockups + preview.html + export pipeline | Founder review S1.10 EXTENDED | ✅ Sign-off ejecutado 2026-05-04 |
+| **R4 — Delivery** | Package commiteado `@art/branding/logo_v3/` + tooling `@art/tools/logo_export/` | Founder firmable | ✅ **LOCKED** post ADR-016 |
 
-**Cada ronda incluye:** rationale escrito del designer (1 página max), NO solo imágenes.
+**Status global:** 🟢 Logo system v3 firmable. Pendiente solo guidelines PDF formal (low priority — defer post-MVP S2).
 
 ---
 
 ## 8. Licensing + entrega legal
 
-- **Cesión rights:** full transfer of all IP rights + copyrights to yaboula / SONAR. Unlimited perpetual worldwide commercial use.
-- **Source files:** Figma community file editable + SVG sources + fonts licenses (Geist = SIL OFL 1.1).
-- **NDA:** Logo confidential hasta reveal oficial SONAR.
-- **Attribution:** designer accreditable en credits SONAR website + trailer (opcional).
-- **Fonts embedding:** Geist preferencia fuerte (free commercial OK).
+- **Cesión rights:** logo v3 propiedad yaboula / SONAR. Unlimited perpetual worldwide commercial use.
+- **Source files:** SVG sources + export pipeline Node/Puppeteer + fonts licenses (Geist Sans = SIL OFL 1.1, Inter Tight = SIL OFL 1.1).
+- **NDA:** Logo confidential pre-reveal oficial SONAR (Sprint 2 close marketing launch).
+- **Attribution:** Cascade (Sonnet 4.5) + founder yaboula accreditable en credits SONAR website + trailer.
+- **Fonts embedding:** Geist Sans + Inter Tight + Geist Mono (todos SIL OFL 1.1, free commercial OK).
 
 ---
 
-## 9. Presupuesto + timeline
+## 9. Histórico delivery v3 (firmable)
 
-- **Scope designer:** senior brand designer, 30-50 horas totales 2 semanas.
-- **Presupuesto orientativo:** €1,500-€3,500 EUR freelance EU. 2-3 quotes antes contratar.
-- **Alternativa AI:** Opus 4.7 MAX + Midjourney/Ideogram para R1-R2 generation, humano para R3+ construction diagram + guidelines PDF.
+- **Designer:** Founder yaboula + Cascade (AI iteración Sonnet 4.5).
+- **Effort real:** ~18h cumulative durante S1.10 EXTENDED.
+- **Tooling:** Node.js + Puppeteer headless rendering pipeline (`@art/tools/logo_export/export.mjs`).
+- **Pipeline output:** PNG @1x/@2x/@3x multi-density (16/32/64/128/256/512/1024) automated.
 
 ---
 
-## 10. Checklist founder pre-kickoff
+## 10. Checklist founder firmable v3 (closed)
 
-- [ ] Re-read ADR-011 + ADR-012 + art_direction r6 NOTICE.
-- [ ] Concepto base **NO locked** — designer explora 4-5 direcciones en R1.
-- [ ] Paleta Tier A/B/C inmutable (Sonar Bright = identity, Coloro = prohibido logo, hybrid theme dark+white parity).
-- [ ] Geist Sans wordmark inmutable.
-- [ ] Presupuesto asignado.
-- [ ] Deadline R4 firm.
-- [ ] Si designer AI: founder ejecuta R1-R2 personal con este brief como prompt maestro.
+- [x] ADR-011 + ADR-012 + ADR-016 D1+D2+D3 firmados.
+- [x] Concepto base **LOCKED v3** — monograma `S` geométrico + wordmark Geist Bold.
+- [x] Paleta canonical 3-color strict (Black `#060607` + Orange `#FF5100` + White `#FAFAFA`).
+- [x] Geist Sans wordmark firmable.
+- [x] Logo SVGs sources commiteados `@art/branding/logo_v3/`.
+- [x] Pipeline export commiteable `@art/tools/logo_export/export.mjs`.
+- [x] Excepción única `monogram_s_black.svg` print/external preservada (D-S1.10E-A).
+- [ ] Guidelines PDF formal (10-14 páginas) — defer post-MVP S2.
 
 ---
 
@@ -273,7 +301,8 @@ Contraste mínimo logo-sobre-canvas: **AAA ≥7:1 dark canvas, AA ≥4.5:1 white
 |---|---|---|---|
 | v1.0 | 2026-05-03 | Cascade (Sonnet 4.5) | Initial brief — concepto "S-onda concéntrica" locked. **Descartado mismo día** post-ADR-012 (radio/freq literal). |
 | v2.0 | 2026-05-03 | Cascade (Sonnet 4.5) | **Rewrite clean post-ADR-012**: concepto NO-locked (5 candidatos preliminares + design space exploration), hybrid theme dark+white parity tests, anti-patterns explícitos ondas concéntricas + submarino literal, refs convergentes Apple/Linear/Vercel/Stripe/Arc/Notion + profundidad abstracta (NO submarinos), 4 review gates R0-R4. |
+| v3.0 | 2026-05-04 | Founder + Cascade (Sonnet 4.5, S1.10.5) | **Document genre shift v2 → v3:** exploration brief → registro logo firmado + SSoT canonical palette tokens. Concepto LOCKED (monograma `S` geométrico + wordmark Geist Bold + 4 monogramas + wordmark + 2 lockups + preview + export pipeline). **Paleta v3 canonical (post-ADR-016 D1):** Black `#060607` + Orange `#FF5100` + White `#FAFAFA` (REPLACES Sonar Bright teal `#2DD4BF` + hybrid theme v2). **Dark-only doctrine (post-ADR-016 D2)** — light variant product PROHIBIDO. **3-color strict (post-ADR-016 D3)** — sin accent colors. **Excepción única `monogram_s_black.svg`** print/external NON-product (D-S1.10E-A). Review gates R0-R4 marcadas closed. Tokens deprecated v2 (sonar-bright/pulse/abyss-black/crew-100/coloro) explícitamente purgados. |
 
 ---
 
-**FIN DEL BRIEF — LOGO SONAR v2 (post-ADR-012)**
+**FIN DEL BRIEF — LOGO SONAR v3 (post-ADR-016 firmable)**

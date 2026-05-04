@@ -4,7 +4,7 @@
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2 (§13.4 — División 3D vs Código aplicada también a audio)
 > **Documento hermano principal:** `art/01_art_direction.md` v1.0 (§9-§11 sound signatures por nodo).
 > **Documento gemelo:** `art/02_shader_contracts.md` v1.0 (este doc es el paralelo sonoro).
-> **Documentos referenciados:** todos los nodos §13 (`01_node_farm.md`, `03_node_mill.md`, `04_node_bakery.md`, `05_node_retail.md`) + `02_admirals_tablet.md` §13 (sonidos UI Tablet) + `technical/02_events_catalog.md` v1.0 (eventos que disparan sonidos).
+> **Documentos referenciados:** todos los nodos §13 (`01_node_farm.md`, `03_node_mill.md`, `04_node_bakery.md`, `05_node_retail.md`) + `02_sonar_tablet.md` §13 (sonidos UI Tablet) + `technical/02_events_catalog.md` v1.0 (eventos que disparan sonidos).
 > **Estado:** firmado.
 
 > **Lectura previa obligatoria:** Bible §3 (Pilar 3 — detalle obsesivo), Art Direction §9-§11, cada node doc §13 (sonidos requeridos).
@@ -483,7 +483,7 @@ Patrón: **discrete + brand-consistent**. NO clicks genéricos. Cada UI sound su
 
 ## 9. Sounds de la Admirals Tablet (UI / device)
 
-> **Fuente:** `02_admirals_tablet.md` §13 + Art Direction §11.
+> **Fuente:** `02_sonar_tablet.md` §13 + Art Direction §11.
 
 ### 9.1 Filosofía sonora Tablet
 
@@ -621,7 +621,7 @@ Patrón: **discrete + brand-consistent**. NO clicks genéricos. Cada UI sound su
 | `admirals_mill_audio` | `mill_amb_*`, `mill_fx_*`, `mill_voice_*` | `mill:*` |
 | `admirals_bakery_audio` | `bakery_amb_*`, `bakery_fx_*`, `bakery_ped_voice_*` | `bakery:*` |
 | `admirals_retail_audio` | `retail_amb_*`, `retail_fx_*`, `retail_ped_voice_*`, `retail_notif_*` | `retail:*` |
-| `admirals_tablet_audio` | `tablet_ui_*`, `tablet_notif_*`, `tablet_fx_*` | `tablet:*`, cross-domain notifs |
+| `sonar_tablet_audio` | `tablet_ui_*`, `tablet_notif_*`, `tablet_fx_*` | `tablet:*`, cross-domain notifs |
 | `admirals_brand_audio` | `admirals_brand_*`, `admirals_paper_*`, `admirals_money_*` | `core:*`, brand events |
 | `admirals_logistics_audio` | `admirals_truck_*`, `admirals_logistics_*` | `logistics:*` |
 

@@ -1546,7 +1546,7 @@ Push notifications con sonido distintivo según prioridad:
 - **Versión:** 1.1 (firmado).
 - **Próxima revisión:** evolución según oleadas 2-4 (cultivos adicionales, ganadería).
 - **Documentos derivados pendientes:**
-  - `02_admirals_tablet.md` — diseño completo de la Tablet (con full delegación creativa).
+  - `02_sonar_tablet.md` — diseño completo de la Tablet (con full delegación creativa).
   - `03_node_mill.md` — Molino.
   - `04_node_bakery.md` — Panadería.
   - `05_node_retail.md` — Retail.

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SONAR — Logo v3 Brand Showcase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@400;700;800;900&family=Big+Shoulders+Display:wght@800;900&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#060607;
+    --orange:#FF5100;
+    --white:#FAFAFA;
+    --neutral-900:#0e0e10;
+    --neutral-800:#1a1a1d;
+    --neutral-700:#2a2a2e;
+    --neutral-300:#9a9a9e;
+    --neutral-200:#c4c4c8;
+    --radius:16px;
+    --radius-sm:10px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--black);color:var(--white);font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;font-feature-settings:'ss01','cv11';-webkit-font-smoothing:antialiased}
+  body{padding:48px 32px 96px;max-width:1400px;margin:0 auto}
+
+  /* ───── Typography helpers ───── */
+  .display{
+    font-family:'Big Shoulders Stencil Display','Big Shoulders Display','Arial Black',sans-serif;
+    font-weight:900;
+    letter-spacing:0.01em;
+    line-height:0.85;
+    text-transform:uppercase;
+  }
+  .display-solid{
+    font-family:'Big Shoulders Display','Arial Black',sans-serif;
+    font-weight:900;
+    letter-spacing:0.01em;
+    line-height:0.85;
+    text-transform:uppercase;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;font-weight:500}
+  .label{
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    color:var(--neutral-300);
+  }
+  .eyebrow{
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:var(--orange);
+  }
+
+  /* ───── Header ───── */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:64px;
+    padding-bottom:32px;
+    border-bottom:1px solid var(--neutral-800);
+  }
+  header h1{
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:900;
+    font-size:32px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+  }
+  header .meta{text-align:right}
+  header .meta .v{color:var(--orange);font-weight:700}
+
+  /* ───── Section ───── */
+  section{margin-bottom:80px}
+  section h2{
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:800;
+    font-size:14px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    margin-bottom:24px;
+    color:var(--neutral-200);
+  }
+
+  /* ───── Hero wordmark ───── */
+  .hero{
+    background:var(--black);
+    border:1px solid var(--neutral-800);
+    border-radius:var(--radius);
+    padding:96px 48px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 50% 70%,rgba(255,81,0,0.12) 0%,transparent 60%);
+    pointer-events:none;
+  }
+  .wordmark-hero{
+    font-size:clamp(80px,14vw,200px);
+    color:var(--orange);
+    position:relative;
+    z-index:1;
+    /* Custom expanded squeeze for GC Epic Pro feel */
+    transform:scaleX(1.08);
+    transform-origin:center;
+  }
+  .tagline{
+    margin-top:32px;
+    font-size:13px;
+    letter-spacing:0.32em;
+    text-transform:uppercase;
+    color:var(--neutral-300);
+    font-weight:500;
+    position:relative;
+    z-index:1;
+  }
+  .tagline span{color:var(--orange)}
+
+  /* ───── Logo grid (3 backgrounds) ───── */
+  .logo-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  .logo-card{
+    border-radius:var(--radius);
+    aspect-ratio:1/1.15;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:32px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .4s var(--ease);
+  }
+  .logo-card:hover{transform:translateY(-4px)}
+  .logo-card .corner{
+    position:absolute;
+    top:20px;
+    left:18px;
+    width:40px;
+    height:40px;
+    color:currentColor;
+    overflow:visible;
+  }
+  .logo-card .name{
+    position:absolute;
+    top:62px;
+    left:24px;
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:900;
+    font-size:24px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  .logo-card .swatches{
+    position:absolute;
+    bottom:24px;
+    left:24px;
+    right:24px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .logo-card .swatch-row{display:flex;flex-direction:column;gap:2px}
+  .logo-card .swatch-row .label-row{font-size:10px;letter-spacing:0.12em;font-weight:600;text-transform:uppercase;opacity:.7}
+  .logo-card .swatch-row .val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500}
+
+  .logo-card .mark{
+    font-family:'Big Shoulders Stencil Display','Big Shoulders Display',sans-serif;
+    font-weight:900;
+    font-size:64px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    transform:scaleX(1.1);
+  }
+
+  .card-black{background:var(--black);color:var(--orange);border:1px solid var(--neutral-800)}
+  .card-black .corner span{background:var(--orange)}
+  .card-black .name{color:var(--orange)}
+
+  .card-orange{background:var(--orange);color:var(--white)}
+  .card-orange .corner span{background:var(--white)}
+  .card-orange .name{color:var(--white)}
+  .card-orange .mark{color:var(--white)}
+
+  .card-white{background:var(--white);color:var(--black)}
+  .card-white .corner span{background:var(--black)}
+  .card-white .name{color:var(--black)}
+  .card-white .mark{color:var(--black)}
+
+  /* ───── Palette section (replica image 1 style) ───── */
+  .palette{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  .swatch{
+    border-radius:var(--radius);
+    aspect-ratio:1/1.7;
+    padding:32px;
+    position:relative;
+    overflow:hidden;
+  }
+  .swatch .corner{
+    width:50px;
+    height:50px;
+    margin-bottom:56px;
+    color:currentColor;
+    display:block;
+  }
+  .swatch h3{
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:800;
+    font-size:48px;
+    text-transform:capitalize;
+    margin-bottom:56px;
+    letter-spacing:0.01em;
+    line-height:1;
+  }
+  .swatch .grp{margin-bottom:24px}
+  .swatch .grp .k{font-size:11px;letter-spacing:0.12em;font-weight:600;text-transform:uppercase;margin-bottom:6px;opacity:.85}
+  .swatch .grp .v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500}
+
+  .sw-black{background:var(--black);color:var(--orange);border:1px solid var(--neutral-800)}
+  .sw-black h3,.sw-black .v{color:var(--orange)}
+  .sw-black .grp .k{color:var(--orange);opacity:.85}
+
+  .sw-orange{background:var(--orange);color:var(--white)}
+
+  .sw-white{background:var(--white);color:var(--black)}
+
+  /* ───── Typography specimen ───── */
+  .specimen{
+    background:var(--neutral-900);
+    border:1px solid var(--neutral-800);
+    border-radius:var(--radius);
+    padding:48px;
+  }
+  .specimen .alpha{
+    font-family:'Big Shoulders Stencil Display',sans-serif;
+    font-weight:900;
+    font-size:clamp(48px,7vw,96px);
+    letter-spacing:0.02em;
+    line-height:1;
+    color:var(--white);
+    transform:scaleX(1.05);
+    transform-origin:left;
+    margin-bottom:8px;
+  }
+  .specimen .alpha .accent{color:var(--orange)}
+  .specimen .meta-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-top:40px;
+    padding-top:24px;
+    border-top:1px solid var(--neutral-800);
+  }
+  .specimen .meta-row .left .name{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:0.06em}
+  .specimen .meta-row .left .sub{font-size:12px;color:var(--neutral-300);margin-top:4px;letter-spacing:0.08em;text-transform:uppercase}
+  .specimen .meta-row .right{text-align:right;font-size:12px;color:var(--neutral-300);letter-spacing:0.08em;text-transform:uppercase;line-height:1.6}
+
+  /* ───── Stencil O comparison ───── */
+  .stencil-demo{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .stencil-card{
+    background:var(--neutral-900);
+    border:1px solid var(--neutral-800);
+    border-radius:var(--radius);
+    padding:48px;
+    text-align:center;
+    position:relative;
+  }
+  .stencil-card .big-o{
+    font-family:'Big Shoulders Stencil Display','Big Shoulders Display',sans-serif;
+    font-weight:900;
+    font-size:240px;
+    line-height:1;
+    color:var(--orange);
+    display:block;
+  }
+  .stencil-card .label-tag{
+    margin-top:16px;
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--neutral-300);
+    font-weight:600;
+  }
+  /* Custom CSS-cut O: layer a black bar over the O to simulate GC Epic Pro vertical cut on right */
+  .stencil-card.custom .big-o{
+    position:relative;
+    display:inline-block;
+  }
+  .stencil-card.custom .big-o::after{
+    content:'';
+    position:absolute;
+    top:18%;
+    right:18%;
+    width:8px;
+    height:64%;
+    background:var(--neutral-900);
+    transform:rotate(0deg);
+  }
+  .stencil-card.custom .big-o::before{
+    content:'';
+    position:absolute;
+    top:18%;
+    left:18%;
+    width:8px;
+    height:64%;
+    background:var(--neutral-900);
+  }
+
+  /* ───── Lockups ───── */
+  .lockups{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .lockup-card{
+    background:var(--white);
+    color:var(--black);
+    border-radius:var(--radius);
+    padding:64px 48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:24px;
+    min-height:200px;
+  }
+  .lockup-card.dark{background:var(--black);color:var(--orange);border:1px solid var(--neutral-800)}
+  .lockup-card .lockup-mark{
+    width:76px;
+    height:76px;
+    flex-shrink:0;
+    color:currentColor;
+  }
+  .lockup-card .lockup-text{
+    text-align:left;
+    border-left:2px solid currentColor;
+    padding-left:20px;
+    line-height:1.2;
+  }
+  .lockup-card .lockup-text .name{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:28px;text-transform:uppercase;letter-spacing:0.04em}
+  .lockup-card .lockup-text .sub{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;font-weight:500;opacity:.7;margin-top:4px}
+
+  /* ───── Footer ───── */
+  footer{
+    margin-top:96px;
+    padding-top:32px;
+    border-top:1px solid var(--neutral-800);
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--neutral-300);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  footer .v{color:var(--orange);font-weight:700}
+
+  /* ───── Decorative quad-dot logo (replica of image 1 corner) ───── */
+  .quad{
+    display:inline-grid;
+    grid-template-columns:repeat(2,8px);
+    grid-template-rows:repeat(2,8px);
+    gap:3px;
+  }
+  .quad span{width:8px;height:8px;border-radius:1px;background:currentColor}
+</style>
+</head>
+<body>
+
+<!-- ═════════ ISOTIPO SVG SYMBOL — sonar waves S ═════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="isotipo" viewBox="0 0 200 200">
+      <g transform="translate(-29, -36)">
+        <path d="M124 108 Q158 108 158 132 Q158 156 124 156" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
+        <path d="M124 122 Q148 122 148 136 Q148 150 124 150" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
+        <path d="M100 136 Q110 122 124 122 Q138 122 138 136 Q138 150 124 150 Q108 150 100 164" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<header>
+  <div>
+    <h1>SONAR <span style="color:var(--orange)">/</span> LOGO V3</h1>
+    <p class="label" style="margin-top:8px">Brand Identity Proposal · 2026-05-04</p>
+  </div>
+  <div class="meta">
+    <p class="eyebrow">Status</p>
+    <p class="mono" style="font-size:13px;margin-top:4px">🟡 UNSIGNED · ADR-016 PENDING</p>
+    <p class="label" style="margin-top:12px">Version</p>
+    <p class="v mono" style="font-size:13px;margin-top:4px">v3.0-DRAFT</p>
+  </div>
+</header>
+
+<!-- ═════════ HERO WORDMARK ═════════ -->
+<section>
+  <h2>01 — Wordmark Hero</h2>
+  <div class="hero">
+    <div class="display wordmark-hero">SON<span style="position:relative;display:inline-block">O</span>R</div>
+    <p class="tagline">Hear <span>·</span> The <span>·</span> Depth</p>
+  </div>
+</section>
+
+<!-- ═════════ LOGO ON 3 BACKGROUNDS ═════════ -->
+<section>
+  <h2>02 — Three-Surface System</h2>
+  <div class="logo-grid">
+
+    <div class="logo-card card-black">
+      <svg class="corner" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <div class="name">Black</div>
+      <div class="mark">SONAR</div>
+      <div class="swatches">
+        <div class="swatch-row"><span class="label-row">HEX</span><span class="val">060607</span></div>
+        <div class="swatch-row"><span class="label-row">RGB</span><span class="val">6 | 6 | 7</span></div>
+        <div class="swatch-row"><span class="label-row">CMYK</span><span class="val">14 | 14 | 0 | 97</span></div>
+      </div>
+    </div>
+
+    <div class="logo-card card-orange">
+      <svg class="corner" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <div class="name">Orange</div>
+      <div class="mark">SONAR</div>
+      <div class="swatches">
+        <div class="swatch-row"><span class="label-row">HEX</span><span class="val">FF5100</span></div>
+        <div class="swatch-row"><span class="label-row">RGB</span><span class="val">255 | 81 | 0</span></div>
+        <div class="swatch-row"><span class="label-row">CMYK</span><span class="val">0 | 68 | 100 | 0</span></div>
+      </div>
+    </div>
+
+    <div class="logo-card card-white">
+      <svg class="corner" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <div class="name">White</div>
+      <div class="mark">SONAR</div>
+      <div class="swatches">
+        <div class="swatch-row"><span class="label-row">HEX</span><span class="val">FAFAFA</span></div>
+        <div class="swatch-row"><span class="label-row">RGB</span><span class="val">250 | 250 | 250</span></div>
+        <div class="swatch-row"><span class="label-row">CMYK</span><span class="val">0 | 0 | 0 | 2</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═════════ FULL PALETTE (image 1 replica) ═════════ -->
+<section>
+  <h2>03 — Color System (matches founder reference)</h2>
+  <div class="palette">
+
+    <div class="swatch sw-black">
+      <svg class="corner" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <h3>Black</h3>
+      <div class="grp"><div class="k">HEX</div><div class="v">060607</div></div>
+      <div class="grp"><div class="k">RGB</div><div class="v">6 | 6 | 7</div></div>
+      <div class="grp"><div class="k">CMYK</div><div class="v">14 | 14 | 0 | 97</div></div>
+    </div>
+
+    <div class="swatch sw-orange">
+      <svg class="corner" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <h3>Orange</h3>
+      <div class="grp"><div class="k">HEX</div><div class="v">FF5100</div></div>
+      <div class="grp"><div class="k">RGB</div><div class="v">255 | 81 | 0</div></div>
+      <div class="grp"><div class="k">CMYK</div><div class="v">0 | 68 | 100 | 0</div></div>
+    </div>
+
+    <div class="swatch sw-white">
+      <svg class="corner" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <h3>White</h3>
+      <div class="grp"><div class="k">HEX</div><div class="v">FAFAFA</div></div>
+      <div class="grp"><div class="k">RGB</div><div class="v">250 | 250 | 250</div></div>
+      <div class="grp"><div class="k">CMYK</div><div class="v">0 | 0 | 0 | 2</div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═════════ TYPOGRAPHY SPECIMEN ═════════ -->
+<section>
+  <h2>04 — Type Specimen · Big Shoulders Stencil Display</h2>
+  <div class="specimen">
+    <div class="alpha">AABB<span class="accent">C</span>CDDEE</div>
+    <div class="alpha">FF<span class="accent">G</span>GHHIIJJKK</div>
+    <div class="alpha">LLMMNN<span class="accent">O</span>OPP</div>
+    <div class="alpha"><span class="accent">Q</span>QRRSSTTUU</div>
+    <div class="alpha">VVWWXXYYZZ</div>
+
+    <div class="meta-row">
+      <div class="left">
+        <div class="name">Sonar Display Stencil</div>
+        <div class="sub">Futuristic Sans · Extended Type</div>
+      </div>
+      <div class="right">
+        Free alt: Big Shoulders Stencil Display<br>
+        Premium target: GC Epic Pro Sans (Glyphonic)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ STENCIL O COMPARISON ═════════ -->
+<section>
+  <h2>05 — Stencil Cut Detail</h2>
+  <div class="stencil-demo">
+    <div class="stencil-card">
+      <span class="big-o">O</span>
+      <div class="label-tag">Big Shoulders Stencil · native</div>
+    </div>
+    <div class="stencil-card custom">
+      <span class="big-o">O</span>
+      <div class="label-tag">Custom GC Epic Pro · vertical cuts simulation</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ LOCKUPS ═════════ -->
+<section>
+  <h2>06 — Horizontal Lockups</h2>
+  <div class="lockups">
+    <div class="lockup-card dark">
+      <svg class="lockup-mark" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <div class="lockup-text">
+        <div class="name">SONAR</div>
+        <div class="sub">RP Infrastructure</div>
+      </div>
+    </div>
+    <div class="lockup-card">
+      <svg class="lockup-mark" viewBox="0 0 200 200"><use href="#isotipo"/></svg>
+      <div class="lockup-text">
+        <div class="name">SONAR</div>
+        <div class="sub">RP Infrastructure</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>SONAR · Logo v3 Proposal · <span class="v">v3.0-DRAFT</span></div>
+  <div>Founder review pending · ADR-016 required</div>
+</footer>
+
+</body>
+</html>

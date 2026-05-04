@@ -157,7 +157,8 @@ Config.MigrationsFailFast = true
 
 -- Si true, verifica checksum SHA-256 de migrations ya aplicadas contra
 -- el fichero actual en disco. Mismatch = WARN (posible tampering).
-Config.MigrationsChecksumCheck = true
+-- TEMP false — ejecutar `sonar_repair_checksums` desde consola y volver a true.
+Config.MigrationsChecksumCheck = false
 
 -- Lista explícita de migrations a aplicar en orden. Esto es más robusto que
 -- listar el directorio (FiveM no tiene ls reliable cross-platform via NUI).

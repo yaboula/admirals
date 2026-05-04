@@ -1,0 +1,33 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&amp;display=swap');</style>
+    <mask id="lockup-v-stencil">
+      <rect width="100%" height="100%" fill="white"/>
+      <!-- Stencil cuts on SONAR (text centered at x=200, y=305, font-size 36, letter-spacing 0.15em) -->
+      <!-- O letter — vertical cuts top/bottom -->
+      <rect x="173" y="291" width="3" height="10" fill="black"/>
+      <rect x="173" y="316" width="3" height="10" fill="black"/>
+      <!-- A letter — horizontal bar gap -->
+      <rect x="231" y="303" width="8" height="3" fill="black"/>
+      <!-- R letter — loop gap -->
+      <rect x="280" y="294" width="6" height="3" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="400" fill="#000000" rx="20"/>
+
+  <!-- Isotipo — centered horizontally (x=200), placed in upper half (y=160) -->
+  <g transform="translate(200, 160) scale(1.6)">
+    <g transform="translate(-129, -136)">
+      <path d="M124 108 Q158 108 158 132 Q158 156 124 156" fill="none" stroke="#FF5100" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+      <path d="M124 122 Q148 122 148 136 Q148 150 124 150" fill="none" stroke="#FF5100" stroke-width="5" stroke-linecap="round" opacity="0.65"/>
+      <path d="M100 136 Q110 122 124 122 Q138 122 138 136 Q138 150 124 150 Q108 150 100 164" fill="none" stroke="#FF5100" stroke-width="5" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- SONAR wordmark — horizontally centered (x=200), in lower portion (y=305) -->
+  <text x="200" y="305" dominant-baseline="central" text-anchor="middle"
+        fill="#FAFAFA" mask="url(#lockup-v-stencil)"
+        style="font-family: 'Syncopate', sans-serif; font-weight:700; font-size:36px; letter-spacing: 0.15em;">SONAR</text>
+</svg>

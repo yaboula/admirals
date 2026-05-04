@@ -1,0 +1,18 @@
+<svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&amp;display=swap');</style>
+    <mask id="stencil-mask">
+      <rect width="100%" height="100%" fill="white" />
+      <!-- Gaps for 'O' (approximate positions) -->
+      <rect x="135" y="30" width="4" height="15" fill="black" /> <!-- Top gap -->
+      <rect x="135" y="55" width="4" height="15" fill="black" /> <!-- Bottom gap -->
+      
+      <!-- Gaps for 'A' (approximate positions) -->
+      <rect x="235" y="45" width="10" height="4" fill="black" /> <!-- Left stem gap -->
+      
+      <!-- Gaps for 'R' (approximate positions) -->
+      <rect x="315" y="40" width="8" height="4" fill="black" /> <!-- Loop gap -->
+    </mask>
+  </defs>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#FAFAFA" mask="url(#stencil-mask)" style="font-family: 'Syncopate', sans-serif; font-weight:700; font-size:40px; letter-spacing: 0.1em;">SONAR</text>
+</svg>

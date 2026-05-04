@@ -160,8 +160,8 @@
 
 Candidatos high-level:
 
-- **`admirals_tablet` NUI shell** — React + TAB keybind open/close + shell routing + 3 apps stub (Bank, Map, Comm/placeholder).
-- **`admirals_tablet` Bank app MVP** — consumir C001 getBalance + C002 transfer + C003 listMovements (pending) via NUI bridges. Transfer form con validación IBAN + amount + confirm dialog.
+- **`sonar_tablet` NUI shell** — React + TAB keybind open/close + shell routing + 3 apps stub (Bank, Map, Comm/placeholder).
+- **`sonar_tablet` Bank app MVP** — consumir C001 getBalance + C002 transfer + C003 listMovements (pending) via NUI bridges. Transfer form con validación IBAN + amount + confirm dialog.
 - **T2 adapters Bridges** — QBCore bank/identity + ESX bank/identity adapters (`resources/admirals_bridges/adapters/{qbcore,esx}/*`) para compat cross-framework per `07_bridges_compatibility.md` §5.
 - **`admirals_companies` foundation** — migration 009 DDL (`admirals_companies` + `admirals_company_members` + `admirals_company_bank_accounts` FK link). ALTER TABLE `admirals_bank_accounts` ADD FK `owner_company_id`.
 - **C003 `admirals:bank:listMovements`** — callback paginado consultando `admirals_bank_movements` WHERE account_id = ? con cursor-based pagination. Feed a Bank app UI transactions list.

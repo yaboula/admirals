@@ -2236,3 +2236,40 @@ S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crít
 ✅ Scope strict. NO tocó: `docs/**/*` (todos SSoTs firmados), `progress/SPRINT_PLAN_S2.md` v1.0 firmado, `progress/PRE_S2_CHECKLIST.md` v1.8 firmado, DB/migrations, `resources/{sonar_bank,sonar_core,sonar_bridges}` (smoke baseline), `art/branding/`, `art/tools/logo_export/`, ADRs históricos, `.windsurf/*`. Solo `resources/sonar_tablet/` (scaffold nueva) + `progress/SESSION_LOG.md` (esta entry) tocados.
 
 ---
+
+### S2.2 — Tablet Shell + NUI Bridge + Entrance Animation
+
+- **Fecha:** 2026-05-04
+- **Duración:** ~4h (split sessions)
+- **Founder + Agent:** yaboula + Cascade (Windsurf)
+- **Sprint:** S2 — Tablet UI Foundation
+- **Perfil:** 🏗️
+- **Modelo:** Sonnet
+- **Goal:** Implementar shell completo sonar_tablet: keybind F2, NUI bridge bidireccional, AnimatePresence GPU-only, build verified.
+- **Status:** ✅ Done
+
+### Cambios
+- Created: `resources/sonar_tablet/fxmanifest.lua`, `config.lua`, `client/main.lua`, `server/main.lua`, `web-src/src/types/nui.ts`, `web-src/src/lib/nui.ts`, `web-src/src/hooks/useNUIBridge.ts`, `web-src/src/hooks/useTabletVisibility.ts`, `web-src/src/components/shell/TabletFrame.tsx`
+- Modified: `resources/sonar_tablet/web-src/src/App.tsx` (shell rewrite), `vite.config.ts` (outDir ../web), `.gitignore` (exclude ../web/), `resources/sonar_core/config.lua` (MigrationsChecksumCheck TEMP false), `resources/sonar_core/server/migrations.lua` (add M.RepairChecksums + command)
+- Deleted: ninguno
+
+### Decisiones tomadas
+- Keybind cambiado TAB → F2 (R3 mitigation: evita conflicto ox_inventory).
+- Migration checksum repair: Phase 8 había renombrado SQL content sin actualizar sonar_schema_versions — bypass temporal + comando `sonar_repair_checksums` añadido al runner.
+- Bundle size 85KB JS gzip (+44% vs S2.1 59KB) aceptado: dentro de D6 budget (500KB) y causado por Framer Motion activo.
+
+### Issues pendientes
+- `sonar_repair_checksums` debe ejecutarse desde consola FiveM (con `MigrationsChecksumCheck = false`) y luego flip a `true` + restart → checksums DB sincronizados con contenido actual.
+- Keybind F2 puede quedar cacheado como TAB en `%APPDATA%\CitizenFX\fivem.cfg` — limpiar con `unbind keyboard tab +sonarTablet` si persiste.
+
+### Handoff próxima sesión (S2.3)
+- **Modelo recomendado:** Sonnet
+- **Goal:** Home grid de la Tablet (12 app slots, layout SonarOS, navegación entre apps).
+- **Pre-requisitos:** `progress/SPRINT_PLAN_S2.md` §S2.3 + `docs/design/02_sonar_tablet.md` §SonarOS home screen.
+- **Files in scope:** `resources/sonar_tablet/web-src/src/` (home grid component, app routing) — NO Lua changes en S2.3.
+- **Notas especiales:** Antes de arrancar S2.3, ejecutar `sonar_repair_checksums` + re-habilitar `MigrationsChecksumCheck = true` en sonar_core/config.lua.
+
+### Files in scope respetados
+✅ Scope strict. Solo `resources/sonar_tablet/` + `resources/sonar_core/` (migration repair unplanned fix) + `progress/SESSION_LOG.md` tocados. NO docs firmados, NO otros resources.
+
+---

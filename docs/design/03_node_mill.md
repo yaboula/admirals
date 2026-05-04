@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 (firmado)
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.2
-> **Documentos hermanos:** `01_node_farm.md` v1.1 (proveedor upstream), `02_admirals_tablet.md` v1.0 (Manager Panel del Molinero).
+> **Documentos hermanos:** `01_node_farm.md` v1.1 (proveedor upstream), `02_sonar_tablet.md` v1.0 (Manager Panel del Molinero).
 > **Estado:** primera redacción completa de las 3 partes (15 secciones, ~870 líneas).
 
 > **Lectura previa obligatoria:** Bible §3 (5 Pilares), §13.4 (División 3D vs Código), Granja §0-§6 (entender qué llega), Tablet §7 (Manager Panel modular).
@@ -842,7 +842,7 @@ Total contenido para el 3D: **~17 modelos máquinas + 1 MLO + 6 props auxiliares
 - **Próxima revisión:** evolución según verticales futuras (pasta, alimentación animal).
 - **Documentos directamente relacionados:**
   - `01_node_farm.md` v1.1 — proveedor upstream.
-  - `02_admirals_tablet.md` v1.0 — Manager Panel del Molinero.
+  - `02_sonar_tablet.md` v1.0 — Manager Panel del Molinero.
   - `04_node_bakery.md` (próximo) — cliente downstream principal.
 - **Documentos derivados pendientes:**
   - `economy/01_economic_model.md` — números reales de tarifas y márgenes ajustables por servidor.

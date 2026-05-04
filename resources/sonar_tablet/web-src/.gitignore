@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Vite build output — emitted a resources/sonar_tablet/web/ (FiveM NUI delivery).
+# Regenerado con `npm run build`; no committeamos assets compilados.
+../web/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

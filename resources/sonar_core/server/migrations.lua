@@ -325,6 +325,76 @@ function M.RunAll()
 end
 
 -- -----------------------------------------------------------------------------
+-- Public — RepairChecksums — re-syncs stored SHA-256 to current file content.
+--
+-- ONE-TIME maintenance op post Phase 8 rename (ADR-013):
+--   migration files 002-008 renombrados admirals_* → sonar_* en disco.
+--   La tabla sonar_schema_versions tenía checksums del contenido antiguo.
+--   Esta función UPDATE todos los checksums stale sin re-aplicar el SQL.
+--
+-- Usage desde F8 console: `sonar_repair_checksums`
+-- Solo ejecutar con MigrationsChecksumCheck = false activo.
+-- Tras ejecutar: set MigrationsChecksumCheck = true + restart.
+-- -----------------------------------------------------------------------------
+function M.RepairChecksums()
+  if not _ensure_schema_versions_table() then
+    print('[sonar_core] RepairChecksums: sonar_schema_versions not found')
+    return
+  end
+
+  local updated = 0
+  local already_ok = 0
+
+  for _, filename in ipairs(Config.MigrationsFiles) do
+    local mig = _parse_filename(filename)
+    if not mig then goto rep_continue end
+
+    local ok_read, body = pcall(_read_body, filename)
+    if not ok_read then
+      print(('[sonar_core] RepairChecksums: cannot read %s — skip'):format(filename))
+      goto rep_continue
+    end
+
+    local new_checksum = _sha256(body)
+    local applied_row = _get_applied(mig.version)
+
+    if not applied_row then
+      print(('[sonar_core] RepairChecksums: %s not applied yet — skip'):format(filename))
+      goto rep_continue
+    end
+
+    if applied_row.checksum == new_checksum then
+      already_ok = already_ok + 1
+      goto rep_continue
+    end
+
+    MySQL.update.await(
+      'UPDATE sonar_schema_versions SET checksum = ? WHERE version = ?',
+      { new_checksum, mig.version }
+    )
+    print(('[sonar_core] RepairChecksums: %s %s → %s'):format(
+      filename,
+      applied_row.checksum:sub(1, 8) .. '...',
+      new_checksum:sub(1, 8) .. '...'
+    ))
+    updated = updated + 1
+
+    ::rep_continue::
+  end
+
+  print(('[sonar_core] RepairChecksums done: %d updated, %d already OK'):format(
+    updated, already_ok))
+end
+
+RegisterCommand('sonar_repair_checksums', function(source)
+  if source ~= 0 then
+    print('[sonar_core] sonar_repair_checksums is console-only')
+    return
+  end
+  M.RepairChecksums()
+end, true)
+
+-- -----------------------------------------------------------------------------
 -- Boot announce.
 -- -----------------------------------------------------------------------------
 Log.Info('Migrations runner ready (%d files registered, fail_fast=%s, checksum_check=%s)',

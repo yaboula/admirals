@@ -1,51 +1,43 @@
 import { Layers } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { TabletFrame } from '@/components/shell/TabletFrame'
+import { useTabletVisibility } from '@/hooks/useTabletVisibility'
 
 /**
- * SONAR Tablet — S2.1 scaffold baseline.
+ * SONAR Tablet — S2.2 shell.
  *
- * Render mínimo verificador de identity v3:
- *   - Canvas dark-only (`bg-sonar-black`) + foreground (`text-sonar-white`).
- *   - Signal orange accent (`text-sonar-orange`) — único color brand.
- *   - Tokens via Tailwind v4 @theme (globals.css), NO hexes hardcoded.
- *   - Lucide icon canonical abstract (`<Layers>`) — NO submarine/sonar-ping legacy.
- *   - shadcn Button default variant → `bg-primary` bridged a `--color-sonar-orange`
- *     (R1 spike verify: shadcn semantic tokens mapean a sonar canonical).
+ * Scope S2.2: frame container + visibility bridge (keybind F2 ↔ NUI).
+ * Bridge home grid (12 apps) arranca S2.3. Bank app S2.4. Map app S2.5.
  *
- * Shell real (router + keybind TAB + NUI bridge + Bridge home grid) arranca S2.2.
+ * Dev-mode (npm run dev fuera de FiveM): visible default false — sin keybind
+ * Lua el shell permanece cerrado. Para UX testing browser ver prop drilling
+ * temporal o expose `window.__sonar_debug_open__` en S2.7 polish.
  */
 function App() {
+  const { visible, requestClose } = useTabletVisibility()
+
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center gap-6 bg-sonar-black px-6 text-sonar-white">
-      <div className="flex items-center gap-3 text-sonar-orange">
-        <Layers className="h-8 w-8" strokeWidth={1.5} aria-hidden />
-        <span className="font-mono text-xs uppercase tracking-widest text-sonar-white/60">
-          sonar · tablet · s2.1 baseline
-        </span>
+    <TabletFrame visible={visible} onClose={requestClose}>
+      <div className="flex h-full flex-col items-center justify-center gap-4 bg-sonar-black p-8">
+        <Layers
+          className="h-12 w-12 text-sonar-orange"
+          strokeWidth={1.5}
+          aria-hidden
+        />
+        <h1 className="text-3xl font-semibold tracking-tight text-sonar-white">
+          SONAR Tablet
+        </h1>
+        <p className="font-mono text-xs uppercase tracking-widest text-sonar-white/60">
+          s2.2 · shell · keybind f2 · nui bridge · framer motion 11
+        </p>
+        <p className="text-sm text-sonar-white/40">
+          Press{' '}
+          <kbd className="rounded border border-sonar-white/20 bg-sonar-white/5 px-2 py-0.5 font-mono text-xs text-sonar-white/80">
+            ESC
+          </kbd>{' '}
+          to close
+        </p>
       </div>
-
-      <h1 className="text-center text-4xl font-semibold tracking-tight text-sonar-white">
-        Identity v3 — dark-only canvas
-      </h1>
-
-      <p className="max-w-md text-center text-sm text-sonar-white/60">
-        Tokens canónicos activos:{' '}
-        <code className="font-mono text-sonar-orange">--sonar-black</code> ·{' '}
-        <code className="font-mono text-sonar-orange">--sonar-orange</code> ·{' '}
-        <code className="font-mono text-sonar-orange">--sonar-white</code>.
-      </p>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="lg">Signal active</Button>
-        <Button size="lg" variant="outline">
-          Secondary
-        </Button>
-      </div>
-
-      <footer className="absolute bottom-6 font-mono text-[10px] uppercase tracking-widest text-sonar-white/30">
-        strict typecheck · tailwind v4 · framer 11 · shadcn base-nova
-      </footer>
-    </main>
+    </TabletFrame>
   )
 }
 
