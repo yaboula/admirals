@@ -1912,3 +1912,44 @@ S1.9 EXT ADRs 013+015 firmed + docs 2-7 v1.1 NOTICE r1 + PRE_S2_CHECKLIST v1.5 (
 Sprint 1 cerrado **100% canonical** post Phase 8+9 + docs v1.2. Workspace ahora coherente namespace `sonar_*` en code + DB + config + docs technical. Únicas excepciones legítimas: `_archive/` files, ADRs históricos (immutable), SESSION_LOG (append-only), changelog historical entries, brand "ex-Admirals" mentions (ADR-011 §5.5.8). Pre-S2 gate restantes ~3-4h en próximas 1-2 sessions. Workflow shift: BUILDER agent (Sonnet 4.5/4.6) → Manager AI agent (1M context model) para docs lead pre-S2 + S2.
 
 ---
+## S1.10 EXT addendum — Founder identity v3 confirmation + ADR-016 scoped (handoff Manager AI updated)
+
+- **Fecha:** 2026-05-04 (post-S1.10 EXT close, mismo día session marathón)
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.5)
+- **Tipo:** Decision capture (no code/docs touched, solo decisión + handoff prompt update).
+
+### Decisiones founder confirmadas
+
+- **D-S1.10E-4: Identity v3 paleta locked.** Black `#060607` + Orange `#FF5100` + White `#FAFAFA`. Logo v3 (`art/branding/logo_v3/`) firmable. Razones founder: differentiation real en mercado FiveM premium (paleta inexistente en QBox/Renewed/Illenium ecosystem) + potencia trends 2026 (glassmorphism/bento/microinteractions/glows) + versatility con complementarios.
+- **D-S1.10E-5: Dark-mode-only doctrine.** No light variant nunca. Tablet UI + marketing web ambos dark-only. `monogram_s_black.svg` obsoleto. Test matrix QA reducido. Theme system simplificado (single token set).
+- **D-S1.10E-6: 3-color strict palette.** No accent colors add (yet). Discipline = identity. Re-evaluable post-MVP S2 si data muestra friction UX.
+- **D-S1.10E-7: Trend stack tiered 2026 (T1 adopt / T2 selective / T3 prohibited).**
+  - T1 (adopt heavy): Bento Grid, Microinteractions (Framer Motion), Glassmorphism selectivo (chrome layer only), Focus glows orange (a11y + brand), Smooth springs, Animated data viz (sparklines + counters).
+  - T2 (selective): Aurora gradients (hero/transitions), Kinetic type (marketing only), Cmd+K palette (post-MVP S3+), Spatial depth shadows.
+  - T3 (prohibited): Skeuomorphism, Brutalist Y2K, Multi-color gradient overload, Heavy Lottie, Heavy parallax scroll, Neon glow excess, Backdrop-blur en cards content, Multiple accents.
+- **D-S1.10E-8: Implementation stack Tablet UI frozen.** React 18 + Vite 5 + TypeScript strict + Tailwind CSS 4 (CSS-first @theme tokens) + shadcn/ui (dark-only theme) + Framer Motion 11 + Lucide icons + Recharts. Documentado en ADR-016 D4.
+- **D-S1.10E-9: NUI performance hard constraints.** backdrop-filter ≤5 instances simultáneas (solo chrome layer), Framer per-component (no listas 100+ simultáneas sin virtualize), Aurora static CSS only (no Canvas/WebGL), Recharts ≤100 datapoints sin throttle, shadows pre-rendered tokens. Per `06_fivem_standards.md` NUI budget.
+
+### Scope ADR-016 derivado (Manager AI próxima session priority #1)
+
+ADR-016 = **amendment** ADR-011 + ADR-012 (NO contradicción). Preserva: naming SONAR, abstract metaphor sonar-waves, neutral voice, identity scaffold-r6 philosophy. Cambia: palette tokens + typography split (adds Syncopate marketing) + adds dark-only doctrine + adds trend stack tiered + adds NUI perf doctrine + adds implementation stack frozen.
+
+### Handoff Manager AI updated (próxima session)
+
+Founder abrirá nueva session con Manager AI agent (recomendado: Gemini 2.5 Pro 1M context o Opus 4.7). Primer task asignado:
+
+1. Draft ADR-016 (Identity v3 + Dark-only + Trend stack tiered + NUI perf + Stack frozen) → founder firma.
+2. Bump `docs/art/01_art_direction.md` v2.0-scaffold-r6 → v3.0 (paleta locked + dark-only + trend stack + anti-patterns + NUI budgets).
+3. Bump `docs/00_PRODUCT_BIBLE.md` v1.4 → v1.5 (palette section refresh).
+4. Bump `docs/design/02_sonar_tablet.md` v1.2+ → v1.3 (Tailwind 4 @theme tokens + shadcn dark-only + Framer Motion patterns + trend stack T1 reference).
+5. Bump `docs/design/01_brief_logo.md` v2 → v3 (isotipo + paleta refresh).
+6. Update `art/tools/logo_export/export.mjs` config → `logo_v3/` sources; drop monogram_s_black.svg from pipeline (light-mode obsolete).
+7. SESSION_LOG entry S1.10.4 ADR-016 firmed + assets pipeline updated.
+
+**Estimación:** ~4-5h Manager AI session.
+
+### Files in scope respetados
+
+✅ Esta entry no toca code ni docs (solo SESSION_LOG append). Decisión + handoff scope capture.
+
+---
