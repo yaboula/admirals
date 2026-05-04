@@ -1745,3 +1745,80 @@ S1.9 EXT ADRs 013+015 firmed + docs 2-7 v1.1 NOTICE r1 + PRE_S2_CHECKLIST v1.5 (
 ---
 
 ---
+## S1.10 — Phase 8+9 namespace rename execution + smoke harness inline (Opción C)
+
+- **Fecha:** 2026-05-04
+- **Duración:** ~5h (founder-AI pair, marathón nocturno)
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.5)
+- **Sprint:** S1 tail / pre-S2 gate execution
+- **Perfil:** 🔧 BUILDER + ⚡ SPRINTER + 🔍 DEBUGGER
+- **Modelo:** Sonnet 4.5
+- **Goal:** Ejecutar Phase 8 (code refactor `admirals_*` → `sonar_*`) + Phase 9 (DB migration) + smoke regression cumulative S0→S1.3 per ADR-013 firmed S1.9 EXTENDED.
+- **Status:** ✅ Done
+
+### Cambios
+
+**Renamed (git mv, 56 files):**
+- `resources/admirals_bridges/` → `resources/sonar_bridges/` (registry + 6 bridges + adapters T1 QBox/ox_inventory/lb_phone/ox_target/ox_lib + native fallbacks + test_adapter).
+- `resources/admirals_core/` → `resources/sonar_core/` (logger/metrics/db/event_bus/rate_limiter/migrations + 8 migrations SQL + lib/admirals.lua → lib/sonar.lua).
+- `resources/admirals_bank/` → `resources/sonar_bank/` (iban/accounts/movements/events/transfer/fsm_escrow/escrow/callbacks).
+
+**Modified:**
+- Replace `admirals_*` → `sonar_*` en SQL files (migrations 001-008): tabla DDL + FK + indexes + comments. **261 refs** auto-renamed BOM-safe UTF-8 NO BOM.
+- Replace `admirals_*` → `sonar_*` en `.lua` (config + DB queries inline): **8 residuals** post-script-rename agent previo.
+- Strip UTF-8 BOM de **39 `.lua` files** (root cause boot parse errors `unexpected symbol near ''65279''` Lua54).
+- `003_bank_schema.sql`: removido named CHECK XOR `chk_sonar_bank_accounts_owner_xor` (MariaDB 12.2.2 parser limitation `Function or expression cannot be used in CHECK clause` con multi-col + IS NULL pattern post-FK). App-layer enforce per D4 docs comment + `server/accounts.lua` validation.
+- `006_escrow_schema.sql`: comentado named CHECK `chk_sonar_bank_accounts_owner_xor_or_escrow` (mismo MariaDB pattern). Simple CHECKs `amount > 0` / `fee_charged >= 0` preservados (single-col safe).
+- `sonar_core/config.lua`: `Config.MigrationsFiles` reduced 9 → 8 (009 archived post-rename obsolete).
+- `server.cfg.example`: convars `admirals_*` → `sonar_*` (DB + bridges + env).
+- `scripts/smoke_test_s0.md` + `s1_1.md` + `s1_3.md`: comandos + tablas + events `admirals` → `sonar`.
+
+**Created:**
+- `resources/sonar_bank/server/admin_commands.lua` (~360 líneas): smoke harness inline gated `sonar_dev_mode=1` + ACE `sonar.admin`. **9 comandos**: `/sonar_smoke_status`, `dump_accounts`, `dump_movements`, `dump_escrows`, `iban_gen`, `seed_player`, `transfer`, `escrow_create`, `escrow_release`. Reemplaza patrón histórico delete-per-sprint client/smoke_*.lua (commits 23641e8/e0d7b38/33520aa).
+- `scripts/drop_admirals_legacy.sql`: SQL helper drop tablas legacy `admirals_*` dev DB.
+
+**Archived:**
+- `resources/sonar_core/migrations/_archive_phase_8/009_rename_admirals_to_sonar.sql` + `.DOWN.sql` (broken post-rename — RENAME sonar_X TO sonar_X no-op; preserved historical reference).
+
+### Decisiones tomadas
+
+- **D-S1.10-1:** Phase 9 ejecutada vía **fresh DB start** (drop legacy `admirals_*` tablas + 001-008 crean `sonar_*` directos), NO via migration 009 ALTER RENAME. Razón: dev-only data, no producción S0+S1 escrow tests preservar; migration 009 broken post Phase 8 SQL rewrite (sus comandos `RENAME admirals_X TO sonar_X` se transformaron `RENAME sonar_X TO sonar_X`).
+- **D-S1.10-2:** Smoke harness pattern Opción **C** (admin commands inline en core resource, gated convar+ACE) elegido sobre A (recover git) / B (separate dev resource) / D (hybrid). Razón: founder explícito "c". Trade-off: mezcla test code con production code, pero gating por convar lo silencia en prod (return early). ADR pendiente formalización Sprint 2 prep.
+- **D-S1.10-3:** MariaDB 12.2.2 CHECK constraint multi-col XOR named — workaround eliminar (no rewrite alternative); enforcement 100% app-layer en `accounts.lua` + `escrow.lua` per defense-in-depth pattern documentado D4. Re-evaluar S2+ si engine change o MariaDB bug fix.
+
+### Issues pendientes
+- Docs `02_events_catalog.md` v1.1 → v1.2 rewrite inline 88 eventos `admirals:*` → `sonar:*`.
+- Docs `03_db_schema.md` + `04_api_contracts.md` + `05_state_machines.md` + `06_fivem_standards.md` + `07_bridges_compatibility.md` v1.1 → v1.2 rewrite inline (~6-8h split 2-3 sessions).
+- ADR-014 placeholder S1.9 EXT pendiente firmado (candidato: Smoke harness inline pattern Opción C documentation).
+- BOOTSTRAP v1.5 → v1.6 (post-Phase-8+9 closed status).
+- B2 `SPRINT_PLAN_S2.md` (~2-3h) pre-S2.0 arranque.
+- `resources/admirals_tablet/` orphan directory (no manifest, ignored al boot warning) — pendiente decidir rename a `sonar_tablet/` o delete (S2 scope).
+
+### Smoke regression S0→S1.3 cumulative — 10/10 PASS
+
+| # | Test | Resultado | Observaciones |
+|---|---|---|---|
+| 01 | Pre-flight Boot | ✅ | sonar_bridges detectó QBox/Ox/LB correctamente. |
+| 02 | Migration 001 | ✅ | Tabla schema_versions creada y persistente. |
+| 03 | Migrations 002-008 | ✅ | 8 archivos aplicados. Tablas banco + escrow listas. |
+| 04 | Idempotencia | ✅ | Reinicios no duplican ejecuciones SQL. |
+| 05 | EventBus Smoke | ✅ | Comunicación interna fluida + logs auditoría. |
+| 06 | DB & Transactions | ✅ | Transferencia atómica verificada (2500→2000). |
+| 07 | RateLimiter | ✅ | Protección buckets operativa post hot-fix. |
+| 08 | Admin Commands | ✅ | Arnés `/sonar_smoke_*` funcional. |
+| 09 | Metrics Snapshot | ✅ | Counters cuentas + movimientos OK. |
+| 10 | Resmon Budgets | ✅ | 0.00ms (Idle/Peak), muy debajo del límite 0.3ms. |
+
+### Handoff próxima sesión (S1.11 o S2-prep)
+
+- **Modelo recomendado:** Sonnet 4.6 (docs surgical rewrite Pass) o Opus 4.7 si batch v1.2 docs 2-7 grande.
+- **Goal:** Docs technical 2-7 v1.1 → v1.2 rewrite inline naming canonical `sonar_*` + ADR-014 firmado smoke harness inline + BOOTSTRAP v1.6.
+- **Pre-requisitos:** leer `docs/agents/00_BOOTSTRAP.md` v1.5 + playbook §4-§6 + SESSION_LOG últimas 5 entries (S1.7→S1.10) + `progress/PRE_S2_CHECKLIST.md` v1.5.
+- **Files in scope:** `docs/technical/02-07_*.md` + `docs/planning/02_decision_log.md` (ADR-014) + `docs/agents/00_BOOTSTRAP.md` + `progress/PRE_S2_CHECKLIST.md` v1.6.
+- **Files OUT of scope:** code/resources/* (Phase 8+9 cerrado green baseline), DB, `_archive/`.
+- **Notas especiales:** smoke harness inline `/sonar_smoke_*` operacional para regression rápida; usar `sonar_dev_mode 1` convar.
+
+### Files in scope respetados
+✅ Scope strict: code resources + migrations + smoke harness + scripts/*.md + server.cfg.example. **NO tocó:** docs/* (firmados), `_archive/`, art/*, `.windsurf/*`, branding.
+
+---

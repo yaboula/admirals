@@ -1,6 +1,6 @@
-4# Smoke Test S1.3 — Escrow + FSM (C004 + C005)
+﻿4# Smoke Test S1.3 — Escrow + FSM (C004 + C005)
 
-**Sprint:** S1.3 — admirals_bank escrow lifecycle.
+**Sprint:** S1.3 — sonar_bank escrow lifecycle.
 **Target:** 14/14 ✅ para sign-off + cleanup + close sprint 1.
 **Pre-condición:** commit S1.3 Phase 1 aplicado + server restart.
 **Fecha target:** 2026-05-02.
@@ -16,7 +16,7 @@ Añadir al `d:/fivem-dev/server-data/server.cfg` (eliminar post-sign-off):
 ```cfg
 # S1.3 smoke harness — DELETE POST SIGN-OFF
 # No admin commands nuevos en S1.3 (todos los smoke commands son client-side).
-# Si quieres admin /admirals_escrow_* en el futuro, añade aquí.
+# Si quieres admin /sonar_escrow_* en el futuro, añade aquí.
 ```
 
 (N/A en S1.3 — no admin server commands. Solo client commands ox_lib callbacks.)
@@ -26,15 +26,15 @@ Añadir al `d:/fivem-dev/server-data/server.cfg` (eliminar post-sign-off):
 ```sql
 -- Migration 006 ya aplicada + tracking row
 SELECT version, filename, LEFT(checksum, 16) AS checksum_prefix, applied_by
-FROM admirals_schema_versions WHERE version = 6;
+FROM sonar_schema_versions WHERE version = 6;
 -- Esperado: 1 row, applied_by='manual_pre_runner', checksum_prefix='7d37e4e2f765ce9a'
 
--- Tabla admirals_escrows existe + 0 rows pre-smoke
-SELECT COUNT(*) AS escrows_count FROM admirals_escrows;
+-- Tabla sonar_escrows existe + 0 rows pre-smoke
+SELECT COUNT(*) AS escrows_count FROM sonar_escrows;
 -- Esperado: 0
 
 -- 2 player accounts personales + system treasury existentes
-SELECT iban, type, balance FROM admirals_bank_accounts ORDER BY type;
+SELECT iban, type, balance FROM sonar_bank_accounts ORDER BY type;
 -- Esperado ≥ 3 rows: 2 player (type=personal), 1 system (AD-SYS0-0000-0001)
 ```
 
@@ -48,24 +48,24 @@ SELECT iban, type, balance FROM admirals_bank_accounts ORDER BY type;
 
 ## 1. Pre-flight boot
 
-**Acción:** `restart admirals_bank` en consola server.
+**Acción:** `restart sonar_bank` en consola server.
 
 **Esperado en consola:**
 ```
-[admirals_core] Migration 006_escrow_schema.sql already applied (skip)
-[admirals_core] Migrations done: 0 applied, 6 skipped, 0 errors
-[admirals_bank] Admirals Bank v0.3.0 booting (C004 + C005 added)
-[admirals_bank] IBAN module ready (prefix=AD-, charset_size=36, max_retries=5)
-[admirals_bank] Accounts module ready (starter_balance=2500 €)
-[admirals_bank] Movements module ready (ENUM categories: 13 valid)
-[admirals_bank] Events module ready (transfer_completed §4.3 + escrow_created/released/refunded S1.3)
-[admirals_bank] Transfer module ready (fee=0€, max=1000000€)
-[admirals_bank] FSMEscrow module ready (states=5, transitions S1.3=3: created→locked, locked→released|refunded)
-[admirals_bank] Escrow module ready (fee_rate=1.00%, fee_range=[2.00, 100.00]€, expiry_default=2592000s)
-[admirals_bank] Callbacks registered: getBalance (C001), transfer (C002), createEscrow (C004), releaseEscrow (C005)
+[sonar_core] Migration 006_escrow_schema.sql already applied (skip)
+[sonar_core] Migrations done: 0 applied, 6 skipped, 0 errors
+[sonar_bank] SONAR Bank v0.3.0 booting (C004 + C005 added)
+[sonar_bank] IBAN module ready (prefix=AD-, charset_size=36, max_retries=5)
+[sonar_bank] Accounts module ready (starter_balance=2500 €)
+[sonar_bank] Movements module ready (ENUM categories: 13 valid)
+[sonar_bank] Events module ready (transfer_completed §4.3 + escrow_created/released/refunded S1.3)
+[sonar_bank] Transfer module ready (fee=0€, max=1000000€)
+[sonar_bank] FSMEscrow module ready (states=5, transitions S1.3=3: created→locked, locked→released|refunded)
+[sonar_bank] Escrow module ready (fee_rate=1.00%, fee_range=[2.00, 100.00]€, expiry_default=2592000s)
+[sonar_bank] Callbacks registered: getBalance (C001), transfer (C002), createEscrow (C004), releaseEscrow (C005)
 ```
 
-**resmon:** `admirals_bank` idle <0.3ms, `admirals_core` idle <0.3ms, `admirals_bridges` idle <0.3ms.
+**resmon:** `sonar_bank` idle <0.3ms, `sonar_core` idle <0.3ms, `sonar_bridges` idle <0.3ms.
 
 **Paso 1 ✅:** boot clean + logs orden correcto + sin errores.
 
@@ -86,32 +86,32 @@ SELECT iban, type, balance FROM admirals_bank_accounts ORDER BY type;
 **Esperado DB:**
 ```sql
 -- Player A (buyer) — balance debited: 2500 - 100 - 2 = 2398
-SELECT iban, balance FROM admirals_bank_accounts WHERE iban='<IBAN_A>';
+SELECT iban, balance FROM sonar_bank_accounts WHERE iban='<IBAN_A>';
 -- Esperado: 2398.00
 
 -- Player B (seller) — balance unchanged (release pending)
-SELECT iban, balance FROM admirals_bank_accounts WHERE iban='<IBAN_B>';
+SELECT iban, balance FROM sonar_bank_accounts WHERE iban='<IBAN_B>';
 -- Esperado: 2500.00
 
 -- System treasury — balance credited +2
-SELECT iban, balance FROM admirals_bank_accounts WHERE iban='AD-SYS0-0000-0001';
+SELECT iban, balance FROM sonar_bank_accounts WHERE iban='AD-SYS0-0000-0001';
 -- Esperado: 10000002.00
 
 -- Escrow account creado (type='escrow', owner_* NULL, balance=100)
 SELECT type, balance, owner_account_id, owner_company_id
-FROM admirals_bank_accounts
-WHERE id = (SELECT escrow_account_id FROM admirals_escrows ORDER BY created_at DESC LIMIT 1);
+FROM sonar_bank_accounts
+WHERE id = (SELECT escrow_account_id FROM sonar_escrows ORDER BY created_at DESC LIMIT 1);
 -- Esperado: escrow | 100.00 | NULL | NULL
 
--- admirals_escrows row
+-- sonar_escrows row
 SELECT id, status, amount, fee_charged, request_nonce, expires_at
-FROM admirals_escrows
+FROM sonar_escrows
 WHERE request_nonce = '<request_id del smoke>';
 -- Esperado: 1 row, status='locked', amount=100, fee_charged=2
 
 -- 4 movements creados con request_nonce = escrow_id
 SELECT bank_account_id, amount, category, counterpart_iban
-FROM admirals_bank_movements
+FROM sonar_bank_movements
 WHERE request_nonce = '<escrow_id>'
 ORDER BY id;
 -- Esperado: 4 rows
@@ -133,18 +133,18 @@ ORDER BY id;
 
 **Esperado consola server:**
 ```
-[admirals_bank] Audit: bank.escrow_created / idempotency_replay / actor=<cid_A> / target=<request_id>
+[sonar_bank] Audit: bank.escrow_created / idempotency_replay / actor=<cid_A> / target=<request_id>
 ```
 
 **Esperado DB:**
 ```sql
--- admirals_escrows counts NO cambian
-SELECT COUNT(*) FROM admirals_escrows WHERE request_nonce = '<request_id>';
+-- sonar_escrows counts NO cambian
+SELECT COUNT(*) FROM sonar_escrows WHERE request_nonce = '<request_id>';
 -- Esperado: 1 (no duplicado)
 
--- admirals_bridge_idempotency row persisted
+-- sonar_bridge_idempotency row persisted
 SELECT module, method, LEFT(result_json, 50) AS preview, expires_at
-FROM admirals_bridge_idempotency WHERE idem_key = '<request_id>';
+FROM sonar_bridge_idempotency WHERE idem_key = '<request_id>';
 -- Esperado: 1 row con result_json comenzando '{"success":true,"data":{"escrow_id":"...'
 ```
 
@@ -197,7 +197,7 @@ FROM admirals_bridge_idempotency WHERE idem_key = '<request_id>';
 
 **NOTA:** Player A ya debitó 2398. Para 10000/20000 necesita saldo extra. Admin puede hacer:
 ```sql
-UPDATE admirals_bank_accounts SET balance = 50000, updated_at = UNIX_TIMESTAMP()
+UPDATE sonar_bank_accounts SET balance = 50000, updated_at = UNIX_TIMESTAMP()
 WHERE iban = '<IBAN_A>';
 ```
 
@@ -218,22 +218,22 @@ WHERE iban = '<IBAN_A>';
 
 **Esperado DB:**
 ```sql
--- admirals_escrows FSM transition locked→released
+-- sonar_escrows FSM transition locked→released
 SELECT status, released_to, released_by_account_id, released_at
-FROM admirals_escrows WHERE id = '<ESCROW_ID>';
+FROM sonar_escrows WHERE id = '<ESCROW_ID>';
 -- Esperado: released | seller | <account_id_B> | <ts>
 
 -- Player B balance += 500
-SELECT balance FROM admirals_bank_accounts WHERE iban='<IBAN_B>';
+SELECT balance FROM sonar_bank_accounts WHERE iban='<IBAN_B>';
 -- Esperado: 3000.00 (2500 + 500)
 
 -- Escrow account balance = 0 (funds moved out)
-SELECT balance FROM admirals_bank_accounts
-WHERE id = (SELECT escrow_account_id FROM admirals_escrows WHERE id='<ESCROW_ID>');
+SELECT balance FROM sonar_bank_accounts
+WHERE id = (SELECT escrow_account_id FROM sonar_escrows WHERE id='<ESCROW_ID>');
 -- Esperado: 0.00
 
 -- System treasury unchanged (fee cobrado en Create, NO se devuelve)
-SELECT balance FROM admirals_bank_accounts WHERE iban='AD-SYS0-0000-0001';
+SELECT balance FROM sonar_bank_accounts WHERE iban='AD-SYS0-0000-0001';
 -- Esperado: sin cambio respecto a paso anterior
 ```
 
@@ -254,12 +254,12 @@ SELECT balance FROM admirals_bank_accounts WHERE iban='AD-SYS0-0000-0001';
 
 **Esperado DB:**
 ```sql
-SELECT status, released_to FROM admirals_escrows WHERE id='<ESCROW_ID2>';
+SELECT status, released_to FROM sonar_escrows WHERE id='<ESCROW_ID2>';
 -- Esperado: refunded | buyer
 
 -- Player A recupera 300 (pero fee=3€ retenido)
 -- A pre-create: X, post-create: X - 303, post-refund: X - 3 (fee no devuelto)
-SELECT balance FROM admirals_bank_accounts WHERE iban='<IBAN_A>';
+SELECT balance FROM sonar_bank_accounts WHERE iban='<IBAN_A>';
 -- Esperado: saldo - 3 respecto a pre-step8 (300 devuelto, 3 fee perdido).
 ```
 
@@ -317,7 +317,7 @@ SELECT balance FROM admirals_bank_accounts WHERE iban='<IBAN_A>';
 
 **Esperado consola server:**
 ```
-[admirals_bank] Escrow.Release: FSM reject released→released for escrow=<uuid> (reason=TRANSITION_NOT_ALLOWED)
+[sonar_bank] Escrow.Release: FSM reject released→released for escrow=<uuid> (reason=TRANSITION_NOT_ALLOWED)
 ```
 
 **Paso 11 ✅:** FSM guard previene double-release.
@@ -336,7 +336,7 @@ Ejecutar 11 veces seguidas (dentro de 60s): `/smoke_escrow_create <IBAN_B> 10`.
 
 **Esperado DB:**
 ```sql
-SELECT Admirals.Rate.Stats();  -- via admin command /admirals_core_status o exec snippet
+SELECT SONAR.Rate.Stats();  -- via admin command /sonar_core_status o exec snippet
 -- bank.write: allowed=10, blocked≥1
 ```
 
@@ -348,15 +348,15 @@ SELECT Admirals.Rate.Stats();  -- via admin command /admirals_core_status o exec
 
 **Acción (consola server):**
 ```lua
-Admirals.Bus.Subscribe('admirals:bank:escrow_created', function(p)
+SONAR.Bus.Subscribe('sonar:bank:escrow_created', function(p)
   print('[sub] escrow_created: ' .. json.encode(p))
 end)
 
-Admirals.Bus.Subscribe('admirals:bank:escrow_released', function(p)
+SONAR.Bus.Subscribe('sonar:bank:escrow_released', function(p)
   print('[sub] escrow_released: ' .. json.encode(p))
 end)
 
-Admirals.Bus.Subscribe('admirals:bank:escrow_refunded', function(p)
+SONAR.Bus.Subscribe('sonar:bank:escrow_refunded', function(p)
   print('[sub] escrow_refunded: ' .. json.encode(p))
 end)
 ```
@@ -374,9 +374,9 @@ end)
 **Acción:** durante step 12 burst + step 7/8 releases, observar consola: `resmon`.
 
 **Esperado:**
-- `admirals_bank` peak <1ms, idle post-stress <0.3ms.
-- `admirals_core` peak <1ms, idle <0.3ms.
-- `admirals_bridges` peak <0.5ms, idle <0.2ms.
+- `sonar_bank` peak <1ms, idle post-stress <0.3ms.
+- `sonar_core` peak <1ms, idle <0.3ms.
+- `sonar_bridges` peak <0.5ms, idle <0.2ms.
 
 **Paso 14 ✅:** performance dentro de budget §06 §2.2.
 
@@ -389,8 +389,8 @@ end)
 Tras sign-off:
 1. Commit `S1.3 phase1 implement escrow + FSM + migration 006 + smoke 14/14`.
 2. Cleanup commit separado (smoke harness delete): `S1.3 cleanup remove temporal smoke harness post sign-off`.
-   - Delete `resources/admirals_bank/client/smoke_s1_3.lua`.
-   - Edit `resources/admirals_bank/fxmanifest.lua` — remove `client_scripts` block.
+   - Delete `resources/sonar_bank/client/smoke_s1_3.lua`.
+   - Edit `resources/sonar_bank/fxmanifest.lua` — remove `client_scripts` block.
 3. Phase 2 close sprint:
    - Create `progress/SPRINT_RETRO_S1.md`.
    - Create `progress/SPRINT_PLAN_S2.md` (outline).
@@ -408,27 +408,27 @@ Tras sign-off:
 
 Síntoma consola:
 ```
-[admirals_core] 006_escrow_schema.sql checksum mismatch: stored=<X> current=<Y> (TAMPERING SUSPECT)
+[sonar_core] 006_escrow_schema.sql checksum mismatch: stored=<X> current=<Y> (TAMPERING SUSPECT)
 ```
 
 **Causa:** file `006_escrow_schema.sql` fue editado post-INSERT tracking row → hash cambió.
 
 **Fix:** recalcular hash + UPDATE tracking row:
 ```powershell
-(Get-FileHash -Algorithm SHA256 D:\theBigProject\resources\admirals_core\migrations\006_escrow_schema.sql).Hash.ToLower()
+(Get-FileHash -Algorithm SHA256 D:\theBigProject\resources\sonar_core\migrations\006_escrow_schema.sql).Hash.ToLower()
 ```
 ```sql
-UPDATE admirals_schema_versions SET checksum = '<new_hash>' WHERE version = 6;
+UPDATE sonar_schema_versions SET checksum = '<new_hash>' WHERE version = 6;
 ```
 
 ### Escrow account no se puede crear (CHECK violation)
 
 Síntoma: `error_code=RACE_DETECTED` o `TX_ROLLBACK` en step 2 sin race real.
 
-**Causa:** migration 006 constraint `chk_admirals_bank_accounts_owner_xor_or_escrow` mal aplicado (rama `type='escrow'` missing).
+**Causa:** migration 006 constraint `chk_sonar_bank_accounts_owner_xor_or_escrow` mal aplicado (rama `type='escrow'` missing).
 
 **Fix verify:**
 ```sql
-SHOW CREATE TABLE admirals_bank_accounts\G
--- Buscar: CONSTRAINT `chk_admirals_bank_accounts_owner_xor_or_escrow` CHECK (`type` = 'escrow' or ...)
+SHOW CREATE TABLE sonar_bank_accounts\G
+-- Buscar: CONSTRAINT `chk_sonar_bank_accounts_owner_xor_or_escrow` CHECK (`type` = 'escrow' or ...)
 ```

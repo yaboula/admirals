@@ -1,4 +1,4 @@
-# 🧪 Admirals — Testing Protocol
+﻿# 🧪 Admirals — Testing Protocol
 
 > **Versión:** 1.0 (firmado — completo, 16 secciones).
 > **Tipo:** QA/Implementation. Protocolo completo de testing **FiveM-native** (no E2E automation per ADR-006) — smoke tests, manual test matrix, integration scenarios, stress testing, regression, playtest, bug tracking, release gates.
@@ -499,9 +499,9 @@ Oleada 1 MVP release:
 ```sql
 -- Money in circulation
 SELECT
-  (SELECT COALESCE(SUM(balance), 0) FROM admirals_bank_accounts WHERE type IN ('personal','empresa','escrow')) AS total,
-  (SELECT COALESCE(SUM(amount), 0) FROM admirals_bank_movements WHERE type='mint') AS minted,
-  (SELECT COALESCE(SUM(amount), 0) FROM admirals_bank_movements WHERE type='sink') AS sunken
+  (SELECT COALESCE(SUM(balance), 0) FROM sonar_bank_accounts WHERE type IN ('personal','empresa','escrow')) AS total,
+  (SELECT COALESCE(SUM(amount), 0) FROM sonar_bank_movements WHERE type='mint') AS minted,
+  (SELECT COALESCE(SUM(amount), 0) FROM sonar_bank_movements WHERE type='sink') AS sunken
 -- Expected: total = initial + minted - sunken
 ```
 
@@ -511,7 +511,7 @@ Alert si diff > 0.01%.
 
 ```sql
 -- Items sin lineage
-SELECT COUNT(*) FROM admirals_items
+SELECT COUNT(*) FROM sonar_items
 WHERE status IN ('delivered','on_display','sold','in_inventory')
   AND lineage_json IS NULL
   AND item_type NOT IN ('seed','raw_resource'); -- origin types OK
@@ -523,12 +523,12 @@ Expected: 0.
 
 ```sql
 -- Escrows locked > 30 días
-SELECT id FROM admirals_escrows
+SELECT id FROM sonar_escrows
 WHERE status = 'locked'
   AND updated_at < UNIX_TIMESTAMP(NOW()) - 2592000;
 
 -- Contracts fulfilling > 90 días
-SELECT id FROM admirals_contracts
+SELECT id FROM sonar_contracts
 WHERE status = 'fulfilling'
   AND updated_at < UNIX_TIMESTAMP(NOW()) - 7776000;
 ```
@@ -539,7 +539,7 @@ Expected: empty or known-investigated.
 
 ```sql
 -- Reputation outside -100 to +100
-SELECT id FROM admirals_reputation
+SELECT id FROM sonar_reputation
 WHERE score < -100 OR score > 100;
 ```
 
@@ -550,7 +550,7 @@ Expected: 0.
 ```sql
 -- Audit log entries per day trend
 SELECT DATE(FROM_UNIXTIME(timestamp)) AS day, COUNT(*)
-FROM admirals_audit_log
+FROM sonar_audit_log
 GROUP BY day
 ORDER BY day DESC LIMIT 7;
 ```
@@ -626,10 +626,10 @@ Antes publish Tebex:
 ### 13.1 Manual testing
 
 - **In-game admin commands** para create test data rápido:
-  - `/admirals_dev giveitem <type>`
-  - `/admirals_dev setmoney <amount>`
-  - `/admirals_dev spawnempresa`
-  - `/admirals_dev resetplayer`
+  - `/sonar_dev giveitem <type>`
+  - `/sonar_dev setmoney <amount>`
+  - `/sonar_dev spawnempresa`
+  - `/sonar_dev resetplayer`
 
 ### 13.2 Logging
 

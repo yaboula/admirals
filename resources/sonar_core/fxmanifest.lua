@@ -1,0 +1,95 @@
+fx_version 'cerulean'
+game      'gta5'
+lua54     'yes'
+
+author      'SONAR'
+version     '0.4.2'
+description 'SONAR Core — EventBus + DB wrappers + RateLimiter + Logger + Metrics + Migrations runner + Idempotency backend + Escrow schema + FK design revert (S1.3)'
+
+dependencies {
+  'oxmysql',
+  'sonar_bridges',
+}
+
+-- =============================================================================
+-- Load order rationale (per docs/technical/04_api_contracts.md §6,
+-- docs/technical/01_architecture.md §5.5, docs/technical/03_db_schema.md §16):
+--
+--   shared:
+--     1. config.lua             — constants + convars (LogLevel, DB pool,
+--                                 rate caps, event throttles).
+--
+--   server (strict order):
+--     2. server/logger.lua      — SONAR.Log.{Debug,Info,Warn,Error,Audit}
+--                                 + ring buffer (1000 entries) + level filter.
+--     3. server/metrics.lua     — SONAR.Metrics counters + histograms
+--                                 (p50/p95/p99 sliding window).
+--     4. server/db.lua          — SONAR.DB.{FetchOne,FetchAll,Execute,
+--                                 Insert,Scalar,Transaction} — prepared-only
+--                                 (§04 §6.1), timeout 3s, slow-query >500ms.
+--     5. server/event_bus.lua   — SONAR.Bus.{Subscribe,Publish} with
+--                                 _event_id/_emitted_at/_schema_version auto-
+--                                 decoration (§02 §1.4) + schema validation.
+--     6. server/rate_limiter.lua — SONAR.Rate.Check token bucket
+--                                 per-citizenId per-bucket (§04 §8.1-§8.2).
+--     7. server/migrations.lua  — SONAR.Migrations.RunAll idempotent,
+--                                 SHA-256 checksum, sonar_schema_versions
+--                                 tracking (§03 §12.2, §16.4).
+--     8. server/init.lua        — Boot orchestration (LAST): wait Bridges
+--                                 ready → migrations → emit sonar:core:ready.
+--
+--   client:
+--     - client/init.lua         — Stub: boot flag + listen core:ready (S1+).
+--
+--   admin commands registered by logger/metrics at load time:
+--     sonar_log_dump, sonar_log_level, sonar_log_clear,
+--     sonar_metrics, sonar_metrics_reset.
+-- =============================================================================
+
+shared_scripts {
+  'config.lua',
+}
+
+server_scripts {
+  -- oxmysql MySQL global helper — MUST be first; injects `MySQL.scalar/.query/.insert/.transaction.await`
+  -- (oxmysql does NOT expose this global cross-resource without including this file).
+  '@oxmysql/lib/MySQL.lua',
+
+  -- Foundation (no cross-deps)
+  'server/logger.lua',
+  'server/metrics.lua',
+
+  -- Data layer (depends on logger + metrics)
+  'server/db.lua',
+
+  -- Business primitives (depend on logger + metrics + db)
+  'server/event_bus.lua',
+  'server/rate_limiter.lua',
+  'server/migrations.lua',
+
+  -- Boot orchestration (LAST — depends on all above + Bridges.WaitReady)
+  'server/init.lua',
+}
+
+client_scripts {
+  'client/init.lua',
+}
+
+-- SQL migration files are read by server/migrations.lua via LoadResourceFile.
+-- Declared here so fxmanifest tracks them as resource files.
+--
+-- lib/sonar.lua: helper API consumido por OTROS resources via:
+--   server_scripts { '@sonar_core/lib/sonar.lua', 'server/...' }
+-- NO se carga en server_scripts de sonar_core mismo (sonar_core
+-- dispone del API _G real via SONAR.* desde sus propios scripts).
+files {
+  'migrations/001_schema_versions.sql',
+  'migrations/002_foundation_tables.sql',
+  'migrations/003_bank_schema.sql',
+  'migrations/004_bank_seed_system_account.sql',
+  'migrations/005_balance_nonneg_check.sql',
+  'migrations/006_escrow_schema.sql',
+  'migrations/007_escrow_fks_to_accounts.sql',
+  'migrations/008_escrow_fks_revert_to_bank_accounts.sql',
+  'lib/sonar.lua',
+}

@@ -28,7 +28,7 @@ sv_scriptHookAllowed 0
 # Database — oxmysql connection string
 # Update host / user / password / database to match your MySQL instance.
 # -----------------------------------------------------------------------------
-set mysql_connection_string "mysql://root:YOUR_DB_PASSWORD@localhost/admirals?charset=utf8mb4"
+set mysql_connection_string "mysql://root@127.0.0.1:3306/sonar?charset=utf8mb4"
 
 # Admirals DB convars (used by admirals_core migrations runner + DB wrappers)
 set admirals_db_host     "localhost"
