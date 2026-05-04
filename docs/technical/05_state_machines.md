@@ -1,6 +1,6 @@
 # 🔄 SONAR — State Machines (FSMs)
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§14 legacy v1.0 inline preserved). **SSoT vigente** — filosofía + 16 FSMs core + transitions + guards + actions + persistence + recovery + testing + anti-patterns sin cambios foundational (pivot-agnostic). FSM table refs `admirals_*` + event triggers `admirals:*` scheduled rename `sonar_*` / `sonar:*` Phase 8+9 per ADR-013.
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§14 legacy v1.0 inline preserved). **SSoT vigente** — filosofía + 16 FSMs core + transitions + guards + actions + persistence + recovery + testing + anti-patterns sin cambios foundational (pivot-agnostic). FSM table refs `sonar_*` + event triggers `sonar:*` scheduled rename `sonar_*` / `sonar:*` Phase 8+9 per ADR-013.
 > **Tipo:** Technical/Implementation. Define todas las **Finite State Machines (FSM)** del producto — estados válidos, transiciones permitidas, guards, actions, persistence.
 > **Documento padre:** `technical/01_architecture.md` v1.0 (firmado).
 > **Documento hermano:** `technical/02_events_catalog.md` v1.1+ (post-pivot) — transiciones FSM disparan eventos.
@@ -16,27 +16,27 @@
 
 ## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
 
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + FSM audit table `admirals_fsm_transitions` + columnas `status` en tablas `admirals_*` + eventos bus `admirals:*` como triggers transiciones.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§14 abajo, **gana este NOTICE + ADR-011/012/013**.
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + FSM audit table `sonar_fsm_transitions` + columnas `status` en tablas `sonar_*` + eventos bus `sonar:*` como triggers transiciones.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§14 abajo, **gana este NOTICE + ADR-011/012/013**.
 
 ### NEW CANONICAL — vigente desde 2026-05-04
 
-#### Naming canonical FSMs (DEPRECATED heritage `admirals_*` + `admirals:*`)
+#### Naming canonical FSMs (DEPRECATED heritage `sonar_*` + `sonar:*`)
 - **Producto:** SONAR (no Admirals).
-- **FSM audit table canonical post-Phase-9 (ADR-013 scheduled):** `admirals_fsm_transitions` → `sonar_fsm_transitions`. Columns + indexes identical.
-- **FSM entity tables canonical post-Phase-9:** las 16 FSMs persisten `status` en tablas `admirals_*` (ver `03_db_schema.md` v1.1+). Post-migration-009 todas renamed `sonar_*`. Ejemplos:
-  - `admirals_companies.status` → `sonar_companies.status` (FSM empresa_lifecycle)
-  - `admirals_bank_escrows.status` → `sonar_bank_escrows.status` (FSM escrow_lifecycle)
-  - `admirals_granja_plots.status` → `sonar_granja_plots.status` (FSM plot_lifecycle)
-  - `admirals_molino_batches.status` → `sonar_molino_batches.status` (FSM batch_lifecycle)
+- **FSM audit table canonical post-Phase-9 (ADR-013 scheduled):** `sonar_fsm_transitions` → `sonar_fsm_transitions`. Columns + indexes identical.
+- **FSM entity tables canonical post-Phase-9:** las 16 FSMs persisten `status` en tablas `sonar_*` (ver `03_db_schema.md` v1.1+). Post-migration-009 todas renamed `sonar_*`. Ejemplos:
+  - `sonar_companies.status` → `sonar_companies.status` (FSM empresa_lifecycle)
+  - `sonar_bank_escrows.status` → `sonar_bank_escrows.status` (FSM escrow_lifecycle)
+  - `sonar_granja_plots.status` → `sonar_granja_plots.status` (FSM plot_lifecycle)
+  - `sonar_molino_batches.status` → `sonar_molino_batches.status` (FSM batch_lifecycle)
   - + 12 FSMs adicionales.
 - **Event triggers canonical post-Phase-8:** eventos que disparan transiciones FSM renamed coherentemente. Ejemplo:
-  - `admirals:bank:escrow_created` (FSM escrow `pending → locked`) → `sonar:bank:escrow_created`.
-  - `admirals:bank:escrow_released` (FSM escrow `locked → released`) → `sonar:bank:escrow_released`.
+  - `sonar:bank:escrow_created` (FSM escrow `pending → locked`) → `sonar:bank:escrow_created`.
+  - `sonar:bank:escrow_released` (FSM escrow `locked → released`) → `sonar:bank:escrow_released`.
   - Mapping 1:1 aplicable a todos los triggers documentados en transition tables.
 - **FSM states (strings) = INVARIANTES.** Pre/post Phase-8+9 identical (`pending`, `locked`, `released`, `failed`, `active`, `closed`, etc.). Solo table names + event triggers actualizan.
 
 #### Escrow FSM shipped S1 (reference)
-- FSM `escrow_lifecycle` implementada S1.3 en `admirals_bank_escrows` table (post-Phase-9 → `sonar_bank_escrows`).
+- FSM `escrow_lifecycle` implementada S1.3 en `sonar_bank_escrows` table (post-Phase-9 → `sonar_bank_escrows`).
 - 5 estados: `pending → locked → released → (failed|cancelled)`.
 - Transitions whitelist + guards + FSM_INVALID_TRANSITION error mapping shipped S1.
 - Post-Phase-8+9: table name + event triggers rename, state strings + transitions + guards INVARIANT.
@@ -57,16 +57,16 @@
 #### Migration execution schedule (ADR-013 authoritative)
 - **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Código FSM + DB NO tocados.
 - **Phase 8+9 execution session (próxima sesión founder-available):** code refactor FSM logic + DB rename tables + event triggers sync.
-- **Post-Phase-8+9 doc bump v1.1 → v1.2:** refs inline `admirals_*` → `sonar_*` + `admirals:*` → `sonar:*` en transition tables + audit table + §9 code ejemplos (16 FSMs actualizadas 1:1).
+- **Post-Phase-8+9 doc bump v1.1 → v1.2:** refs inline `sonar_*` → `sonar_*` + `sonar:*` → `sonar:*` en transition tables + audit table + §9 code ejemplos (16 FSMs actualizadas 1:1).
 - **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica escrow FSM S1 transitions funcionan con nuevo table name + event triggers.
 
 #### Cómo leer el resto del documento (§1-§14)
 
 1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
 2. **Filosofía + 16 FSMs definiciones + transitions + guards + actions + cross-FSM cascade + persistence + recovery + testing + anti-patterns (§1-§14) siguen válidos pivot-agnostic** — foundational FSM design sin cambios.
-3. **16 FSMs documentadas (§3-§8) — refs tabla `admirals_*` + event `admirals:*` triggers = LEGACY estado actual código/DB.** Post-Phase-8+9 ejecutadas = canonical `sonar_*` / `sonar:*`. Mapping 1:1 aplicable.
-4. **§9.2 FSM audit table `admirals_fsm_transitions`:** legacy estado actual. Post-migration-009 = `sonar_fsm_transitions` coherentemente.
-5. **§9.4 Transaction atomicity ejemplos SQL:** refs `admirals_*` legacy en params. Post-migration-009 = `sonar_*`.
+3. **16 FSMs documentadas (§3-§8) — refs tabla `sonar_*` + event `sonar:*` triggers = LEGACY estado actual código/DB.** Post-Phase-8+9 ejecutadas = canonical `sonar_*` / `sonar:*`. Mapping 1:1 aplicable.
+4. **§9.2 FSM audit table `sonar_fsm_transitions`:** legacy estado actual. Post-migration-009 = `sonar_fsm_transitions` coherentemente.
+5. **§9.4 Transaction atomicity ejemplos SQL:** refs `sonar_*` legacy en params. Post-migration-009 = `sonar_*`.
 6. **State strings + transitions whitelist + guards + cascade rules = INVARIANTES.** Pre/post Phase-8+9 identical.
 7. **Escrow FSM S1 shipped reference:** state machine + guards + transitions operacionalmente probadas 14/14 smoke S1.3 + S1.2. Phase 8+9 no altera semantics.
 8. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
@@ -173,7 +173,7 @@ red → green → yellow → red (cycle)
 
 ### 3.1 FSM `empresa_lifecycle`
 
-**Entidad:** `admirals_empresas`.
+**Entidad:** `sonar_empresas`.
 **Columna:** `status`.
 **Estados:** `founded`, `active`, `suspended`, `bankrupt`, `sold`, `dissolved`.
 **Initial:** `founded`.
@@ -190,7 +190,7 @@ founded → active ↔ suspended
 
 | From | To | Trigger | Guard | Actions |
 |---|---|---|---|---|
-| — | `founded` | `admirals:empresa:foundEmpresa` callback | founding_fee paid, unique name | INSERT row, emit `empresa:founded` |
+| — | `founded` | `sonar:empresa:foundEmpresa` callback | founding_fee paid, unique name | INSERT row, emit `empresa:founded` |
 | `founded` | `active` | Auto (tras 24h probation) | no admin_hold | emit `empresa:activated` |
 | `active` | `suspended` | Admin action | reason mandatory | freeze payroll, emit `empresa:suspended` |
 | `suspended` | `active` | Admin unsuspend | resolution confirmed | unfreeze, emit `empresa:resumed` |
@@ -208,7 +208,7 @@ founded → active ↔ suspended
 
 ### 3.2 FSM `employee_lifecycle`
 
-**Entidad:** `admirals_empresa_employees`.
+**Entidad:** `sonar_empresa_employees`.
 **Columna:** `status`.
 **Estados:** `hired`, `active`, `on_leave`, `terminated`, `resigned`.
 **Initial:** `hired`.
@@ -225,11 +225,11 @@ hired → active ↔ on_leave
 
 | From | To | Trigger | Guard | Actions |
 |---|---|---|---|---|
-| — | `hired` | `admirals:empresa:hire` callback | valid role, salary in range | INSERT row, emit `empresa:employee_hired` |
+| — | `hired` | `sonar:empresa:hire` callback | valid role, salary in range | INSERT row, emit `empresa:employee_hired` |
 | `hired` | `active` | First shift started | clocked in once | mark first_shift_at, emit `empresa:employee_activated` |
 | `active` | `on_leave` | `setEmployeeLeave` callback | founder/mgr auth | pause salary accrual, emit event |
 | `on_leave` | `active` | `returnFromLeave` callback | — | resume salary |
-| `active` | `terminated` | `admirals:empresa:fire` callback | founder/mgr auth | pay severance, emit `empresa:employee_fired`, rep -2 empresa |
+| `active` | `terminated` | `sonar:empresa:fire` callback | founder/mgr auth | pay severance, emit `empresa:employee_fired`, rep -2 empresa |
 | `active` | `resigned` | `resignEmployee` callback (player) | notice period served | pay final salary, emit `empresa:employee_resigned` |
 | `hired` | `terminated` | Probation fire | before 14 days | no severance |
 | `on_leave` | `terminated` | Extended leave > 30 days | auto | standard severance |
@@ -238,7 +238,7 @@ hired → active ↔ on_leave
 
 ### 3.3 FSM `item_lifecycle`
 
-**Entidad:** `admirals_items`.
+**Entidad:** `sonar_items`.
 **Columna:** `status`.
 **Estados:** `produced`, `in_inventory`, `in_transit`, `delivered`, `on_display`, `sold`, `consumed`, `expired`, `destroyed`.
 **Initial:** `produced`.
@@ -257,8 +257,8 @@ produced → in_inventory → in_transit → delivered → on_display → sold /
 |---|---|---|---|---|
 | — | `produced` | Node mechanic (bakery bake, granja harvest, etc.) | quality calculated | INSERT row + lineage, emit `item:produced` |
 | `produced` | `in_inventory` | Auto (pickup o placed) | owner assigned | emit `item:stored` |
-| `in_inventory` | `in_transit` | `admirals:logistics:pickup` | valid driver | change location owner=driver |
-| `in_transit` | `delivered` | `admirals:logistics:deliver` | at destination | emit `item:delivered`, update ownership |
+| `in_inventory` | `in_transit` | `sonar:logistics:pickup` | valid driver | change location owner=driver |
+| `in_transit` | `delivered` | `sonar:logistics:deliver` | at destination | emit `item:delivered`, update ownership |
 | `delivered` | `on_display` | Retail shelf placement | retail empresa | mark retail location |
 | `on_display` | `sold` | Retail POS transaction | buyer pays | emit `item:sold`, transfer ownership player |
 | `sold` | `consumed` | Consume action (eat, use) | owner action | emit `item:consumed`, delete row (or soft delete) |
@@ -292,7 +292,7 @@ connecting → authenticating → loading → active ↔ tablet_open
 | From | To | Trigger | Guard | Actions |
 |---|---|---|---|---|
 | — | `connecting` | Player joins server | — | allocate source id |
-| `connecting` | `authenticating` | Steam ID verified | valid license | lookup `admirals_accounts` |
+| `connecting` | `authenticating` | Steam ID verified | valid license | lookup `sonar_accounts` |
 | `authenticating` | `loading` | Auth OK | account exists or new | load character, inventory, empresa |
 | `loading` | `active` | All data loaded | character spawned | emit `session:active`, start tick |
 | `active` | `tablet_open` | TAB key pressed | — | show Tablet NUI, focus |
@@ -308,7 +308,7 @@ connecting → authenticating → loading → active ↔ tablet_open
 
 ### 4.1 FSM `escrow_lifecycle`
 
-**Entidad:** `admirals_escrows` (see `technical/03_db_schema.md`).
+**Entidad:** `sonar_escrows` (see `technical/03_db_schema.md`).
 **Columna:** `status`.
 **Estados:** `created`, `locked`, `released`, `refunded`, `split`, `disputed`.
 **Initial:** `created`.
@@ -345,7 +345,7 @@ created → locked → released
 
 ### 4.2 FSM `contract_lifecycle` (B2B)
 
-**Entidad:** `admirals_contracts`.
+**Entidad:** `sonar_contracts`.
 **Columna:** `status`.
 **Estados:** `draft`, `proposed`, `negotiating`, `signed`, `fulfilling`, `completed`, `cancelled`, `disputed`, `defaulted`.
 **Initial:** `draft`.
@@ -383,7 +383,7 @@ draft → proposed → negotiating → signed → fulfilling → completed
 
 ### 4.3 FSM `dispute_lifecycle`
 
-**Entidad:** `admirals_disputes`.
+**Entidad:** `sonar_disputes`.
 **Columna:** `status`.
 **Estados:** `opened`, `evidence_gathering`, `negotiating`, `arbitration`, `resolved`.
 **Initial:** `opened`.
@@ -407,7 +407,7 @@ draft → proposed → negotiating → signed → fulfilling → completed
 
 ### 5.1 FSM `bakery_mixer`
 
-**Entidad:** `admirals_bakery_stations` (subtype=mixer).
+**Entidad:** `sonar_bakery_stations` (subtype=mixer).
 **Columna:** `status`.
 **Estados:** `idle`, `filling`, `mixing`, `complete`, `emptied`, `out_of_order`.
 **Initial:** `idle`.
@@ -453,7 +453,7 @@ quality = base_quality_of_masa
 
 ### 5.3 FSM `granja_plot`
 
-**Entidad:** `admirals_granja_plots`.
+**Entidad:** `sonar_granja_plots`.
 **Columna:** `status`.
 **Estados:** `fallow`, `prepared`, `planted`, `growing`, `mature`, `harvesting`, `harvested`, `diseased`.
 **Initial:** `fallow`.
@@ -485,7 +485,7 @@ Final quality calculated on `harvesting→harvested`.
 
 ### 5.4 FSM `molino_batch`
 
-**Entidad:** `admirals_molino_batches`.
+**Entidad:** `sonar_molino_batches`.
 **Columna:** `status`.
 **Estados:** `created`, `loading`, `processing`, `complete`, `rejected`.
 **Initial:** `created`.
@@ -504,7 +504,7 @@ Final quality calculated on `harvesting→harvested`.
 
 ### 5.5 FSM `retail_shift`
 
-**Entidad:** `admirals_retail_shifts`.
+**Entidad:** `sonar_retail_shifts`.
 **Columna:** `status`.
 **Estados:** `closed`, `opening`, `open`, `closing`, `emergency_closed`.
 **Initial:** `closed`.
@@ -562,7 +562,7 @@ Final quality calculated on `harvesting→harvested`.
 
 ### 7.1 FSM `logistics_job`
 
-**Entidad:** `admirals_logistics_jobs`.
+**Entidad:** `sonar_logistics_jobs`.
 **Columna:** `status`.
 **Estados:** `posted`, `accepted`, `loading`, `in_transit`, `delivering`, `delivered`, `failed`, `cancelled`.
 **Initial:** `posted`.
@@ -637,7 +637,7 @@ status_change_reason VARCHAR(255) NULL,
 Cada transición insert row:
 
 ```sql
-INSERT INTO admirals_fsm_transitions (
+INSERT INTO sonar_fsm_transitions (
   entity_type,     -- 'empresa' / 'contract' / etc.
   entity_id,
   from_state,
@@ -671,7 +671,7 @@ DB.Transaction({
   { query = 'UPDATE X SET status = ?, status_changed_at = ? WHERE id = ? AND status = ?',
     params = { to_state, now, id, from_state } },
   -- 3. Insert audit log
-  { query = 'INSERT INTO admirals_fsm_transitions (...) VALUES (...)',
+  { query = 'INSERT INTO sonar_fsm_transitions (...) VALUES (...)',
     params = { ... } },
   -- 4. Apply side effects (money movements, etc.)
   ...
@@ -899,7 +899,7 @@ Las **State Machines SONAR (ex-Admirals)** formalizan el ciclo de vida de cada e
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 14 secciones, 16 FSMs core (empresa + employee + escrow + contract + items + sessions + mecánicas nodos + tablet + logistics), notación estándar transitions tables con from/to/trigger/guard/actions, cross-FSM cascade rules, persistence pattern (column status + audit log + transactions atómicas), recovery strategies, testing matrix exhaustivo, anti-patterns. **Firmable Oleada 0.** |
-| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~70 líneas) establece: naming canonical FSM audit table (`sonar_fsm_transitions`) + FSM entity tables 16 FSMs (mapping 1:1 todas tablas rename) + event triggers canonical (`sonar:*` rename) + state strings + transitions + guards + cascade rules INVARIANTES pre/post + escrow FSM S1 shipped reference (5 estados + transitions whitelist operacionalmente probada 14/14 smoke S1.3) + transaction atomicity pattern unchanged + voz neutral error messages ADR-012 §D3 + migration execution schedule Phase 8+9 (next session) + reading guide §1-§14 legacy vs canonical. §0 resumen + §Filosofía + §cierre + §Cada status rebrand + hermanos refs bumped v1.1+ + ADRs 010/011/012/013 linked. **NO touched:** §1-§14 filosofía + 16 FSMs definiciones + transitions + guards + actions + cross-FSM cascade + persistence + recovery + testing + anti-patterns (pivot-agnostic foundational FSM design). Table refs `admirals_*` + event triggers `admirals:*` preservados legacy inline hasta Phase 8+9 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8+9: 16 FSMs + audit table + ejemplos SQL rename 1:1 inline body. |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~70 líneas) establece: naming canonical FSM audit table (`sonar_fsm_transitions`) + FSM entity tables 16 FSMs (mapping 1:1 todas tablas rename) + event triggers canonical (`sonar:*` rename) + state strings + transitions + guards + cascade rules INVARIANTES pre/post + escrow FSM S1 shipped reference (5 estados + transitions whitelist operacionalmente probada 14/14 smoke S1.3) + transaction atomicity pattern unchanged + voz neutral error messages ADR-012 §D3 + migration execution schedule Phase 8+9 (next session) + reading guide §1-§14 legacy vs canonical. §0 resumen + §Filosofía + §cierre + §Cada status rebrand + hermanos refs bumped v1.1+ + ADRs 010/011/012/013 linked. **NO touched:** §1-§14 filosofía + 16 FSMs definiciones + transitions + guards + actions + cross-FSM cascade + persistence + recovery + testing + anti-patterns (pivot-agnostic foundational FSM design). Table refs `sonar_*` + event triggers `sonar:*` preservados legacy inline hasta Phase 8+9 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8+9: 16 FSMs + audit table + ejemplos SQL rename 1:1 inline body. |
 
 ---
 

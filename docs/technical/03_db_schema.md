@@ -1,6 +1,6 @@
-# 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `admirals_*` (pre-migration-009 legacy)
+# 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `sonar_*` (pre-migration-009 legacy)
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§20 legacy v1.0 inline preserved con 28 tablas `admirals_*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). Table prefix `admirals_*` scheduled rename `sonar_*` Phase 9 migration 009 per ADR-013.
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§20 legacy v1.0 inline preserved con 28 tablas `sonar_*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). Table prefix `sonar_*` scheduled rename `sonar_*` Phase 9 migration 009 per ADR-013.
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
 > **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
@@ -13,55 +13,55 @@
 
 ## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
 
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + 28 tablas prefijo `admirals_*` (`admirals_accounts`, `admirals_bank_accounts`, etc.).** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§20 abajo, **gana este NOTICE + ADR-011/012/013**.
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + 28 tablas prefijo `sonar_*` (`sonar_accounts`, `sonar_bank_accounts`, etc.).** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§20 abajo, **gana este NOTICE + ADR-011/012/013**.
 
 ### NEW CANONICAL — vigente desde 2026-05-04
 
-#### Naming canonical tables (DEPRECATED heritage `admirals_*` prefix)
+#### Naming canonical tables (DEPRECATED heritage `sonar_*` prefix)
 - **Producto:** SONAR (no Admirals).
-- **Table prefix canonical post-Phase-9 (ADR-013 scheduled):** `sonar_*` reemplaza `admirals_*`. Mapping 1:1 las 28 tablas:
-  - `admirals_accounts` → `sonar_accounts`
-  - `admirals_tablets` → `sonar_tablets`
-  - `admirals_companies` → `sonar_companies`
-  - `admirals_company_members` → `sonar_company_members`
-  - `admirals_bank_accounts` → `sonar_bank_accounts`
-  - `admirals_bank_movements` → `sonar_bank_movements`
-  - `admirals_bank_escrows` → `sonar_bank_escrows`
-  - `admirals_audit_log` → `sonar_audit_log`
-  - `admirals_bridge_idempotency` → `sonar_bridge_idempotency`
-  - `admirals_event_log` → `sonar_event_log`
-  - `admirals_schema_versions` → `sonar_schema_versions`
-  - `admirals_documents` / `admirals_document_signatures` / `admirals_document_templates` → `sonar_document*`
-  - `admirals_chats` / `admirals_chat_participants` / `admirals_messages` → `sonar_chat*` + `sonar_messages`
-  - `admirals_notifications` → `sonar_notifications`
-  - `admirals_market_offers` / `admirals_market_reviews` → `sonar_market_*`
-  - `admirals_reputation` → `sonar_reputation`
-  - `admirals_logistics_jobs` → `sonar_logistics_jobs`
-  - `admirals_granja_*` (4 tablas: plots/silos/machines/licenses) → `sonar_granja_*`
-  - `admirals_molino_*` (3 tablas: silos/machines/batches) → `sonar_molino_*`
-  - `admirals_settings` → `sonar_settings`
-- **Índices + FKs + constraint names:** rename 1:1 coherentemente per tabla. Ejemplo: `idx_admirals_bank_accounts_iban` → `idx_sonar_bank_accounts_iban`. `fk_admirals_bank_movements_account` → `fk_sonar_bank_movements_account`.
+- **Table prefix canonical post-Phase-9 (ADR-013 scheduled):** `sonar_*` reemplaza `sonar_*`. Mapping 1:1 las 28 tablas:
+  - `sonar_accounts` → `sonar_accounts`
+  - `sonar_tablets` → `sonar_tablets`
+  - `sonar_companies` → `sonar_companies`
+  - `sonar_company_members` → `sonar_company_members`
+  - `sonar_bank_accounts` → `sonar_bank_accounts`
+  - `sonar_bank_movements` → `sonar_bank_movements`
+  - `sonar_bank_escrows` → `sonar_bank_escrows`
+  - `sonar_audit_log` → `sonar_audit_log`
+  - `sonar_bridge_idempotency` → `sonar_bridge_idempotency`
+  - `sonar_event_log` → `sonar_event_log`
+  - `sonar_schema_versions` → `sonar_schema_versions`
+  - `sonar_documents` / `sonar_document_signatures` / `sonar_document_templates` → `sonar_document*`
+  - `sonar_chats` / `sonar_chat_participants` / `sonar_messages` → `sonar_chat*` + `sonar_messages`
+  - `sonar_notifications` → `sonar_notifications`
+  - `sonar_market_offers` / `sonar_market_reviews` → `sonar_market_*`
+  - `sonar_reputation` → `sonar_reputation`
+  - `sonar_logistics_jobs` → `sonar_logistics_jobs`
+  - `sonar_granja_*` (4 tablas: plots/silos/machines/licenses) → `sonar_granja_*`
+  - `sonar_molino_*` (3 tablas: silos/machines/batches) → `sonar_molino_*`
+  - `sonar_settings` → `sonar_settings`
+- **Índices + FKs + constraint names:** rename 1:1 coherentemente per tabla. Ejemplo: `idx_sonar_bank_accounts_iban` → `idx_sonar_bank_accounts_iban`. `fk_sonar_bank_movements_account` → `fk_sonar_bank_movements_account`.
 - **Schema DDL + columns + types + defaults + constraints = INVARIANTES.** Pre/post migration-009 identical. Solo names actualizan.
 
-#### Migration 009 `009_rename_admirals_to_sonar.sql` (Phase 9 scheduled per ADR-013)
+#### Migration 009 `009_rename_sonar_to_sonar.sql` (Phase 9 scheduled per ADR-013)
 - **Migration type:** DDL rename batch atomic. Mitigable si falla (rollback script documented).
 - **Content target:**
   ```sql
   -- UP (apply)
   RENAME TABLE
-    admirals_accounts TO sonar_accounts,
-    admirals_tablets TO sonar_tablets,
-    admirals_companies TO sonar_companies,
-    admirals_company_members TO sonar_company_members,
-    admirals_bank_accounts TO sonar_bank_accounts,
-    admirals_bank_movements TO sonar_bank_movements,
-    admirals_bank_escrows TO sonar_bank_escrows,
-    admirals_audit_log TO sonar_audit_log,
-    admirals_bridge_idempotency TO sonar_bridge_idempotency,
-    admirals_event_log TO sonar_event_log,
-    admirals_schema_versions TO sonar_schema_versions,
+    sonar_accounts TO sonar_accounts,
+    sonar_tablets TO sonar_tablets,
+    sonar_companies TO sonar_companies,
+    sonar_company_members TO sonar_company_members,
+    sonar_bank_accounts TO sonar_bank_accounts,
+    sonar_bank_movements TO sonar_bank_movements,
+    sonar_bank_escrows TO sonar_bank_escrows,
+    sonar_audit_log TO sonar_audit_log,
+    sonar_bridge_idempotency TO sonar_bridge_idempotency,
+    sonar_event_log TO sonar_event_log,
+    sonar_schema_versions TO sonar_schema_versions,
     -- ... resto 28 tablas rename en batch atomic
-    admirals_settings TO sonar_settings;
+    sonar_settings TO sonar_settings;
 
   -- Indexes + FKs coherentemente renamed (InnoDB renamea FKs automatically con RENAME TABLE, verify post-migration con INFORMATION_SCHEMA).
 
@@ -69,38 +69,38 @@
 
   -- DOWN (rollback emergency)
   RENAME TABLE
-    sonar_accounts TO admirals_accounts,
+    sonar_accounts TO sonar_accounts,
     -- ... resto 28 tablas reverse;
   ```
 - **Checksum SHA-256** calculated + registered (Phase 9 execution).
 - **Audit trail preserved:** data rows intact, zero data loss. Solo metadata DDL names change.
-- **Pre-migration verify:** `SELECT COUNT(*) FROM admirals_bank_movements` = N rows. Post-migration: `SELECT COUNT(*) FROM sonar_bank_movements` = N rows (identical).
+- **Pre-migration verify:** `SELECT COUNT(*) FROM sonar_bank_movements` = N rows. Post-migration: `SELECT COUNT(*) FROM sonar_bank_movements` = N rows (identical).
 
 #### Hybrid `audit_log` + `event_log` (ADR-010) unchanged semantics
-- `admirals_audit_log` (wrapper operational) → `sonar_audit_log`. Schema + indexes + write pattern identical.
-- `admirals_event_log` (append-only event sourcing) → `sonar_event_log`. Schema + indexes + polymorphic refs identical.
+- `sonar_audit_log` (wrapper operational) → `sonar_audit_log`. Schema + indexes + write pattern identical.
+- `sonar_event_log` (append-only event sourcing) → `sonar_event_log`. Schema + indexes + polymorphic refs identical.
 - ADR-010 dual-table strategy preserved 1:1 post-migration.
 
 #### ERD + FKs + cardinality
-- ERD textual §2 del doc: refs `admirals_*` legacy. Post-migration lecturable con mental mapping 1:1 to `sonar_*`.
+- ERD textual §2 del doc: refs `sonar_*` legacy. Post-migration lecturable con mental mapping 1:1 to `sonar_*`.
 - FKs cascade policies + ON DELETE/UPDATE = identical.
 
 #### Reference data (seeds) post-migration
-- `admirals_settings` key/value rows: key strings (e.g., `'starter_balance'`) unchanged; solo tabla name bumped.
+- `sonar_settings` key/value rows: key strings (e.g., `'starter_balance'`) unchanged; solo tabla name bumped.
 - System treasury seed `AD-SYS0-0000-0001` (migration 004) preserved en `sonar_bank_accounts` post-rename. IBAN value unchanged para preservar continuidad ledger.
 
 #### Migration execution schedule (ADR-013 authoritative)
 - **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). DB NO tocada.
-- **Phase 9 execution session (próxima sesión founder-available):** crear `resources/sonar_core/migrations/009_rename_admirals_to_sonar.sql` (con rollback DOWN documented) + ejecutar via migrations runner + verify INFORMATION_SCHEMA + checksum registered.
-- **Post-Phase-9 doc bump v1.1 → v1.2:** refs inline `admirals_*` → `sonar_*` en DDL + índices + queries + diccionario datos (28 tablas actualizadas 1:1).
+- **Phase 9 execution session (próxima sesión founder-available):** crear `resources/sonar_core/migrations/009_rename_sonar_to_sonar.sql` (con rollback DOWN documented) + ejecutar via migrations runner + verify INFORMATION_SCHEMA + checksum registered.
+- **Post-Phase-9 doc bump v1.1 → v1.2:** refs inline `sonar_*` → `sonar_*` en DDL + índices + queries + diccionario datos (28 tablas actualizadas 1:1).
 - **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica queries + FKs + particionado con nuevas names.
 
 #### Cómo leer el resto del documento (§1-§20)
 
 1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
 2. **Filosofía + ERD + DDL + índices + queries + migrations strategy + particionado + backup + diccionario (§1-§20) siguen válidos pivot-agnostic** — foundational schema design sin cambios.
-3. **28 tablas documentadas (§3-§12, §14-§16) — refs `admirals_*` prefix = LEGACY estado actual DB.** Post-migration-009 ejecutada = canonical `sonar_*`. Mapping 1:1 aplicable.
-4. **índices + FKs + constraint names `admirals_*`:** legacy estado actual. Post-migration-009 = `sonar_*` coherentemente.
+3. **28 tablas documentadas (§3-§12, §14-§16) — refs `sonar_*` prefix = LEGACY estado actual DB.** Post-migration-009 ejecutada = canonical `sonar_*`. Mapping 1:1 aplicable.
+4. **índices + FKs + constraint names `sonar_*`:** legacy estado actual. Post-migration-009 = `sonar_*` coherentemente.
 5. **DDL columns + types + defaults + constraints = INVARIANTES.** Pre/post migration-009 identical.
 6. **§20.1 Resumen 28 tablas:** counts unchanged. Solo prefix actualiza.
 7. **ADR-010 hybrid audit_log + event_log semantics:** preserved 1:1.
@@ -135,7 +135,7 @@ Cubre:
 
 | # | Principio | Significado práctico |
 |---|---|---|
-| **D1** | **Prefijo `admirals_` obligatorio** | Todas las tablas Admirals empiezan con `admirals_`. Cero colisión con framework, addons o terceros. |
+| **D1** | **Prefijo `sonar_` obligatorio** | Todas las tablas Admirals empiezan con `sonar_`. Cero colisión con framework, addons o terceros. |
 | **D2** | **UUID v4 como id primario por defecto** | Los `id` de entidades de negocio (accounts, companies, tablets, etc.) son UUID v4 (CHAR(36)). Las tablas con alto volumen de inserts (movements, messages, event_log) usan BIGINT autoincrement. |
 | **D3** | **Charset y collation:** `utf8mb4` + `utf8mb4_0900_ai_ci` | Soporte completo Unicode (emojis, idiomas). MySQL 8 default. |
 | **D4** | **Engine InnoDB** | Transacciones ACID, foreign keys, row-level locking. Cero MyISAM. |
@@ -150,7 +150,7 @@ Cubre:
 
 ### 1.2 Convención de naming
 
-- **Tablas:** `admirals_<recurso>` (singular o plural según semántica). Ejemplo: `admirals_accounts`, `admirals_event_log`.
+- **Tablas:** `sonar_<recurso>` (singular o plural según semántica). Ejemplo: `sonar_accounts`, `sonar_event_log`.
 - **Columnas:** `snake_case` siempre.
 - **Foreign keys:** column name = `<related_table_singular>_id` (ej. `account_id`, `company_id`).
 - **Índices:** `idx_<table>_<col1>_<col2>` para no únicos, `uq_<table>_<col>` para únicos, `pk_<table>` para PK explícitos compuestos, `fk_<table>_<col>` para FKs.
@@ -174,7 +174,7 @@ Cubre:
 | `UnixSec` | `INT UNSIGNED` | timestamp segundos (válido hasta 2106). |
 | `UnixMs` | `BIGINT UNSIGNED` | timestamp ms. |
 | `Boolean` | `TINYINT(1)` | 0/1. |
-| `EventName` | `VARCHAR(96)` | `admirals:domain:action`, suficiente para los nombres canónicos. |
+| `EventName` | `VARCHAR(96)` | `sonar:domain:action`, suficiente para los nombres canónicos. |
 | `JsonPayload` | `JSON` | payloads de eventos, metadata flexible. |
 
 ### 1.4 Convención de timestamps
@@ -250,101 +250,101 @@ JSON **NO se usa** para:
 │                      DOMINIO IDENTIDAD Y EMPRESA                     │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_accounts
-  └─< admirals_tablets         (1 account → 0..N tablets)
-  └─< admirals_company_members (1 account → 0..N memberships)
-  └─< admirals_documents       (created_by) (1 account → 0..N docs)
-  └─< admirals_messages        (sender)     (1 account → 0..N messages)
-  └─< admirals_notifications   (target)     (1 account → 0..N notifs)
+sonar_accounts
+  └─< sonar_tablets         (1 account → 0..N tablets)
+  └─< sonar_company_members (1 account → 0..N memberships)
+  └─< sonar_documents       (created_by) (1 account → 0..N docs)
+  └─< sonar_messages        (sender)     (1 account → 0..N messages)
+  └─< sonar_notifications   (target)     (1 account → 0..N notifs)
 
-admirals_companies
-  └─< admirals_company_members         (1 company → N members)
-  ├─> admirals_bank_accounts (1 company → 1 bank account empresarial)
-  └─< admirals_documents               (1 company → 0..N docs)
+sonar_companies
+  └─< sonar_company_members         (1 company → N members)
+  ├─> sonar_bank_accounts (1 company → 1 bank account empresarial)
+  └─< sonar_documents               (1 company → 0..N docs)
 
-admirals_company_members ──> admirals_accounts
-admirals_company_members ──> admirals_companies
+sonar_company_members ──> sonar_accounts
+sonar_company_members ──> sonar_companies
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                          DOMINIO BANCA                               │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_bank_accounts
-  └─< admirals_bank_movements (*)  (1 account → N movements)
+sonar_bank_accounts
+  └─< sonar_bank_movements (*)  (1 account → N movements)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       DOMINIO DOCUMENTOS                             │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_documents
-  └─< admirals_document_signatures   (1 doc → N firmas)
-  └─< admirals_documents              (parent_doc_id self-reference)
+sonar_documents
+  └─< sonar_document_signatures   (1 doc → N firmas)
+  └─< sonar_documents              (parent_doc_id self-reference)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     DOMINIO MENSAJERÍA                               │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_chats
-  └─< admirals_chat_participants     (1 chat → N participantes)
-  └─< admirals_messages (*)          (1 chat → N messages)
+sonar_chats
+  └─< sonar_chat_participants     (1 chat → N participantes)
+  └─< sonar_messages (*)          (1 chat → N messages)
 
-admirals_messages (*)
-  └─< admirals_message_attachments   (1 message → N attachments)
+sonar_messages (*)
+  └─< sonar_message_attachments   (1 message → N attachments)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     DOMINIO NOTIFICACIONES                           │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_notifications (*)
-  └─> admirals_accounts              (target)
+sonar_notifications (*)
+  └─> sonar_accounts              (target)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   DOMINIO MARKET Y REPUTATION                        │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_market_offers
-  └─< admirals_market_reviews        (1 offer → 0..1 review típicamente)
-  └─> admirals_logistics_jobs        (offer → optional job)
+sonar_market_offers
+  └─< sonar_market_reviews        (1 offer → 0..1 review típicamente)
+  └─> sonar_logistics_jobs        (offer → optional job)
 
-admirals_reputation
-  └─> admirals_accounts | admirals_companies (subject polymorphic)
+sonar_reputation
+  └─> sonar_accounts | sonar_companies (subject polymorphic)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     DOMINIO LOGÍSTICA                                │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_logistics_jobs
-  └─< admirals_logistics_disputes    (1 job → 0..N disputes)
+sonar_logistics_jobs
+  └─< sonar_logistics_disputes    (1 job → 0..N disputes)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       DOMINIO NODOS                                  │
-│  (cada nodo gestiona sus propias tablas con prefijo admirals_<nodo>) │
+│  (cada nodo gestiona sus propias tablas con prefijo sonar_<nodo>) │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_granja_plots         (1 company → N plots)
-admirals_granja_silos         (1 company → N silos)
-admirals_granja_machines      (1 company → N machines)
-admirals_granja_licenses      (1 account → N licenses)
+sonar_granja_plots         (1 company → N plots)
+sonar_granja_silos         (1 company → N silos)
+sonar_granja_machines      (1 company → N machines)
+sonar_granja_licenses      (1 account → N licenses)
 
-admirals_molino_silos
-admirals_molino_machines
-admirals_molino_batches       (lineage)
+sonar_molino_silos
+sonar_molino_machines
+sonar_molino_batches       (lineage)
 
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                  DOMINIO INFRAESTRUCTURA                             │
 └─────────────────────────────────────────────────────────────────────┘
 
-admirals_event_log (*)              (audit trail particionado por mes)
-admirals_schema_versions            (registry de migraciones aplicadas)
-admirals_settings_per_account       (preferencias usuario)
+sonar_event_log (*)              (audit trail particionado por mes)
+sonar_schema_versions            (registry de migraciones aplicadas)
+sonar_settings_per_account       (preferencias usuario)
 ```
 
 ### 2.1 Resumen de cardinalidades clave
@@ -367,34 +367,34 @@ admirals_settings_per_account       (preferencias usuario)
 
 | # | Tabla | Dominio | Particionada | Tamaño esperado (servidor 200 jug) |
 |---|---|---|---|---|
-| 1 | `admirals_accounts` | core | no | < 10K filas |
-| 2 | `admirals_tablets` | core | no | < 10K filas |
-| 3 | `admirals_companies` | core | no | < 5K filas |
-| 4 | `admirals_company_members` | core | no | < 50K filas |
-| 5 | `admirals_bank_accounts` | bank | no | < 20K filas |
-| 6 | `admirals_bank_movements` | bank | sí (mes) | crece sin límite |
-| 7 | `admirals_documents` | docs | no | crece — archival manual |
-| 8 | `admirals_document_signatures` | docs | no | proporcional a docs |
-| 9 | `admirals_chats` | messages | no | < 50K filas |
-| 10 | `admirals_chat_participants` | messages | no | < 200K filas |
-| 11 | `admirals_messages` | messages | sí (mes) | crece sin límite |
-| 12 | `admirals_message_attachments` | messages | no | proporcional a messages |
-| 13 | `admirals_notifications` | notif | sí (mes) | crece sin límite |
-| 14 | `admirals_market_offers` | market | no | < 100K filas |
-| 15 | `admirals_market_reviews` | market | no | proporcional a offers |
-| 16 | `admirals_reputation` | core | no | < 30K filas |
-| 17 | `admirals_logistics_jobs` | logistics | no | crece moderadamente |
-| 18 | `admirals_logistics_disputes` | logistics | no | raras |
-| 19 | `admirals_granja_plots` | granja | no | < 10K filas |
-| 20 | `admirals_granja_silos` | granja | no | < 5K filas |
-| 21 | `admirals_granja_machines` | granja | no | < 10K filas |
-| 22 | `admirals_granja_licenses` | granja | no | < 50K filas |
-| 23 | `admirals_molino_silos` | molino | no | < 1K filas |
-| 24 | `admirals_molino_machines` | molino | no | < 1K filas |
-| 25 | `admirals_molino_batches` | molino | no | crece moderadamente |
-| 26 | `admirals_event_log` | infra | sí (mes) | crece sin límite |
-| 27 | `admirals_schema_versions` | infra | no | < 200 filas |
-| 28 | `admirals_settings_per_account` | infra | no | < 10K filas |
+| 1 | `sonar_accounts` | core | no | < 10K filas |
+| 2 | `sonar_tablets` | core | no | < 10K filas |
+| 3 | `sonar_companies` | core | no | < 5K filas |
+| 4 | `sonar_company_members` | core | no | < 50K filas |
+| 5 | `sonar_bank_accounts` | bank | no | < 20K filas |
+| 6 | `sonar_bank_movements` | bank | sí (mes) | crece sin límite |
+| 7 | `sonar_documents` | docs | no | crece — archival manual |
+| 8 | `sonar_document_signatures` | docs | no | proporcional a docs |
+| 9 | `sonar_chats` | messages | no | < 50K filas |
+| 10 | `sonar_chat_participants` | messages | no | < 200K filas |
+| 11 | `sonar_messages` | messages | sí (mes) | crece sin límite |
+| 12 | `sonar_message_attachments` | messages | no | proporcional a messages |
+| 13 | `sonar_notifications` | notif | sí (mes) | crece sin límite |
+| 14 | `sonar_market_offers` | market | no | < 100K filas |
+| 15 | `sonar_market_reviews` | market | no | proporcional a offers |
+| 16 | `sonar_reputation` | core | no | < 30K filas |
+| 17 | `sonar_logistics_jobs` | logistics | no | crece moderadamente |
+| 18 | `sonar_logistics_disputes` | logistics | no | raras |
+| 19 | `sonar_granja_plots` | granja | no | < 10K filas |
+| 20 | `sonar_granja_silos` | granja | no | < 5K filas |
+| 21 | `sonar_granja_machines` | granja | no | < 10K filas |
+| 22 | `sonar_granja_licenses` | granja | no | < 50K filas |
+| 23 | `sonar_molino_silos` | molino | no | < 1K filas |
+| 24 | `sonar_molino_machines` | molino | no | < 1K filas |
+| 25 | `sonar_molino_batches` | molino | no | crece moderadamente |
+| 26 | `sonar_event_log` | infra | sí (mes) | crece sin límite |
+| 27 | `sonar_schema_versions` | infra | no | < 200 filas |
+| 28 | `sonar_settings_per_account` | infra | no | < 10K filas |
 
 **Total tablas oleada 1: 28** (12 core + 13 dominios + 3 nodos + 0 reservas).
 
@@ -402,12 +402,12 @@ admirals_settings_per_account       (preferencias usuario)
 
 ## 3. DDL — Dominio identidad y empresa
 
-### 3.1 admirals_accounts
+### 3.1 sonar_accounts
 
 > **La cuenta Admirals.** Vinculada a un personaje del framework. Es el "DNI digital" del jugador en el ecosistema.
 
 ```sql
-CREATE TABLE admirals_accounts (
+CREATE TABLE sonar_accounts (
   id                    CHAR(36)        NOT NULL,
   char_id               VARCHAR(64)     NOT NULL COMMENT 'citizenid QBox / identifier ESX / character_id manual',
   framework_source      ENUM('qbox','qbcore','esx','manual') NOT NULL,
@@ -422,27 +422,27 @@ CREATE TABLE admirals_accounts (
   last_login_at         INT UNSIGNED    NULL,
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_accounts_char_id (char_id, framework_source),
+  UNIQUE KEY uq_sonar_accounts_char_id (char_id, framework_source),
 
   CHECK (reputation_global BETWEEN 0 AND 100)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 **Notas:**
-- `id` es UUID v4 generado en `admirals_core` al primer login del jugador.
+- `id` es UUID v4 generado en `sonar_core` al primer login del jugador.
 - `char_id` + `framework_source` es único — un personaje del framework solo tiene una cuenta Admirals.
-- `reputation_global` se actualiza vía `admirals:core:reputation_changed`.
+- `reputation_global` se actualiza vía `sonar:core:reputation_changed`.
 - `meta` puede contener: `{ "wallpaper": "...", "theme": "...", ... }`.
 
-### 3.2 admirals_tablets
+### 3.2 sonar_tablets
 
-> **Hardware Tablet.** Es **un item físico inventariable** además de una entry en DB. Ver `02_admirals_tablet.md` para semántica.
+> **Hardware Tablet.** Es **un item físico inventariable** además de una entry en DB. Ver `02_sonar_tablet.md` para semántica.
 
 ```sql
-CREATE TABLE admirals_tablets (
+CREATE TABLE sonar_tablets (
   serial                CHAR(36)        NOT NULL COMMENT 'UUID v4 — número de serie único',
   owner_account_id      CHAR(36)        NULL COMMENT 'NULL si está en venta o sin asignar',
-  model                 ENUM('admirals_basic','admirals_pro','admirals_enterprise') NOT NULL DEFAULT 'admirals_basic',
+  model                 ENUM('sonar_basic','sonar_pro','sonar_enterprise') NOT NULL DEFAULT 'sonar_basic',
   os_version            VARCHAR(16)     NOT NULL DEFAULT '1.0.0',
 
   is_lost               TINYINT(1)      NOT NULL DEFAULT 0,
@@ -462,11 +462,11 @@ CREATE TABLE admirals_tablets (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (serial),
-  KEY idx_admirals_tablets_owner (owner_account_id),
+  KEY idx_sonar_tablets_owner (owner_account_id),
 
-  CONSTRAINT fk_admirals_tablets_owner
+  CONSTRAINT fk_sonar_tablets_owner
     FOREIGN KEY (owner_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -475,15 +475,15 @@ CREATE TABLE admirals_tablets (
 **Notas:**
 - `serial` es UUID v4 generado al fabricar la Tablet (al "comprarla" o al spawnear).
 - `owner_account_id` puede ser NULL si la Tablet está en una tienda, perdida sin recuperar, o vendida sin nuevo dueño asignado.
-- `is_lost` se setea via `admirals:tablet:lost_or_stolen`.
+- `is_lost` se setea via `sonar:tablet:lost_or_stolen`.
 - Settings personales de UI viven aquí, no en la cuenta — porque la Tablet es física y el dueño podría cambiar.
 
-### 3.3 admirals_companies
+### 3.3 sonar_companies
 
 > **Empresa Admirals.** Entidad jurídica RP, dueña de assets físicos, contratos, cuenta empresarial.
 
 ```sql
-CREATE TABLE admirals_companies (
+CREATE TABLE sonar_companies (
   id                    CHAR(36)        NOT NULL,
   vertical              VARCHAR(32)     NOT NULL COMMENT 'farm, mill, bakery, retail, logistics, mechanic, ...',
   name                  VARCHAR(96)     NOT NULL,
@@ -507,13 +507,13 @@ CREATE TABLE admirals_companies (
   dissolved_at          INT UNSIGNED    NULL,
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_companies_name (name),
-  KEY idx_admirals_companies_owner (owner_account_id),
-  KEY idx_admirals_companies_vertical_status (vertical, status),
+  UNIQUE KEY uq_sonar_companies_name (name),
+  KEY idx_sonar_companies_owner (owner_account_id),
+  KEY idx_sonar_companies_vertical_status (vertical, status),
 
-  CONSTRAINT fk_admirals_companies_owner
+  CONSTRAINT fk_sonar_companies_owner
     FOREIGN KEY (owner_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
@@ -524,16 +524,16 @@ CREATE TABLE admirals_companies (
 
 **Notas:**
 - `cash_balance` es la caja física en sede (cash en efectivo). Pool separado de `bank_account_id`.
-- `bank_account_id` es FK lógica a `admirals_bank_accounts` — se añade el constraint después en migración debido a dependencia circular en orden de creación de tablas.
+- `bank_account_id` es FK lógica a `sonar_bank_accounts` — se añade el constraint después en migración debido a dependencia circular en orden de creación de tablas.
 - `vertical` no es ENUM porque se añadirán verticales en oleadas futuras sin ALTER TABLE.
 - `config` ejemplo Granja: `{ "max_plots": 10, "weather_zone": "paleto" }`.
 
-### 3.4 admirals_company_members
+### 3.4 sonar_company_members
 
 > **Tabla intermedia** account ↔ company con rol y datos de empleo.
 
 ```sql
-CREATE TABLE admirals_company_members (
+CREATE TABLE sonar_company_members (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   company_id            CHAR(36)        NOT NULL,
   account_id            CHAR(36)        NOT NULL,
@@ -557,19 +557,19 @@ CREATE TABLE admirals_company_members (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_company_members_active (company_id, account_id, is_active),
-  KEY idx_admirals_company_members_account (account_id, is_active),
-  KEY idx_admirals_company_members_company (company_id, is_active, role),
+  UNIQUE KEY uq_sonar_company_members_active (company_id, account_id, is_active),
+  KEY idx_sonar_company_members_account (account_id, is_active),
+  KEY idx_sonar_company_members_company (company_id, is_active, role),
 
-  CONSTRAINT fk_admirals_company_members_company
+  CONSTRAINT fk_sonar_company_members_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_company_members_account
+  CONSTRAINT fk_sonar_company_members_account
     FOREIGN KEY (account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
@@ -586,12 +586,12 @@ CREATE TABLE admirals_company_members (
 
 ## 4. DDL — Dominio Banca
 
-### 4.1 admirals_bank_accounts
+### 4.1 sonar_bank_accounts
 
 > **Cuenta bancaria** personal o empresarial. IBAN único formato Admirals.
 
 ```sql
-CREATE TABLE admirals_bank_accounts (
+CREATE TABLE sonar_bank_accounts (
   id                    CHAR(36)        NOT NULL,
   iban                  VARCHAR(20)     NOT NULL COMMENT 'AD-XXXX-XXXX-XXXX',
   type                  ENUM('personal','company','cooperative','escrow') NOT NULL,
@@ -609,19 +609,19 @@ CREATE TABLE admirals_bank_accounts (
   closed_at             INT UNSIGNED    NULL,
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_bank_accounts_iban (iban),
-  KEY idx_admirals_bank_accounts_owner_account (owner_account_id),
-  KEY idx_admirals_bank_accounts_owner_company (owner_company_id),
+  UNIQUE KEY uq_sonar_bank_accounts_iban (iban),
+  KEY idx_sonar_bank_accounts_owner_account (owner_account_id),
+  KEY idx_sonar_bank_accounts_owner_company (owner_company_id),
 
-  CONSTRAINT fk_admirals_bank_accounts_owner_account
+  CONSTRAINT fk_sonar_bank_accounts_owner_account
     FOREIGN KEY (owner_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_bank_accounts_owner_company
+  CONSTRAINT fk_sonar_bank_accounts_owner_company
     FOREIGN KEY (owner_company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
@@ -634,16 +634,16 @@ CREATE TABLE admirals_bank_accounts (
 
 **Notas:**
 - Solo uno de `owner_account_id` / `owner_company_id` está poblado según `type` — CHECK lo enforzia.
-- IBAN único con formato `AD-XXXX-XXXX-XXXX`. Generado por `admirals_core` con checksum interno.
+- IBAN único con formato `AD-XXXX-XXXX-XXXX`. Generado por `sonar_core` con checksum interno.
 - `escrow` se usa para holding payments (delivery_via_logistics, contratos) — son cuentas técnicas internas.
-- Constraint FK de `admirals_companies.bank_account_id → admirals_bank_accounts.id` se añade en migración 002 tras crear ambas tablas.
+- Constraint FK de `sonar_companies.bank_account_id → sonar_bank_accounts.id` se añade en migración 002 tras crear ambas tablas.
 
-### 4.2 admirals_bank_movements (PARTITIONED)
+### 4.2 sonar_bank_movements (PARTITIONED)
 
 > **Movimientos bancarios — registro contable inmutable.** Cada transferencia genera 2 entradas (debe + haber).
 
 ```sql
-CREATE TABLE admirals_bank_movements (
+CREATE TABLE sonar_bank_movements (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   bank_account_id       CHAR(36)        NOT NULL,
   occurred_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
@@ -661,15 +661,15 @@ CREATE TABLE admirals_bank_movements (
   request_nonce         CHAR(36)        NULL COMMENT 'idempotencia anti-replay',
 
   initiated_by_account_id CHAR(36)      NULL,
-  source_resource       VARCHAR(64)     NOT NULL COMMENT 'admirals_core, admirals_market, etc.',
+  source_resource       VARCHAR(64)     NOT NULL COMMENT 'sonar_core, sonar_market, etc.',
 
   PRIMARY KEY (id, occurred_at),
-  KEY idx_admirals_bank_movements_account (bank_account_id, occurred_at DESC),
-  KEY idx_admirals_bank_movements_category (category, occurred_at DESC),
-  KEY idx_admirals_bank_movements_nonce (request_nonce),
-  KEY idx_admirals_bank_movements_related_doc (related_doc_id),
-  KEY idx_admirals_bank_movements_related_offer (related_offer_id),
-  KEY idx_admirals_bank_movements_related_job (related_job_id)
+  KEY idx_sonar_bank_movements_account (bank_account_id, occurred_at DESC),
+  KEY idx_sonar_bank_movements_category (category, occurred_at DESC),
+  KEY idx_sonar_bank_movements_nonce (request_nonce),
+  KEY idx_sonar_bank_movements_related_doc (related_doc_id),
+  KEY idx_sonar_bank_movements_related_offer (related_offer_id),
+  KEY idx_sonar_bank_movements_related_job (related_job_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   PARTITION BY RANGE (occurred_at) (
     PARTITION p_2026_01 VALUES LESS THAN (1738368000),  -- Feb 1 2026
@@ -690,12 +690,12 @@ CREATE TABLE admirals_bank_movements (
 
 ## 5. DDL — Dominio Documentos
 
-### 5.1 admirals_documents
+### 5.1 sonar_documents
 
 > **Repositorio documental Admirals.** Notas, contratos, albaranes, recibos, certificados.
 
 ```sql
-CREATE TABLE admirals_documents (
+CREATE TABLE sonar_documents (
   id                    CHAR(36)        NOT NULL,
   type                  ENUM('note','contract','delivery_note','receipt','license','company_deed','bill_of_sale','invoice','custom') NOT NULL,
   title                 VARCHAR(192)    NOT NULL,
@@ -724,33 +724,33 @@ CREATE TABLE admirals_documents (
   deleted_by_account_id CHAR(36)        NULL,
 
   PRIMARY KEY (id),
-  KEY idx_admirals_documents_owner_account (owner_account_id, type, status),
-  KEY idx_admirals_documents_owner_company (owner_company_id, type, status),
-  KEY idx_admirals_documents_status (status, type),
-  KEY idx_admirals_documents_parent (parent_doc_id),
-  KEY idx_admirals_documents_created_by (created_by_account_id, created_at DESC),
+  KEY idx_sonar_documents_owner_account (owner_account_id, type, status),
+  KEY idx_sonar_documents_owner_company (owner_company_id, type, status),
+  KEY idx_sonar_documents_status (status, type),
+  KEY idx_sonar_documents_parent (parent_doc_id),
+  KEY idx_sonar_documents_created_by (created_by_account_id, created_at DESC),
 
-  CONSTRAINT fk_admirals_documents_owner_account
+  CONSTRAINT fk_sonar_documents_owner_account
     FOREIGN KEY (owner_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_documents_owner_company
+  CONSTRAINT fk_sonar_documents_owner_company
     FOREIGN KEY (owner_company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_documents_created_by
+  CONSTRAINT fk_sonar_documents_created_by
     FOREIGN KEY (created_by_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_documents_parent
+  CONSTRAINT fk_sonar_documents_parent
     FOREIGN KEY (parent_doc_id)
-    REFERENCES admirals_documents(id)
+    REFERENCES sonar_documents(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -762,12 +762,12 @@ CREATE TABLE admirals_documents (
 - Soft delete mediante `deleted_at`. Documentos firmados son inmutables — no se editan, se versionan vía `parent_doc_id`.
 - `body` es LONGTEXT para soportar contratos extensos, no solo notas cortas.
 
-### 5.2 admirals_document_signatures
+### 5.2 sonar_document_signatures
 
 > **Firmas individuales** de un documento. Permite multi-firmantes (contratos B2B con N partes).
 
 ```sql
-CREATE TABLE admirals_document_signatures (
+CREATE TABLE sonar_document_signatures (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   doc_id                CHAR(36)        NOT NULL,
   signer_account_id     CHAR(36)        NOT NULL,
@@ -781,18 +781,18 @@ CREATE TABLE admirals_document_signatures (
   ip_address            VARCHAR(45)     NULL COMMENT 'opcional para audit',
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_document_signatures_doc_signer (doc_id, signer_account_id),
-  KEY idx_admirals_document_signatures_signer (signer_account_id, signed_at DESC),
+  UNIQUE KEY uq_sonar_document_signatures_doc_signer (doc_id, signer_account_id),
+  KEY idx_sonar_document_signatures_signer (signer_account_id, signed_at DESC),
 
-  CONSTRAINT fk_admirals_document_signatures_doc
+  CONSTRAINT fk_sonar_document_signatures_doc
     FOREIGN KEY (doc_id)
-    REFERENCES admirals_documents(id)
+    REFERENCES sonar_documents(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_document_signatures_signer
+  CONSTRAINT fk_sonar_document_signatures_signer
     FOREIGN KEY (signer_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -801,18 +801,18 @@ CREATE TABLE admirals_document_signatures (
 **Notas:**
 - `signature_hash` permite verificar integridad: si el `body` del doc cambia post-firma, el hash recalculado no coincidirá → tampering detectado.
 - `UNIQUE (doc_id, signer_account_id)` impide doble firma del mismo signer.
-- Cuando todas las partes han firmado, se actualiza `admirals_documents.status = 'active'` (lógica en código vía `admirals:documents:signed`).
+- Cuando todas las partes han firmado, se actualiza `sonar_documents.status = 'active'` (lógica en código vía `sonar:documents:signed`).
 
 ---
 
 ## 6. DDL — Dominio Mensajería
 
-### 6.1 admirals_chats
+### 6.1 sonar_chats
 
 > **Conversación.** Puede ser 1-1, grupal o canal empresarial.
 
 ```sql
-CREATE TABLE admirals_chats (
+CREATE TABLE sonar_chats (
   id                    CHAR(36)        NOT NULL,
   type                  ENUM('direct','group','company_channel') NOT NULL,
   name                  VARCHAR(96)     NULL COMMENT 'NULL en directos (se infiere de participantes)',
@@ -829,18 +829,18 @@ CREATE TABLE admirals_chats (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  KEY idx_admirals_chats_company (company_id, is_archived),
-  KEY idx_admirals_chats_last_message (last_message_at DESC),
+  KEY idx_sonar_chats_company (company_id, is_archived),
+  KEY idx_sonar_chats_last_message (last_message_at DESC),
 
-  CONSTRAINT fk_admirals_chats_company
+  CONSTRAINT fk_sonar_chats_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_chats_creator
+  CONSTRAINT fk_sonar_chats_creator
     FOREIGN KEY (created_by_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -848,12 +848,12 @@ CREATE TABLE admirals_chats (
 
 **Notas:**
 - `last_message_at` y `last_message_preview` son **denormalizaciones intencionales** para evitar JOIN en list view de chats (hot path UI). Se actualizan en cada mensaje vía repo.
-- `company_channel` se vincula a `admirals_companies.id` — si la empresa se borra (ON DELETE CASCADE), el chat empresarial también.
+- `company_channel` se vincula a `sonar_companies.id` — si la empresa se borra (ON DELETE CASCADE), el chat empresarial también.
 
-### 6.2 admirals_chat_participants
+### 6.2 sonar_chat_participants
 
 ```sql
-CREATE TABLE admirals_chat_participants (
+CREATE TABLE sonar_chat_participants (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   chat_id               CHAR(36)        NOT NULL,
   account_id            CHAR(36)        NOT NULL,
@@ -867,19 +867,19 @@ CREATE TABLE admirals_chat_participants (
   custom_name           VARCHAR(96)     NULL COMMENT 'override local del nombre del chat',
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_chat_participants_active (chat_id, account_id, left_at),
-  KEY idx_admirals_chat_participants_account (account_id, left_at, is_pinned DESC),
-  KEY idx_admirals_chat_participants_chat (chat_id, left_at),
+  UNIQUE KEY uq_sonar_chat_participants_active (chat_id, account_id, left_at),
+  KEY idx_sonar_chat_participants_account (account_id, left_at, is_pinned DESC),
+  KEY idx_sonar_chat_participants_chat (chat_id, left_at),
 
-  CONSTRAINT fk_admirals_chat_participants_chat
+  CONSTRAINT fk_sonar_chat_participants_chat
     FOREIGN KEY (chat_id)
-    REFERENCES admirals_chats(id)
+    REFERENCES sonar_chats(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_chat_participants_account
+  CONSTRAINT fk_sonar_chat_participants_account
     FOREIGN KEY (account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -889,12 +889,12 @@ CREATE TABLE admirals_chat_participants (
 - `last_read_message_id` permite read receipts y cálculo de unread count sin agregaciones costosas.
 - `left_at` permite leave/rejoin sin perder histórico.
 
-### 6.3 admirals_messages (PARTITIONED)
+### 6.3 sonar_messages (PARTITIONED)
 
 > **Mensajes** del ecosistema. Particionado mensual desde día 1.
 
 ```sql
-CREATE TABLE admirals_messages (
+CREATE TABLE sonar_messages (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   chat_id               CHAR(36)        NOT NULL,
   sent_at               INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
@@ -912,9 +912,9 @@ CREATE TABLE admirals_messages (
   reply_to_message_id   BIGINT UNSIGNED NULL,
 
   PRIMARY KEY (id, sent_at),
-  KEY idx_admirals_messages_chat (chat_id, sent_at DESC),
-  KEY idx_admirals_messages_sender (sender_id, sent_at DESC),
-  KEY idx_admirals_messages_reply (reply_to_message_id)
+  KEY idx_sonar_messages_chat (chat_id, sent_at DESC),
+  KEY idx_sonar_messages_sender (sender_id, sent_at DESC),
+  KEY idx_sonar_messages_reply (reply_to_message_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   PARTITION BY RANGE (sent_at) (
     PARTITION p_2026_01 VALUES LESS THAN (1738368000),
@@ -926,12 +926,12 @@ CREATE TABLE admirals_messages (
 
 **Notas:**
 - **No FK a chat_id** intencional — particionamiento + volumen. Integridad por aplicación (repo valida chat existe antes de insertar).
-- Particiones gestionadas por cron — añadir nueva mensual + archivar > 12 meses a tabla `admirals_messages_archive` o cold storage.
+- Particiones gestionadas por cron — añadir nueva mensual + archivar > 12 meses a tabla `sonar_messages_archive` o cold storage.
 
-### 6.4 admirals_message_attachments
+### 6.4 sonar_message_attachments
 
 ```sql
-CREATE TABLE admirals_message_attachments (
+CREATE TABLE sonar_message_attachments (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   message_id            BIGINT UNSIGNED NOT NULL,
   message_sent_at       INT UNSIGNED    NOT NULL COMMENT 'duplicada para FK lógica + facilita queries',
@@ -943,7 +943,7 @@ CREATE TABLE admirals_message_attachments (
   created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  KEY idx_admirals_message_attachments_message (message_id, message_sent_at)
+  KEY idx_sonar_message_attachments_message (message_id, message_sent_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
@@ -956,12 +956,12 @@ CREATE TABLE admirals_message_attachments (
 
 ## 7. DDL — Dominio Notificaciones
 
-### 7.1 admirals_notifications (PARTITIONED)
+### 7.1 sonar_notifications (PARTITIONED)
 
 > **Notificaciones push** dirigidas a una cuenta. Histórico completo (no se borran al leer — el panel histórico de la Tablet las usa).
 
 ```sql
-CREATE TABLE admirals_notifications (
+CREATE TABLE sonar_notifications (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   account_id            CHAR(36)        NOT NULL,
   pushed_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
@@ -991,9 +991,9 @@ CREATE TABLE admirals_notifications (
   archived_at           INT UNSIGNED    NULL,
 
   PRIMARY KEY (id, pushed_at),
-  KEY idx_admirals_notifications_account (account_id, pushed_at DESC),
-  KEY idx_admirals_notifications_account_unread (account_id, is_read, is_archived, pushed_at DESC),
-  KEY idx_admirals_notifications_type (type, pushed_at DESC)
+  KEY idx_sonar_notifications_account (account_id, pushed_at DESC),
+  KEY idx_sonar_notifications_account_unread (account_id, is_read, is_archived, pushed_at DESC),
+  KEY idx_sonar_notifications_type (type, pushed_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   PARTITION BY RANGE (pushed_at) (
     PARTITION p_2026_01 VALUES LESS THAN (1738368000),
@@ -1011,12 +1011,12 @@ CREATE TABLE admirals_notifications (
 
 ## 8. DDL — Dominio Market
 
-### 8.1 admirals_market_offers
+### 8.1 sonar_market_offers
 
 > **Ofertas en el Mercado:** trabajos temporales, productos, servicios, empresas en venta.
 
 ```sql
-CREATE TABLE admirals_market_offers (
+CREATE TABLE sonar_market_offers (
   id                    CHAR(36)        NOT NULL,
   type                  ENUM('temp_job','product','service','company_sale','rent') NOT NULL,
   status                ENUM('active','accepted','completed','cancelled','expired') NOT NULL DEFAULT 'active',
@@ -1048,27 +1048,27 @@ CREATE TABLE admirals_market_offers (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  KEY idx_admirals_market_offers_status_type (status, type, created_at DESC),
-  KEY idx_admirals_market_offers_publisher_account (publisher_account_id, status),
-  KEY idx_admirals_market_offers_publisher_company (publisher_company_id, status),
-  KEY idx_admirals_market_offers_vertical (vertical_filter, status, type),
-  KEY idx_admirals_market_offers_expires (status, expires_at),
+  KEY idx_sonar_market_offers_status_type (status, type, created_at DESC),
+  KEY idx_sonar_market_offers_publisher_account (publisher_account_id, status),
+  KEY idx_sonar_market_offers_publisher_company (publisher_company_id, status),
+  KEY idx_sonar_market_offers_vertical (vertical_filter, status, type),
+  KEY idx_sonar_market_offers_expires (status, expires_at),
 
-  CONSTRAINT fk_admirals_market_offers_publisher_account
+  CONSTRAINT fk_sonar_market_offers_publisher_account
     FOREIGN KEY (publisher_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_market_offers_publisher_company
+  CONSTRAINT fk_sonar_market_offers_publisher_company
     FOREIGN KEY (publisher_company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_market_offers_acceptor
+  CONSTRAINT fk_sonar_market_offers_acceptor
     FOREIGN KEY (accepted_by_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
@@ -1082,14 +1082,14 @@ CREATE TABLE admirals_market_offers (
 **Notas:**
 - `data_json` ejemplo `temp_job`: `{ "estimated_minutes": 30, "task_kind": "harvest", "plot_id": "..." }`.
 - `data_json` ejemplo `product`: `{ "item_kind": "flour_baker_25kg", "quantity": 100, "quality_grade": "A" }`.
-- Cron de expiración consulta `WHERE status = 'active' AND expires_at < NOW()` — índice `idx_admirals_market_offers_expires` lo soporta.
+- Cron de expiración consulta `WHERE status = 'active' AND expires_at < NOW()` — índice `idx_sonar_market_offers_expires` lo soporta.
 
-### 8.2 admirals_market_reviews
+### 8.2 sonar_market_reviews
 
 > **Reseñas y rating** post-transacción.
 
 ```sql
-CREATE TABLE admirals_market_reviews (
+CREATE TABLE sonar_market_reviews (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   reviewer_kind         ENUM('account','company') NOT NULL,
   reviewer_id           CHAR(36)        NOT NULL,
@@ -1108,9 +1108,9 @@ CREATE TABLE admirals_market_reviews (
   posted_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_market_reviews_offer (related_offer_id, reviewer_id),
-  KEY idx_admirals_market_reviews_subject (subject_id, posted_at DESC),
-  KEY idx_admirals_market_reviews_reviewer (reviewer_id, posted_at DESC),
+  UNIQUE KEY uq_sonar_market_reviews_offer (related_offer_id, reviewer_id),
+  KEY idx_sonar_market_reviews_subject (subject_id, posted_at DESC),
+  KEY idx_sonar_market_reviews_reviewer (reviewer_id, posted_at DESC),
 
   CHECK (rating BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1121,12 +1121,12 @@ CREATE TABLE admirals_market_reviews (
 - Reseñas polimórficas — pueden ser de account a account, company a company, etc.
 - No FK polimórfica directa — integridad por aplicación.
 
-### 8.3 admirals_reputation
+### 8.3 sonar_reputation
 
 > **Histórico de cambios de reputación** y valor agregado actual. Permite ver "por qué" un sujeto tiene su rep actual.
 
 ```sql
-CREATE TABLE admirals_reputation (
+CREATE TABLE sonar_reputation (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   subject_kind          ENUM('account','company') NOT NULL,
   subject_id            CHAR(36)        NOT NULL,
@@ -1144,27 +1144,27 @@ CREATE TABLE admirals_reputation (
   related_review_id     BIGINT UNSIGNED NULL,
 
   PRIMARY KEY (id),
-  KEY idx_admirals_reputation_subject (subject_id, occurred_at DESC),
-  KEY idx_admirals_reputation_reason (reason_code, occurred_at DESC),
+  KEY idx_sonar_reputation_subject (subject_id, occurred_at DESC),
+  KEY idx_sonar_reputation_reason (reason_code, occurred_at DESC),
 
   CHECK (value_after BETWEEN 0 AND 100)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 **Notas:**
-- Tabla de **trail** — el valor agregado vivo se mantiene en `admirals_accounts.reputation_global` y `admirals_companies.reputation` (denormalizado para queries frecuentes).
+- Tabla de **trail** — el valor agregado vivo se mantiene en `sonar_accounts.reputation_global` y `sonar_companies.reputation` (denormalizado para queries frecuentes).
 - Esta tabla permite reconstruir histórico, analytics, debugging. Insert-only.
 
 ---
 
 ## 9. DDL — Dominio Logística
 
-### 9.1 admirals_logistics_jobs
+### 9.1 sonar_logistics_jobs
 
 > **Trabajos de transporte.** Origen + destino + cargo + carrier + estado.
 
 ```sql
-CREATE TABLE admirals_logistics_jobs (
+CREATE TABLE sonar_logistics_jobs (
   id                    CHAR(36)        NOT NULL,
   status                ENUM('pending','assigned','in_transit','delivered','disputed','cancelled') NOT NULL DEFAULT 'pending',
 
@@ -1198,40 +1198,40 @@ CREATE TABLE admirals_logistics_jobs (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  KEY idx_admirals_logistics_jobs_status (status, created_at DESC),
-  KEY idx_admirals_logistics_jobs_origin (origin_company_id, status),
-  KEY idx_admirals_logistics_jobs_destination (destination_company_id, status),
-  KEY idx_admirals_logistics_jobs_carrier_account (carrier_account_id, status),
-  KEY idx_admirals_logistics_jobs_carrier_company (carrier_company_id, status),
-  KEY idx_admirals_logistics_jobs_offer (related_offer_id),
+  KEY idx_sonar_logistics_jobs_status (status, created_at DESC),
+  KEY idx_sonar_logistics_jobs_origin (origin_company_id, status),
+  KEY idx_sonar_logistics_jobs_destination (destination_company_id, status),
+  KEY idx_sonar_logistics_jobs_carrier_account (carrier_account_id, status),
+  KEY idx_sonar_logistics_jobs_carrier_company (carrier_company_id, status),
+  KEY idx_sonar_logistics_jobs_offer (related_offer_id),
 
-  CONSTRAINT fk_admirals_logistics_jobs_origin
+  CONSTRAINT fk_sonar_logistics_jobs_origin
     FOREIGN KEY (origin_company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_logistics_jobs_destination
+  CONSTRAINT fk_sonar_logistics_jobs_destination
     FOREIGN KEY (destination_company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_logistics_jobs_carrier_account
+  CONSTRAINT fk_sonar_logistics_jobs_carrier_account
     FOREIGN KEY (carrier_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_logistics_jobs_carrier_company
+  CONSTRAINT fk_sonar_logistics_jobs_carrier_company
     FOREIGN KEY (carrier_company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_logistics_jobs_delivery_note
+  CONSTRAINT fk_sonar_logistics_jobs_delivery_note
     FOREIGN KEY (delivery_note_id)
-    REFERENCES admirals_documents(id)
+    REFERENCES sonar_documents(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1242,10 +1242,10 @@ CREATE TABLE admirals_logistics_jobs (
 - `payment_holding_movement_id` apunta al movimiento de escrow lock — al confirmar entrega se libera (escrow_release).
 - ON DELETE RESTRICT en origin/destination evita borrar empresa con jobs activos por accidente.
 
-### 9.2 admirals_logistics_disputes
+### 9.2 sonar_logistics_disputes
 
 ```sql
-CREATE TABLE admirals_logistics_disputes (
+CREATE TABLE sonar_logistics_disputes (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   job_id                CHAR(36)        NOT NULL,
   raised_by_account_id  CHAR(36)        NOT NULL,
@@ -1261,18 +1261,18 @@ CREATE TABLE admirals_logistics_disputes (
   resolution_notes      TEXT            NULL,
 
   PRIMARY KEY (id),
-  KEY idx_admirals_logistics_disputes_job (job_id, status),
-  KEY idx_admirals_logistics_disputes_raiser (raised_by_account_id, raised_at DESC),
+  KEY idx_sonar_logistics_disputes_job (job_id, status),
+  KEY idx_sonar_logistics_disputes_raiser (raised_by_account_id, raised_at DESC),
 
-  CONSTRAINT fk_admirals_logistics_disputes_job
+  CONSTRAINT fk_sonar_logistics_disputes_job
     FOREIGN KEY (job_id)
-    REFERENCES admirals_logistics_jobs(id)
+    REFERENCES sonar_logistics_jobs(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_logistics_disputes_raiser
+  CONSTRAINT fk_sonar_logistics_disputes_raiser
     FOREIGN KEY (raised_by_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1284,10 +1284,10 @@ CREATE TABLE admirals_logistics_disputes (
 
 > **Tablas del nodo Granja Admirals.** Cada empresa Granja tiene sus parcelas, silos, máquinas. Las licencias son por jugador, no por empresa.
 
-### 10.1 admirals_granja_plots
+### 10.1 sonar_granja_plots
 
 ```sql
-CREATE TABLE admirals_granja_plots (
+CREATE TABLE sonar_granja_plots (
   id                    CHAR(36)        NOT NULL,
   company_id            CHAR(36)        NOT NULL,
   plot_label            VARCHAR(64)     NOT NULL COMMENT 'identificador legible: parcela_3, hortícola_1',
@@ -1327,14 +1327,14 @@ CREATE TABLE admirals_granja_plots (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_granja_plots_company_label (company_id, plot_label),
-  KEY idx_admirals_granja_plots_company (company_id),
-  KEY idx_admirals_granja_plots_stage (current_stage, expected_harvest_at),
-  KEY idx_admirals_granja_plots_pest (active_pest_kind, active_pest_severity),
+  UNIQUE KEY uq_sonar_granja_plots_company_label (company_id, plot_label),
+  KEY idx_sonar_granja_plots_company (company_id),
+  KEY idx_sonar_granja_plots_stage (current_stage, expected_harvest_at),
+  KEY idx_sonar_granja_plots_pest (active_pest_kind, active_pest_severity),
 
-  CONSTRAINT fk_admirals_granja_plots_company
+  CONSTRAINT fk_sonar_granja_plots_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
@@ -1352,10 +1352,10 @@ CREATE TABLE admirals_granja_plots (
 - `visual_state` sincroniza con shader del prop (sprouting, leafing, flowering, mature, rotten).
 - Cron de crecimiento actualiza `growth_pct` y, al llegar 100, avanza `current_stage`.
 
-### 10.2 admirals_granja_silos
+### 10.2 sonar_granja_silos
 
 ```sql
-CREATE TABLE admirals_granja_silos (
+CREATE TABLE sonar_granja_silos (
   id                    CHAR(36)        NOT NULL,
   company_id            CHAR(36)        NOT NULL,
   silo_label            VARCHAR(64)     NOT NULL,
@@ -1377,12 +1377,12 @@ CREATE TABLE admirals_granja_silos (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_granja_silos_company_label (company_id, silo_label),
-  KEY idx_admirals_granja_silos_company (company_id, kind),
+  UNIQUE KEY uq_sonar_granja_silos_company_label (company_id, silo_label),
+  KEY idx_sonar_granja_silos_company (company_id, kind),
 
-  CONSTRAINT fk_admirals_granja_silos_company
+  CONSTRAINT fk_sonar_granja_silos_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
@@ -1390,16 +1390,16 @@ CREATE TABLE admirals_granja_silos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
-### 10.3 admirals_granja_machines
+### 10.3 sonar_granja_machines
 
 ```sql
-CREATE TABLE admirals_granja_machines (
+CREATE TABLE sonar_granja_machines (
   id                    CHAR(36)        NOT NULL,
   company_id            CHAR(36)        NOT NULL,
   machine_label         VARCHAR(64)     NOT NULL,
 
   kind                  ENUM('tractor','harvester','sprayer','irrigator','sower','forklift','plow','baler') NOT NULL,
-  model_id              VARCHAR(64)     NOT NULL COMMENT 'modelo específico (admirals_tractor_basic_01)',
+  model_id              VARCHAR(64)     NOT NULL COMMENT 'modelo específico (sonar_tractor_basic_01)',
 
   status                ENUM('idle','in_use','broken','maintenance') NOT NULL DEFAULT 'idle',
   fuel_l                DECIMAL(6,2)    NOT NULL DEFAULT 0,
@@ -1417,19 +1417,19 @@ CREATE TABLE admirals_granja_machines (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_granja_machines_company_label (company_id, machine_label),
-  KEY idx_admirals_granja_machines_company_status (company_id, status),
-  KEY idx_admirals_granja_machines_user (current_user_account_id),
+  UNIQUE KEY uq_sonar_granja_machines_company_label (company_id, machine_label),
+  KEY idx_sonar_granja_machines_company_status (company_id, status),
+  KEY idx_sonar_granja_machines_user (current_user_account_id),
 
-  CONSTRAINT fk_admirals_granja_machines_company
+  CONSTRAINT fk_sonar_granja_machines_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_granja_machines_user
+  CONSTRAINT fk_sonar_granja_machines_user
     FOREIGN KEY (current_user_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
@@ -1438,12 +1438,12 @@ CREATE TABLE admirals_granja_machines (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
-### 10.4 admirals_granja_licenses
+### 10.4 sonar_granja_licenses
 
 > **Licencias de conducción / handling.** Por jugador, no por empresa.
 
 ```sql
-CREATE TABLE admirals_granja_licenses (
+CREATE TABLE sonar_granja_licenses (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   account_id            CHAR(36)        NOT NULL,
 
@@ -1454,21 +1454,21 @@ CREATE TABLE admirals_granja_licenses (
 
   obtained_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
   expires_at            INT UNSIGNED    NULL COMMENT 'NULL = no caduca',
-  issued_by             VARCHAR(64)     NOT NULL DEFAULT 'admirals_granja_npc',
+  issued_by             VARCHAR(64)     NOT NULL DEFAULT 'sonar_granja_npc',
   cost                  DECIMAL(8,2) UNSIGNED NOT NULL DEFAULT 0,
-  related_doc_id        CHAR(36)        NULL COMMENT 'certificado en admirals_documents',
+  related_doc_id        CHAR(36)        NULL COMMENT 'certificado en sonar_documents',
 
   is_revoked            TINYINT(1)      NOT NULL DEFAULT 0,
   revoked_at            INT UNSIGNED    NULL,
   revoke_reason         VARCHAR(255)    NULL,
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_granja_licenses_account_kind (account_id, kind, is_revoked),
-  KEY idx_admirals_granja_licenses_expires (expires_at),
+  UNIQUE KEY uq_sonar_granja_licenses_account_kind (account_id, kind, is_revoked),
+  KEY idx_sonar_granja_licenses_expires (expires_at),
 
-  CONSTRAINT fk_admirals_granja_licenses_account
+  CONSTRAINT fk_sonar_granja_licenses_account
     FOREIGN KEY (account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1478,10 +1478,10 @@ CREATE TABLE admirals_granja_licenses (
 
 ## 11. DDL — Dominio Molino
 
-### 11.1 admirals_molino_silos
+### 11.1 sonar_molino_silos
 
 ```sql
-CREATE TABLE admirals_molino_silos (
+CREATE TABLE sonar_molino_silos (
   id                    CHAR(36)        NOT NULL,
   company_id            CHAR(36)        NOT NULL,
   silo_label            VARCHAR(64)     NOT NULL,
@@ -1504,12 +1504,12 @@ CREATE TABLE admirals_molino_silos (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_molino_silos_company_label (company_id, silo_label),
-  KEY idx_admirals_molino_silos_company_kind (company_id, kind),
+  UNIQUE KEY uq_sonar_molino_silos_company_label (company_id, silo_label),
+  KEY idx_sonar_molino_silos_company_kind (company_id, kind),
 
-  CONSTRAINT fk_admirals_molino_silos_company
+  CONSTRAINT fk_sonar_molino_silos_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
@@ -1518,10 +1518,10 @@ CREATE TABLE admirals_molino_silos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
-### 11.2 admirals_molino_machines
+### 11.2 sonar_molino_machines
 
 ```sql
-CREATE TABLE admirals_molino_machines (
+CREATE TABLE sonar_molino_machines (
   id                    CHAR(36)        NOT NULL,
   company_id            CHAR(36)        NOT NULL,
   machine_label         VARCHAR(64)     NOT NULL,
@@ -1550,18 +1550,18 @@ CREATE TABLE admirals_molino_machines (
   updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) ON UPDATE (UNIX_TIMESTAMP()),
 
   PRIMARY KEY (id),
-  UNIQUE KEY uq_admirals_molino_machines_company_label (company_id, machine_label),
-  KEY idx_admirals_molino_machines_company_status (company_id, status),
+  UNIQUE KEY uq_sonar_molino_machines_company_label (company_id, machine_label),
+  KEY idx_sonar_molino_machines_company_status (company_id, status),
 
-  CONSTRAINT fk_admirals_molino_machines_company
+  CONSTRAINT fk_sonar_molino_machines_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
-  CONSTRAINT fk_admirals_molino_machines_user
+  CONSTRAINT fk_sonar_molino_machines_user
     FOREIGN KEY (current_user_account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
 
@@ -1569,12 +1569,12 @@ CREATE TABLE admirals_molino_machines (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
-### 11.3 admirals_molino_batches
+### 11.3 sonar_molino_batches
 
 > **Trazabilidad de lotes** producidos en el molino. Los batches físicos también viven como Item Físico en ox_inventory; esta tabla es el registro server-side de producción para analytics, búsqueda y queries de lineage.
 
 ```sql
-CREATE TABLE admirals_molino_batches (
+CREATE TABLE sonar_molino_batches (
   id                    VARCHAR(32)     NOT NULL COMMENT 'BatchId formato MILL-YYYY-NNNN-X',
   company_id            CHAR(36)        NOT NULL,
   produced_at           INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
@@ -1605,13 +1605,13 @@ CREATE TABLE admirals_molino_batches (
   produced_by_account_id CHAR(36)       NOT NULL,
 
   PRIMARY KEY (id),
-  KEY idx_admirals_molino_batches_company_date (company_id, produced_at DESC),
-  KEY idx_admirals_molino_batches_kind (output_kind, output_quality_grade),
-  KEY idx_admirals_molino_batches_quality (output_quality_grade, produced_at DESC),
+  KEY idx_sonar_molino_batches_company_date (company_id, produced_at DESC),
+  KEY idx_sonar_molino_batches_kind (output_kind, output_quality_grade),
+  KEY idx_sonar_molino_batches_quality (output_quality_grade, produced_at DESC),
 
-  CONSTRAINT fk_admirals_molino_batches_company
+  CONSTRAINT fk_sonar_molino_batches_company
     FOREIGN KEY (company_id)
-    REFERENCES admirals_companies(id)
+    REFERENCES sonar_companies(id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
@@ -1631,16 +1631,16 @@ CREATE TABLE admirals_molino_batches (
 
 ## 12. DDL — Infraestructura
 
-### 12.1 admirals_event_log (PARTITIONED)
+### 12.1 sonar_event_log (PARTITIONED)
 
 > **Audit trail del bus.** Persistencia de eventos `audit: always`. Particionado mensual desde día 1.
 
 ```sql
-CREATE TABLE admirals_event_log (
+CREATE TABLE sonar_event_log (
   id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   emitted_at            INT UNSIGNED    NOT NULL,
 
-  event_name            VARCHAR(96)     NOT NULL COMMENT 'admirals:domain:action',
+  event_name            VARCHAR(96)     NOT NULL COMMENT 'sonar:domain:action',
   event_id              CHAR(36)        NOT NULL COMMENT 'UUID v4 único de esta emisión',
   schema_version        TINYINT UNSIGNED NOT NULL DEFAULT 1,
 
@@ -1656,15 +1656,15 @@ CREATE TABLE admirals_event_log (
   related_batch_id      VARCHAR(32)     NULL,
 
   PRIMARY KEY (id, emitted_at),
-  UNIQUE KEY uq_admirals_event_log_event_id (event_id, emitted_at),
-  KEY idx_admirals_event_log_event_name (event_name, emitted_at DESC),
-  KEY idx_admirals_event_log_source (source_resource, emitted_at DESC),
-  KEY idx_admirals_event_log_account (related_account_id, emitted_at DESC),
-  KEY idx_admirals_event_log_company (related_company_id, emitted_at DESC),
-  KEY idx_admirals_event_log_doc (related_doc_id, emitted_at DESC),
-  KEY idx_admirals_event_log_offer (related_offer_id, emitted_at DESC),
-  KEY idx_admirals_event_log_job (related_job_id, emitted_at DESC),
-  KEY idx_admirals_event_log_batch (related_batch_id, emitted_at DESC)
+  UNIQUE KEY uq_sonar_event_log_event_id (event_id, emitted_at),
+  KEY idx_sonar_event_log_event_name (event_name, emitted_at DESC),
+  KEY idx_sonar_event_log_source (source_resource, emitted_at DESC),
+  KEY idx_sonar_event_log_account (related_account_id, emitted_at DESC),
+  KEY idx_sonar_event_log_company (related_company_id, emitted_at DESC),
+  KEY idx_sonar_event_log_doc (related_doc_id, emitted_at DESC),
+  KEY idx_sonar_event_log_offer (related_offer_id, emitted_at DESC),
+  KEY idx_sonar_event_log_job (related_job_id, emitted_at DESC),
+  KEY idx_sonar_event_log_batch (related_batch_id, emitted_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   PARTITION BY RANGE (emitted_at) (
     PARTITION p_2026_01 VALUES LESS THAN (1738368000),
@@ -1679,12 +1679,12 @@ CREATE TABLE admirals_event_log (
 - `event_id` único garantiza idempotencia: si el bus reintenta una emisión, no se duplica.
 - Particiones gestionadas por cron mensual + archival a cold storage > 12 meses.
 
-### 12.2 admirals_schema_versions
+### 12.2 sonar_schema_versions
 
 > **Registro de migraciones aplicadas.** Permite saber el estado del schema y reproducir entornos.
 
 ```sql
-CREATE TABLE admirals_schema_versions (
+CREATE TABLE sonar_schema_versions (
   version               INT UNSIGNED    NOT NULL COMMENT 'numérico secuencial',
   filename              VARCHAR(192)    NOT NULL COMMENT 'NNN_description.sql',
   applied_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
@@ -1694,20 +1694,20 @@ CREATE TABLE admirals_schema_versions (
   notes                 TEXT            NULL,
 
   PRIMARY KEY (version),
-  UNIQUE KEY uq_admirals_schema_versions_filename (filename)
+  UNIQUE KEY uq_sonar_schema_versions_filename (filename)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 **Notas:**
-- Al boot, `admirals_core` lee este registro y aplica las migraciones pendientes en orden.
+- Al boot, `sonar_core` lee este registro y aplica las migraciones pendientes en orden.
 - `checksum` permite detectar si una migración fue alterada post-aplicación (alerta de tampering).
 
-### 12.3 admirals_settings_per_account
+### 12.3 sonar_settings_per_account
 
 > **Preferencias de aplicación por cuenta.** Independientes del Tablet (Tablet tiene config visual, esto son prefs lógicas).
 
 ```sql
-CREATE TABLE admirals_settings_per_account (
+CREATE TABLE sonar_settings_per_account (
   account_id            CHAR(36)        NOT NULL,
   notifications_prefs   JSON            NULL COMMENT '{ type: { enabled, priority, delivery_mode_override } }',
   privacy_prefs         JSON            NULL COMMENT '{ show_online, allow_strangers_message, ... }',
@@ -1722,9 +1722,9 @@ CREATE TABLE admirals_settings_per_account (
 
   PRIMARY KEY (account_id),
 
-  CONSTRAINT fk_admirals_settings_per_account
+  CONSTRAINT fk_sonar_settings_per_account
     FOREIGN KEY (account_id)
-    REFERENCES admirals_accounts(id)
+    REFERENCES sonar_accounts(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1742,7 +1742,7 @@ CREATE TABLE admirals_settings_per_account (
 
 ```sql
 -- Cooperativa NPC compradora de grano (Granja standalone)
-INSERT INTO admirals_companies (id, vertical, name, status, owner_account_id, hq_location, cash_balance, reputation, founded_at)
+INSERT INTO sonar_companies (id, vertical, name, status, owner_account_id, hq_location, cash_balance, reputation, founded_at)
 VALUES (
   'a0000000-0000-0000-0000-000000000001',
   'cooperativa',
@@ -1756,7 +1756,7 @@ VALUES (
 );
 
 -- Molino NPC (compra grano, vende harina al panadero NPC)
-INSERT INTO admirals_companies (id, vertical, name, status, owner_account_id, hq_location, cash_balance, reputation, founded_at)
+INSERT INTO sonar_companies (id, vertical, name, status, owner_account_id, hq_location, cash_balance, reputation, founded_at)
 VALUES (
   'a0000000-0000-0000-0000-000000000002',
   'mill',
@@ -1773,7 +1773,7 @@ VALUES (
 ### 13.2 Cuenta de sistema (NPC)
 
 ```sql
-INSERT INTO admirals_accounts (id, char_id, framework_source, alias, reputation_global, preferred_locale)
+INSERT INTO sonar_accounts (id, char_id, framework_source, alias, reputation_global, preferred_locale)
 VALUES (
   'a0000000-0000-0000-0000-000000000099',
   'NPC_SYSTEM',
@@ -1787,7 +1787,7 @@ VALUES (
 ### 13.3 Cuenta bancaria de sistema
 
 ```sql
-INSERT INTO admirals_bank_accounts (id, iban, type, owner_company_id, balance)
+INSERT INTO sonar_bank_accounts (id, iban, type, owner_company_id, balance)
 VALUES (
   'b0000000-0000-0000-0000-000000000001',
   'AD-SYS0-0000-0001',
@@ -1802,7 +1802,7 @@ VALUES (
 > **Tabla satélite** opcional para templates de contratos reutilizables (no es DDL principal, va en migración separada).
 
 ```sql
-CREATE TABLE admirals_document_templates (
+CREATE TABLE sonar_document_templates (
   id                    VARCHAR(64)     NOT NULL,
   type                  ENUM('contract','delivery_note','receipt','license') NOT NULL,
   name                  VARCHAR(128)    NOT NULL,
@@ -1817,7 +1817,7 @@ CREATE TABLE admirals_document_templates (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Seeds de templates iniciales
-INSERT INTO admirals_document_templates (id, type, name, body_template, schema_json) VALUES
+INSERT INTO sonar_document_templates (id, type, name, body_template, schema_json) VALUES
 ('contract_b2b_supply', 'contract', 'Contrato suministro B2B',
 '{{supplier_name}} se compromete a entregar a {{client_name}} {{quantity}} {{unit}} de {{product}} con calidad mínima {{min_grade}} a un precio de {{price_per_unit}} AD/unidad...',
 '{"fields":[{"key":"supplier_name","type":"text"},{"key":"client_name","type":"text"},{"key":"product","type":"text"},{"key":"quantity","type":"number"},{"key":"unit","type":"text"},{"key":"min_grade","type":"enum","options":["S","A","B","C","D"]},{"key":"price_per_unit","type":"number"},{"key":"duration_months","type":"number"}]}'
@@ -1838,57 +1838,57 @@ INSERT INTO admirals_document_templates (id, type, name, body_template, schema_j
 
 | Tabla | Índice | Razón |
 |---|---|---|
-| `admirals_accounts` | `uq_*_char_id (char_id, framework_source)` | login: lookup por char del framework |
-| `admirals_tablets` | `idx_*_owner` | listar tablets del jugador |
-| `admirals_companies` | `uq_*_name` | naming único + search |
-| `admirals_companies` | `idx_*_owner` | listar empresas del jugador |
-| `admirals_companies` | `idx_*_vertical_status` | listings públicos en Mercado |
-| `admirals_company_members` | `uq_*_active (company, account, is_active)` | impide doble membership activa |
-| `admirals_company_members` | `idx_*_account (account, is_active)` | "mis empresas" en Tablet |
-| `admirals_company_members` | `idx_*_company (company, is_active, role)` | "miembros de mi empresa" |
-| `admirals_bank_accounts` | `uq_*_iban` | lookup por IBAN |
-| `admirals_bank_accounts` | `idx_*_owner_account/_company` | "mis cuentas" |
-| `admirals_bank_movements` | `idx_*_account (account_id, occurred_at DESC)` | extracto bancario reciente |
-| `admirals_bank_movements` | `idx_*_category` | analytics por categoría |
-| `admirals_bank_movements` | `idx_*_nonce` | anti-replay validation |
-| `admirals_bank_movements` | `idx_*_related_*` | trazabilidad reverse (movimiento → doc/offer/job) |
-| `admirals_documents` | `idx_*_owner_account/company (..., type, status)` | "mis docs" filtrados por type/status |
-| `admirals_documents` | `idx_*_status` | jobs internos (renotificar pending_signature antiguos, etc.) |
-| `admirals_documents` | `idx_*_parent` | árbol de versiones |
-| `admirals_documents` | `idx_*_created_by` | actividad reciente del usuario |
-| `admirals_document_signatures` | `uq_*_doc_signer` | impide doble firma |
-| `admirals_document_signatures` | `idx_*_signer (signer, signed_at DESC)` | "docs firmados por mí" |
-| `admirals_chats` | `idx_*_company` | canales de empresa |
-| `admirals_chats` | `idx_*_last_message DESC` | sort en lista de chats |
-| `admirals_chat_participants` | `uq_*_active` | impide doble participación activa |
-| `admirals_chat_participants` | `idx_*_account (account, left_at, is_pinned DESC)` | lista de chats del jugador |
-| `admirals_messages` | `idx_*_chat (chat, sent_at DESC)` | render del chat (paginación) |
-| `admirals_messages` | `idx_*_sender` | "mensajes que envié" |
-| `admirals_notifications` | `idx_*_account_unread (account, is_read, is_archived, pushed_at DESC)` | bandeja activa de la Tablet |
-| `admirals_market_offers` | `idx_*_status_type` | listings principales del Mercado |
-| `admirals_market_offers` | `idx_*_publisher_*` | "mis ofertas publicadas" |
-| `admirals_market_offers` | `idx_*_vertical` | filtro por vertical |
-| `admirals_market_offers` | `idx_*_expires` | cron de expiración |
-| `admirals_market_reviews` | `uq_*_offer (offer, reviewer)` | impide doble review |
-| `admirals_market_reviews` | `idx_*_subject` | reseñas recibidas por sujeto |
-| `admirals_reputation` | `idx_*_subject` | trail de cambios reputación |
-| `admirals_logistics_jobs` | `idx_*_status` | dashboard ops |
-| `admirals_logistics_jobs` | `idx_*_origin/_destination` | "jobs de mi empresa" |
-| `admirals_logistics_jobs` | `idx_*_carrier_*` | "mis trabajos como carrier" |
-| `admirals_granja_plots` | `idx_*_company` | "mis parcelas" |
-| `admirals_granja_plots` | `idx_*_stage (current_stage, expected_harvest_at)` | cron de crecimiento |
-| `admirals_granja_plots` | `idx_*_pest` | parcelas con plaga activa |
-| `admirals_granja_silos` | `idx_*_company_kind` | "mis silos por tipo" |
-| `admirals_granja_machines` | `idx_*_company_status` | "máquinas idle / averiadas" |
-| `admirals_granja_licenses` | `uq_*_account_kind` | impide duplicada |
-| `admirals_granja_licenses` | `idx_*_expires` | cron de expiración |
-| `admirals_molino_silos` | `idx_*_company_kind` | "silos de molino por tipo" |
-| `admirals_molino_machines` | `idx_*_company_status` | dashboard ops |
-| `admirals_molino_batches` | `idx_*_company_date` | producción reciente |
-| `admirals_molino_batches` | `idx_*_kind` | búsqueda en mercado |
-| `admirals_event_log` | `uq_*_event_id` | idempotencia |
-| `admirals_event_log` | `idx_*_event_name` | "todos los `bank:transfer_completed` recientes" |
-| `admirals_event_log` | `idx_*_account/company/doc/...` | trazabilidad por entidad |
+| `sonar_accounts` | `uq_*_char_id (char_id, framework_source)` | login: lookup por char del framework |
+| `sonar_tablets` | `idx_*_owner` | listar tablets del jugador |
+| `sonar_companies` | `uq_*_name` | naming único + search |
+| `sonar_companies` | `idx_*_owner` | listar empresas del jugador |
+| `sonar_companies` | `idx_*_vertical_status` | listings públicos en Mercado |
+| `sonar_company_members` | `uq_*_active (company, account, is_active)` | impide doble membership activa |
+| `sonar_company_members` | `idx_*_account (account, is_active)` | "mis empresas" en Tablet |
+| `sonar_company_members` | `idx_*_company (company, is_active, role)` | "miembros de mi empresa" |
+| `sonar_bank_accounts` | `uq_*_iban` | lookup por IBAN |
+| `sonar_bank_accounts` | `idx_*_owner_account/_company` | "mis cuentas" |
+| `sonar_bank_movements` | `idx_*_account (account_id, occurred_at DESC)` | extracto bancario reciente |
+| `sonar_bank_movements` | `idx_*_category` | analytics por categoría |
+| `sonar_bank_movements` | `idx_*_nonce` | anti-replay validation |
+| `sonar_bank_movements` | `idx_*_related_*` | trazabilidad reverse (movimiento → doc/offer/job) |
+| `sonar_documents` | `idx_*_owner_account/company (..., type, status)` | "mis docs" filtrados por type/status |
+| `sonar_documents` | `idx_*_status` | jobs internos (renotificar pending_signature antiguos, etc.) |
+| `sonar_documents` | `idx_*_parent` | árbol de versiones |
+| `sonar_documents` | `idx_*_created_by` | actividad reciente del usuario |
+| `sonar_document_signatures` | `uq_*_doc_signer` | impide doble firma |
+| `sonar_document_signatures` | `idx_*_signer (signer, signed_at DESC)` | "docs firmados por mí" |
+| `sonar_chats` | `idx_*_company` | canales de empresa |
+| `sonar_chats` | `idx_*_last_message DESC` | sort en lista de chats |
+| `sonar_chat_participants` | `uq_*_active` | impide doble participación activa |
+| `sonar_chat_participants` | `idx_*_account (account, left_at, is_pinned DESC)` | lista de chats del jugador |
+| `sonar_messages` | `idx_*_chat (chat, sent_at DESC)` | render del chat (paginación) |
+| `sonar_messages` | `idx_*_sender` | "mensajes que envié" |
+| `sonar_notifications` | `idx_*_account_unread (account, is_read, is_archived, pushed_at DESC)` | bandeja activa de la Tablet |
+| `sonar_market_offers` | `idx_*_status_type` | listings principales del Mercado |
+| `sonar_market_offers` | `idx_*_publisher_*` | "mis ofertas publicadas" |
+| `sonar_market_offers` | `idx_*_vertical` | filtro por vertical |
+| `sonar_market_offers` | `idx_*_expires` | cron de expiración |
+| `sonar_market_reviews` | `uq_*_offer (offer, reviewer)` | impide doble review |
+| `sonar_market_reviews` | `idx_*_subject` | reseñas recibidas por sujeto |
+| `sonar_reputation` | `idx_*_subject` | trail de cambios reputación |
+| `sonar_logistics_jobs` | `idx_*_status` | dashboard ops |
+| `sonar_logistics_jobs` | `idx_*_origin/_destination` | "jobs de mi empresa" |
+| `sonar_logistics_jobs` | `idx_*_carrier_*` | "mis trabajos como carrier" |
+| `sonar_granja_plots` | `idx_*_company` | "mis parcelas" |
+| `sonar_granja_plots` | `idx_*_stage (current_stage, expected_harvest_at)` | cron de crecimiento |
+| `sonar_granja_plots` | `idx_*_pest` | parcelas con plaga activa |
+| `sonar_granja_silos` | `idx_*_company_kind` | "mis silos por tipo" |
+| `sonar_granja_machines` | `idx_*_company_status` | "máquinas idle / averiadas" |
+| `sonar_granja_licenses` | `uq_*_account_kind` | impide duplicada |
+| `sonar_granja_licenses` | `idx_*_expires` | cron de expiración |
+| `sonar_molino_silos` | `idx_*_company_kind` | "silos de molino por tipo" |
+| `sonar_molino_machines` | `idx_*_company_status` | dashboard ops |
+| `sonar_molino_batches` | `idx_*_company_date` | producción reciente |
+| `sonar_molino_batches` | `idx_*_kind` | búsqueda en mercado |
+| `sonar_event_log` | `uq_*_event_id` | idempotencia |
+| `sonar_event_log` | `idx_*_event_name` | "todos los `bank:transfer_completed` recientes" |
+| `sonar_event_log` | `idx_*_account/company/doc/...` | trazabilidad por entidad |
 
 ### 14.2 Política de índices futuros
 
@@ -1906,9 +1906,9 @@ INSERT INTO admirals_document_templates (id, type, name, body_template, schema_j
 
 ```sql
 SELECT id, alias, reputation_global, preferred_locale, meta
-FROM admirals_accounts
+FROM sonar_accounts
 WHERE char_id = ? AND framework_source = ?;
--- usa: uq_admirals_accounts_char_id
+-- usa: uq_sonar_accounts_char_id
 -- p99 esperado: < 1ms
 ```
 
@@ -1916,11 +1916,11 @@ WHERE char_id = ? AND framework_source = ?;
 
 ```sql
 SELECT c.id, c.name, c.vertical, c.status, c.logo_url, c.brand_color, m.role, m.position
-FROM admirals_company_members m
-JOIN admirals_companies c ON c.id = m.company_id
+FROM sonar_company_members m
+JOIN sonar_companies c ON c.id = m.company_id
 WHERE m.account_id = ? AND m.is_active = 1
 ORDER BY m.hired_at ASC;
--- usa: idx_admirals_company_members_account + PK admirals_companies
+-- usa: idx_sonar_company_members_account + PK sonar_companies
 -- p99 esperado: < 5ms
 ```
 
@@ -1928,22 +1928,22 @@ ORDER BY m.hired_at ASC;
 
 ```sql
 SELECT m.id, a.alias, m.role, m.position, m.salary, m.hired_at
-FROM admirals_company_members m
-JOIN admirals_accounts a ON a.id = m.account_id
+FROM sonar_company_members m
+JOIN sonar_accounts a ON a.id = m.account_id
 WHERE m.company_id = ? AND m.is_active = 1
 ORDER BY FIELD(m.role, 'owner','manager','employee','temporary'), m.hired_at;
--- usa: idx_admirals_company_members_company
+-- usa: idx_sonar_company_members_company
 ```
 
 ### 15.4 Extracto bancario (últimos N movimientos)
 
 ```sql
 SELECT id, occurred_at, amount, balance_after, category, counterpart_iban, concept
-FROM admirals_bank_movements
+FROM sonar_bank_movements
 WHERE bank_account_id = ?
 ORDER BY occurred_at DESC, id DESC
 LIMIT 50;
--- usa: idx_admirals_bank_movements_account
+-- usa: idx_sonar_bank_movements_account
 -- p99 esperado: < 5ms (gracias a partitioning + index)
 ```
 
@@ -1951,11 +1951,11 @@ LIMIT 50;
 
 ```sql
 SELECT id, type, title, subtitle, body, actions_json, pushed_at
-FROM admirals_notifications
+FROM sonar_notifications
 WHERE account_id = ? AND is_read = 0 AND is_archived = 0
 ORDER BY pushed_at DESC
 LIMIT 30;
--- usa: idx_admirals_notifications_account_unread
+-- usa: idx_sonar_notifications_account_unread
 -- p99 esperado: < 3ms
 ```
 
@@ -1963,48 +1963,48 @@ LIMIT 30;
 
 ```sql
 SELECT id, type, title, price, location_json, expires_at
-FROM admirals_market_offers
+FROM sonar_market_offers
 WHERE status = 'active' AND vertical_filter = ?
 ORDER BY created_at DESC
 LIMIT 50;
--- usa: idx_admirals_market_offers_vertical
+-- usa: idx_sonar_market_offers_vertical
 ```
 
 ### 15.7 Documentos pendientes de mi firma
 
 ```sql
 SELECT d.id, d.type, d.title, d.created_at
-FROM admirals_documents d
+FROM sonar_documents d
 WHERE d.status = 'pending_signature'
   AND JSON_CONTAINS(d.parties_json, JSON_OBJECT('kind','account','id', ?))
   AND NOT EXISTS (
-    SELECT 1 FROM admirals_document_signatures s
+    SELECT 1 FROM sonar_document_signatures s
     WHERE s.doc_id = d.id AND s.signer_account_id = ?
   );
--- usa: idx_admirals_documents_status + scan parties_json
+-- usa: idx_sonar_documents_status + scan parties_json
 -- p99 esperado: < 50ms (mejorable con tabla intermedia document_parties si crece)
 ```
 
-> **Nota:** si crece volumen, migrar `parties_json` a tabla `admirals_document_parties` (id, doc_id, party_kind, party_id) — más performance pero más DDL. Decisión diferida hasta data real.
+> **Nota:** si crece volumen, migrar `parties_json` a tabla `sonar_document_parties` (id, doc_id, party_kind, party_id) — más performance pero más DDL. Decisión diferida hasta data real.
 
 ### 15.8 Lista de chats del jugador (con preview + unread count)
 
 ```sql
 SELECT c.id, c.type, c.name, c.icon_url, c.last_message_at, c.last_message_preview,
   (
-    SELECT COUNT(*) FROM admirals_messages m
+    SELECT COUNT(*) FROM sonar_messages m
     WHERE m.chat_id = c.id
       AND m.sent_at > IFNULL(p.last_read_at_unix, 0)
       AND m.deleted_at IS NULL
   ) AS unread_count
-FROM admirals_chat_participants p
-JOIN admirals_chats c ON c.id = p.chat_id
-LEFT JOIN admirals_messages m_last
+FROM sonar_chat_participants p
+JOIN sonar_chats c ON c.id = p.chat_id
+LEFT JOIN sonar_messages m_last
   ON m_last.id = p.last_read_message_id
 WHERE p.account_id = ? AND p.left_at IS NULL
 ORDER BY p.is_pinned DESC, c.last_message_at DESC
 LIMIT 50;
--- usa: idx_admirals_chat_participants_account + idx_admirals_chats_last_message
+-- usa: idx_sonar_chat_participants_account + idx_sonar_chats_last_message
 -- nota: la subquery de unread_count es costosa; cachear por participant si bottleneck
 ```
 
@@ -2012,34 +2012,34 @@ LIMIT 50;
 
 ```sql
 SELECT id, sender_id, sender_kind, body, body_kind, sent_at, edited_at, reply_to_message_id
-FROM admirals_messages
+FROM sonar_messages
 WHERE chat_id = ?
   AND sent_at < ?  -- cursor para paginación
   AND deleted_at IS NULL
 ORDER BY sent_at DESC, id DESC
 LIMIT 50;
--- usa: idx_admirals_messages_chat
+-- usa: idx_sonar_messages_chat
 ```
 
 ### 15.10 Plots con plaga sin tratar
 
 ```sql
 SELECT id, plot_label, active_pest_kind, active_pest_severity, pest_detected_at
-FROM admirals_granja_plots
+FROM sonar_granja_plots
 WHERE company_id = ? AND active_pest_kind IS NOT NULL
 ORDER BY active_pest_severity DESC, pest_detected_at ASC;
--- usa: idx_admirals_granja_plots_company + filter por NULL
+-- usa: idx_sonar_granja_plots_company + filter por NULL
 ```
 
 ### 15.11 Cron de crecimiento — plots a tickear
 
 ```sql
 SELECT id, current_stage, growth_pct, current_crop_id
-FROM admirals_granja_plots
+FROM sonar_granja_plots
 WHERE current_stage > 0 AND current_stage < expected_stages
   AND updated_at < UNIX_TIMESTAMP() - 300  -- > 5 min sin tick
 LIMIT 1000;
--- usa: idx_admirals_granja_plots_stage
+-- usa: idx_sonar_granja_plots_stage
 ```
 
 ### 15.12 Trazabilidad reverse — auditoría
@@ -2047,23 +2047,23 @@ LIMIT 1000;
 ```sql
 -- "todos los eventos de los últimos 30 días que afectan a esta company"
 SELECT event_name, payload_json, emitted_at
-FROM admirals_event_log
+FROM sonar_event_log
 WHERE related_company_id = ?
   AND emitted_at > UNIX_TIMESTAMP() - 86400 * 30
 ORDER BY emitted_at DESC
 LIMIT 1000;
--- usa: idx_admirals_event_log_company + partition pruning
+-- usa: idx_sonar_event_log_company + partition pruning
 ```
 
 ### 15.13 Reputación: trail de cambios
 
 ```sql
 SELECT delta, value_after, reason_code, reason_text, occurred_at, source_resource
-FROM admirals_reputation
+FROM sonar_reputation
 WHERE subject_id = ?
 ORDER BY occurred_at DESC
 LIMIT 20;
--- usa: idx_admirals_reputation_subject
+-- usa: idx_sonar_reputation_subject
 ```
 
 ---
@@ -2073,7 +2073,7 @@ LIMIT 20;
 ### 16.1 Estructura de carpeta
 
 ```
-admirals_core/
+sonar_core/
 └── migrations/
     ├── 001_initial_schema.sql
     ├── 002_bank_accounts_link_companies.sql
@@ -2093,29 +2093,29 @@ admirals_core/
 -- Migration: 003_add_index_market_offers_vertical.sql
 -- Author: <name>
 -- Date: 2026-04-15
--- Description: añade índice idx_admirals_market_offers_vertical
+-- Description: añade índice idx_sonar_market_offers_vertical
 --              para acelerar listings filtrados por vertical en Mercado.
 -- Dependencies: 001
 -- Reversible: yes (DROP INDEX en migration_down)
 -- ============================================================
 
 -- UP MIGRATION
-ALTER TABLE admirals_market_offers
-  ADD KEY idx_admirals_market_offers_vertical (vertical_filter, status, type);
+ALTER TABLE sonar_market_offers
+  ADD KEY idx_sonar_market_offers_vertical (vertical_filter, status, type);
 
 -- ============================================================
 -- DOWN MIGRATION (en archivo separado: 003_..._down.sql)
 -- ============================================================
--- ALTER TABLE admirals_market_offers
---   DROP KEY idx_admirals_market_offers_vertical;
+-- ALTER TABLE sonar_market_offers
+--   DROP KEY idx_sonar_market_offers_vertical;
 ```
 
 ### 16.4 Pipeline de aplicación al boot
 
 ```lua
--- admirals_core/server/migrations/runner.lua (esqueleto)
+-- sonar_core/server/migrations/runner.lua (esqueleto)
 local function RunMigrations()
-  -- 1. Asegurar que admirals_schema_versions existe
+  -- 1. Asegurar que sonar_schema_versions existe
   EnsureBaseTable()
 
   -- 2. Listar archivos en migrations/ ordenados
@@ -2134,12 +2134,12 @@ local function RunMigrations()
       MySQL.transaction(content, function(success)
         if success then
           MySQL.insert.await(
-            'INSERT INTO admirals_schema_versions (version, filename, checksum, duration_ms) VALUES (?, ?, ?, ?)',
+            'INSERT INTO sonar_schema_versions (version, filename, checksum, duration_ms) VALUES (?, ?, ?, ?)',
             { version, file, checksum, GetTimeMs() - startMs }
           )
-          print(('[admirals_core] Migration %s applied'):format(file))
+          print(('[sonar_core] Migration %s applied'):format(file))
         else
-          print(('[admirals_core] Migration %s FAILED — server stop'):format(file))
+          print(('[sonar_core] Migration %s FAILED — server stop'):format(file))
           os.exit(1)
         end
       end)
@@ -2147,7 +2147,7 @@ local function RunMigrations()
       -- 5. Verificar checksum (detectar tampering)
       local recorded = GetRecordedChecksum(version)
       if recorded ~= Sha256(ReadFile(file)) then
-        print(('[admirals_core] WARN: migration %s checksum mismatch'):format(file))
+        print(('[sonar_core] WARN: migration %s checksum mismatch'):format(file))
       end
     end
   end
@@ -2156,7 +2156,7 @@ end
 
 ### 16.5 Reglas de oro
 
-1. **Idempotencia:** las migraciones se aplican exactamente una vez. El runner valida via `admirals_schema_versions`.
+1. **Idempotencia:** las migraciones se aplican exactamente una vez. El runner valida via `sonar_schema_versions`.
 2. **Inmutabilidad:** una vez aplicada en producción, **un archivo de migración jamás se edita**. Cambios → nueva migración.
 3. **Forward-only por defecto:** las downs son opcionales pero recomendadas para entornos dev.
 4. **Atomicidad:** cada migración corre en una transacción. Si falla, rollback completo.
@@ -2170,15 +2170,15 @@ end
 
 START TRANSACTION;
 
-CREATE TABLE admirals_accounts ( ... );
-CREATE TABLE admirals_tablets ( ... );
-CREATE TABLE admirals_companies ( ... );
+CREATE TABLE sonar_accounts ( ... );
+CREATE TABLE sonar_tablets ( ... );
+CREATE TABLE sonar_companies ( ... );
 -- ... (todas las tablas core)
-CREATE TABLE admirals_event_log ( ... );
+CREATE TABLE sonar_event_log ( ... );
 
 -- Seeds
-INSERT INTO admirals_accounts ... ;
-INSERT INTO admirals_companies ... ;
+INSERT INTO sonar_accounts ... ;
+INSERT INTO sonar_companies ... ;
 
 COMMIT;
 ```
@@ -2191,26 +2191,26 @@ COMMIT;
 
 | Tabla | Partition key | Granularidad | Razón |
 |---|---|---|---|
-| `admirals_bank_movements` | `occurred_at` | Mensual | Volumen alto, queries por rango temporal recientes |
-| `admirals_messages` | `sent_at` | Mensual | Volumen muy alto, cold reads |
-| `admirals_notifications` | `pushed_at` | Mensual | Volumen alto, retención < 6 meses |
-| `admirals_event_log` | `emitted_at` | Mensual | Volumen muy alto, archival post 12 meses |
+| `sonar_bank_movements` | `occurred_at` | Mensual | Volumen alto, queries por rango temporal recientes |
+| `sonar_messages` | `sent_at` | Mensual | Volumen muy alto, cold reads |
+| `sonar_notifications` | `pushed_at` | Mensual | Volumen alto, retención < 6 meses |
+| `sonar_event_log` | `emitted_at` | Mensual | Volumen muy alto, archival post 12 meses |
 
 ### 17.2 Cron de gestión de particiones
 
-> **Tarea automática mensual** ejecutada por `admirals_core` al primer minuto de cada mes.
+> **Tarea automática mensual** ejecutada por `sonar_core` al primer minuto de cada mes.
 
 ```lua
--- admirals_core/server/cron/partitions.lua (pseudocódigo)
+-- sonar_core/server/cron/partitions.lua (pseudocódigo)
 function MaintainPartitions()
   local nextMonth = GetTimestampForFirstOfMonth(now() + 30 days)
   local nextNextMonth = GetTimestampForFirstOfMonth(now() + 60 days)
 
   for _, table in ipairs({
-    'admirals_bank_movements',
-    'admirals_messages',
-    'admirals_notifications',
-    'admirals_event_log',
+    'sonar_bank_movements',
+    'sonar_messages',
+    'sonar_notifications',
+    'sonar_event_log',
   }) do
     EnsurePartitionExists(table, nextMonth)
     EnsurePartitionExists(table, nextNextMonth)
@@ -2230,22 +2230,22 @@ end
 
 | Tabla | Hot retention (online) | Cold retention (archival) |
 |---|---|---|
-| `admirals_bank_movements` | 24 meses | indefinido (legal RP) |
-| `admirals_messages` | 12 meses | 24 meses adicionales |
-| `admirals_notifications` | 6 meses | 6 meses adicionales |
-| `admirals_event_log` | 12 meses | 36 meses adicionales |
+| `sonar_bank_movements` | 24 meses | indefinido (legal RP) |
+| `sonar_messages` | 12 meses | 24 meses adicionales |
+| `sonar_notifications` | 6 meses | 6 meses adicionales |
+| `sonar_event_log` | 12 meses | 36 meses adicionales |
 
 ### 17.4 Archival a tabla "_archive"
 
 ```sql
 -- Crear tabla de archive (mismo schema, sin particionar, motor MyISAM o cold storage)
-CREATE TABLE admirals_messages_archive LIKE admirals_messages;
+CREATE TABLE sonar_messages_archive LIKE sonar_messages;
 
 -- Movimiento mensual de partición vieja
-INSERT INTO admirals_messages_archive SELECT * FROM admirals_messages PARTITION (p_2025_04);
+INSERT INTO sonar_messages_archive SELECT * FROM sonar_messages PARTITION (p_2025_04);
 
 -- Drop de la partición original
-ALTER TABLE admirals_messages DROP PARTITION p_2025_04;
+ALTER TABLE sonar_messages DROP PARTITION p_2025_04;
 ```
 
 ### 17.5 Performance considerations
@@ -2267,8 +2267,8 @@ ALTER TABLE admirals_messages DROP PARTITION p_2025_04;
 ```bash
 # Backup completo diario (cron)
 mysqldump --single-transaction --quick \
-  --databases your_admirals_db \
-  | gzip > admirals_$(date +%Y%m%d).sql.gz
+  --databases your_sonar_db \
+  | gzip > sonar_$(date +%Y%m%d).sql.gz
 
 # Backup incremental por hora (binlog shipping)
 # Configurar replication o usar mysqlbinlog
@@ -2300,8 +2300,8 @@ mysqldump --single-transaction --quick \
 ### 18.4 Restore checklist
 
 1. Stop server.
-2. Restaurar dump `gunzip < admirals_YYYYMMDD.sql.gz | mysql admirals_db`.
-3. Verificar `admirals_schema_versions` — el server al rebootear no debe re-aplicar migrations.
+2. Restaurar dump `gunzip < sonar_YYYYMMDD.sql.gz | mysql sonar_db`.
+3. Verificar `sonar_schema_versions` — el server al rebootear no debe re-aplicar migrations.
 4. Boot server. Logs deberían mostrar 0 migraciones aplicadas (todas están registradas).
 5. `/admirals integrity check`.
 
@@ -2313,8 +2313,8 @@ mysqldump --single-transaction --quick \
 function IntegrityCron()
   -- 1. Cuentas de fuentes inválidas
   local orphan_members = MySQL.query.await([[
-    SELECT m.id FROM admirals_company_members m
-    LEFT JOIN admirals_companies c ON c.id = m.company_id
+    SELECT m.id FROM sonar_company_members m
+    LEFT JOIN sonar_companies c ON c.id = m.company_id
     WHERE c.id IS NULL
   ]])
   if #orphan_members > 0 then Logger.error('orphan members found', orphan_members) end
@@ -2372,10 +2372,10 @@ Cuando un developer añade columna:
 - **Versión:** 1.0 (firmado).
 - **Próxima revisión:** evolución según nuevas verticales.
 - **Próximas iteraciones esperadas:**
-  - Cuando se diseñe Panadería: añadir `admirals_panaderia_*` tables.
-  - Cuando se diseñe Retail: añadir `admirals_retail_*` tables.
+  - Cuando se diseñe Panadería: añadir `sonar_panaderia_*` tables.
+  - Cuando se diseñe Retail: añadir `sonar_retail_*` tables.
   - Si emergen bottlenecks de performance: añadir índices en §14 o promover JSON a tabla intermedia.
-  - Si oleada 2 introduce voice/calls: añadir `admirals_messages_voice_*` columns o tablas.
+  - Si oleada 2 introduce voice/calls: añadir `sonar_messages_voice_*` columns o tablas.
 
 ### 20.1 Resumen del schema
 
@@ -2404,7 +2404,7 @@ Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admir
 
 **Pilares cumplidos:**
 
-- ✅ **Architecture P3 (Schema compartido):** todas las tablas con prefijo `admirals_` (legacy pre-migration-009) / `sonar_` (canonical post-migration-009 per ADR-013), schema único compartido entre resources.
+- ✅ **Architecture P3 (Schema compartido):** todas las tablas con prefijo `sonar_` (legacy pre-migration-009) / `sonar_` (canonical post-migration-009 per ADR-013), schema único compartido entre resources.
 - ✅ **Architecture P9 (DB fuente de verdad, RAM cache):** schema completo + repos en código (cache + flush) ya listos.
 - ✅ **Pilar 3 (Detalle obsesivo):** cada tabla con DDL completo, índices justificados, queries hot path documentadas.
 - ✅ **Pilar 2 (Cadena interconectada):** FKs explícitas + lineage_json en batches + related_* en event_log permiten trazabilidad cross-vertical completa.
@@ -2412,7 +2412,7 @@ Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admir
 
 **Decisiones clave:**
 
-- Prefijo `admirals_` obligatorio (pre-migration-009) / `sonar_` obligatorio (post-migration-009 per ADR-013).
+- Prefijo `sonar_` obligatorio (pre-migration-009) / `sonar_` obligatorio (post-migration-009 per ADR-013).
 - UUID v4 para entidades de negocio + BIGINT para tablas de alto volumen.
 - MySQL 8 + InnoDB + utf8mb4.
 - Soft deletes en histórico legal.
@@ -2438,7 +2438,7 @@ Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admir
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 20 secciones, ~2335 líneas, 28 tablas DDL completo + ~60 índices justificados + queries hot path + migrations strategy + particionado + backup + diccionario datos. **Firmable Oleada 0.** |
-| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `admirals_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_admirals_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `admirals_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `sonar_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_sonar_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `sonar_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
 
 ---
 

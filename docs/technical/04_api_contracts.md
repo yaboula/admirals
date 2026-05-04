@@ -1,6 +1,6 @@
 # 📐 SONAR — API Contracts
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013/015; §1-§14 legacy v1.0 inline preserved). **SSoT vigente** — filosofía + callbacks catalog + exports + NUI bridges + DB access + error codes + rate limits + versioning + security sin cambios foundational (pivot-agnostic). Callback prefix `admirals:*:callback:*` scheduled rename `sonar:*:callback:*` Phase 8 per ADR-013. **C003 `getTransactions` DEFERRED S3** per ADR-015 (D1=B UI-heavy pivot).
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013/015; §1-§14 legacy v1.0 inline preserved). **SSoT vigente** — filosofía + callbacks catalog + exports + NUI bridges + DB access + error codes + rate limits + versioning + security sin cambios foundational (pivot-agnostic). Callback prefix `sonar:*:callback:*` scheduled rename `sonar:*:callback:*` Phase 8 per ADR-013. **C003 `getTransactions` DEFERRED S3** per ADR-015 (D1=B UI-heavy pivot).
 > **Tipo:** Technical/Implementation. Contratos formales de **APIs síncronas** (callbacks, exports, NUI bridges, DB access) que el código SONAR expone e invoca.
 > **Documento padre:** `technical/01_architecture.md` v1.0 (firmado).
 > **Documento hermano:** `technical/02_events_catalog.md` v1.1+ (post-pivot) — cubre eventos fire-and-forget. Este doc cubre request/response.
@@ -15,21 +15,21 @@
 
 ## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013 + ADR-015, 2026-05-04)
 
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + callback prefix `admirals:*:callback:*` + `exports['admirals_*']:*` + 40+ callbacks shipped/planned.** ADR-011 + ADR-012 + ADR-013 (namespace migration) + ADR-015 (Sprint 2 UI-heavy) refinan identity canonical + naming + scope. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§14 abajo, **gana este NOTICE + ADR-011/012/013/015**.
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + callback prefix `sonar:*:callback:*` + `exports['sonar_*']:*` + 40+ callbacks shipped/planned.** ADR-011 + ADR-012 + ADR-013 (namespace migration) + ADR-015 (Sprint 2 UI-heavy) refinan identity canonical + naming + scope. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§14 abajo, **gana este NOTICE + ADR-011/012/013/015**.
 
 ### NEW CANONICAL — vigente desde 2026-05-04
 
-#### Naming canonical APIs (DEPRECATED heritage `admirals:*` + `admirals_*`)
+#### Naming canonical APIs (DEPRECATED heritage `sonar:*` + `sonar_*`)
 - **Producto:** SONAR (no Admirals).
-- **Callback prefix canonical post-Phase-8 (ADR-013 scheduled):** `sonar:*:callback:*` reemplaza `admirals:*:callback:*`. Mapping 1:1:
-  - C001 `admirals:bank:callback:get_balance` → `sonar:bank:callback:get_balance`
-  - C002 `admirals:bank:callback:get_movements` → `sonar:bank:callback:get_movements`
-  - C003 `admirals:bank:callback:get_transactions` → `sonar:bank:callback:get_transactions` **(DEFERRED S3 per ADR-015)**
-  - C004 `admirals:bank:callback:pre_transfer` → `sonar:bank:callback:pre_transfer`
-  - C005 `admirals:bank:callback:audit_log` → `sonar:bank:callback:audit_log`
+- **Callback prefix canonical post-Phase-8 (ADR-013 scheduled):** `sonar:*:callback:*` reemplaza `sonar:*:callback:*`. Mapping 1:1:
+  - C001 `sonar:bank:callback:get_balance` → `sonar:bank:callback:get_balance`
+  - C002 `sonar:bank:callback:get_movements` → `sonar:bank:callback:get_movements`
+  - C003 `sonar:bank:callback:get_transactions` → `sonar:bank:callback:get_transactions` **(DEFERRED S3 per ADR-015)**
+  - C004 `sonar:bank:callback:pre_transfer` → `sonar:bank:callback:pre_transfer`
+  - C005 `sonar:bank:callback:audit_log` → `sonar:bank:callback:audit_log`
   - + 35+ callbacks planned verticales (bank/empresa/inventory/tablet/granja/molino/…) — rename 1:1 Phase 8.
-- **Resource exports canonical post-Phase-8:** `exports['admirals_bank']:*` → `exports['sonar_bank']:*`. `exports['admirals_core']:*` → `exports['sonar_core']:*`. `exports['admirals_bridges']:*` → `exports['sonar_bridges']:*`.
-- **NUI bridges canonical post-Phase-8:** `RegisterNUICallback('admirals:*')` → `RegisterNUICallback('sonar:*')`. `SendNUIMessage({type: 'admirals:*', …})` → `SendNUIMessage({type: 'sonar:*', …})`.
+- **Resource exports canonical post-Phase-8:** `exports['sonar_bank']:*` → `exports['sonar_bank']:*`. `exports['sonar_core']:*` → `exports['sonar_core']:*`. `exports['sonar_bridges']:*` → `exports['sonar_bridges']:*`.
+- **NUI bridges canonical post-Phase-8:** `RegisterNUICallback('sonar:*')` → `RegisterNUICallback('sonar:*')`. `SendNUIMessage({type: 'sonar:*', …})` → `SendNUIMessage({type: 'sonar:*', …})`.
 - **Request/response schemas, error codes, rate limits, auth matrices = INVARIANTES.** Pre/post Phase-8 identical. Solo names actualizan.
 
 #### C003 `getTransactions` DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot)
@@ -46,15 +46,15 @@
 #### Migration execution schedule (ADR-013 + ADR-015 authoritative)
 - **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Callback + export + NUI emit sites NO tocados.
 - **Phase 8 execution session (próxima sesión founder-available):** grep + sed rename callbacks + exports + NUI prefijos + RegisterNetEvent + handler attachments. Estimate ~30 callback emit + ~40 NUI bridge sites.
-- **Post-Phase-8 doc bump v1.1 → v1.2:** refs inline `admirals:*` → `sonar:*` + `exports['admirals_*']` → `exports['sonar_*']` en todo el cuerpo (40+ callbacks + exports catalog actualizados 1:1). C003 DEFERRED S3 reinforced.
+- **Post-Phase-8 doc bump v1.1 → v1.2:** refs inline `sonar:*` → `sonar:*` + `exports['sonar_*']` → `exports['sonar_*']` en todo el cuerpo (40+ callbacks + exports catalog actualizados 1:1). C003 DEFERRED S3 reinforced.
 - **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica C001/C002/C004/C005 shipped S1 emit correctly con nuevos prefijos.
 
 #### Cómo leer el resto del documento (§1-§14)
 
 1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + ADR-015 + `00_BOOTSTRAP.md` v1.5.**
 2. **Filosofía + tipos API (§1-§4) + exports catalog (§2) + NUI bridges (§3) + DB access (§4) + error codes (§7) + rate limits (§8) + versioning (§9) + security (§10) + testing (§11) siguen válidos pivot-agnostic** — foundational design APIs sin cambios.
-3. **40+ callbacks documentados (§5-§6) — refs `admirals:*:callback:*` prefix = LEGACY estado actual código S0+S1.** Post-Phase-8 ejecutada = canonical `sonar:*:callback:*`. Mapping 1:1 aplicable.
-4. **Resource exports strings `admirals_bank`/`admirals_core`/`admirals_bridges`:** legacy estado actual. Post-Phase-8 = `sonar_*` coherentemente.
+3. **40+ callbacks documentados (§5-§6) — refs `sonar:*:callback:*` prefix = LEGACY estado actual código S0+S1.** Post-Phase-8 ejecutada = canonical `sonar:*:callback:*`. Mapping 1:1 aplicable.
+4. **Resource exports strings `sonar_bank`/`sonar_core`/`sonar_bridges`:** legacy estado actual. Post-Phase-8 = `sonar_*` coherentemente.
 5. **Request/response schemas + field types + validators + auth matrix + rate limits = INVARIANTES.** Pre/post Phase-8 identical.
 6. **C003 `getTransactions`:** DEFERRED S3 per ADR-015. §5/§6 documentación preservada histórica para schedule S3 ship.
 7. **Error codes catalog §7:** identifiers identical pre/post. Voz error messages neutral premium-tech.
@@ -96,7 +96,7 @@ Define:
 
 | # | Principio | Significado |
 |---|---|---|
-| **A1** | **Signature inmutable** | Una vez published, el shape del request/response no cambia. Si cambia, nueva versión (e.g., `admirals:bank:getBalance_v2`). |
+| **A1** | **Signature inmutable** | Una vez published, el shape del request/response no cambia. Si cambia, nueva versión (e.g., `sonar:bank:getBalance_v2`). |
 | **A2** | **Request/response tipados** | Todo API tiene schema input + output. Validación en ambos extremos. |
 | **A3** | **Errores canónicos** | Uso de códigos error Admirals (§7). No strings arbitrarios. |
 | **A4** | **Idempotencia donde aplique** | Callbacks de lectura idempotentes. Callbacks de escritura con request_id si retries posibles. |
@@ -108,7 +108,7 @@ Define:
 ### 1.2 Naming convention
 
 ```
-admirals:<dominio>:<acción>
+sonar:<dominio>:<acción>
 ```
 
 Para callbacks **y** eventos usamos el mismo naming. La diferencia es uso:
@@ -132,11 +132,11 @@ Si el stack cambia, este doc se actualiza (breaking docs change → ADR + versio
 Cada API en este doc usa la siguiente estructura:
 
 ````markdown
-### [ID]. `admirals:dominio:accion`
+### [ID]. `sonar:dominio:accion`
 
 **Tipo:** Server Callback / Export / NUI Bridge / DB Wrapper
 **Dirección:** client → server (request) + server → client (response)
-**Resource emisor:** `admirals_bank` (o similar)
+**Resource emisor:** `sonar_bank` (o similar)
 **Schema version:** 1
 
 **Request:**
@@ -187,14 +187,14 @@ Cada API en este doc usa la siguiente estructura:
 **Implementación FiveM + ox_lib:**
 ```lua
 -- Server
-lib.callback.register('admirals:bank:getBalance', function(source, iban)
+lib.callback.register('sonar:bank:getBalance', function(source, iban)
   -- validar auth
   -- query DB
   return balance
 end)
 
 -- Client
-local balance = lib.callback.await('admirals:bank:getBalance', 500, iban)
+local balance = lib.callback.await('sonar:bank:getBalance', 500, iban)
 ```
 
 ### 2.2 Resource Exports
@@ -202,18 +202,18 @@ local balance = lib.callback.await('admirals:bank:getBalance', 500, iban)
 **Pattern:** un resource expone funciones públicas callable desde otros resources.
 
 **Uso típico:**
-- `admirals_bank` expone `GetPlayerBalance(source)` → cualquier otro resource puede leerlo.
-- `admirals_inventory` expone `GiveItem(source, itemId, quality)`.
+- `sonar_bank` expone `GetPlayerBalance(source)` → cualquier otro resource puede leerlo.
+- `sonar_inventory` expone `GiveItem(source, itemId, quality)`.
 
 **Implementación FiveM:**
 ```lua
--- En admirals_bank server
+-- En sonar_bank server
 exports('GetPlayerBalance', function(source)
   return Banking.GetBalance(source)
 end)
 
 -- Desde otro resource
-local balance = exports.admirals_bank:GetPlayerBalance(source)
+local balance = exports.sonar_bank:GetPlayerBalance(source)
 ```
 
 ### 2.3 NUI Bridges (Tablet JS ↔ client Lua)
@@ -225,7 +225,7 @@ local balance = exports.admirals_bank:GetPlayerBalance(source)
 #### 2.3.1 NUI → Client (fetch pattern)
 ```ts
 // En React Tablet
-const response = await fetch(`https://admirals_tablet/getBalance`, {
+const response = await fetch(`https://sonar_tablet/getBalance`, {
   method: 'POST',
   body: JSON.stringify({}),
 });
@@ -235,7 +235,7 @@ const { balance } = await response.json();
 ```lua
 -- En client Lua
 RegisterNUICallback('getBalance', function(data, cb)
-  local balance = lib.callback.await('admirals:bank:getBalance', 500)
+  local balance = lib.callback.await('sonar:bank:getBalance', 500)
   cb({ balance = balance })
 end)
 ```
@@ -272,7 +272,7 @@ end
 
 -- Uso
 local account = DB_FetchOne(
-  'SELECT * FROM admirals_bank_accounts WHERE iban = ?',
+  'SELECT * FROM sonar_bank_accounts WHERE iban = ?',
   { iban }
 )
 ```
@@ -285,10 +285,10 @@ local account = DB_FetchOne(
 
 ### 3.1 Banking callbacks
 
-#### C001. `admirals:bank:getBalance`
+#### C001. `sonar:bank:getBalance`
 
 **Tipo:** Server Callback
-**Resource:** `admirals_bank`
+**Resource:** `sonar_bank`
 **Schema version:** 1
 
 **Request:**
@@ -317,12 +317,12 @@ local account = DB_FetchOne(
 **Timeout:** 2s.
 **Idempotency:** idempotent (read-only).
 **Side effects:** none.
-**DB access:** `admirals_bank_accounts` SELECT.
+**DB access:** `sonar_bank_accounts` SELECT.
 
-#### C002. `admirals:bank:transfer`
+#### C002. `sonar:bank:transfer`
 
 **Tipo:** Server Callback
-**Resource:** `admirals_bank`
+**Resource:** `sonar_bank`
 **Schema version:** 1
 
 **Request:**
@@ -362,13 +362,13 @@ local account = DB_FetchOne(
 **Timeout:** 5s.
 **Idempotency:** via `request_id` (duplicados devuelven resultado original sin re-ejecutar).
 **Side effects:**
-- INSERT `admirals_bank_transactions` (2 rows — débito + crédito).
+- INSERT `sonar_bank_transactions` (2 rows — débito + crédito).
 - UPDATE balances both accounts.
-- Emite evento `admirals:bank:transfer_completed`.
+- Emite evento `sonar:bank:transfer_completed`.
 - Audit log.
 **DB access:** TX (transaction) obligatoria.
 
-#### C003. `admirals:bank:getTransactions`
+#### C003. `sonar:bank:getTransactions`
 
 **Request:**
 ```ts
@@ -406,7 +406,7 @@ local account = DB_FetchOne(
 **Timeout:** 3s.
 **Idempotency:** idempotent.
 
-#### C004. `admirals:bank:createEscrow`
+#### C004. `sonar:bank:createEscrow`
 
 **Request:**
 ```ts
@@ -436,11 +436,11 @@ local account = DB_FetchOne(
 **Authorization:** buyer o vendedor del contrato.
 **Rate limit:** 5 / 60s per player.
 **Side effects:**
-- INSERT `admirals_escrows`.
+- INSERT `sonar_escrows`.
 - DEBIT buyer IBAN → escrow account.
-- Emite `admirals:bank:escrow_created`.
+- Emite `sonar:bank:escrow_created`.
 
-#### C005. `admirals:bank:releaseEscrow`
+#### C005. `sonar:bank:releaseEscrow`
 
 **Request:**
 ```ts
@@ -470,7 +470,7 @@ local account = DB_FetchOne(
 
 ### 3.2 Empresa callbacks
 
-#### C010. `admirals:empresa:foundEmpresa`
+#### C010. `sonar:empresa:foundEmpresa`
 
 **Request:**
 ```ts
@@ -510,12 +510,12 @@ local account = DB_FetchOne(
 **Authorization:** cualquier player con saldo suficiente + reputation tier ok.
 **Rate limit:** 1 / 24h per player.
 **Side effects:**
-- INSERT `admirals_empresas`.
-- INSERT `admirals_bank_accounts` (empresa IBAN).
+- INSERT `sonar_empresas`.
+- INSERT `sonar_bank_accounts` (empresa IBAN).
 - DEBIT founding fee.
-- Emite `admirals:empresa:founded`.
+- Emite `sonar:empresa:founded`.
 
-#### C011. `admirals:empresa:hire`
+#### C011. `sonar:empresa:hire`
 
 **Request:**
 ```ts
@@ -541,9 +541,9 @@ local account = DB_FetchOne(
 ```
 
 **Authorization:** founder o manager con permission de hire.
-**Side effects:** INSERT `admirals_empresa_employees`, notif al hired.
+**Side effects:** INSERT `sonar_empresa_employees`, notif al hired.
 
-#### C012. `admirals:empresa:fire`
+#### C012. `sonar:empresa:fire`
 
 **Request:**
 ```ts
@@ -559,7 +559,7 @@ local account = DB_FetchOne(
 **Authorization:** founder o manager.
 **Side effects:** UPDATE employee status, transfer severance, emit events.
 
-#### C013. `admirals:empresa:listEmployees`
+#### C013. `sonar:empresa:listEmployees`
 
 **Request:**
 ```ts
@@ -587,7 +587,7 @@ local account = DB_FetchOne(
 
 **Authorization:** employees visible solo a founder/co-founder/manager.
 
-#### C014. `admirals:empresa:paySalaries`
+#### C014. `sonar:empresa:paySalaries`
 
 **Request:** (trigger auto cada 15 días, también manual)
 ```ts
@@ -616,7 +616,7 @@ local account = DB_FetchOne(
 
 ### 3.3 Item physical callbacks
 
-#### C020. `admirals:item:getInventory`
+#### C020. `sonar:item:getInventory`
 
 **Request:**
 ```ts
@@ -647,7 +647,7 @@ local account = DB_FetchOne(
 
 **Authorization:** owner.
 
-#### C021. `admirals:item:transferOwnership`
+#### C021. `sonar:item:transferOwnership`
 
 **Request:**
 ```ts
@@ -664,7 +664,7 @@ local account = DB_FetchOne(
 
 **Side effects:** UPDATE items, append lineage_chain if relevant, emit events.
 
-#### C022. `admirals:item:spawn` (admin only)
+#### C022. `sonar:item:spawn` (admin only)
 
 **Request:**
 ```ts
@@ -683,7 +683,7 @@ local account = DB_FetchOne(
 
 ### 3.4 Mercado / Contract callbacks
 
-#### C030. `admirals:mercado:createListing`
+#### C030. `sonar:mercado:createListing`
 
 **Request:**
 ```ts
@@ -699,7 +699,7 @@ local account = DB_FetchOne(
 }
 ```
 
-#### C031. `admirals:mercado:acceptListing`
+#### C031. `sonar:mercado:acceptListing`
 
 **Request:**
 ```ts
@@ -713,7 +713,7 @@ local account = DB_FetchOne(
 
 **Side effects:** crea contract, escrow, etc.
 
-#### C032. `admirals:contract:sign`
+#### C032. `sonar:contract:sign`
 
 **Request:**
 ```ts
@@ -724,7 +724,7 @@ local account = DB_FetchOne(
 }
 ```
 
-#### C033. `admirals:contract:dispute`
+#### C033. `sonar:contract:dispute`
 
 **Request:**
 ```ts
@@ -738,7 +738,7 @@ local account = DB_FetchOne(
 
 ### 3.5 Tablet callbacks
 
-#### C040. `admirals:tablet:getAppData`
+#### C040. `sonar:tablet:getAppData`
 
 **Request:**
 ```ts
@@ -750,7 +750,7 @@ local account = DB_FetchOne(
 
 **Response:** depends on app_id. Router pattern.
 
-#### C041. `admirals:tablet:sendCommand`
+#### C041. `sonar:tablet:sendCommand`
 
 **Request:**
 ```ts
@@ -764,7 +764,7 @@ local account = DB_FetchOne(
 
 ### 3.6 Quality / Node-specific callbacks
 
-#### C050. `admirals:bakery:startMix`
+#### C050. `sonar:bakery:startMix`
 
 **Request:**
 ```ts
@@ -777,7 +777,7 @@ local account = DB_FetchOne(
 
 **Response:** mix_session_id, expected_output_quality_range.
 
-#### C051. `admirals:bakery:completeBake`
+#### C051. `sonar:bakery:completeBake`
 
 **Request:**
 ```ts
@@ -827,7 +827,7 @@ local account = DB_FetchOne(
 
 > **Exports son APIs entre resources.** Menos cambiantes que callbacks. Cuidado al exponer: breaking change → actualizar todos los callers.
 
-### 4.2 Resource `admirals_bank`
+### 4.2 Resource `sonar_bank`
 
 ```lua
 -- Server exports
@@ -839,7 +839,7 @@ exports('CreditPlayer', function(source, amount, concept, source_iban) -> boolea
 exports('LockIban', function(iban, reason) -> boolean end)  -- admin
 ```
 
-### 4.3 Resource `admirals_empresa`
+### 4.3 Resource `sonar_empresa`
 
 ```lua
 exports('GetEmpresaByPlayer', function(source) -> { empresa_id, role, equity_pct } | nil end)
@@ -850,7 +850,7 @@ exports('HasPermission', function(source, empresaId, permission) -> boolean end)
 exports('GetFounderIban', function(empresaId) -> string end)
 ```
 
-### 4.4 Resource `admirals_inventory`
+### 4.4 Resource `sonar_inventory`
 
 ```lua
 exports('GiveItem', function(source, itemType, quality, quantity, lineageOrigin) -> itemId | nil end)
@@ -861,7 +861,7 @@ exports('HasLineage', function(itemId) -> boolean end)
 exports('GetLineageChain', function(itemId) -> array end)
 ```
 
-### 4.5 Resource `admirals_tablet`
+### 4.5 Resource `sonar_tablet`
 
 ```lua
 -- Client exports (Tablet UI)
@@ -872,7 +872,7 @@ exports('ShowNotification', function({ title, message, type, duration }) end)
 exports('IsTabletOpen', function() -> boolean end)
 ```
 
-### 4.6 Resource `admirals_core`
+### 4.6 Resource `sonar_core`
 
 ```lua
 -- Utilities compartidas
@@ -883,7 +883,7 @@ exports('LogAuditEvent', function(category, action, data) end)
 exports('GetReputation', function(citizenId) -> { score, tier } end)
 ```
 
-### 4.7 Resource `admirals_bakery` (node-specific, ejemplo)
+### 4.7 Resource `sonar_bakery` (node-specific, ejemplo)
 
 ```lua
 exports('GetBakeryEmpresaByMlo', function(mloId) -> empresaId | nil end)
@@ -895,15 +895,15 @@ exports('GetQualityOutput', function(ingredients, skillLevel, temperatureAccurac
 
 | Resource | Export | Usado por |
 |---|---|---|
-| `admirals_bank` | GetPlayerBalance | Tablet, empresa, mercado |
-| `admirals_bank` | ChargeFee | founding, rent, taxes |
-| `admirals_empresa` | IsEmpresaMember | ACL checks everywhere |
-| `admirals_empresa` | HasPermission | ACL hire/fire/etc. |
-| `admirals_inventory` | GiveItem | todos los nodos |
-| `admirals_inventory` | TransferItemOwnership | POS, contracts |
-| `admirals_tablet` | OpenTablet | keybind handler |
-| `admirals_core` | GetCitizenId | everywhere |
-| `admirals_core` | LogAuditEvent | compliance, events |
+| `sonar_bank` | GetPlayerBalance | Tablet, empresa, mercado |
+| `sonar_bank` | ChargeFee | founding, rent, taxes |
+| `sonar_empresa` | IsEmpresaMember | ACL checks everywhere |
+| `sonar_empresa` | HasPermission | ACL hire/fire/etc. |
+| `sonar_inventory` | GiveItem | todos los nodos |
+| `sonar_inventory` | TransferItemOwnership | POS, contracts |
+| `sonar_tablet` | OpenTablet | keybind handler |
+| `sonar_core` | GetCitizenId | everywhere |
+| `sonar_core` | LogAuditEvent | compliance, events |
 
 ---
 
@@ -912,7 +912,7 @@ exports('GetQualityOutput', function(ingredients, skillLevel, temperatureAccurac
 ### 5.1 Filosofía
 
 > **Tablet UI es React NUI.** Comunicación con client Lua via:
-> 1. **NUI → Client:** `fetch('https://admirals_tablet/endpoint', { method: 'POST', body })`.
+> 1. **NUI → Client:** `fetch('https://sonar_tablet/endpoint', { method: 'POST', body })`.
 > 2. **Client → NUI:** `SendNUIMessage({ type, data })`.
 
 Cada app Tablet usa este bridge extensivamente.
@@ -931,12 +931,12 @@ Cada app Tablet usa este bridge extensivamente.
 #### NUI3. `POST /getAppData`
 **Body:** `{ app_id: string, params?: object }`
 **Response:** app-specific payload.
-**Uso:** router que proxy a `admirals:tablet:getAppData` callback server.
+**Uso:** router que proxy a `sonar:tablet:getAppData` callback server.
 
 #### NUI4. `POST /sendCommand`
 **Body:** `{ app_id, command, data, request_id }`
 **Response:** success/error.
-**Uso:** router que proxy a `admirals:tablet:sendCommand`.
+**Uso:** router que proxy a `sonar:tablet:sendCommand`.
 
 #### NUI5. `POST /playSound`
 **Body:** `{ sound_id: string, volume?: number }`
@@ -1029,7 +1029,7 @@ Cada app Tablet envuelta en React ErrorBoundary. Errors → log + fallback UI.
 ### 6.2 Wrappers estándar
 
 ```lua
--- En admirals_core
+-- En sonar_core
 DB = {
   FetchOne = function(query, params) -> row | nil,
   FetchAll = function(query, params) -> array,
@@ -1041,46 +1041,46 @@ DB = {
 
 ### 6.3 Patterns por tabla
 
-#### 6.3.1 `admirals_bank_accounts`
+#### 6.3.1 `sonar_bank_accounts`
 
 ```lua
 -- Fetch balance
 local acc = DB.FetchOne(
-  'SELECT iban, balance, owner_citizen_id FROM admirals_bank_accounts WHERE iban = ?',
+  'SELECT iban, balance, owner_citizen_id FROM sonar_bank_accounts WHERE iban = ?',
   { iban }
 )
 
 -- Debit (always inside TX)
 DB.Transaction({
-  { query = 'UPDATE admirals_bank_accounts SET balance = balance - ? WHERE iban = ? AND balance >= ?',
+  { query = 'UPDATE sonar_bank_accounts SET balance = balance - ? WHERE iban = ? AND balance >= ?',
     params = { amount, from_iban, amount } },
-  { query = 'UPDATE admirals_bank_accounts SET balance = balance + ? WHERE iban = ?',
+  { query = 'UPDATE sonar_bank_accounts SET balance = balance + ? WHERE iban = ?',
     params = { amount, to_iban } },
-  { query = 'INSERT INTO admirals_bank_transactions (...) VALUES (...)',
+  { query = 'INSERT INTO sonar_bank_transactions (...) VALUES (...)',
     params = { ... } },
 })
 ```
 
-#### 6.3.2 `admirals_empresas`
+#### 6.3.2 `sonar_empresas`
 
 ```lua
 -- Buscar empresa por player
 local empresa = DB.FetchOne([[
   SELECT e.*
-  FROM admirals_empresas e
-  JOIN admirals_empresa_employees emp ON emp.empresa_id = e.id
+  FROM sonar_empresas e
+  JOIN sonar_empresa_employees emp ON emp.empresa_id = e.id
   WHERE emp.citizen_id = ? AND emp.active = 1
 ]], { citizenId })
 ```
 
-#### 6.3.3 `admirals_items`
+#### 6.3.3 `sonar_items`
 
 ```lua
 -- Move ownership
 DB.Transaction({
-  { query = 'UPDATE admirals_items SET owner_type = ?, owner_id = ? WHERE id = ?',
+  { query = 'UPDATE sonar_items SET owner_type = ?, owner_id = ? WHERE id = ?',
     params = { newType, newId, itemId } },
-  { query = 'INSERT INTO admirals_item_lineage (item_id, owner_type, owner_id, timestamp) VALUES (?, ?, ?, NOW())',
+  { query = 'INSERT INTO sonar_item_lineage (item_id, owner_type, owner_id, timestamp) VALUES (?, ?, ?, NOW())',
     params = { itemId, newType, newId } },
 })
 ```
@@ -1100,7 +1100,7 @@ AuditLog({
 })
 ```
 
-→ tabla `admirals_audit_log` (ver `technical/03_db_schema.md`).
+→ tabla `sonar_audit_log` (ver `technical/03_db_schema.md`).
 
 ### 6.5 Connection pooling
 
@@ -1209,13 +1209,13 @@ Cada código error tiene mensaje UI localizado en `/locale/es/errors.json`:
 ### 8.2 Implementación rate limit
 
 ```lua
--- En admirals_core
+-- En sonar_core
 RateLimiter = {
   Check = function(source, bucketKey, max, windowSec) -> boolean,
 }
 
 -- Uso callback
-lib.callback.register('admirals:bank:transfer', function(source, params)
+lib.callback.register('sonar:bank:transfer', function(source, params)
   if not RateLimiter.Check(source, 'bank:transfer', 10, 60) then
     return { success = false, error_code = 'RATE_LIMIT_EXCEEDED' }
   end
@@ -1262,8 +1262,8 @@ Validations típicas:
 ### 9.3 Protocol breaking change
 
 1. Decide breaking change necesario.
-2. Crea nuevo callback `admirals:dominio:accion_v2`.
-3. Mantén `admirals:dominio:accion` (v1) activo.
+2. Crea nuevo callback `sonar:dominio:accion_v2`.
+3. Mantén `sonar:dominio:accion` (v1) activo.
 4. Update callers 1 por 1 a v2.
 5. Cuando todos los callers migrados: deprecate v1 (retorna error `VERSION_DEPRECATED`).
 6. Tras 1 Oleada: remove v1.
@@ -1271,9 +1271,9 @@ Validations típicas:
 ### 9.4 Deprecation marker
 
 ```lua
-lib.callback.register('admirals:bank:transfer', function(source, params)
-  -- LEGACY v1 — use admirals:bank:transfer_v2
-  LogDeprecation('admirals:bank:transfer', source)
+lib.callback.register('sonar:bank:transfer', function(source, params)
+  -- LEGACY v1 — use sonar:bank:transfer_v2
+  LogDeprecation('sonar:bank:transfer', source)
   -- ... still works
 end)
 ```
@@ -1310,7 +1310,7 @@ Categorías que **siempre** auditan:
 
 ### 10.4 Admin commands
 
-- Separados en namespace `admirals:admin:*`.
+- Separados en namespace `sonar:admin:*`.
 - Restricted a role admin verificado.
 - Todo admin command → audit log con reason mandatory.
 
@@ -1368,8 +1368,8 @@ Cada callback:
 ### 12.2 Test commands dev
 
 ```
-/test_callback admirals:bank:getBalance {"iban":"ES00 ADML ABCD1234"}
-/test_callback admirals:bank:transfer {"from_iban":"...","to_iban":"...","amount":100,"concept":"test"}
+/test_callback sonar:bank:getBalance {"iban":"ES00 ADML ABCD1234"}
+/test_callback sonar:bank:transfer {"from_iban":"...","to_iban":"...","amount":100,"concept":"test"}
 ```
 
 ### 12.3 Stress testing
@@ -1481,7 +1481,7 @@ Los **API Contracts SONAR (ex-Admirals)** son el puente formal entre código. Cu
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 14 secciones, 40+ callbacks catalogados, 5 resource exports catalogs (bank/empresa/inventory/tablet/core + node-specific), NUI bridges 8 endpoints + 10 push messages, DB access layer wrappers + transactions + audit, error codes canonical ~30 categorized, rate limits per category, versioning protocol breaking vs non-breaking + deprecation flow, security top 5 threats mitigations, testing protocol manual + stress. **Firmable Oleada 0.** |
-| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013 + ADR-015). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~80 líneas) establece: naming canonical callbacks/exports/NUI bridges (mapping 1:1 5 callbacks shipped S1 + 35+ planned) + **C003 `getTransactions` DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot)** + request/response schemas + error codes + rate limits + auth matrix INVARIANTES pre/post Phase-8 + voz neutral ADR-012 §D3 en error message strings + migration execution schedule Phase 8 (next session) + reading guide §1-§14 legacy vs canonical. §0 resumen + §cierre rebrand + hermanos refs bumped v1.1+ + ADRs 011/012/013/015 linked. **NO touched:** §1-§14 filosofía + tipos API + 40+ callbacks catalog + exports catalog + NUI bridges + DB access + error codes + rate limits + versioning + security + testing (pivot-agnostic foundational API design). Callback prefix `admirals:*:callback:*` + exports `admirals_*` + NUI prefixes preservados legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8: 40+ callbacks + exports rename 1:1 inline body + C003 DEFERRED S3 tag reinforced. |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013 + ADR-015). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~80 líneas) establece: naming canonical callbacks/exports/NUI bridges (mapping 1:1 5 callbacks shipped S1 + 35+ planned) + **C003 `getTransactions` DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot)** + request/response schemas + error codes + rate limits + auth matrix INVARIANTES pre/post Phase-8 + voz neutral ADR-012 §D3 en error message strings + migration execution schedule Phase 8 (next session) + reading guide §1-§14 legacy vs canonical. §0 resumen + §cierre rebrand + hermanos refs bumped v1.1+ + ADRs 011/012/013/015 linked. **NO touched:** §1-§14 filosofía + tipos API + 40+ callbacks catalog + exports catalog + NUI bridges + DB access + error codes + rate limits + versioning + security + testing (pivot-agnostic foundational API design). Callback prefix `sonar:*:callback:*` + exports `sonar_*` + NUI prefixes preservados legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8: 40+ callbacks + exports rename 1:1 inline body + C003 DEFERRED S3 tag reinforced. |
 
 ---
 

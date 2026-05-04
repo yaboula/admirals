@@ -1,6 +1,6 @@
 # 🔌 SONAR — Bridges & Compatibility Layer
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§18 legacy v1.0 inline preserved con surface rebrand). **SSoT bridges vigente** — arquitectura + interfaces + tier system + adapters + SDK + anti-patterns sin cambios foundational (pivot-agnostic). Namespace code rename `admirals_bridges` → `sonar_bridges` scheduled Phase 8 post-S1.9 EXTENDED per ADR-013.
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§18 legacy v1.0 inline preserved con surface rebrand). **SSoT bridges vigente** — arquitectura + interfaces + tier system + adapters + SDK + anti-patterns sin cambios foundational (pivot-agnostic). Namespace code rename `sonar_bridges` → `sonar_bridges` scheduled Phase 8 post-S1.9 EXTENDED per ADR-013.
 > **Tipo:** Technical/Implementation. **Último doc Oleada 0 antes de Sprint 1.** Define el **Bridges Layer** — capa de abstracción que permite a SONAR funcionar sobre múltiples frameworks FiveM (QBox, QBCore, ESX) y scripts custom (lb-phone, qs-inventory, Renewed-Banking, etc.) sin acoplarse a ninguno.
 > **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5 (firmado post-pivot).
 > **Documento hermano SSoT:** `technical/01_architecture.md` (Bridges layer mencionado §Layers), `technical/04_api_contracts.md` (todo API SONAR que toca dinero/items/fono pasa por aquí).
@@ -14,7 +14,7 @@
 
 ## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
 
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + code namespace `admirals_bridges`/`admirals_core`.** ADR-011 (pivot) + ADR-012 (refinement) + ADR-013 (namespace migration Phase 8+9 execution scheduled) refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§18 abajo, **gana este NOTICE + ADR-011/012/013**.
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + code namespace `sonar_bridges`/`sonar_core`.** ADR-011 (pivot) + ADR-012 (refinement) + ADR-013 (namespace migration Phase 8+9 execution scheduled) refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§18 abajo, **gana este NOTICE + ADR-011/012/013**.
 
 ### NEW CANONICAL — vigente desde 2026-05-04
 
@@ -22,23 +22,23 @@
 - **Producto:** SONAR (no Admirals).
 - **Bridges Layer:** SONAR Bridges Layer.
 - **Code resources target state post-Phase-8 (ADR-013 scheduled):**
-  - `resources/admirals_bridges/` → `resources/sonar_bridges/`
-  - `resources/admirals_bank/` → `resources/sonar_bank/`
-  - `resources/admirals_core/` → `resources/sonar_core/`
-- **Export calls target state post-Phase-8:** `exports['admirals_bridges']:*` → `exports['sonar_bridges']:*`. `exports['admirals_core']:*` → `exports['sonar_core']:*`. `exports['admirals_bank']:*` → `exports['sonar_bank']:*`.
-- **Event prefixes target state post-Phase-8:** `admirals:bank:*` → `sonar:bank:*` + equivalentes bridges/core.
-- **Regla 1 (§18) anti-pattern grep actualizada post-Phase-8:** `grep -r "exports\['qb-" resources/sonar_core/` → 0 matches (antes `admirals_core`).
+  - `resources/sonar_bridges/` → `resources/sonar_bridges/`
+  - `resources/sonar_bank/` → `resources/sonar_bank/`
+  - `resources/sonar_core/` → `resources/sonar_core/`
+- **Export calls target state post-Phase-8:** `exports['sonar_bridges']:*` → `exports['sonar_bridges']:*`. `exports['sonar_core']:*` → `exports['sonar_core']:*`. `exports['sonar_bank']:*` → `exports['sonar_bank']:*`.
+- **Event prefixes target state post-Phase-8:** `sonar:bank:*` → `sonar:bank:*` + equivalentes bridges/core.
+- **Regla 1 (§18) anti-pattern grep actualizada post-Phase-8:** `grep -r "exports\['qb-" resources/sonar_core/` → 0 matches (antes `sonar_core`).
 
 #### Phase 8+9 execution schedule (ADR-013 authoritative)
 - **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Code + DB NO tocados.
-- **Phase 8 execution session (próxima sesión founder-available):** git mv resources admirals_* → sonar_* + fxmanifest + config.lua + internal refs + exports + event prefixes + server.cfg.example + smoke manuals.
-- **Phase 9 execution session (misma o siguiente):** migration `009_rename_admirals_to_sonar.sql` rename 6 tablas SQL DDL + FKs + index names + registrar en `admirals_schema_versions`/`sonar_schema_versions` final.
+- **Phase 8 execution session (próxima sesión founder-available):** git mv resources sonar_* → sonar_* + fxmanifest + config.lua + internal refs + exports + event prefixes + server.cfg.example + smoke manuals.
+- **Phase 9 execution session (misma o siguiente):** migration `009_rename_sonar_to_sonar.sql` rename 6 tablas SQL DDL + FKs + index names + registrar en `sonar_schema_versions`/`sonar_schema_versions` final.
 - **Phase 10 smoke regression:** manual founder 30/30 pasos cumulative S0+S1 post-refactor.
 - **Phase 11 workspace migration (opcional):** `d:\theBigProject` → `d:\sonar` si founder decide.
 - **Pre-Sprint 2 gate:** Phase 10 green + BOOTSTRAP v1.5 → v1.6 + B2 SPRINT_PLAN_S2 redactable.
 
 #### §12 Custom Adapter SDK — customer-facing renaming
-- Config customer path post-Phase-8: `resources/sonar_bridges/config.lua` (no `admirals_bridges`).
+- Config customer path post-Phase-8: `resources/sonar_bridges/config.lua` (no `sonar_bridges`).
 - SDK templates `sdk/template_bank.lua` / `template_inventory.lua` / `template_phone.lua` sin cambios interfaces (métodos + tipos + errores iguales).
 - Readme `sdk/README.md` rename references. Customers que hayan escrito adapters pre-Phase-8 = 1-time `Bridges.RegisterAdapter` path change sobre `sonar_bridges`.
 - Versioning SEMVER preservado — Bridges Layer v0.2.0 (pre-rename) → v0.3.0 (post-rename) major-minor bump documenting migration per ADR-013.
@@ -48,8 +48,8 @@
 1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
 2. **Arquitectura + tier system + 6 bridges + adapters + auto-detection + native fallbacks + lifecycle hooks + testing matrix + versioning + anti-patterns (§1-§11, §13-§16) siguen válidos pivot-agnostic** — foundational design no cambia.
 3. **Refs producto "Admirals" en §1-§18 = legacy** → leer "SONAR".
-4. **Refs code `admirals_bridges`/`admirals_core`/`admirals_bank`/`exports['admirals_*']`/`admirals:*` events = LEGACY estado actual código.** Post-Phase-8 ejecutada = canonical `sonar_*`.
-5. **§12 SDK customer refs:** post-Phase-8, usar `sonar_bridges` path. Pre-Phase-8 (estado actual), `admirals_bridges` path funciona.
+4. **Refs code `sonar_bridges`/`sonar_core`/`sonar_bank`/`exports['sonar_*']`/`sonar:*` events = LEGACY estado actual código.** Post-Phase-8 ejecutada = canonical `sonar_*`.
+5. **§12 SDK customer refs:** post-Phase-8, usar `sonar_bridges` path. Pre-Phase-8 (estado actual), `sonar_bridges` path funciona.
 6. **§18 TL;DR reglas absolutas:** semantics intact, solo naming actualiza post-Phase-8.
 7. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
 
@@ -100,7 +100,7 @@ Define:
 - ❌ **Abstracción por abstracción.** Un bridge con 30 métodos "por si acaso" es basura. Solo los que Admirals realmente usa.
 - ❌ **Bridge que leak types externos.** Si `QBCore.Player` aparece en la firma, la abstracción falló.
 - ❌ **Feature detection en runtime por call.** Se detecta al boot, se cachea, se usa. No `if QBCore then ... else if ESX then ...` en cada llamada.
-- ❌ **Bridge que hace más que pasar.** Si tiene lógica de negocio, esa lógica pertenece a `admirals_core`, no al bridge.
+- ❌ **Bridge que hace más que pasar.** Si tiene lógica de negocio, esa lógica pertenece a `sonar_core`, no al bridge.
 
 ---
 
@@ -110,7 +110,7 @@ Define:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  admirals_core / nodes / tablet                │
+│  sonar_core / nodes / tablet                │
 │  (callbacks, FSMs, business logic)             │
 │                                                 │
 │  Bridges.Bank.AddMoney(citizenId, 100, reason) │
@@ -118,7 +118,7 @@ Define:
               │
               ▼
 ┌─────────────────────────────────────────────────┐
-│  Bridges Layer (admirals_bridges resource)     │
+│  Bridges Layer (sonar_bridges resource)     │
 │                                                 │
 │  - Registry: adapters registrados              │
 │  - Dispatcher: routes call al adapter activo   │
@@ -134,12 +134,12 @@ Define:
 └─────────────────────────────────────────────────┘
 ```
 
-### 2.2 Resource `admirals_bridges`
+### 2.2 Resource `sonar_bridges`
 
-Ubicación: `resources/admirals_bridges/`
+Ubicación: `resources/sonar_bridges/`
 
 ```
-admirals_bridges/
+sonar_bridges/
   fxmanifest.lua
   config.lua              -- overrides customer-editable
   server/
@@ -200,7 +200,7 @@ admirals_bridges/
 ### 2.3 Load order FiveM
 
 ```lua
--- fxmanifest.lua de admirals_bridges
+-- fxmanifest.lua de sonar_bridges
 server_scripts {
   'server/logger.lua',
   'server/registry.lua',
@@ -215,12 +215,12 @@ server_scripts {
 }
 ```
 
-`admirals_bridges` debe arrancar **antes** que `admirals_core` (dependency en `fxmanifest.lua` de core: `dependency 'admirals_bridges'`).
+`sonar_bridges` debe arrancar **antes** que `sonar_core` (dependency en `fxmanifest.lua` de core: `dependency 'sonar_bridges'`).
 
 ### 2.4 Uso en resources downstream
 
 ```lua
--- admirals_core/server/bank/transfer.lua
+-- sonar_core/server/bank/transfer.lua
 local function transferToEmpresa(citizenId, empresaId, amount, reason)
   -- ❌ MAL: exports['qb-banking']:AddMoney(src, 'bank', -amount)
   -- ✅ BIEN:
@@ -294,7 +294,7 @@ Admirals provee:
 
 ### 4.1 Responsabilidad
 
-Todas las operaciones de dinero en accounts **distintos del ledger Admirals interno**. Admirals tiene su propio ledger (`admirals_bank_accounts` + `admirals_bank_movements`). Bridges.Bank se usa cuando el customer quiere que Admirals **mirror/sync** con el banco del framework externo (p.ej. el "cash/bank" de QBox).
+Todas las operaciones de dinero en accounts **distintos del ledger Admirals interno**. Admirals tiene su propio ledger (`sonar_bank_accounts` + `sonar_bank_movements`). Bridges.Bank se usa cuando el customer quiere que Admirals **mirror/sync** con el banco del framework externo (p.ej. el "cash/bank" de QBox).
 
 **Dos modos operacionales:**
 
@@ -310,7 +310,7 @@ Admirals usa su ledger como SSoT pero **sincroniza** cambios con el bank del fra
 **Ventaja:** UX unificado (player ve mismo saldo en Tablet Admirals y en phone del framework).
 **Desventaja:** complejidad sync, race conditions posibles, requiere cron de reconciliación.
 
-**Default:** Modo A. Modo B opt-in via `convar admirals_bridge_bank_mode = synced`.
+**Default:** Modo A. Modo B opt-in via `convar sonar_bridge_bank_mode = synced`.
 
 ### 4.2 Interface
 
@@ -348,7 +348,7 @@ Bridges.Bank.IsAvailable()
 |---|---|
 | **Thread safety** | Adapter debe ser safe para concurrent calls. Si framework no lo es, adapter usa mutex interno. |
 | **Atomicidad Transfer** | Debe ser atómico. Si framework no soporta transacción, adapter implementa rollback manual (try AddMoney después RemoveMoney, si falla AddMoney → revert RemoveMoney). |
-| **Idempotencia** | Mismo `idempotency_key` en <5min → no-op 2ª vez + devuelve result cacheado. Store en `admirals_bridge_idempotency` table (TTL 1h). |
+| **Idempotencia** | Mismo `idempotency_key` en <5min → no-op 2ª vez + devuelve result cacheado. Store en `sonar_bridge_idempotency` table (TTL 1h). |
 | **Error codes** | `INSUFFICIENT_FUNDS`, `NOT_FOUND`, `TIMEOUT`, `BRIDGE_UNAVAILABLE`, `VALIDATION_FAILED` |
 | **Timeout** | 5 segundos max. Timeout → error `TIMEOUT`. |
 | **Logging** | Toda call audit-logged con (adapter_name, method, identifier_hash, amount, reason, result, latency_ms). |
@@ -405,7 +405,7 @@ end
 
 #### 4.4.4 `adapter_native.lua` (fallback)
 
-No-op para Modo A, o usa `admirals_bank_accounts` table directo si el customer marca modo synced pero no tiene script externo.
+No-op para Modo A, o usa `sonar_bank_accounts` table directo si el customer marca modo synced pero no tiene script externo.
 
 ### 4.5 Expectativas testing adapter
 
@@ -425,7 +425,7 @@ Cada adapter debe pasar el test harness (§12.5):
 
 ### 5.1 Responsabilidad
 
-Operaciones sobre el inventario del **player** (carry, pockets) y de containers (vehicles, stashes). Admirals tiene ítems propios (`admirals_items` table con quality + lineage + atributos) pero necesita darlos/quitarlos del inventario activo del player para que los vea en su UI del framework.
+Operaciones sobre el inventario del **player** (carry, pockets) y de containers (vehicles, stashes). Admirals tiene ítems propios (`sonar_items` table con quality + lineage + atributos) pero necesita darlos/quitarlos del inventario activo del player para que los vea en su UI del framework.
 
 > **Decisión clave:** Admirals **almacena** los ítems en su tabla (SSoT atributos). El bridge **refleja** la presencia del ítem en el inventario del framework (para UI/carry mechanics). Sync bidireccional.
 
@@ -433,21 +433,21 @@ Operaciones sobre el inventario del **player** (carry, pockets) y de containers 
 
 ```lua
 --- Bridges.Inventory.GiveItem(citizenId, item_name, count, metadata)
---- @param metadata table { admirals_item_id, quality, lineage_origin, ... }
+--- @param metadata table { sonar_item_id, quality, lineage_origin, ... }
 --- @return boolean success, string|nil error
 Bridges.Inventory.GiveItem(citizenId, item_name, count, metadata)
 
---- Bridges.Inventory.RemoveItem(citizenId, item_name, count, admirals_item_id)
---- @param admirals_item_id string opcional, para remove item específico por ID
+--- Bridges.Inventory.RemoveItem(citizenId, item_name, count, sonar_item_id)
+--- @param sonar_item_id string opcional, para remove item específico por ID
 --- @return boolean success, string|nil error
-Bridges.Inventory.RemoveItem(citizenId, item_name, count, admirals_item_id)
+Bridges.Inventory.RemoveItem(citizenId, item_name, count, sonar_item_id)
 
 --- Bridges.Inventory.HasItem(citizenId, item_name, count)
 --- @return boolean has, number actual_count
 Bridges.Inventory.HasItem(citizenId, item_name, count)
 
 --- Bridges.Inventory.GetItems(citizenId, filter)
---- @param filter table { item_name?, admirals_item_id? }
+--- @param filter table { item_name?, sonar_item_id? }
 --- @return table[] items [{name, count, metadata}]
 Bridges.Inventory.GetItems(citizenId, filter)
 
@@ -469,7 +469,7 @@ Bridges.Inventory.IsMetadataSupported()
 
 | Campo | Tipo | Propósito |
 |---|---|---|
-| `admirals_item_id` | string UUID | Link al row `admirals_items`. **Obligatorio** si Admirals-owned. |
+| `sonar_item_id` | string UUID | Link al row `sonar_items`. **Obligatorio** si Admirals-owned. |
 | `quality` | 'A'\|'B'\|'C'\|'D' | Quality tier. |
 | `quality_score` | number 0-100 | Score numérico. |
 | `lineage_origin` | table | `{ granja_id, plot_id, harvest_ts }` para wheat/crops. |
@@ -635,7 +635,7 @@ Bridges.Identity.OnPlayerDropped(callback)
 - Un **job framework** (police, ambulance, mechanic) — gestionado por el framework.
 - Uno o más **empresa Admirals** membership (Granja La Roja, Panadería X) — gestionado por Admirals.
 
-`Bridges.Identity.GetJob()` devuelve **solo** el job framework. Los empresa Admirals se consultan via `admirals_core` APIs.
+`Bridges.Identity.GetJob()` devuelve **solo** el job framework. Los empresa Admirals se consultan via `sonar_core` APIs.
 
 ### 7.4 Adapters
 
@@ -717,7 +717,7 @@ Bridges.Notify.Broadcast(opts)
 ### 10.1 Auto-detection al boot
 
 ```lua
--- admirals_bridges/server/init.lua
+-- sonar_bridges/server/init.lua
 local detected = {
   bank = 'native',
   inventory = 'native',
@@ -749,7 +749,7 @@ end
 
 -- Aplicar overrides convars
 for module in pairs(detected) do
-  local override = GetConvar('admirals_bridge_' .. module, '')
+  local override = GetConvar('sonar_bridge_' .. module, '')
   if override ~= '' then
     if Bridges.GetAdapter(module, override) then
       detected[module] = override
@@ -767,13 +767,13 @@ Logger.Info('Bridges configuradas: %s', json.encode(detected))
 
 ```cfg
 # server.cfg
-setr admirals_bridge_bank "qbox"               # o "renewed_banking", "native", "custom_mine"
-setr admirals_bridge_inventory "ox_inventory"
-setr admirals_bridge_phone "lb_phone"
-setr admirals_bridge_identity "qbox"
-setr admirals_bridge_target "ox_target"
-setr admirals_bridge_notify "ox_lib"
-setr admirals_bridge_bank_mode "standalone"    # "standalone" (Modo A) | "synced" (Modo B)
+setr sonar_bridge_bank "qbox"               # o "renewed_banking", "native", "custom_mine"
+setr sonar_bridge_inventory "ox_inventory"
+setr sonar_bridge_phone "lb_phone"
+setr sonar_bridge_identity "qbox"
+setr sonar_bridge_target "ox_target"
+setr sonar_bridge_notify "ox_lib"
+setr sonar_bridge_bank_mode "standalone"    # "standalone" (Modo A) | "synced" (Modo B)
 ```
 
 ### 10.3 Conflict detection
@@ -816,8 +816,8 @@ Al acabar detection, Admirals prints reporte al console server:
 
 | Módulo | Native behavior | Limitaciones |
 |---|---|---|
-| **Bank** | Usa solo `admirals_bank_accounts`. No-op sync externo. | Player no ve su saldo en su phone framework (pero sí en Tablet). |
-| **Inventory** | Tabla `admirals_items_carry` + UI Tablet "Inventory app". Carry limit simple por peso. | Sin drag-drop HUD framework-native. |
+| **Bank** | Usa solo `sonar_bank_accounts`. No-op sync externo. | Player no ve su saldo en su phone framework (pero sí en Tablet). |
+| **Inventory** | Tabla `sonar_items_carry` + UI Tablet "Inventory app". Carry limit simple por peso. | Sin drag-drop HUD framework-native. |
 | **Phone** | Notifications al Tablet Admirals (app "Inbox"). SMS → chat message + ledger. Calls → unsupported. | No voice calls. |
 | **Identity** | Usa `GetPlayerIdentifiers(source)` directo, license como citizenId. | No jobs/charinfo framework-level. |
 | **Target** | Distance-check + keypress E. Marker ground visible. | No eye-target polish. |
@@ -845,7 +845,7 @@ Customer usa un script:
 
 ```lua
 -- Admirals Bridges SDK — Custom Bank Adapter Template
--- Copy to admirals_bridges/adapters/bank/my_bank.lua
+-- Copy to sonar_bridges/adapters/bank/my_bank.lua
 -- Implement los 5 métodos. Register at bottom.
 
 local MyBankAdapter = {}
@@ -904,7 +904,7 @@ Documento con:
 ### 12.4 Registration
 
 ```lua
--- Customer edita admirals_bridges/config.lua
+-- Customer edita sonar_bridges/config.lua
 Config.CustomAdapters = {
   bank = 'my_bank',       -- nombre del adapter registrado
   inventory = 'my_inv',
@@ -949,7 +949,7 @@ local function testBankAdapter(name)
 end
 ```
 
-Customer runs: `exec resources/admirals_bridges/scripts/test_adapter.lua` + console command `admirals_test_adapter bank my_bank`.
+Customer runs: `exec resources/sonar_bridges/scripts/test_adapter.lua` + console command `sonar_test_adapter bank my_bank`.
 
 ---
 
@@ -961,7 +961,7 @@ Admirals emite eventos cuando cambia estado relevante, para que externa sincroni
 
 ```lua
 -- Admirals emite tras pagar salario:
-TriggerEvent('admirals:bridge:moneyChanged', {
+TriggerEvent('sonar:bridge:moneyChanged', {
   citizenId = '...',
   delta = 2000,
   new_balance = 5500,
@@ -970,16 +970,16 @@ TriggerEvent('admirals:bridge:moneyChanged', {
 })
 
 -- External scripts pueden escuchar:
-AddEventHandler('admirals:bridge:moneyChanged', function(data)
+AddEventHandler('sonar:bridge:moneyChanged', function(data)
   -- actualizar UI phone o lo que sea
 end)
 ```
 
 Eventos emitidos:
-- `admirals:bridge:moneyChanged`
-- `admirals:bridge:itemGiven` / `admirals:bridge:itemRemoved`
-- `admirals:bridge:empresaJoined` / `admirals:bridge:empresaLeft`
-- `admirals:bridge:contractSigned`
+- `sonar:bridge:moneyChanged`
+- `sonar:bridge:itemGiven` / `sonar:bridge:itemRemoved`
+- `sonar:bridge:empresaJoined` / `sonar:bridge:empresaLeft`
+- `sonar:bridge:contractSigned`
 
 ### 13.2 External → Admirals (inbound)
 
@@ -988,7 +988,7 @@ Si external script cambia dinero/items del player directamente (bypass Admirals)
 ```lua
 -- External script paga al player (p.ej. robo al banco, evento custom)
 -- DEBE emitir:
-TriggerEvent('admirals:external:moneyAdded', {
+TriggerEvent('sonar:external:moneyAdded', {
   citizenId = '...',
   amount = 500,
   reason = 'bank_heist_payout',
@@ -1078,8 +1078,8 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 
 ## 16. Anti-patterns
 
-- ❌ **`exports['script-name']` fuera de adapters.** Grep el repo pre-merge: ningún match excepto en `admirals_bridges/adapters/`.
-- ❌ **Bridges con lógica de negocio.** Bridge routes + traduce. Lógica va en `admirals_core`.
+- ❌ **`exports['script-name']` fuera de adapters.** Grep el repo pre-merge: ningún match excepto en `sonar_bridges/adapters/`.
+- ❌ **Bridges con lógica de negocio.** Bridge routes + traduce. Lógica va en `sonar_core`.
 - ❌ **Hardcoded framework check.** `if QBCore then...` prohibido fuera de adapters. En su lugar: feature-detect vía `Bridges.X.IsMetadataSupported()` etc.
 - ❌ **Leak tipos externos.** `Bridges.Bank.GetBalance` NUNCA devuelve un `QBCore.Player` — devuelve número puro.
 - ❌ **No-op silencioso.** Si adapter no soporta algo, throw clear error, no return true.
@@ -1096,7 +1096,7 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 ### 17.1 Roadmap implementación
 
 #### Sprint 0 Oleada 1 (inmediato post-firma doc)
-- ✅ Skeleton `admirals_bridges` resource structure.
+- ✅ Skeleton `sonar_bridges` resource structure.
 - ✅ Registry + Dispatcher + Logger.
 - ✅ Interfaces de los 6 bridges (sin adapters).
 - ✅ Auto-detection mecanismo.
@@ -1111,7 +1111,7 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 
 #### Sprint 1-3 Oleada 1
 - 🔜 Adapter `lb_phone` (T1).
-- 🔜 Integración con admirals_core: primer callback usa bridges (transfer money Sprint 1).
+- 🔜 Integración con sonar_core: primer callback usa bridges (transfer money Sprint 1).
 
 #### Sprint 4+ Oleada 1
 - 🔜 Adapters T2 adicionales (QBCore, ESX, qb-inventory, qs-inventory, qb-phone) según demanda.
@@ -1130,7 +1130,7 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 ### 17.2 Estado del documento
 
 - **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level + header + hermanos + ADRs refs + lectura obligatoria; §1-§18 legacy inline preserved).
-- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `admirals_*` refs legacy actualizadas a `sonar_*` canonical en §1-§18, o v2.0 si cambio estructural bridges post-S2 learnings).
+- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `sonar_*` refs legacy actualizadas a `sonar_*` canonical en §1-§18, o v2.0 si cambio estructural bridges post-S2 learnings).
 - **Documento padre:** `agents/00_BOOTSTRAP.md` v1.5.
 - **Documentos hermanos:** `technical/01_architecture.md`, `technical/04_api_contracts.md`, `technical/06_fivem_standards.md` v1.1+, `planning/01_roadmap.md` v1.5.
 - **ADRs relacionados:** ADR-009 (Bridges Layer foundational) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9)**.
@@ -1140,7 +1140,7 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción. 17 secciones: filosofía + arquitectura + tier system + 6 bridges (Bank/Inventory/Phone/Identity/Target/Notify) con interfaces exactas + adapters T1/T2/native + auto-detection + config overrides + native fallbacks + Custom Adapter SDK + lifecycle hooks + testing matrix + versioning policy + anti-patterns + roadmap. **Firmable.** |
-| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~50 líneas) establece: naming canonical producto + code namespace target state post-Phase-8 (`sonar_bridges`/`sonar_core`/`sonar_bank` + `exports['sonar_*']` + `sonar:*` events) per ADR-013 scheduled + Phase 8+9 execution schedule (next session founder-available) + §12 SDK customer-facing rename guidance + reading guide §1-§18 legacy vs canonical. §0 resumen + headers `00_BOOTSTRAP.md` v1.1 → v1.5 + ADR-007 ref → ADR-009/011/012/013. §17.2 bumped + próxima revisión post-Phase-8+9. **NO touched:** §1-§16 arquitectura + tier + 6 bridges + adapters + SDK interfaces + testing matrix + versioning + anti-patterns (pivot-agnostic). Code namespace `admirals_*` preservado legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~50 líneas) establece: naming canonical producto + code namespace target state post-Phase-8 (`sonar_bridges`/`sonar_core`/`sonar_bank` + `exports['sonar_*']` + `sonar:*` events) per ADR-013 scheduled + Phase 8+9 execution schedule (next session founder-available) + §12 SDK customer-facing rename guidance + reading guide §1-§18 legacy vs canonical. §0 resumen + headers `00_BOOTSTRAP.md` v1.1 → v1.5 + ADR-007 ref → ADR-009/011/012/013. §17.2 bumped + próxima revisión post-Phase-8+9. **NO touched:** §1-§16 arquitectura + tier + 6 bridges + adapters + SDK interfaces + testing matrix + versioning + anti-patterns (pivot-agnostic). Code namespace `sonar_*` preservado legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
 
 ---
 
@@ -1149,9 +1149,9 @@ v2.0: remueve AddMoney, mantiene solo AddMoneyV2 (renombrado AddMoney).
 ### Regla 1: Nunca external directo
 ```
 # Pre-Phase-8 (estado actual):
-grep -r "exports\['qb-" admirals_core/ → 0 matches
-grep -r "exports\['qbx-" admirals_core/ → 0 matches (incluso QBox primary)
-grep -r "ESX\." admirals_core/ → 0 matches
+grep -r "exports\['qb-" sonar_core/ → 0 matches
+grep -r "exports\['qbx-" sonar_core/ → 0 matches (incluso QBox primary)
+grep -r "ESX\." sonar_core/ → 0 matches
 
 # Post-Phase-8 canonical (ADR-013 scheduled):
 grep -r "exports\['qb-" sonar_core/ → 0 matches

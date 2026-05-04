@@ -1,6 +1,6 @@
 # ⚙️ SONAR — FiveM Standards
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§11 legacy v1.0 inline preserved). **SSoT vigente** — performance budgets + realtime sync + security threat model + anti-patterns + code review + monitoring + emergency procedures sin cambios foundational (pivot-agnostic). State Bag namespace `admirals_*` scheduled rename `sonar_*` Phase 8 per ADR-013.
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§11 legacy v1.0 inline preserved). **SSoT vigente** — performance budgets + realtime sync + security threat model + anti-patterns + code review + monitoring + emergency procedures sin cambios foundational (pivot-agnostic). State Bag namespace `sonar_*` scheduled rename `sonar_*` Phase 8 per ADR-013.
 > **Tipo:** Technical/Implementation. **Consolidado:** realtime sync + security threat model + performance budgets. Reglas absolutas para código FiveM de SONAR.
 > **Documento padre:** `technical/01_architecture.md` v1.0 (firmado).
 > **Documento hermano:** `technical/04_api_contracts.md` v1.1+ (post-pivot).
@@ -15,17 +15,17 @@
 
 ## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
 
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + State Bag namespace `admirals_` §6.1 code review checklist.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§11 abajo, **gana este NOTICE + ADR-011/012/013**.
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + State Bag namespace `sonar_` §6.1 code review checklist.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§11 abajo, **gana este NOTICE + ADR-011/012/013**.
 
 ### NEW CANONICAL — vigente desde 2026-05-04
 
 #### Naming canonical (DEPRECATED heritage "Admirals" producto)
 - **Producto:** SONAR (no Admirals).
 - **FiveM Standards apply to:** `resources/sonar_bridges/` + `resources/sonar_core/` + `resources/sonar_bank/` + `resources/sonar_tablet/` (new S2 UI) + `resources/sonar_companies/` (S3+) post-Phase-8 per ADR-013.
-- **State Bag namespace canonical post-Phase-8:** `sonar_*` prefix (no `admirals_*`). E.g., `SetStateBagValue('player:123', 'sonar_bank_balance', 1500)` target state.
-- **Event prefixes canonical post-Phase-8:** `sonar:bank:*` + `sonar:core:*` + `sonar:bridges:*` + `sonar:tablet:*` (no `admirals:*`).
+- **State Bag namespace canonical post-Phase-8:** `sonar_*` prefix (no `sonar_*`). E.g., `SetStateBagValue('player:123', 'sonar_bank_balance', 1500)` target state.
+- **Event prefixes canonical post-Phase-8:** `sonar:bank:*` + `sonar:core:*` + `sonar:bridges:*` + `sonar:tablet:*` (no `sonar:*`).
 - **DB tables canonical post-Phase-9 migration 009:** `sonar_accounts`, `sonar_audit_log`, `sonar_bridge_idempotency`, `sonar_bank_accounts`, `sonar_bank_movements`, `sonar_bank_escrows`.
-- **Code review checklist §6.1 Sync subsection:** `Namespace "admirals_" en state bags` → post-Phase-8 `Namespace "sonar_" en state bags`.
+- **Code review checklist §6.1 Sync subsection:** `Namespace "sonar_" en state bags` → post-Phase-8 `Namespace "sonar_" en state bags`.
 
 #### Voz + copy-in-production (ADR-012 §D3 applied)
 - Logging messages + error strings + NUI copy siguen voz neutral premium-tech.
@@ -41,8 +41,8 @@
 1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
 2. **Performance budgets + realtime sync patterns + security threat model + anti-patterns + code review + monitoring + emergency procedures + TL;DR (§1-§11) siguen válidos pivot-agnostic** — foundational engineering no cambia.
 3. **Refs producto "Admirals" en §1-§11 = legacy** → leer "SONAR".
-4. **§6.1 Sync checklist `Namespace "admirals_" en state bags`:** post-Phase-8 = `sonar_`. Pre-Phase-8 (estado actual) = `admirals_` funciona.
-5. **Ejemplo code `admirals_bank_balance` en §4 State Bags / §5 DB:** legacy names, post-Phase-8 será `sonar_bank_balance` / `sonar_bank_accounts`.
+4. **§6.1 Sync checklist `Namespace "sonar_" en state bags`:** post-Phase-8 = `sonar_`. Pre-Phase-8 (estado actual) = `sonar_` funciona.
+5. **Ejemplo code `sonar_bank_balance` en §4 State Bags / §5 DB:** legacy names, post-Phase-8 será `sonar_bank_balance` / `sonar_bank_accounts`.
 6. **Si duda → ADR-011 + ADR-012 + ADR-013 + NOTICE r1 mandan.**
 
 ---
@@ -117,14 +117,14 @@ Si un resource supera esto, **no shippea** hasta optimizar. No "lo arreglamos de
 
 | Resource | Idle budget | Peak budget |
 |---|---|---|
-| `admirals_core` | <0.3ms | <1ms |
-| `admirals_bank` | <0.2ms | <1ms |
-| `admirals_empresa` | <0.2ms | <1ms |
-| `admirals_tablet` (client) | <0.5ms | <2ms |
-| `admirals_tablet` (server) | <0.3ms | <1ms |
-| `admirals_inventory` | <0.3ms | <1ms |
-| `admirals_bakery` | <0.3ms | <1ms |
-| `admirals_logistics` | <0.4ms | <1.5ms |
+| `sonar_core` | <0.3ms | <1ms |
+| `sonar_bank` | <0.2ms | <1ms |
+| `sonar_empresa` | <0.2ms | <1ms |
+| `sonar_tablet` (client) | <0.5ms | <2ms |
+| `sonar_tablet` (server) | <0.3ms | <1ms |
+| `sonar_inventory` | <0.3ms | <1ms |
+| `sonar_bakery` | <0.3ms | <1ms |
+| `sonar_logistics` | <0.4ms | <1.5ms |
 | All node resources combined | <2ms | <8ms |
 
 ### 2.3 NUI performance
@@ -157,9 +157,9 @@ Si un resource supera esto, **no shippea** hasta optimizar. No "lo arreglamos de
 resmon
 
 // Salida ejemplo:
-// admirals_core     0.24 ms  (idle avg)
-// admirals_bank     0.31 ms
-// admirals_tablet   0.52 ms
+// sonar_core     0.24 ms  (idle avg)
+// sonar_bank     0.31 ms
+// sonar_tablet   0.52 ms
 ```
 
 **Regla:** monitor en producción cada día. Alertas si cualquier resource >threshold.
@@ -167,7 +167,7 @@ resmon
 #### 2.5.2 Server profiler
 
 ```lua
--- En admirals_core
+-- En sonar_core
 profiler.enterScope('bank_transfer')
 -- ... lógica ...
 profiler.exitScope()
@@ -227,9 +227,9 @@ local isOpen = Entity(entityId).state.empresa_shift_open
 > **Uso:** acciones discretas, notificaciones, commands.
 
 **Ejemplos:**
-- `admirals:bank:transfer_completed` — evento one-off.
-- `admirals:empresa:hired` — notif event.
-- `admirals:item:produced` — state-level event.
+- `sonar:bank:transfer_completed` — evento one-off.
+- `sonar:empresa:hired` — notif event.
+- `sonar:item:produced` — state-level event.
 
 #### 3.1.3 Callbacks
 
@@ -252,10 +252,10 @@ Ver `technical/04_api_contracts.md`.
 
 #### 3.2.1 Namespace
 
-**Prefix `admirals_`** para evitar conflictos con otros resources.
+**Prefix `sonar_`** para evitar conflictos con otros resources.
 
 ```lua
-Entity(id).state:set('admirals_quality', 'A', true)
+Entity(id).state:set('sonar_quality', 'A', true)
 -- NOT 'quality' — too generic
 ```
 
@@ -280,7 +280,7 @@ Entity(id).state:set('admirals_quality', 'A', true)
 
 ```lua
 -- Client
-AddStateBagChangeHandler('admirals_quality', nil, function(bagName, key, value)
+AddStateBagChangeHandler('sonar_quality', nil, function(bagName, key, value)
   -- actualizar UI
 end)
 ```
@@ -296,10 +296,10 @@ Eventos que potencialmente spam (growth ticks, position updates):
 **Pattern:** throttle declarado.
 
 ```lua
--- admirals_core/shared.lua
+-- sonar_core/shared.lua
 EVENT_THROTTLES = {
-  ['admirals:granja:growth_tick'] = { max_per_sec = 1, burst = 3 },
-  ['admirals:logistics:position_update'] = { max_per_sec = 2, burst = 5 },
+  ['sonar:granja:growth_tick'] = { max_per_sec = 1, burst = 3 },
+  ['sonar:logistics:position_update'] = { max_per_sec = 2, burst = 5 },
 }
 ```
 
@@ -312,7 +312,7 @@ Client UI actualizaciones (search input, slider drag):
 ```lua
 -- Client
 local debouncedSearch = debounce(function(query)
-  lib.callback.await('admirals:mercado:search', 500, query)
+  lib.callback.await('sonar:mercado:search', 500, query)
 end, 300)  -- 300ms debounce
 ```
 
@@ -338,7 +338,7 @@ end, 300)  -- 300ms debounce
 
 ```lua
 -- BAD: send full state
-TriggerClientEvent('admirals:empresa:update', -1, {
+TriggerClientEvent('sonar:empresa:update', -1, {
   empresa_id = id,
   name = name,
   cash = cash,
@@ -348,7 +348,7 @@ TriggerClientEvent('admirals:empresa:update', -1, {
 })
 
 -- GOOD: send only changed
-TriggerClientEvent('admirals:empresa:cash_changed', -1, {
+TriggerClientEvent('sonar:empresa:cash_changed', -1, {
   empresa_id = id,
   new_cash = cash,
 })
@@ -463,7 +463,7 @@ Para payloads > 2KB: considerar JSON minify o msgpack.
 #### T15 — Inventory dupes
 **Vector:** bug crea 2 items cuando debería ser 1.
 **Mitigation:**
-- Item creation SOLO via `admirals_inventory:GiveItem` export.
+- Item creation SOLO via `sonar_inventory:GiveItem` export.
 - Unique item_id UUID.
 - Audit log creation.
 - Daily integrity check (total items vs logs).
@@ -507,7 +507,7 @@ Categories que siempre auditan (ver `technical/04_api_contracts.md` §10.3):
 - Dispute resolutions.
 - Login/logout (basic).
 
-**Tabla:** `admirals_audit_log` (ver `technical/03_db_schema.md`).
+**Tabla:** `sonar_audit_log` (ver `technical/03_db_schema.md`).
 
 ### 4.5 Incident response
 
@@ -563,7 +563,7 @@ end)
 
 ❌ **BAD:**
 ```lua
-AddStateBagChangeHandler('admirals_quality', nil, function(bag, key, val)
+AddStateBagChangeHandler('sonar_quality', nil, function(bag, key, val)
   -- Re-render toda la UI
   -- Query DB
   -- Calculate complex stuff
@@ -611,7 +611,7 @@ local DB_PASS = "admin123"
 
 #### 5.3.1 Events para state continuo
 
-❌ **BAD:** `TriggerClientEvent('admirals:quality_changed', -1, id, quality)` 10 veces por segundo.
+❌ **BAD:** `TriggerClientEvent('sonar:quality_changed', -1, id, quality)` 10 veces por segundo.
 
 ✅ **GOOD:** State Bag.
 
@@ -631,7 +631,7 @@ local DB_PASS = "admin123"
 
 #### 5.4.1 SELECT *
 
-❌ **BAD:** `SELECT * FROM admirals_bank_movements` (50 fields).
+❌ **BAD:** `SELECT * FROM sonar_bank_movements` (50 fields).
 
 ✅ **GOOD:** `SELECT id, amount, timestamp FROM ...`.
 
@@ -683,7 +683,7 @@ Para cada PR / merge a main:
 
 #### Sync
 - [ ] State Bags vs events correctly chosen.
-- [ ] Namespace `admirals_` (pre-Phase-8) / `sonar_` (post-Phase-8 per ADR-013) en state bags.
+- [ ] Namespace `sonar_` (pre-Phase-8) / `sonar_` (post-Phase-8 per ADR-013) en state bags.
 - [ ] Diff updates, not full state.
 - [ ] Change handlers lightweight.
 
@@ -738,7 +738,7 @@ Setup via txAdmin or custom:
 
 ### 7.4 Application metrics
 
-Custom metrics via `admirals_core`:
+Custom metrics via `sonar_core`:
 
 ```lua
 Metrics.Increment('transactions_processed')
@@ -830,7 +830,7 @@ Simulate 50 concurrent players via bots:
 
 ```sql
 -- Total money in circulation should balance
-SELECT SUM(balance) FROM admirals_bank_accounts
+SELECT SUM(balance) FROM sonar_bank_accounts
 WHERE type IN ('personal', 'empresa', 'escrow')
 ```
 
@@ -842,7 +842,7 @@ Diff > 0.01% threshold → investigate.
 
 ```sql
 -- Every delivered item should have lineage back to origin
-SELECT COUNT(*) FROM admirals_items
+SELECT COUNT(*) FROM sonar_items
 WHERE status IN ('delivered', 'on_display', 'sold')
   AND lineage_json IS NULL
 ```
@@ -875,7 +875,7 @@ Expected: 0. If > 0 → bug.
 ### 10.2 Estado del documento
 
 - **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level + header + hermanos + §6.1 sync checklist dual + §cierre rebrand + §FIN bump; §1-§11 legacy inline preserved).
-- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `admirals_*` refs legacy actualizadas a `sonar_*` canonical en §4/§5/§6.1 ejemplos code) o tras primer sprint Oleada 1 con real code + metrics.
+- **Próxima revisión:** tras Phase 8+9 execution + smoke regression (→ v1.2 con `sonar_*` refs legacy actualizadas a `sonar_*` canonical en §4/§5/§6.1 ejemplos code) o tras primer sprint Oleada 1 con real code + metrics.
 - **Documento padre:** `technical/01_architecture.md`.
 - **Documentos hermanos:** `04_api_contracts.md` v1.1+, `05_state_machines.md` v1.1+.
 - **ADRs relacionados:** ADR-006 + ADR-011 + ADR-012 + **ADR-013**.
@@ -885,7 +885,7 @@ Expected: 0. If > 0 → bug.
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026-05-01 | Founder + Cascade | Primera redacción consolidando 3 temas (realtime sync, security threat model, performance budgets) per ADR-006. 10 secciones. **Firmable.** |
-| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~45 líneas) establece: naming canonical producto + state bag namespace target state post-Phase-8 (`sonar_*`) + event prefixes canonical + DB tables canonical post-migration-009 per ADR-013 scheduled + voz + copy-in-production alineada ADR-012 §D3 (NO militar/capitán) + reading guide §1-§11 legacy vs canonical. §0 resumen + §6.1 sync checklist dual pre/post-Phase-8 + hermanos refs bumped v1.1+ + ADRs 006/011/012/013 linked + §FIN bump. **NO touched:** §1-§10 performance budgets + realtime sync patterns + security threat model + anti-patterns + code review + monitoring + emergency procedures (pivot-agnostic foundational engineering). Code namespace `admirals_*` preservado legacy ejemplos hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR. NOTICE r1 top-level (~45 líneas) establece: naming canonical producto + state bag namespace target state post-Phase-8 (`sonar_*`) + event prefixes canonical + DB tables canonical post-migration-009 per ADR-013 scheduled + voz + copy-in-production alineada ADR-012 §D3 (NO militar/capitán) + reading guide §1-§11 legacy vs canonical. §0 resumen + §6.1 sync checklist dual pre/post-Phase-8 + hermanos refs bumped v1.1+ + ADRs 006/011/012/013 linked + §FIN bump. **NO touched:** §1-§10 performance budgets + realtime sync patterns + security threat model + anti-patterns + code review + monitoring + emergency procedures (pivot-agnostic foundational engineering). Code namespace `sonar_*` preservado legacy ejemplos hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. |
 
 ---
 

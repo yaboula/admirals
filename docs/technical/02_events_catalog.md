@@ -1,6 +1,6 @@
-# 📡 SONAR — Catálogo de Eventos `sonar:*` (post-Phase-8) / `admirals:*` (pre-Phase-8 legacy)
+# 📡 SONAR — Catálogo de Eventos `sonar:*` (post-Phase-8) / `sonar:*` (pre-Phase-8 legacy)
 
-> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§17 legacy v1.0 inline preserved con 88 eventos `admirals:*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + schemas + audit/throttle policies + tipos (state/command/push/callback) + naming conventions + tier system + RFC governance sin cambios foundational (pivot-agnostic). Event prefix `admirals:*` scheduled rename `sonar:*` Phase 8 per ADR-013.
+> **Versión:** 1.1 (light refresh post-pivot SONAR — NOTICE r1 top-level establece naming canonical post-ADR-011/012/013; §1-§17 legacy v1.0 inline preserved con 88 eventos `sonar:*` actualmente shipped S0+S1). **SSoT vigente** — filosofía + schemas + audit/throttle policies + tipos (state/command/push/callback) + naming conventions + tier system + RFC governance sin cambios foundational (pivot-agnostic). Event prefix `sonar:*` scheduled rename `sonar:*` Phase 8 per ADR-013.
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§5 define la arquitectura del bus).
 > **ADRs relacionados:** ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)**.
@@ -12,45 +12,45 @@
 
 ## 🔄 REFINEMENT NOTICE r1 (post ADR-011 + ADR-012 + ADR-013, 2026-05-04)
 
-**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + event prefix `admirals:*` en todos los 88 eventos.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§17 abajo, **gana este NOTICE + ADR-011/012/013**.
+**Este documento fue firmado v1.0 pre-pivot SONAR — naming "Admirals" producto + event prefix `sonar:*` en todos los 88 eventos.** ADR-011 + ADR-012 + ADR-013 refinan identity canonical + naming. **NOTICE r1 establece la interpretación vigente post-pivot**; en cualquier conflicto entre lo siguiente y §1-§17 abajo, **gana este NOTICE + ADR-011/012/013**.
 
 ### NEW CANONICAL — vigente desde 2026-05-04
 
-#### Naming canonical events (DEPRECATED heritage `admirals:*` prefix)
+#### Naming canonical events (DEPRECATED heritage `sonar:*` prefix)
 - **Producto:** SONAR (no Admirals).
-- **Event prefix canonical post-Phase-8 (ADR-013 scheduled):** `sonar:*` reemplaza `admirals:*`. Mapping 1:1:
-  - `admirals:bank:transfer_completed` → `sonar:bank:transfer_completed`
-  - `admirals:bank:escrow_created` → `sonar:bank:escrow_created`
-  - `admirals:granja:harvest_completed` → `sonar:granja:harvest_completed`
-  - `admirals:tablet:notification_pushed` → `sonar:tablet:notification_pushed`
+- **Event prefix canonical post-Phase-8 (ADR-013 scheduled):** `sonar:*` reemplaza `sonar:*`. Mapping 1:1:
+  - `sonar:bank:transfer_completed` → `sonar:bank:transfer_completed`
+  - `sonar:bank:escrow_created` → `sonar:bank:escrow_created`
+  - `sonar:granja:harvest_completed` → `sonar:granja:harvest_completed`
+  - `sonar:tablet:notification_pushed` → `sonar:tablet:notification_pushed`
   - ... aplicar 1:1 rename a los 88 eventos shipped + placeholders.
-- **Emisor canonical post-Phase-8:** `admirals_bank` → `sonar_bank`. `admirals_granja` → `sonar_granja`. `admirals_tablet` → `sonar_tablet`. `admirals_molino` → `sonar_molino`. `admirals_core` → `sonar_core`.
+- **Emisor canonical post-Phase-8:** `sonar_bank` → `sonar_bank`. `sonar_granja` → `sonar_granja`. `sonar_tablet` → `sonar_tablet`. `sonar_molino` → `sonar_molino`. `sonar_core` → `sonar_core`.
 - **Schema fields sin cambios:** payloads, types, validators, rangos, side effects — identical pre/post Phase-8. Solo prefix + emitter name bumped.
 - **Schema version NO bumped:** el prefix rename per ADR-013 es surgical mechanical refactor, no breaking contract. Versión per evento permanece 1 (unless semantic change applicable).
 
 #### Events shipped S1 affected by Phase 8 rename (reference list)
-- `admirals:bank:account_created` → `sonar:bank:account_created`
-- `admirals:bank:balance_changed` → `sonar:bank:balance_changed`
-- `admirals:bank:transfer_requested` → `sonar:bank:transfer_requested`
-- `admirals:bank:transfer_completed` → `sonar:bank:transfer_completed`
-- `admirals:bank:transfer_failed` → `sonar:bank:transfer_failed`
-- `admirals:bank:escrow_created` → `sonar:bank:escrow_created`
-- `admirals:bank:escrow_released` → `sonar:bank:escrow_released`
-- `admirals:bank:escrow_failed` → `sonar:bank:escrow_failed`
+- `sonar:bank:account_created` → `sonar:bank:account_created`
+- `sonar:bank:balance_changed` → `sonar:bank:balance_changed`
+- `sonar:bank:transfer_requested` → `sonar:bank:transfer_requested`
+- `sonar:bank:transfer_completed` → `sonar:bank:transfer_completed`
+- `sonar:bank:transfer_failed` → `sonar:bank:transfer_failed`
+- `sonar:bank:escrow_created` → `sonar:bank:escrow_created`
+- `sonar:bank:escrow_released` → `sonar:bank:escrow_released`
+- `sonar:bank:escrow_failed` → `sonar:bank:escrow_failed`
 - + eventos core bootstrap/ready/shutdown + audit log.
-- **Refactor execution Phase 8 target:** grep-based sed rename en `resources/admirals_bank/**/*.lua` + `resources/admirals_core/**/*.lua` + `resources/admirals_bridges/**/*.lua`. Estimate ~30 emit + ~40 handler attach sites.
+- **Refactor execution Phase 8 target:** grep-based sed rename en `resources/sonar_bank/**/*.lua` + `resources/sonar_core/**/*.lua` + `resources/sonar_bridges/**/*.lua`. Estimate ~30 emit + ~40 handler attach sites.
 
 #### Callback events (§15 del doc) post-Phase-8
-- C001 `admirals:bank:callback:get_balance` → `sonar:bank:callback:get_balance`
-- C002 `admirals:bank:callback:get_movements` → `sonar:bank:callback:get_movements`
-- C003 `admirals:bank:callback:get_transactions` → **DEFERRED S3 per ADR-015** (NO shipped S2 UI-heavy pivot). Placeholder preservado en doc sin scope active.
-- C004 `admirals:bank:callback:pre_transfer` → `sonar:bank:callback:pre_transfer`
-- C005 `admirals:bank:callback:audit_log` → `sonar:bank:callback:audit_log`
+- C001 `sonar:bank:callback:get_balance` → `sonar:bank:callback:get_balance`
+- C002 `sonar:bank:callback:get_movements` → `sonar:bank:callback:get_movements`
+- C003 `sonar:bank:callback:get_transactions` → **DEFERRED S3 per ADR-015** (NO shipped S2 UI-heavy pivot). Placeholder preservado en doc sin scope active.
+- C004 `sonar:bank:callback:pre_transfer` → `sonar:bank:callback:pre_transfer`
+- C005 `sonar:bank:callback:audit_log` → `sonar:bank:callback:audit_log`
 
 #### Migration execution schedule (ADR-013 authoritative)
 - **Este doc v1.1 = docs-only NOTICE update** (S1.9 EXTENDED). Code + event emit sites NO tocados.
 - **Phase 8 execution session (próxima sesión founder-available):** grep + sed rename events + emitter names + handler attachments + schema version docs.
-- **Post-Phase-8 doc bump v1.1 → v1.2:** refs inline `admirals:*` → `sonar:*` en todo el cuerpo (88+ eventos actualizados 1:1).
+- **Post-Phase-8 doc bump v1.1 → v1.2:** refs inline `sonar:*` → `sonar:*` en todo el cuerpo (88+ eventos actualizados 1:1).
 - **Pre-Sprint 2 gate:** Phase 10 smoke regression verifica events emit correctly con nuevos prefijos.
 
 #### Voz neutral en logging messages (ADR-012 §D3)
@@ -61,8 +61,8 @@
 
 1. **Lee primero este NOTICE r1 + ADR-011 + ADR-012 + ADR-013 + `00_BOOTSTRAP.md` v1.5.**
 2. **Filosofía + schemas + tipos (state/command/push/callback) + tier system + RFC + governance (§1-§4, §6, §16) siguen válidos pivot-agnostic** — foundational design bus sin cambios.
-3. **88 eventos documentados (§5, §7-§15) — refs `admirals:*` prefix = LEGACY estado actual código S0+S1.** Post-Phase-8 ejecutada = canonical `sonar:*`. Mapping 1:1 aplicable.
-4. **Emisor canonical strings `admirals_*`:** legacy estado actual. Post-Phase-8 = `sonar_*`.
+3. **88 eventos documentados (§5, §7-§15) — refs `sonar:*` prefix = LEGACY estado actual código S0+S1.** Post-Phase-8 ejecutada = canonical `sonar:*`. Mapping 1:1 aplicable.
+4. **Emisor canonical strings `sonar_*`:** legacy estado actual. Post-Phase-8 = `sonar_*`.
 5. **Schema payloads + validators + tipos + rangos + audit + throttle policies = INVARIANTES.** Pre/post Phase-8 identical.
 6. **§17.1 Inventory por vertical:** counts ünicos identical. Prefix solo actualiza.
 7. **C003 §15 callback `get_transactions`:** DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot). Marcado en rewrite futuro v1.2 post-Phase-8.
@@ -72,7 +72,7 @@
 
 ## 0. Resumen ejecutivo
 
-Este documento es **la referencia oficial de todos los eventos del bus `admirals:*` (pre-Phase-8) / `sonar:*` (post-Phase-8 per ADR-013)** que viven en el ecosistema SONAR.
+Este documento es **la referencia oficial de todos los eventos del bus `sonar:*` (pre-Phase-8) / `sonar:*` (post-Phase-8 per ADR-013)** que viven en el ecosistema SONAR.
 
 Cada evento es un **contrato firmado** entre quien lo emite y quien lo escucha. Romper un contrato es un **breaking change** (bump MAJOR del resource emisor — ver `01_architecture.md` §18).
 
@@ -100,14 +100,14 @@ Este doc cubre:
 | **E3** | **Eventos en pasado** | El nombre describe lo que **ya pasó** (`harvest_completed`, no `complete_harvest`). Los `command` events son la excepción. |
 | **E4** | **Idempotencia donde aplique** | Un mismo evento puede emitirse 2 veces (red, retry) — los suscriptores deben ser idempotentes cuando hay riesgo. |
 | **E5** | **Sin lógica de negocio en el evento** | El evento describe un hecho. La lógica vive en el suscriptor. |
-| **E6** | **Audit por defecto en eventos críticos** | Mutaciones de dinero, contratos, empresas, calidad → siempre logueados en `admirals_event_log`. |
+| **E6** | **Audit por defecto en eventos críticos** | Mutaciones de dinero, contratos, empresas, calidad → siempre logueados en `sonar_event_log`. |
 | **E7** | **Throttling explícito** | Eventos high-frequency (`growth_tick`, `state_change`) declaran su throttle aquí. |
 | **E8** | **Versionado del schema por evento** | Cada schema tiene `schema_version`. Si cambia, el catálogo lo refleja con changelog del evento. |
 
 ### 1.2 Convención de naming (recordatorio)
 
 ```
-admirals:<dominio>:<acción>
+sonar:<dominio>:<acción>
 ```
 
 - 3 partes, snake_case.
@@ -134,7 +134,7 @@ Todo payload Admirals incluye **siempre** estos campos meta cuando aplica:
 ```ts
 {
   // Campos de tracing (gestionados por Bus.Publish — no manuales)
-  _event_name: string,           // 'admirals:granja:harvest_completed'
+  _event_name: string,           // 'sonar:granja:harvest_completed'
   _event_id: string,             // UUID v4 único de esta emisión
   _emitted_at: number,           // unix timestamp ms
   _schema_version: number,       // versión del schema del evento
@@ -144,14 +144,14 @@ Todo payload Admirals incluye **siempre** estos campos meta cuando aplica:
 }
 ```
 
-Los campos `_event_*` son **automáticos** — los añade `Bus.Publish` en `admirals_core`. Los handlers nunca los emiten manualmente.
+Los campos `_event_*` son **automáticos** — los añade `Bus.Publish` en `sonar_core`. Los handlers nunca los emiten manualmente.
 
 ### 1.5 Plantilla de especificación de evento
 
 > **Toda entrada en este catálogo sigue este formato.** Si un developer añade un evento nuevo, crea entry con esta plantilla.
 
 ```
-### admirals:<dominio>:<acción>
+### sonar:<dominio>:<acción>
 
 **Tipo:** state | command | push | callback
 **Dirección:** server→server | client→server | server→client(target) | server→clients(broadcast)
@@ -208,12 +208,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos del corazón del ecosistema.** Identidad, empresas genéricas, estado global, reputación.
 
-### 2.1 admirals:core:account_logged_in
+### 2.1 sonar:core:account_logged_in
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast targeted a la propia src del jugador)
-**Emisor canónico:** `admirals_core` (vía bridge framework)
-**Suscriptores típicos:** `admirals_tablet` (login UI), todos los nodos (cargar empresas del jugador)
+**Emisor canónico:** `sonar_core` (vía bridge framework)
+**Suscriptores típicos:** `sonar_tablet` (login UI), todos los nodos (cargar empresas del jugador)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -247,11 +247,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.2 admirals:core:account_logged_out
+### 2.2 sonar:core:account_logged_out
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_core`
+**Emisor canónico:** `sonar_core`
 **Suscriptores típicos:** todos los resources (limpiar caches por jugador, persistir estado pendiente)
 **Audit:** always
 **Throttle:** none
@@ -273,12 +273,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.3 admirals:core:company_created
+### 2.3 sonar:core:company_created
 
 **Tipo:** state
 **Dirección:** server→server (+ push al owner)
-**Emisor canónico:** `admirals_core` (al confirmar creación)
-**Suscriptores típicos:** `admirals_tablet` (refrescar app Empresa), nodo correspondiente al `vertical` (provisión de assets/parcelas/etc.)
+**Emisor canónico:** `sonar_core` (al confirmar creación)
+**Suscriptores típicos:** `sonar_tablet` (refrescar app Empresa), nodo correspondiente al `vertical` (provisión de assets/parcelas/etc.)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -299,9 +299,9 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 **Side effects:**
 - Granja: si `vertical === 'farm'`, inicializa parcelas y silos según config del map.
-- Tablet: añade la empresa a la app Empresa del owner. Crea chat empresarial (`admirals:messages:chat_created`).
+- Tablet: añade la empresa a la app Empresa del owner. Crea chat empresarial (`sonar:messages:chat_created`).
 - Banca: cuenta empresarial activada con saldo inicial 0.
-- Documents: certificado de constitución generado (`admirals:documents:created` type='company_deed').
+- Documents: certificado de constitución generado (`sonar:documents:created` type='company_deed').
 
 **Ejemplo:**
 ```json
@@ -319,12 +319,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.4 admirals:core:company_member_added
+### 2.4 sonar:core:company_member_added
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet` (refrescar Empresa app), nodo del vertical (asignar permisos físicos en MLO)
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet` (refrescar Empresa app), nodo del vertical (asignar permisos físicos en MLO)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -349,12 +349,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.5 admirals:core:company_member_removed
+### 2.5 sonar:core:company_member_removed
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`, nodo del vertical
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`, nodo del vertical
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -377,12 +377,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.6 admirals:core:company_member_role_changed
+### 2.6 sonar:core:company_member_role_changed
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`, nodo del vertical
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`, nodo del vertical
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -408,12 +408,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.7 admirals:core:company_status_changed
+### 2.7 sonar:core:company_status_changed
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a Mercado si público)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`, nodos relacionados, `admirals_market`
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`, nodos relacionados, `sonar_market`
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -436,12 +436,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.8 admirals:core:reputation_changed
+### 2.8 sonar:core:reputation_changed
 
 **Tipo:** state
 **Dirección:** server→server (+ push al sujeto)
 **Emisor canónico:** cualquier resource (vía API `Reputation.Apply`)
-**Suscriptores típicos:** `admirals_tablet` (notif si cambio significativo), `admirals_market` (re-rankear)
+**Suscriptores típicos:** `sonar_tablet` (notif si cambio significativo), `sonar_market` (re-rankear)
 **Audit:** always (con razón)
 **Throttle:** debounce 5s por sujeto + razón (anti-spam)
 **Schema version:** 1
@@ -469,12 +469,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 2.9 admirals:core:state_change
+### 2.9 sonar:core:state_change
 
 **Tipo:** state (genérico — usar solo cuando no haya evento más específico)
 **Dirección:** server→server (+ broadcast targeted)
 **Emisor canónico:** cualquier resource
-**Suscriptores típicos:** `admirals_tablet` (refrescar UI activa)
+**Suscriptores típicos:** `sonar_tablet` (refrescar UI activa)
 **Audit:** never (alto volumen)
 **Throttle:** debounce 500ms por entidad
 **Schema version:** 1
@@ -501,12 +501,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos del dispositivo Tablet.** Hardware, OS, apps, docking.
 
-### 3.1 admirals:tablet:opened
+### 3.1 sonar:tablet:opened
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet` (cliente)
-**Suscriptores típicos:** `admirals_core` (analytics, métricas)
+**Emisor canónico:** `sonar_tablet` (cliente)
+**Suscriptores típicos:** `sonar_core` (analytics, métricas)
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -523,12 +523,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.2 admirals:tablet:closed
+### 3.2 sonar:tablet:closed
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_core` (analytics)
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_core` (analytics)
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -545,12 +545,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.3 admirals:tablet:dock_in
+### 3.3 sonar:tablet:dock_in
 
 **Tipo:** state
 **Dirección:** client→server (+ push back al cliente con ack)
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_tablet` (server-side: expandir UI a monitor), nodo del lugar (despacho de empresa)
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_tablet` (server-side: expandir UI a monitor), nodo del lugar (despacho de empresa)
 **Audit:** configurable
 **Throttle:** none
 **Schema version:** 1
@@ -574,12 +574,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.4 admirals:tablet:dock_out
+### 3.4 sonar:tablet:dock_out
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_tablet` (server-side)
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_tablet` (server-side)
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -597,12 +597,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.5 admirals:tablet:notification_pushed
+### 3.5 sonar:tablet:notification_pushed
 
 **Tipo:** push
 **Dirección:** server→client (target)
 **Emisor canónico:** cualquier resource (vía API `Notif.Push`)
-**Suscriptores típicos:** `admirals_tablet` (cliente — render UI)
+**Suscriptores típicos:** `sonar_tablet` (cliente — render UI)
 **Audit:** always (loguea quién pushó qué a quién)
 **Throttle:** rate limit per (account_id, source_resource): max 30/min
 **Schema version:** 1
@@ -632,7 +632,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 - Banner pop-up aparece en la Tablet (si abierta).
 - Vibración del modelo Tablet (si guardada).
 - Sonido específico por `type`.
-- Entry en `admirals_notifications` tabla.
+- Entry en `sonar_notifications` tabla.
 
 **Ejemplo:**
 ```json
@@ -640,13 +640,13 @@ Para mantener concisión usamos estos tipos en los schemas:
   "notif_id": 5821,
   "account_id": "1f2c8b3a-...",
   "type": "critical_op",
-  "source_resource": "admirals_granja",
+  "source_resource": "sonar_granja",
   "title": "Plaga detectada",
   "subtitle": "Parcela hortícola 3",
   "body": "Pulgón. Daño estimado 30% si no se trata en 24h.",
   "actions": [
-    { "label": "Tratar ahora", "action_id": "admirals:granja:open_treatment_ui", "params": { "plot_id": "..." } },
-    { "label": "Ver detalle", "action_id": "admirals:tablet:open_app", "params": { "app_id": "farmer_manager_panel", "view": "operations.plot_3" } }
+    { "label": "Tratar ahora", "action_id": "sonar:granja:open_treatment_ui", "params": { "plot_id": "..." } },
+    { "label": "Ver detalle", "action_id": "sonar:tablet:open_app", "params": { "app_id": "farmer_manager_panel", "view": "operations.plot_3" } }
   ],
   "delivery_mode": "push_popup",
   "pushed_at": 1730000000
@@ -655,12 +655,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.6 admirals:tablet:notification_read
+### 3.6 sonar:tablet:notification_read
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_core`
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_core`
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -675,16 +675,16 @@ Para mantener concisión usamos estos tipos en los schemas:
 ```
 
 **Side effects:**
-- `admirals_notifications.read = true, read_at = ?` para esa fila.
+- `sonar_notifications.read = true, read_at = ?` para esa fila.
 - Badge count en home decrementa.
 
 ---
 
-### 3.7 admirals:tablet:app_action_performed
+### 3.7 sonar:tablet:app_action_performed
 
 **Tipo:** command (genérico para apps registradas)
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet` (cuando una app dispara intent)
+**Emisor canónico:** `sonar_tablet` (cuando una app dispara intent)
 **Suscriptores típicos:** resource dueño de la app
 **Audit:** configurable por app
 **Throttle:** rate limit per (account_id, app_id, action): max 60/min
@@ -708,12 +708,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.8 admirals:tablet:app_registered
+### 3.8 sonar:tablet:app_registered
 
 **Tipo:** state
 **Dirección:** server→client (broadcast a tablets activas)
-**Emisor canónico:** `admirals_tablet` (server) cuando un resource llama `RegisterApp`
-**Suscriptores típicos:** `admirals_tablet` (NUI) — añade icono al home
+**Emisor canónico:** `sonar_tablet` (server) cuando un resource llama `RegisterApp`
+**Suscriptores típicos:** `sonar_tablet` (NUI) — añade icono al home
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -734,12 +734,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.9 admirals:tablet:settings_updated
+### 3.9 sonar:tablet:settings_updated
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_tablet` (server: persist), `admirals_core` (preferencias en cuenta)
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_tablet` (server: persist), `sonar_core` (preferencias en cuenta)
 **Audit:** never
 **Throttle:** debounce 1s per account
 **Schema version:** 1
@@ -767,12 +767,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 3.10 admirals:tablet:lost_or_stolen
+### 3.10 sonar:tablet:lost_or_stolen
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_tablet` (oleada 2 — al activar mecánica de robo)
-**Suscriptores típicos:** `admirals_core`, propio Tablet (cliente para deslogar)
+**Emisor canónico:** `sonar_tablet` (oleada 2 — al activar mecánica de robo)
+**Suscriptores típicos:** `sonar_core`, propio Tablet (cliente para deslogar)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -798,12 +798,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos bancarios.** Cuentas, transferencias, movimientos, salarios.
 
-### 4.1 admirals:bank:account_created
+### 4.1 sonar:bank:account_created
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet` (refrescar Banca app)
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet` (refrescar Banca app)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -822,12 +822,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 4.2 admirals:bank:transfer_requested
+### 4.2 sonar:bank:transfer_requested
 
 **Tipo:** command
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet` (NUI)
-**Suscriptores típicos:** `admirals_core` (handler bancario)
+**Emisor canónico:** `sonar_tablet` (NUI)
+**Suscriptores típicos:** `sonar_core` (handler bancario)
 **Audit:** loguea solo failures
 **Throttle:** rate limit per account: 5/min
 **Schema version:** 1
@@ -851,12 +851,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 4.3 admirals:bank:transfer_completed
+### 4.3 sonar:bank:transfer_completed
 
 **Tipo:** state
 **Dirección:** server→server (+ push targeted ambos extremos)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet` (notif moneda + actualizar balance), `admirals_documents` (generar recibo automático)
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet` (notif moneda + actualizar balance), `sonar_documents` (generar recibo automático)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -878,19 +878,19 @@ Para mantener concisión usamos estos tipos en los schemas:
 ```
 
 **Side effects:**
-- 2 entries en `admirals_bank_movements` (debe + haber).
-- Recibo PDF auto-creado en `admirals_documents`.
+- 2 entries en `sonar_bank_movements` (debe + haber).
+- Recibo PDF auto-creado en `sonar_documents`.
 - Notif "Pago recibido" al destinatario, "Pago realizado" al emisor.
 - Reputación: si `category === 'b2b_payment'` y on-time, bump leve a ambas partes.
 
 ---
 
-### 4.4 admirals:bank:transfer_failed
+### 4.4 sonar:bank:transfer_failed
 
 **Tipo:** state
 **Dirección:** server→client(target)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet` (mensaje error)
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet` (mensaje error)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -910,12 +910,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 4.5 admirals:bank:salary_paid
+### 4.5 sonar:bank:salary_paid
 
 **Tipo:** state
 **Dirección:** server→server (+ push al miembro)
-**Emisor canónico:** `admirals_core` (cron salary_tick)
-**Suscriptores típicos:** `admirals_tablet` (notif moneda)
+**Emisor canónico:** `sonar_core` (cron salary_tick)
+**Suscriptores típicos:** `sonar_tablet` (notif moneda)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -934,12 +934,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 4.6 admirals:bank:salary_failed
+### 4.6 sonar:bank:salary_failed
 
 **Tipo:** state
 **Dirección:** server→server (+ push al owner de la company)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet` (notif crítica financiera al owner)
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet` (notif crítica financiera al owner)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -961,12 +961,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 4.7 admirals:bank:cashbox_opened
+### 4.7 sonar:bank:cashbox_opened
 
 **Tipo:** state
 **Dirección:** client→server (+ ack al cliente)
-**Emisor canónico:** `admirals_tablet` (cliente, al interactuar con prop caja)
-**Suscriptores típicos:** `admirals_core`, nodo del vertical (UI mínima de caja)
+**Emisor canónico:** `sonar_tablet` (cliente, al interactuar con prop caja)
+**Suscriptores típicos:** `sonar_core`, nodo del vertical (UI mínima de caja)
 **Audit:** always
 **Throttle:** rate limit per (account, company): 10/min
 **Schema version:** 1
@@ -988,12 +988,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 4.8 admirals:bank:cashbox_movement
+### 4.8 sonar:bank:cashbox_movement
 
 **Tipo:** state
 **Dirección:** server→server (+ push al actor)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`, nodo del vertical
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`, nodo del vertical
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1015,14 +1015,14 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ## 5. Catálogo — Dominio `notifications` (gestión interna)
 
-> **Eventos del subsistema de notificaciones.** Complementan `admirals:tablet:notification_pushed` con eventos de gestión.
+> **Eventos del subsistema de notificaciones.** Complementan `sonar:tablet:notification_pushed` con eventos de gestión.
 
-### 5.1 admirals:notifications:bulk_archived
+### 5.1 sonar:notifications:bulk_archived
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_core`
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_core`
 **Audit:** never
 **Throttle:** rate limit per account: 5/min
 **Schema version:** 1
@@ -1038,11 +1038,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 5.2 admirals:notifications:action_invoked
+### 5.2 sonar:notifications:action_invoked
 
 **Tipo:** command
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
+**Emisor canónico:** `sonar_tablet`
 **Suscriptores típicos:** resource declarado por la action
 **Audit:** loguea
 **Throttle:** rate limit per (account, action_id): 30/min
@@ -1053,7 +1053,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 {
   account_id: AccountId,
   notif_id: number,
-  action_id: string,               // ej. 'admirals:granja:open_treatment_ui'
+  action_id: string,               // ej. 'sonar:granja:open_treatment_ui'
   params: Record<string, unknown>, // los que venían en la notif
   invoked_at: UnixSec,
 }
@@ -1065,12 +1065,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 5.3 admirals:notifications:preferences_updated
+### 5.3 sonar:notifications:preferences_updated
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet` (Settings app)
-**Suscriptores típicos:** `admirals_core`
+**Emisor canónico:** `sonar_tablet` (Settings app)
+**Suscriptores típicos:** `sonar_core`
 **Audit:** never
 **Throttle:** debounce 2s per account
 **Schema version:** 1
@@ -1094,12 +1094,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos del repositorio documental.** Notas, contratos, albaranes, recibos, certificados.
 
-### 6.1 admirals:documents:created
+### 6.1 sonar:documents:created
 
 **Tipo:** state
 **Dirección:** server→server (+ push targeted)
-**Emisor canónico:** `admirals_core` (al crear cualquier documento)
-**Suscriptores típicos:** `admirals_tablet` (refrescar Notas&Contratos), partes implicadas
+**Emisor canónico:** `sonar_core` (al crear cualquier documento)
+**Suscriptores típicos:** `sonar_tablet` (refrescar Notas&Contratos), partes implicadas
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1126,12 +1126,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 6.2 admirals:documents:signature_requested
+### 6.2 sonar:documents:signature_requested
 
 **Tipo:** command
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_core`
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_core`
 **Audit:** loguea
 **Throttle:** rate limit per account: 30/min
 **Schema version:** 1
@@ -1151,12 +1151,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 6.3 admirals:documents:signed
+### 6.3 sonar:documents:signed
 
 **Tipo:** state
 **Dirección:** server→server (+ push a las partes)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`, resources interesados (ej. `admirals_logistics` cuando es albarán)
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`, resources interesados (ej. `sonar_logistics` cuando es albarán)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1179,12 +1179,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 6.4 admirals:documents:status_changed
+### 6.4 sonar:documents:status_changed
 
 **Tipo:** state
 **Dirección:** server→server (+ push a las partes)
 **Emisor canónico:** cualquier resource (vía API)
-**Suscriptores típicos:** `admirals_tablet`, partes implicadas
+**Suscriptores típicos:** `sonar_tablet`, partes implicadas
 **Audit:** always (especial para `breached`)
 **Throttle:** none
 **Schema version:** 1
@@ -1208,12 +1208,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 6.5 admirals:documents:shared
+### 6.5 sonar:documents:shared
 
 **Tipo:** state
 **Dirección:** server→server (+ push al receptor)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** never
 **Throttle:** rate limit per account: 30/min
 **Schema version:** 1
@@ -1231,11 +1231,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 6.6 admirals:documents:printed
+### 6.6 sonar:documents:printed
 
 **Tipo:** state
 **Dirección:** server→server (+ push al cliente para anim impresora)
-**Emisor canónico:** `admirals_tablet` o cualquier resource al imprimir físicamente
+**Emisor canónico:** `sonar_tablet` o cualquier resource al imprimir físicamente
 **Suscriptores típicos:** cliente Lua del jugador con dock activo
 **Audit:** never
 **Throttle:** rate limit per account: 20/min
@@ -1263,12 +1263,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos de mensajería.** Chats 1-1, grupales, canales empresariales.
 
-### 7.1 admirals:messages:chat_created
+### 7.1 sonar:messages:chat_created
 
 **Tipo:** state
 **Dirección:** server→server (+ push a participantes)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -1291,12 +1291,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 7.2 admirals:messages:sent
+### 7.2 sonar:messages:sent
 
 **Tipo:** state
 **Dirección:** server→server (+ push targeted a participantes online)
-**Emisor canónico:** `admirals_core` (vía intent client)
-**Suscriptores típicos:** `admirals_tablet` (cliente — render mensaje)
+**Emisor canónico:** `sonar_core` (vía intent client)
+**Suscriptores típicos:** `sonar_tablet` (cliente — render mensaje)
 **Audit:** never (alto volumen)
 **Throttle:** rate limit per account: 60/min
 **Schema version:** 1
@@ -1324,12 +1324,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 7.3 admirals:messages:read
+### 7.3 sonar:messages:read
 
 **Tipo:** state
 **Dirección:** client→server
-**Emisor canónico:** `admirals_tablet`
-**Suscriptores típicos:** `admirals_core`, `admirals_tablet` (broadcast a otros participantes — read receipts)
+**Emisor canónico:** `sonar_tablet`
+**Suscriptores típicos:** `sonar_core`, `sonar_tablet` (broadcast a otros participantes — read receipts)
 **Audit:** never
 **Throttle:** debounce 1s per (account, chat)
 **Schema version:** 1
@@ -1346,11 +1346,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 7.4 admirals:messages:typing
+### 7.4 sonar:messages:typing
 
 **Tipo:** push (efímero — no persistente)
 **Dirección:** client→server→clients
-**Emisor canónico:** `admirals_tablet`
+**Emisor canónico:** `sonar_tablet`
 **Suscriptores típicos:** participantes del chat
 **Audit:** never
 **Throttle:** debounce 2s per (account, chat)
@@ -1365,16 +1365,16 @@ Para mantener concisión usamos estos tipos en los schemas:
 }
 ```
 
-**Notas:** efímero, no entra en `admirals_event_log`.
+**Notas:** efímero, no entra en `sonar_event_log`.
 
 ---
 
-### 7.5 admirals:messages:deleted
+### 7.5 sonar:messages:deleted
 
 **Tipo:** state
 **Dirección:** server→server (+ push a participantes)
-**Emisor canónico:** `admirals_core`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_core`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** rate limit per account: 20/min
 **Schema version:** 1
@@ -1395,11 +1395,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 7.6 admirals:messages:voice_recorded (oleada 2)
+### 7.6 sonar:messages:voice_recorded (oleada 2)
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_tablet`
+**Emisor canónico:** `sonar_tablet`
 **Suscriptores típicos:** participantes del chat
 **Audit:** never
 **Throttle:** rate limit per account: 30/min
@@ -1419,11 +1419,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 7.7 admirals:messages:call_initiated (oleada 2)
+### 7.7 sonar:messages:call_initiated (oleada 2)
 
 **Tipo:** push
 **Dirección:** server→client (target)
-**Emisor canónico:** `admirals_tablet`
+**Emisor canónico:** `sonar_tablet`
 **Suscriptores típicos:** Tablet del receptor
 **Audit:** loguea
 **Throttle:** rate limit per (caller, callee): 5/min
@@ -1446,11 +1446,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 7.8 admirals:messages:call_state_changed (oleada 2)
+### 7.8 sonar:messages:call_state_changed (oleada 2)
 
 **Tipo:** state
 **Dirección:** server→server (+ push a ambos extremos)
-**Emisor canónico:** `admirals_tablet`
+**Emisor canónico:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1472,12 +1472,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos del marketplace.** Trabajos temporales, productos a la venta, servicios, empresas en venta.
 
-### 8.1 admirals:market:offer_published
+### 8.1 sonar:market:offer_published
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a tablets con preferencias matching)
-**Emisor canónico:** `admirals_market`
-**Suscriptores típicos:** `admirals_tablet` (push notif a interesados, refrescar app Mercado)
+**Emisor canónico:** `sonar_market`
+**Suscriptores típicos:** `sonar_tablet` (push notif a interesados, refrescar app Mercado)
 **Audit:** loguea
 **Throttle:** rate limit per publisher: 30/h
 **Schema version:** 1
@@ -1527,12 +1527,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 8.2 admirals:market:offer_accepted
+### 8.2 sonar:market:offer_accepted
 
 **Tipo:** state
 **Dirección:** server→server (+ push a publisher)
-**Emisor canónico:** `admirals_market`
-**Suscriptores típicos:** `admirals_tablet`, resource del vertical correspondiente (provisión de acceso físico)
+**Emisor canónico:** `sonar_market`
+**Suscriptores típicos:** `sonar_tablet`, resource del vertical correspondiente (provisión de acceso físico)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1554,12 +1554,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 8.3 admirals:market:offer_completed
+### 8.3 sonar:market:offer_completed
 
 **Tipo:** state
 **Dirección:** server→server (+ push a ambas partes)
 **Emisor canónico:** resource del vertical correspondiente (al verificar cumplimiento)
-**Suscriptores típicos:** `admirals_market`, `admirals_core` (reputación), `admirals_bank` (pago)
+**Suscriptores típicos:** `sonar_market`, `sonar_core` (reputación), `sonar_bank` (pago)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1584,12 +1584,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 8.4 admirals:market:offer_cancelled
+### 8.4 sonar:market:offer_cancelled
 
 **Tipo:** state
 **Dirección:** server→server (+ push a interesados)
-**Emisor canónico:** `admirals_market`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_market`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1606,12 +1606,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 8.5 admirals:market:offer_expired
+### 8.5 sonar:market:offer_expired
 
 **Tipo:** state
 **Dirección:** server→server (+ push al publisher)
-**Emisor canónico:** `admirals_market` (cron de expiración)
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_market` (cron de expiración)
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** never
 **Throttle:** none
 **Schema version:** 1
@@ -1626,12 +1626,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 8.6 admirals:market:product_purchased
+### 8.6 sonar:market:product_purchased
 
 **Tipo:** state
 **Dirección:** server→server (+ push a comprador y vendedor)
-**Emisor canónico:** `admirals_market`
-**Suscriptores típicos:** `admirals_tablet`, `admirals_logistics` (si entrega), `admirals_bank` (pago)
+**Emisor canónico:** `sonar_market`
+**Suscriptores típicos:** `sonar_tablet`, `sonar_logistics` (si entrega), `sonar_bank` (pago)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1660,12 +1660,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 8.7 admirals:market:reputation_review_posted
+### 8.7 sonar:market:reputation_review_posted
 
 **Tipo:** state
 **Dirección:** server→server (+ push al sujeto)
-**Emisor canónico:** `admirals_market`
-**Suscriptores típicos:** `admirals_core` (aplicar delta), `admirals_tablet`
+**Emisor canónico:** `sonar_market`
+**Suscriptores típicos:** `sonar_core` (aplicar delta), `sonar_tablet`
 **Audit:** always
 **Throttle:** rate limit per (reviewer, subject): 1/24h
 **Schema version:** 1
@@ -1693,12 +1693,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos de transporte y entregas.** Crear envío, en ruta, entregar, firmar.
 
-### 9.1 admirals:logistics:job_created
+### 9.1 sonar:logistics:job_created
 
 **Tipo:** state
 **Dirección:** server→server (+ push a partes interesadas)
-**Emisor canónico:** `admirals_logistics`
-**Suscriptores típicos:** `admirals_tablet` (refrescar app Logística), nodos origen y destino
+**Emisor canónico:** `sonar_logistics`
+**Suscriptores típicos:** `sonar_tablet` (refrescar app Logística), nodos origen y destino
 **Audit:** always
 **Throttle:** rate limit per company: 60/h
 **Schema version:** 1
@@ -1729,18 +1729,18 @@ Para mantener concisión usamos estos tipos en los schemas:
 ```
 
 **Side effects:**
-- Albarán de envío auto-generado (`admirals:documents:created` type='delivery_note').
+- Albarán de envío auto-generado (`sonar:documents:created` type='delivery_note').
 - Si docking + impresora del origen: imprime físicamente.
 - Notif al destino: "Envío recibido para aceptación".
 
 ---
 
-### 9.2 admirals:logistics:job_started
+### 9.2 sonar:logistics:job_started
 
 **Tipo:** state
 **Dirección:** server→server (+ push)
-**Emisor canónico:** `admirals_logistics`
-**Suscriptores típicos:** `admirals_tablet` (tracking activo en mapa)
+**Emisor canónico:** `sonar_logistics`
+**Suscriptores típicos:** `sonar_tablet` (tracking activo en mapa)
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1763,11 +1763,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 9.3 admirals:logistics:job_position_updated
+### 9.3 sonar:logistics:job_position_updated
 
 **Tipo:** push
 **Dirección:** server→clients(targeted: partes interesadas en tracking)
-**Emisor canónico:** `admirals_logistics` (cliente del transportista emite, server forwardea)
+**Emisor canónico:** `sonar_logistics` (cliente del transportista emite, server forwardea)
 **Suscriptores típicos:** Tablets de origen, destino, carrier
 **Audit:** never (alto volumen)
 **Throttle:** debounce 5s per job
@@ -1787,12 +1787,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 9.4 admirals:logistics:job_delivered
+### 9.4 sonar:logistics:job_delivered
 
 **Tipo:** state
 **Dirección:** server→server (+ push a partes)
-**Emisor canónico:** `admirals_logistics`
-**Suscriptores típicos:** nodo destino (recibir cargo en silo/almacén), `admirals_bank` (liberar pago en holding), `admirals_core` (reputación)
+**Emisor canónico:** `sonar_logistics`
+**Suscriptores típicos:** nodo destino (recibir cargo en silo/almacén), `sonar_bank` (liberar pago en holding), `sonar_core` (reputación)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1819,19 +1819,19 @@ Para mantener concisión usamos estos tipos en los schemas:
 ```
 
 **Side effects:**
-- Albarán firmado (`admirals:documents:signed`).
+- Albarán firmado (`sonar:documents:signed`).
 - Cargo entra al almacén destino.
 - Pago al carrier liberado.
 - Reputación: +1 al carrier si sin discrepancias; -2 si discrepancias.
 
 ---
 
-### 9.5 admirals:logistics:job_disputed
+### 9.5 sonar:logistics:job_disputed
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_logistics` (cuando alguna parte reporta issue)
-**Suscriptores típicos:** `admirals_tablet` (notif crítica), administración NPC (oleada 2)
+**Emisor canónico:** `sonar_logistics` (cuando alguna parte reporta issue)
+**Suscriptores típicos:** `sonar_tablet` (notif crítica), administración NPC (oleada 2)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -1857,12 +1857,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 9.6 admirals:logistics:job_cancelled
+### 9.6 sonar:logistics:job_cancelled
 
 **Tipo:** state
 **Dirección:** server→server (+ push)
-**Emisor canónico:** `admirals_logistics`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_logistics`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1880,12 +1880,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 9.7 admirals:logistics:carrier_assigned
+### 9.7 sonar:logistics:carrier_assigned
 
 **Tipo:** state
 **Dirección:** server→server (+ push al carrier asignado)
-**Emisor canónico:** `admirals_logistics`
-**Suscriptores típicos:** `admirals_tablet` (notif al carrier)
+**Emisor canónico:** `sonar_logistics`
+**Suscriptores típicos:** `sonar_tablet` (notif al carrier)
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1907,12 +1907,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos del nodo Granja Admirals.** Ciclo agrícola completo. Ver `01_node_farm.md` para semántica de gameplay.
 
-### 10.1 admirals:granja:plot_prepared
+### 10.1 sonar:granja:plot_prepared
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a Tablets de la company)
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet` (Manager Panel — refresh Operations)
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet` (Manager Panel — refresh Operations)
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1931,12 +1931,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.2 admirals:granja:plot_seeded
+### 10.2 sonar:granja:plot_seeded
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`, `admirals_granja` interno (cron de crecimiento)
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`, `sonar_granja` interno (cron de crecimiento)
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1966,12 +1966,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.3 admirals:granja:plot_irrigated
+### 10.3 sonar:granja:plot_irrigated
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -1992,12 +1992,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.4 admirals:granja:plot_fertilized
+### 10.4 sonar:granja:plot_fertilized
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2018,12 +2018,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.5 admirals:granja:pest_detected
+### 10.5 sonar:granja:pest_detected
 
 **Tipo:** state
 **Dirección:** server→server (+ push notif crítica al manager)
-**Emisor canónico:** `admirals_granja` (cron pest random + drone monitoring O3)
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja` (cron pest random + drone monitoring O3)
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** always
 **Throttle:** none (raro)
 **Schema version:** 1
@@ -2048,12 +2048,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.6 admirals:granja:pest_treated
+### 10.6 sonar:granja:pest_treated
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2076,12 +2076,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.7 admirals:granja:plot_growth_tick
+### 10.7 sonar:granja:plot_growth_tick
 
 **Tipo:** state (interno — no broadcast a clientes)
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja` (cron interno, agregado)
-**Suscriptores típicos:** `admirals_granja` (sí mismo — actualizar stages)
+**Emisor canónico:** `sonar_granja` (cron interno, agregado)
+**Suscriptores típicos:** `sonar_granja` (sí mismo — actualizar stages)
 **Audit:** never (alto volumen)
 **Throttle:** debounce 5min per plot
 **Schema version:** 1
@@ -2103,12 +2103,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.8 admirals:granja:harvest_started
+### 10.8 sonar:granja:harvest_started
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a la company)
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2128,12 +2128,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.9 admirals:granja:harvest_completed
+### 10.9 sonar:granja:harvest_completed
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a la company)
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`, `admirals_core` (reputación si calidad alta)
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`, `sonar_core` (reputación si calidad alta)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2166,12 +2166,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.10 admirals:granja:silo_filled
+### 10.10 sonar:granja:silo_filled
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2196,12 +2196,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.11 admirals:granja:silo_emptied
+### 10.11 sonar:granja:silo_emptied
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`, `admirals_logistics` (si destino es transporte)
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`, `sonar_logistics` (si destino es transporte)
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2222,12 +2222,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.12 admirals:granja:weather_event
+### 10.12 sonar:granja:weather_event
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a granjas en area)
-**Emisor canónico:** `admirals_granja` (gestor de clima del nodo)
-**Suscriptores típicos:** `admirals_tablet` (notif weather), plots afectados (recálculo weather_score)
+**Emisor canónico:** `sonar_granja` (gestor de clima del nodo)
+**Suscriptores típicos:** `sonar_tablet` (notif weather), plots afectados (recálculo weather_score)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2253,12 +2253,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.13 admirals:granja:harvest_loss
+### 10.13 sonar:granja:harvest_loss
 
 **Tipo:** state
 **Dirección:** server→server (+ push crítico al manager)
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2277,12 +2277,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.14 admirals:granja:machine_failed
+### 10.14 sonar:granja:machine_failed
 
 **Tipo:** state
 **Dirección:** server→server (+ push crítico al manager)
-**Emisor canónico:** `admirals_granja`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_granja`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2302,11 +2302,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.15 admirals:granja:machine_repaired
+### 10.15 sonar:granja:machine_repaired
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja`
+**Emisor canónico:** `sonar_granja`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2316,7 +2316,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 {
   company_id: CompanyId,
   machine_id: string,
-  repaired_by: AccountId | 'mechanic_npc' | 'admirals_mechanic_company',
+  repaired_by: AccountId | 'mechanic_npc' | 'sonar_mechanic_company',
   cost: Money,
   parts_used: string[],
   duration_minutes: number,
@@ -2326,11 +2326,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.16 admirals:granja:season_changed
+### 10.16 sonar:granja:season_changed
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a todas las granjas)
-**Emisor canónico:** `admirals_granja` (gestor de calendario)
+**Emisor canónico:** `sonar_granja` (gestor de calendario)
 **Audit:** always
 **Throttle:** none (1 evento por cambio)
 **Schema version:** 1
@@ -2352,12 +2352,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.17 admirals:granja:license_obtained
+### 10.17 sonar:granja:license_obtained
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_granja` (al completar mini-curso)
-**Suscriptores típicos:** `admirals_core` (registrar certificado en `admirals_documents`), `admirals_tablet`
+**Emisor canónico:** `sonar_granja` (al completar mini-curso)
+**Suscriptores típicos:** `sonar_core` (registrar certificado en `sonar_documents`), `sonar_tablet`
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2375,7 +2375,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.18 admirals:granja:compost_ready (oleada 2)
+### 10.18 sonar:granja:compost_ready (oleada 2)
 
 **Tipo:** state
 **Dirección:** server→server
@@ -2395,7 +2395,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.19 admirals:granja:drone_dispatched (oleada 3)
+### 10.19 sonar:granja:drone_dispatched (oleada 3)
 
 **Tipo:** state
 **Dirección:** server→server
@@ -2416,7 +2416,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 10.20 admirals:granja:drone_returned (oleada 3)
+### 10.20 sonar:granja:drone_returned (oleada 3)
 
 **Tipo:** state
 **Dirección:** server→server
@@ -2442,12 +2442,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 > **Eventos del nodo Molino Admirals.** Ver `03_node_mill.md` para semántica.
 
-### 11.1 admirals:molino:grain_received
+### 11.1 sonar:molino:grain_received
 
 **Tipo:** state
 **Dirección:** server→server (+ push al supplier)
-**Emisor canónico:** `admirals_molino`
-**Suscriptores típicos:** `admirals_tablet`, `admirals_bank` (disparar pago si contrato), `admirals_logistics` (cerrar job)
+**Emisor canónico:** `sonar_molino`
+**Suscriptores típicos:** `sonar_tablet`, `sonar_bank` (disparar pago si contrato), `sonar_logistics` (cerrar job)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2480,12 +2480,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.2 admirals:molino:silo_filled
+### 11.2 sonar:molino:silo_filled
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_molino`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_molino`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2506,11 +2506,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.3 admirals:molino:cleaning_completed
+### 11.3 sonar:molino:cleaning_completed
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_molino`
+**Emisor canónico:** `sonar_molino`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2532,12 +2532,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.4 admirals:molino:milling_started
+### 11.4 sonar:molino:milling_started
 
 **Tipo:** state
 **Dirección:** server→server (+ broadcast a la company)
-**Emisor canónico:** `admirals_molino`
-**Suscriptores típicos:** `admirals_tablet` (refrescar Operations)
+**Emisor canónico:** `sonar_molino`
+**Suscriptores típicos:** `sonar_tablet` (refrescar Operations)
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2564,12 +2564,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.5 admirals:molino:milling_completed
+### 11.5 sonar:molino:milling_completed
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_molino`
-**Suscriptores típicos:** `admirals_tablet`, `admirals_core` (lineage update)
+**Emisor canónico:** `sonar_molino`
+**Suscriptores típicos:** `sonar_tablet`, `sonar_core` (lineage update)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2602,12 +2602,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.6 admirals:molino:sack_packed
+### 11.6 sonar:molino:sack_packed
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_molino`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_molino`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** rate limit per machine: 60/min
 **Schema version:** 1
@@ -2634,12 +2634,12 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.7 admirals:molino:pallet_loaded
+### 11.7 sonar:molino:pallet_loaded
 
 **Tipo:** state
 **Dirección:** server→server
-**Emisor canónico:** `admirals_molino`
-**Suscriptores típicos:** `admirals_tablet`
+**Emisor canónico:** `sonar_molino`
+**Suscriptores típicos:** `sonar_tablet`
 **Audit:** loguea
 **Throttle:** none
 **Schema version:** 1
@@ -2659,11 +2659,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.8 admirals:molino:machine_failed
+### 11.8 sonar:molino:machine_failed
 
 **Tipo:** state
 **Dirección:** server→server (+ push crítico al manager)
-**Emisor canónico:** `admirals_molino`
+**Emisor canónico:** `sonar_molino`
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2684,7 +2684,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.9 admirals:molino:machine_repaired
+### 11.9 sonar:molino:machine_repaired
 
 **Tipo:** state
 **Dirección:** server→server
@@ -2695,7 +2695,7 @@ Para mantener concisión usamos estos tipos en los schemas:
 {
   company_id: CompanyId,
   machine_id: string,
-  repaired_by: AccountId | 'mechanic_npc' | 'admirals_mechanic_company',
+  repaired_by: AccountId | 'mechanic_npc' | 'sonar_mechanic_company',
   cost: Money,
   parts_used: string[],
   duration_minutes: number,
@@ -2705,11 +2705,11 @@ Para mantener concisión usamos estos tipos en los schemas:
 
 ---
 
-### 11.10 admirals:molino:cross_contamination_detected
+### 11.10 sonar:molino:cross_contamination_detected
 
 **Tipo:** state
 **Dirección:** server→server (+ push al manager)
-**Emisor canónico:** `admirals_molino` (al detectar batch mezcla anomalía)
+**Emisor canónico:** `sonar_molino` (al detectar batch mezcla anomalía)
 **Audit:** always
 **Throttle:** none
 **Schema version:** 1
@@ -2739,62 +2739,62 @@ Para mantener concisión usamos estos tipos en los schemas:
 ### 12.1 Dominio `panaderia` (en diseño futuro)
 
 Eventos previstos:
-- `admirals:panaderia:flour_received` — recepción de saco molino
-- `admirals:panaderia:dough_kneaded` — masa amasada
-- `admirals:panaderia:dough_fermented` — fermentación completa
-- `admirals:panaderia:bread_baked` — hornada finalizada (con calidad heredada)
-- `admirals:panaderia:bread_packaged` — empaquetado / etiquetado
-- `admirals:panaderia:retail_dispatched` — pedido a tienda enviado
-- `admirals:panaderia:oven_failed` — avería horno
-- `admirals:panaderia:starter_culture_refreshed` — masa madre refrescada (mantenimiento RP)
+- `sonar:panaderia:flour_received` — recepción de saco molino
+- `sonar:panaderia:dough_kneaded` — masa amasada
+- `sonar:panaderia:dough_fermented` — fermentación completa
+- `sonar:panaderia:bread_baked` — hornada finalizada (con calidad heredada)
+- `sonar:panaderia:bread_packaged` — empaquetado / etiquetado
+- `sonar:panaderia:retail_dispatched` — pedido a tienda enviado
+- `sonar:panaderia:oven_failed` — avería horno
+- `sonar:panaderia:starter_culture_refreshed` — masa madre refrescada (mantenimiento RP)
 
 ### 12.2 Dominio `retail` (en diseño futuro)
 
 Eventos previstos:
-- `admirals:retail:shelf_stocked` — estante repuesto
-- `admirals:retail:sale_made` — venta a NPC o jugador
-- `admirals:retail:daily_close` — cierre de caja del día
-- `admirals:retail:product_expired` — producto caducado descartado
-- `admirals:retail:price_changed` — etiqueta de precio modificada
-- `admirals:retail:inventory_audit_completed` — recuento
+- `sonar:retail:shelf_stocked` — estante repuesto
+- `sonar:retail:sale_made` — venta a NPC o jugador
+- `sonar:retail:daily_close` — cierre de caja del día
+- `sonar:retail:product_expired` — producto caducado descartado
+- `sonar:retail:price_changed` — etiqueta de precio modificada
+- `sonar:retail:inventory_audit_completed` — recuento
 
 ### 12.3 Dominio `cervecería` (vertical futura O3+)
 
-Placeholder: `admirals:cerveceria:mash_started` / `:fermented` / `:kegged` / `:bottled` / `:dispatched`.
+Placeholder: `sonar:cerveceria:mash_started` / `:fermented` / `:kegged` / `:bottled` / `:dispatched`.
 
 ### 12.4 Dominio `mecanico` (vertical futura)
 
-- `admirals:mecanico:repair_requested` — taller recibe encargo
-- `admirals:mecanico:repair_started`
-- `admirals:mecanico:repair_completed`
-- `admirals:mecanico:diagnostic_completed`
+- `sonar:mecanico:repair_requested` — taller recibe encargo
+- `sonar:mecanico:repair_started`
+- `sonar:mecanico:repair_completed`
+- `sonar:mecanico:diagnostic_completed`
 
 ### 12.5 Dominio `restaurantes` (vertical futura)
 
-- `admirals:restaurantes:order_placed`
-- `admirals:restaurantes:order_prepared`
-- `admirals:restaurantes:order_served`
-- `admirals:restaurantes:reservation_made`
+- `sonar:restaurantes:order_placed`
+- `sonar:restaurantes:order_prepared`
+- `sonar:restaurantes:order_served`
+- `sonar:restaurantes:reservation_made`
 
 ### 12.6 Dominio `seguridad` (oleada 2 — robos)
 
-- `admirals:seguridad:break_in_attempt`
-- `admirals:seguridad:break_in_succeeded`
-- `admirals:seguridad:alarm_triggered`
-- `admirals:seguridad:guard_npc_dispatched`
+- `sonar:seguridad:break_in_attempt`
+- `sonar:seguridad:break_in_succeeded`
+- `sonar:seguridad:alarm_triggered`
+- `sonar:seguridad:guard_npc_dispatched`
 
 ### 12.7 Reservas de naming
 
 Para evitar colisiones futuras, **estos prefijos están reservados** y nadie debe emitir eventos con ellos hasta que se diseñe el nodo:
 
-- `admirals:cooperativa:*`
-- `admirals:notaria:*`
-- `admirals:exportacion:*`
-- `admirals:gasolinera:*`
-- `admirals:distribucion:*`
-- `admirals:taller:*`
-- `admirals:hospital:*`
-- `admirals:legal:*`
+- `sonar:cooperativa:*`
+- `sonar:notaria:*`
+- `sonar:exportacion:*`
+- `sonar:gasolinera:*`
+- `sonar:distribucion:*`
+- `sonar:taller:*`
+- `sonar:hospital:*`
+- `sonar:legal:*`
 
 ---
 
@@ -2805,7 +2805,7 @@ Para evitar colisiones futuras, **estos prefijos están reservados** y nadie deb
 ### 13.1 Validators registry
 
 ```lua
--- admirals_core/server/validators/index.lua
+-- sonar_core/server/validators/index.lua
 local Validators = {}
 
 -- Cada evento registra su validator al boot
@@ -2831,10 +2831,10 @@ return Validators
 ### 13.2 Validators por evento (ejemplo bank:transfer_requested)
 
 ```lua
--- admirals_core/server/validators/bank_validators.lua
-local V = exports.admirals_core:GetValidatorBuilder()
+-- sonar_core/server/validators/bank_validators.lua
+local V = exports.sonar_core:GetValidatorBuilder()
 
-V.Register('admirals:bank:transfer_requested', V.Schema({
+V.Register('sonar:bank:transfer_requested', V.Schema({
   requester_account_id = V.Uuid(),
   from_iban = V.Pattern('^AD%-[A-Z0-9]+%-[A-Z0-9]+%-[A-Z0-9]+$'),
   to_iban = V.Pattern('^AD%-[A-Z0-9]+%-[A-Z0-9]+%-[A-Z0-9]+$'),
@@ -2849,7 +2849,7 @@ V.Register('admirals:bank:transfer_requested', V.Schema({
 ### 13.3 Builder de schemas
 
 ```lua
--- admirals_core/server/validators/builder.lua (esqueleto API)
+-- sonar_core/server/validators/builder.lua (esqueleto API)
 local Builder = {}
 
 function Builder.Schema(shape)
@@ -2931,7 +2931,7 @@ export type BankTransferRequested = z.infer<typeof BankTransferRequested>;
 | Settings y preferencias (`settings_updated`) | never | Datos personales |
 | Configurable por evento | configurable | El admin elige verbosidad por dominio |
 
-> **Policy:** los `audit: always` se persisten en `admirals_event_log`. Los `loguea` se persisten en archivo de log de resource. Los `never` solo logging local en debug.
+> **Policy:** los `audit: always` se persisten en `sonar_event_log`. Los `loguea` se persisten en archivo de log de resource. Los `never` solo logging local en debug.
 
 ### 14.2 Throttling policy
 
@@ -2978,14 +2978,14 @@ export type BankTransferRequested = z.infer<typeof BankTransferRequested>;
 
 #### Ejemplo
 
-> *Hipotético:* `admirals:granja:plot_watered` (legacy) → reemplazado por `admirals:granja:plot_irrigated` (nuevo).
+> *Hipotético:* `sonar:granja:plot_watered` (legacy) → reemplazado por `sonar:granja:plot_irrigated` (nuevo).
 
 | Versión | Estado de `plot_watered` |
 |---|---|
-| `admirals_granja 1.5.0` | DEPRECATED — emite warning |
-| `admirals_granja 1.6.0` | DEPRECATED — sigue funcional |
-| `admirals_granja 1.7.0` | DELETED — error si emisión |
-| `admirals_granja 2.0.0` | Eliminado del catálogo |
+| `sonar_granja 1.5.0` | DEPRECATED — emite warning |
+| `sonar_granja 1.6.0` | DEPRECATED — sigue funcional |
+| `sonar_granja 1.7.0` | DELETED — error si emisión |
+| `sonar_granja 2.0.0` | Eliminado del catálogo |
 
 ### 14.4 Versionado de schema por evento
 
@@ -3011,16 +3011,16 @@ admirals events list
 admirals events list --domain granja
 
 # Mostrar detalles de un evento
-admirals events show admirals:bank:transfer_completed
+admirals events show sonar:bank:transfer_completed
 
 # Validar un payload contra schema
-admirals events validate admirals:bank:transfer_completed payload.json
+admirals events validate sonar:bank:transfer_completed payload.json
 
 # Generar tipos TypeScript desde catálogo
 admirals events generate-ts --output nui/src/lib/event_schemas.ts
 
 # Generar tipos Lua desde catálogo
-admirals events generate-lua --output admirals_core/shared/event_schemas.lua
+admirals events generate-lua --output sonar_core/shared/event_schemas.lua
 
 # Validar coherencia del catálogo (todo evento usado en código está documentado, todo evento documentado tiene validator, etc.)
 admirals events lint
@@ -3033,7 +3033,7 @@ admirals events check-deprecations
 
 > **Single source of truth:** este markdown.
 
-Tooling parsea las secciones `### admirals:domain:action` con sus payloads y genera:
+Tooling parsea las secciones `### sonar:domain:action` con sus payloads y genera:
 - TypeScript `event_schemas.ts` (Zod schemas + types).
 - Lua `event_schemas.lua` (validator builder calls + table definitions).
 - Documentación HTML browseable (oleada 2).
@@ -3069,7 +3069,7 @@ GET http://localhost:30120/admirals/events/recent?domain=bank&limit=100
 > Solo visible si admin activa `Config.DeveloperMode = true`.
 
 Pestaña en Settings que muestra:
-- Lista en vivo de eventos `admirals:*` recientes (últimos 100).
+- Lista en vivo de eventos `sonar:*` recientes (últimos 100).
 - Tap en uno → ver payload completo + suscriptores.
 - Filtro por dominio.
 
@@ -3084,21 +3084,21 @@ Cada evento debe tener al menos:
 
 ```lua
 -- spec/events/bank/transfer_completed_spec.lua
-describe('admirals:bank:transfer_completed', function()
+describe('sonar:bank:transfer_completed', function()
   it('valid payload passes schema', function()
-    local ok, err = Validators.Validate('admirals:bank:transfer_completed', valid_payload())
+    local ok, err = Validators.Validate('sonar:bank:transfer_completed', valid_payload())
     assert.is_true(ok)
   end)
 
   it('rejects negative amount', function()
     local payload = valid_payload()
     payload.amount = -100
-    local ok = Validators.Validate('admirals:bank:transfer_completed', payload)
+    local ok = Validators.Validate('sonar:bank:transfer_completed', payload)
     assert.is_false(ok)
   end)
 
   it('triggers receipt creation', function()
-    Bus.Publish('admirals:bank:transfer_completed', valid_payload())
+    Bus.Publish('sonar:bank:transfer_completed', valid_payload())
     -- Wait for handler
     local docs = DocumentRepo.GetByCategory('receipt')
     assert.is_true(#docs > 0)
@@ -3236,7 +3236,7 @@ Este documento es **el contrato de comunicación** del ecosistema SONAR (ex-Admi
 | Versión | Fecha | Autor | Cambios |
 |---|---|---|---|
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 17 secciones, ~3170 líneas, 88 eventos canónicos + placeholders 6 verticales futuras. Filosofía + schemas + 4 tipos + naming convention + tier system + RFC governance. **Firmable Oleada 0.** |
-| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar:*` post-Phase-8 / `admirals:*` pre-Phase-8 legacy). NOTICE r1 top-level (~70 líneas) establece: naming canonical events (mapping 1:1 ejemplos + 88 eventos shipped S1 affected + emisor strings), schema fields invariant pre/post, C003 DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot), voz neutral logging messages ADR-012 §D3, migration execution schedule Phase 8 (next session), reading guide §1-§17 legacy vs canonical. §0 resumen + §cierre rebrand + §Pilar 4 SONAR. **NO touched:** §1-§17 filosofía + schemas + 88 eventos payloads + tipos + tier system + RFC + governance (pivot-agnostic foundational bus). Event prefix `admirals:*` + emitter names `admirals_*` preservados legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8: 88 eventos rename 1:1 inline body. |
+| 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar:*` post-Phase-8 / `sonar:*` pre-Phase-8 legacy). NOTICE r1 top-level (~70 líneas) establece: naming canonical events (mapping 1:1 ejemplos + 88 eventos shipped S1 affected + emisor strings), schema fields invariant pre/post, C003 DEFERRED S3 per ADR-015 (D1=B UI-heavy pivot), voz neutral logging messages ADR-012 §D3, migration execution schedule Phase 8 (next session), reading guide §1-§17 legacy vs canonical. §0 resumen + §cierre rebrand + §Pilar 4 SONAR. **NO touched:** §1-§17 filosofía + schemas + 88 eventos payloads + tipos + tier system + RFC + governance (pivot-agnostic foundational bus). Event prefix `sonar:*` + emitter names `sonar_*` preservados legacy inline hasta Phase 8 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-Phase-8: 88 eventos rename 1:1 inline body. |
 
 ---
 
