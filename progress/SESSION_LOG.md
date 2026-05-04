@@ -2019,3 +2019,135 @@ Founder abrirá nueva session con Manager AI agent (recomendado: Gemini 2.5 Pro 
 ADR-016 firmado captura 6 decisiones doctrinales identity v3 que destrabean Sprint 2 día-1 (palette + dark-only + 3-color + stack frozen + perf budgets). Decision log splitteado en `part2` con regla clara split `part3` cuando supere ~1000 líneas — escalable. D-S1.10E-A resuelta clean (monogram_s_black.svg print/external preserved). Pre-S2 gate restante: docs bumps propagation identity v3 + BOOTSTRAP v1.6 + PRE_S2_CHECKLIST v1.6 + SPRINT_PLAN_S2 redactable + tablet orphan decision (~4-5h Manager AI continuation).
 
 ---
+
+## Session S2.0 — Planning gate close (SPRINT_PLAN_S2 v1.0 firmable)
+
+- **Fecha:** 2026-05-04
+- **Modelo:** Opus 4.x (planning + critical review)
+- **Duración:** ~1.5h founder time
+- **Foco:** finalizar `progress/SPRINT_PLAN_S2.md` v0.1-draft → v1.0 firmable. Review crítico DC1-DC11 + smoke ×50 + session breakdown S2.0-S2.9 + risks. Resolver 11 pre-flags. Cerrar B2 + B5 hard blockers PRE_S2_CHECKLIST.
+
+### Onboarding executed
+
+✅ Cargados: `docs/agents/00_BOOTSTRAP.md` v1.6 + `docs/agents/03_founder_playbook.md` §4-§6 + últimas 3 SESSION_LOG entries (S1.10.3 → S1.10.4) + `progress/SPRINT_PLAN_S2.md` v0.1-draft + `progress/PRE_S2_CHECKLIST.md` v1.7. Round 1+2+3 docs específicos founder prompt: ADR-015 + ADR-016 (`docs/planning/02_decision_log.md` + `_part2.md`) + `docs/design/00_PRODUCT_BIBLE.md` v1.5 + `docs/art/01_art_direction.md` v3.0-locked + `docs/design/02_sonar_tablet.md` v1.3 + `docs/art/branding/01_brief_logo.md` v3 + `docs/technical/02_events_catalog.md` v1.2 + `docs/technical/04_api_contracts.md` v1.2 + `docs/technical/06_fivem_standards.md` v1.1 + `package.json` real + git log últimos 15 commits + tags `sonar-identity-canonical/v3-lock/phase-8-9-complete` confirmados pushed. Memorias persistentes r2 confirmadas.
+
+### Outcome principal
+
+**`progress/SPRINT_PLAN_S2.md` v1.0 firmable** — 11 pre-flags resueltos via founder delegation "lo más recomendable, tú sabes mejor que yo":
+
+- **F1 (🟡):** Conflict aparente DC6 historial vs C003 deferred S3 (ADR-015) → Resolución per ADR-015 línea 1162: Bank app S2 consume DB query directo `SELECT FROM sonar_bank_movements WHERE account_id=? ORDER BY created_at DESC LIMIT N` como **consumer pattern temporal** hasta C003 ship S3. §2.2 + DC6 explícita el pattern. Wrapper `getHistoryDirect()` en NUI bridge S2 permite swap interno post-C003 S3 sin breaking NUI contract (R5).
+- **F2 (🔴):** §7 sesión S2.1 "Phase 8+9 execution" obsoleta (ya done tag `phase-8-9-complete`) → re-purpose `S2.1 Tablet scaffold setup` (tsconfig strict + Vite verify + shadcn CLI init dark-only + tokens `globals.css` + Lucide/Framer install + index.html boot + dark canvas baseline + bundle-analyzer devDep).
+- **F3 (🔴):** §9 risk R1 "Phase 8+9 breaks smoke" obsoleto → replace R1' "Tailwind v4 `@theme` + shadcn/ui dark-only override conflict" (probabilidad media, impacto medio, mitigación S2.1 spike pre-app-code + rollback Tailwind v3 LTS path documented).
+- **F4 (🔴):** §2.2 mezclaba 3 conceptos distintos (keybind cliente, callbacks shipped, NUI bridges nuevos) bajo "Eventos NUI" → split en 3 categorías separadas: §2.2.1 Keybinds cliente puros (`sonar:tablet:toggle`), §2.2.2 Callbacks shipped S1 (C001 getBalance + C002 transfer ref `04_api_contracts.md` v1.2 §3), §2.2.3 NUI bridges ad-hoc DEFERRED catalog promotion S3 (`sonar:tablet:bank:getHistory` + `sonar:tablet:map:getNodes`). NO promover items a `02_events_catalog.md` v1.2 sin ADR firmable.
+- **F5 (🟡):** DC5 "exact pin no `^`/`~`" vs realidad `package.json` con `^X.Y.Z` → §4 añadida pinning policy: caret-minor (`^X.Y.Z`) aceptable porque `package-lock.json` garantiza reproducibilidad. Major bumps (React 18→19, Vite 5→6, Tailwind 4→5) requieren ADR firmable obligatorio. Minor security auto-aplicables vía `npm audit fix`.
+- **F6 (🟡):** D6 budgets stricter que `06_fivem_standards.md` §2.3 NUI table (paint <16ms vs ≤4ms, heap <150MB vs ≤80MB, bundle <1MB vs ≤500KB) → §5 nota "ADR-016 D6 supersedes `06_fivem_standards.md` §2.3 — sync rewrite docs cycle post-S2 (out of scope this session)".
+- **F7 (🟡):** DC7 "marker GPS player ≤500ms lag" ambiguo → split en DC7a "GPS marker frame-rate cliente ≥30 fps (sin lag perceptible local)" + DC7b "POI nodos response `sonar:tablet:map:getNodes` ≤500ms desde request". Smoke S2.13 split correspondingly en S2.13a + S2.13b.
+- **F8 (🟡):** S2.5 "no SFX double-trigger" pero close SFX no definido → decisión: **silent on close** (Apple Pro apps pattern). Brief sound v2 (ADR-012) 5 SFX canonical NO incluye close dedicated; reverse rompe motion semantics; nuevo SFX scope creep. DC9 actualizado "close = silent per S2.0 decision". S2.5 actualizado "Tablet closes silent, exit animation plays".
+- **F9 (🟡):** §6 dark-only patterns sin blacklist Tailwind explícita → añadida sección "❌ Tailwind classes prohibidas en producto (CI grep blocker S2.7)" listando `bg-white/black/slate/zinc/gray/neutral/stone-*`, `text-gray/slate/zinc/neutral-*`, `dark:` prefix prohibido (no light mode), hexes literales `#fff/#000` en `style=` props, gradients `from-via-to-*` (T3 prohibited per ADR-016 D4). + sección "✅ Permitidos alpha-layers semánticos" listando `bg-sonar-white/N`, `border-sonar-white/N`, `text-sonar-white/N`, `ring-sonar-orange/40`. + audit S2.16 spec computed `background-color` opaque values matchean solo 3 hexes canonical.
+- **F10+F11 (🔴):** Verify tsconfig actual → `tsconfig.app.json` NO tiene `"strict": true` ni `"noUncheckedIndexedAccess": true` requeridos ADR-016 D5. §4 añadido diff jsonc explícito + estado actual scaffold + nota "habilitar como primera task S2.1 ANTES de cualquier `.ts/.tsx` de app code". Risk R6 añadido "TypeScript strict habilitado tarde rompe app code S2.4-S2.6 ya escrito".
+
+**Risk register full rewrite** R1-R8: R1 Tailwind+shadcn override / R2 NUI bundle / R3 TAB keybind conflict / R4 Framer jank Chromium / R5 consumer pattern tech debt / R6 TS strict mode timing / R7 NUI heap leak / R8 docs sync C003 bridge `sonar:tablet:bank:getHistory`. Escalation triggers founder explicitados (R1 fallback Tailwind v3 LTS, R2 bundle exceed irreducible, R4 Framer irrecuperable, R6 strict mode breakage masivo).
+
+**Smoke protocol §8** refined: S2.5 silent close + exit animation, S2.13 split en S2.13a (GPS local frame-rate) + S2.13b (POI backend latency), S2.14 POI placeholder admin-defined ("Granja" placeholder S2 vs real `sonar_granja` node S7+), S2.15 grep blacklist Tailwind classes explícita + `dark:` prefix, S2.16 alpha-layers permitidos solo si base color es uno de los 3 canonical. Total 30 cumulative + 20 S2-specific = 50 pasos.
+
+**Session breakdown §7**: 10 sesiones S2.0-S2.9. S2.0 ✅ done this session (Opus 4.x). S2.1 = `Tablet scaffold setup` (Sonnet 4.6). S2.2 = Tablet shell + keybind. S2.3-S2.5 features. S2.6 motion+sound. S2.7 polish+perf. S2.8 smoke regression. S2.9 close+retro. Reminder regla permanente founder S1.10.4: AI no cambia modelo unilateralmente.
+
+### Hard blockers cerrados S2.0
+
+- **B2 SPRINT_PLAN_S2.md v1.0 firmable** ✅ (was 🔴 → 🏆).
+- **B5 tags pushed** ✅ (was 🟡 → 🏆) — 3 tags presentes: `sonar-identity-canonical` + `sonar-identity-v3-lock` + `phase-8-9-complete`.
+
+### Files tocados (esta sesión — scope strict)
+
+- `progress/SPRINT_PLAN_S2.md` v0.1-draft → **v1.0 firmable** (header + §0 status table + §2.2 split 3 categorías + §3 DC6 refine + DC7 split DC7a/DC7b + DC9 close silent + §4 pinning policy + tsconfig strict diff + shadcn CLI install pattern + §5 vite-bundle-visualizer + D6 supersedes nota + §6 Tailwind blacklist + alpha-layers permitidos + audit S2.16 spec + §7 S2.1 re-purpose + §8.2 smoke refine + §9 risk register R1-R8 full rewrite + escalation triggers + §10 model allocation refined + reminder regla permanente + §11 changelog v1.0 entry + FIN bump).
+- `progress/PRE_S2_CHECKLIST.md` v1.7 → **v1.8** (header status: B2 🔴→🏆 + B5 🟡→🏆 + S2.1 DESBLOQUEADO; §B2 outcome detallado v1.0 firmable; §B5 3 tags pushed verification; changelog v1.8 entry; FIN bump duplicate v1.6 footer removed).
+- `progress/SESSION_LOG.md` (esta entry append).
+
+✅ **Scope strict.** NO tocó: code/resources/* (smoke baseline preserved), DB, art/branding/* (logo v3 locked), art/tools/*, `_archive/`, ADRs históricos 001-016, docs technical 02-07 v1.2, Bible v1.5, art_direction v3.0-locked, briefs, sonar_tablet v1.3, BOOTSTRAP v1.6, `.windsurf/*`, `02_decision_log_part2.md` v1.0.
+
+### Decisiones AI ejecutivas (founder delegated "tú sabes mejor que yo")
+
+1. **F5 pinning** → caret-minor (current). Razón: `package-lock.json` garantiza reproducibilidad; hard-pin friction excesivo per minor security updates.
+2. **F8 close SFX** → silent on close. Razón: brief sound v2 ADR-012 NO incluye close dedicated; Apple Pro pattern clean; re-evaluable post-MVP playtesting.
+3. **F1+F4 framing** → consumer pattern temporal §2.2.3 + bridges ad-hoc DEFERRED catalog promotion S3 (alineado ADR-015 línea 1162).
+4. **F2+F3 obsolete** → S2.1 re-purpose Tablet scaffold setup + R1 replace Tailwind+shadcn override.
+5. **F6/F7/F9/F10/F11** → defaults sensatos propuestos.
+6. **NEW R7+R8** añadidos al risk register: R7 NUI heap leak + R8 docs sync C003 bridge.
+
+### Próxima sesión
+
+**S2.1 Tablet scaffold setup** (Sonnet 4.6 sugerido, founder decide swap):
+
+- Task #1 OBLIGATORIA: enable `tsconfig.app.json` `"strict": true` + `"noUncheckedIndexedAccess": true` ANTES de cualquier `.tsx` app code.
+- `npx shadcn@latest init` con `--base-color=neutral --css-variables` + override `globals.css` referenciando tokens D1.
+- Lucide React + Framer Motion + Recharts + react-window + vite-bundle-visualizer install.
+- `index.html` boot + dark canvas baseline render `bg-sonar-black` + `text-sonar-white`.
+- Verify dark canvas + tokens override OK (mitigación R1 spike pre-app-code).
+
+### Resumen ejecutivo session S2.0
+
+S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crítico DC1-DC11 + smoke ×50 + 11 pre-flags resueltos via founder full delegation. PRE_S2_CHECKLIST hard blockers B2+B5 cerrados. Todos gates pre-S2 ✅. **S2.1 Tablet scaffold setup desbloqueado.** Pendiente sólo D2 icons opcional + 5 soft-opcionales no-bloqueantes. Velocity sustained: S1 15× estimación + S1.10.4 part2 split + S2.0 11 pre-flags resolved en 1.5h. Próxima sesión = Sonnet 4.6 setup tooling deterministic.
+
+---
+
+### S2.0 — Sign-off (formato exacto playbook §5.3)
+
+- **Fecha:** 2026-05-04
+- **Duración:** ~1.5h real (founder time)
+- **Founder + Agent:** yaboula + Claude Opus 4.x (Cascade)
+- **Sprint:** S2 — Oleada 1 — UI Foundation (Tablet + Bank + Map)
+- **Perfil:** 🏗️ architect (planning gate + critical review + docs surgery)
+- **Modelo:** Opus 4.x (strategic reasoning + long context critical review)
+- **Goal:** finalizar `SPRINT_PLAN_S2.md` v0.1-draft → v1.0 firmable resolviendo 11 pre-flags + cerrar B2+B5 hard blockers
+- **Status:** ✅ Done (8/8 DC session ✅)
+
+### Cambios
+
+- **Created:** ninguno.
+- **Modified:** `progress/SPRINT_PLAN_S2.md` (v0.1-draft → **v1.0 firmable**) + `progress/PRE_S2_CHECKLIST.md` (v1.7 → **v1.8**) + `progress/SESSION_LOG.md` (entry S2.0 + sign-off append).
+- **Deleted:** ninguno.
+
+### Decisiones tomadas
+
+- **Consumer pattern temporal Bank historial** (F1+F4): §2.2 split en 3 categorías (keybinds cliente / callbacks shipped S1 / NUI bridges ad-hoc DEFERRED catalog promotion S3). Bank historial DB directo hasta C003 ship S3 per ADR-015 línea 1162. Wrapper `getHistoryDirect()` permite swap interno post-C003 sin breaking NUI contract.
+- **Close SFX silent** (F8): Apple Pro pattern clean. Brief sound v2 ADR-012 NO incluye close dedicated; reverse rompe motion semantics; nuevo SFX scope creep. DC9 + S2.5 actualizados. Re-evaluable post-MVP playtesting.
+- **Pinning policy caret-minor** (F5): `^X.Y.Z` aceptable porque `package-lock.json` garantiza reproducibilidad. Major bumps (React 18→19, Vite 5→6, Tailwind 4→5) requieren ADR firmable obligatorio.
+- **tsconfig strict mandatory S2.1** (F10+F11): `strict: true` + `noUncheckedIndexedAccess: true` como task #1 OBLIGATORIA S2.1 ANTES de cualquier `.tsx` app code. Risk R6 añadido.
+- **Risk register full rewrite** R1-R8: R1' Tailwind+shadcn override / R2 NUI bundle / R3 TAB keybind / R4 Framer jank / R5 consumer pattern tech debt / R6 TS strict timing / R7 NUI heap leak / R8 docs sync C003. + 4 escalation triggers founder.
+
+### Issues pendientes
+
+- **D2 icons decision** 🟡 opcional (Lucide puro S2 default + custom post-S2 S3 Storybook, o in-house Figma 3-5 críticos).
+- **Docs sync cycle post-S2** 🟡 deferred: `06_fivem_standards.md` §2.3 NUI perf table → rewrite alinear con ADR-016 D6 stricter budgets + `04_api_contracts.md` C003 entry NOTICE bridge `sonar:tablet:bank:getHistory` consumer pattern temporal (R8 mitigation).
+- **5 soft-opcionales** no-bloqueantes (Figma setup, progress dashboard, etc.) — pueden atacarse paralelos sin bloquear S2.
+
+### Handoff próxima sesión (S2.1)
+
+- **Label:** `Tablet scaffold setup`.
+- **Modelo recomendado:** Sonnet 4.6 (setup deterministic + tooling install). Founder decide swap.
+- **Duración estimada:** ~3-4h.
+- **Goal:** scaffold `resources/sonar_tablet/web-src/` con tsconfig strict + shadcn CLI init dark-only + tokens canonical + Lucide/Framer/Recharts install + dark canvas baseline boot.
+- **Pre-requisitos lectura:**
+  - `progress/SPRINT_PLAN_S2.md` v1.0 completo (§4 stack + §5 perf budgets + §6 dark-only + §7 session breakdown).
+  - `docs/design/02_sonar_tablet.md` v1.3 (IDENTITY V3 LOCK NOTICE + §5 design system tokens).
+  - `docs/art/branding/01_brief_logo.md` v3 §4.1 (SSoT palette canonical 3-color).
+  - `docs/planning/02_decision_log_part2.md` ADR-016 §D5+§D6.
+  - `resources/sonar_tablet/web-src/package.json` actual + `tsconfig.app.json` actual (verificar state).
+- **Files in scope S2.1:**
+  - `resources/sonar_tablet/web-src/tsconfig.app.json` (enable strict flags).
+  - `resources/sonar_tablet/web-src/package.json` (install shadcn/lucide/framer/recharts/react-window/vite-bundle-visualizer).
+  - `resources/sonar_tablet/web-src/src/styles/globals.css` (Tailwind v4 @theme tokens `--sonar-black`/`--sonar-orange`/`--sonar-white`).
+  - `resources/sonar_tablet/web-src/src/App.tsx` (dark canvas baseline).
+  - `resources/sonar_tablet/web-src/index.html` (boot verify).
+  - `resources/sonar_tablet/web-src/components.json` (shadcn CLI generated).
+- **Notas especiales:**
+  - **Task #1 OBLIGATORIA:** enable `strict: true` + `noUncheckedIndexedAccess: true` ANTES cualquier `.tsx` (R6 mitigation).
+  - **R1 spike pre-app-code:** scaffold básico → `npx shadcn add button` → verify dark canvas + tokens override OK. Si conflict Tailwind v4 @theme + shadcn preset → rollback path Tailwind v3 LTS documented + ADR firmable hotfix.
+  - **Bundle budget D6:** `vite-bundle-visualizer` devDep install y verificar baseline bundle pre-apps S2.2+.
+  - **NO tocar** docs firmados / ADRs / PRE_S2_CHECKLIST / SPRINT_PLAN_S2 v1.0 (scope S2.1 = resources/sonar_tablet solamente).
+
+### Files in scope respetados
+
+✅ Scope strict. NO tocó: code/resources/* (smoke baseline preserved), DB, art/branding/* (logo v3 locked), art/tools/*, `_archive/`, ADRs históricos 001-016, docs technical 02-07 v1.2, Bible v1.5, art_direction v3.0-locked, briefs, sonar_tablet v1.3, BOOTSTRAP v1.6, `.windsurf/*`, `02_decision_log_part2.md` v1.0. Solo progress/* (SPRINT_PLAN_S2 + PRE_S2_CHECKLIST + SESSION_LOG) tocados.
+
+---

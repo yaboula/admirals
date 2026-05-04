@@ -2,7 +2,7 @@
 
 > **Autor:** Founder + Cascade (S1.6 close, 2026-05-03).
 > **Propósito:** lista exhaustiva de lo que **TIENE que estar hecho** antes de abrir `/start-session` S2.0.
-> **Estado total (post-S1.9 EXTENDED):** � **B1 8/8 docs refreshed 100% (NOTICE r1 pattern)** + 🔴 **Phase 8+9 execution pending next session founder-available** + � **D1 + D3 resolved** (ADR-013 + ADR-015 firmed) + 🔴 B2 + B4 + B5 pending + � D2 (icons) + �🟢 5 soft-opcionales.
+> **Estado total (post-S2.0 planning gate complete):** 🏆 **B1 8/8 docs 100% (NOTICE r1)** + 🏆 **ADR-016 identity v3 lock docs done** + 🏆 **Phase 8+9 DONE** (code `sonar_*` + migration 009 applied) + 🏆 **Phase 10 smoke 30/30 ✅** + 🏆 **D1 + D3 resolved** + 🏆 **B2 SPRINT_PLAN_S2 v1.0 firmable** + 🏆 **B5 tags pushed** + 🟡 D2 (icons) + 🟢 5 soft-opcionales. **🟢 S2.1 DESBLOQUEADO — todos hard blockers ✅.**
 > **ETA mínimo pre-S2 ejecutando todo:** ~3-4 sessions AI (~12-18h founder time).
 > **Documento living:** se actualiza cuando cualquier checkbox cambia de estado. Append-only al changelog footer.
 
@@ -35,19 +35,10 @@ Docs operacionales siguen en lenguaje Admirals/literal-militar pre-pivot → **8
 
 ### B2. SPRINT_PLAN_S2.md — creación
 
-- **Estado:** 🔴 **No existe** (`progress/SPRINT_PLAN_S2.md` ausente).
-- **Trabajo:** planning session dedicada (founder + architect agent) → redactar plan siguiendo template del playbook.
-- **Contenido mínimo:**
-  - Goals S2 post-pivot (probablemente: Tablet shell NUI + Bank app básico + Map app placeholder + T2 adapters ESX/QBCore + `admirals_companies` DDL + C003 `getTransactions`).
-  - Scope balance: UI-heavy vs tech-balanced (ver D1 abajo).
-  - Done criteria explícitos ×10-12.
-  - Smoke check steps ×15-20.
-  - Session breakdown (probablemente S2.0 planning + S2.1-S2.4 ejecución + S2.5 close).
-  - Model allocation per session (Opus design, Sonnet/GPT-5.3 code, Gemini refactor).
-  - Risk register top 5.
-- **Ownership:** Opus 4.7 o Gemini 3.1 Pro (density analítica).
-- **Duración estimada:** 1 session completa ~4-5h.
-- **Dependencia:** debe venir **después** de B1 (docs purged) para que planning lea SSoTs coherentes.
+- **Estado:** 🏆 **DONE — v1.0 firmable post-S2.0 planning gate (2026-05-04).**
+- **Outcome:** `progress/SPRINT_PLAN_S2.md` v0.1-draft (S1.10.5 Item H) → v1.0 firmable (S2.0). Review crítico DC1-DC11 + 11 pre-flags resueltos (consumer pattern Bank historial, S2.1 re-purpose Tablet scaffold, R1 Tailwind+shadcn override, §2.2 split en 3 categorías, caret-minor pinning, D6 supersedes nota, DC7 split GPS local + POI backend, close SFX silent, Tailwind blacklist, tsconfig strict mandatory). Smoke protocol ×50 (30 cumulative + 20 S2-specific). Risk register R1-R8 con escalation triggers. Model allocation refined.
+- **SSoT entregado:** `progress/SPRINT_PLAN_S2.md` v1.0.
+- **Próxima sesión:** S2.1 Tablet scaffold setup.
 
 ---
 
@@ -59,9 +50,9 @@ Docs operacionales siguen en lenguaje Admirals/literal-militar pre-pivot → **8
 
 ---
 
-### B4. Smoke check regression `admirals_bank` post-pivot
+### B4. Smoke check regression `sonar_bank` post-Phase-8+9
 
-- **Estado:** 🟡 **Pendiente ejecutar** (13/13 smoke S1.3 pasaron pre-pivot; si Phase 8 NO rename code/DB, smoke debería seguir 13/13 post-pivot).
+- **Estado:** 🏆 **DONE — 30/30 ✅ Phase 10 complete.** (13/13 smoke S1.3 pasaron pre-pivot; si Phase 8 NO rename code/DB, smoke debería seguir 13/13 post-pivot).
 - **Trabajo:** boot server local + ejecutar smoke `admirals_bank` cumulative 30 pasos pre-S2.
 - **Done criterion:** 30/30 ✅ sin regression.
 - **Si falla:** hot-fix antes S2 (S1.7 hotfix session).
@@ -72,11 +63,9 @@ Docs operacionales siguen en lenguaje Admirals/literal-militar pre-pivot → **8
 
 ### B5. Commit + push + tag `sonar-identity-canonical`
 
-- **Estado:** 🟡 Commits S1.6 pushed (`611a4f9` head), tag pendiente.
-- **Trabajo:** `git tag sonar-identity-canonical 611a4f9 && git push --tags` → marca identity lock post-ADR-012.
-- **Razón:** permite rollback clean si S2 rompe algo + bookmark pre-code-phase.
-- **Ownership:** founder aprueba, Cascade ejecuta.
-- **Duración:** 2 min.
+- **Estado:** 🏆 **DONE — 3 tags pushed.**
+- **Tags:** `sonar-identity-canonical` (ADR-012 lock) + `sonar-identity-v3-lock` (ADR-016 lock) + `phase-8-9-complete` (ADR-013 execution complete) all pushed via `git push --tags`.
+- **Verificación:** `git tag -l | grep -E '(sonar|phase)'` confirms 3 tags presentes.
 
 ---
 
@@ -101,7 +90,7 @@ Memoria founder (pre-pivot) dice: *"UI es ~50-60% del valor percibido pero S2 ta
 
 | Brief | Budget estimado | Delivery time | Status / Bloquea S2? |
 |---|---|---|---|
-| `01_brief_logo.md` v2 | €1.5-3.5k | 3-6 semanas | � **RESUELTO IN-HOUSE S1.7** — logo v2 concept A "S-curl open" working canonical en `art/branding/logo_v2/` (8 SVGs + 27 PNG exports + favicon). Adopted founder 2026-05-03. **NO firmado ADR** — período uso real ~2-4 semanas, después decisión: hold (formalizar ADR-013 + sync docs) o re-iterar (designer pro per brief §7 R0-R4, budget €1.5-3.5k). |
+| `01_brief_logo.md` **v3 LOCKED** | N/A | N/A | 🏆 **LOCKED S1.10.5 — ADR-016 D4 accepted.** Brief v3 concepto firmable. `brief_logo.md` v3 §4.1 = SSoT canonical palette 3-color strict (`--sonar-black` `#060607` + `--sonar-orange` `#FF5100` + `--sonar-white` `#FAFAFA`). Dark-only product doctrine. Monogram-S `monogram_s_black.svg` unico uso print/external NON-product. **NO designer externo needed para logo.** |
 | `02_brief_icons.md` v2 | €1.2-2.5k | 2-4 semanas | 🟡 Suave — S2 usa Lucide puro para Tablet UI. Custom 8 icons pueden llegar S3 Storybook. **Decisión pendiente:** in-house (founder Figma) vs externo. |
 | `03_brief_sound.md` v1 | €500-1.5k | 1-2 semanas | 🟢 Defer S3 sin problema. |
 | `04_brief_motion.md` v1 | €500-2k (si externo; si in-house `framer-motion` gratis) | 1-2 semanas | 🟢 Defer S3 sin problema. |
@@ -205,9 +194,11 @@ Ver `docs/planning/02_decision_log.md` ADR-013 para plan detallado. **B1 docs t�
 | 1.3 | 2026-05-03 | Founder + Cascade (S1.8 Pass 2 complete) | **B1 status update: doc 1/8 Pass 2 complete = 100%.** `02_sonar_tablet.md` v1.1 → v1.2 (Pass 1 + Pass 2 surgical completos). Pass 2 adicional: §5.2 lenguaje visual Geist Sans + §6.4/§6.5 Empresa depth_press + §10.5 stickers abstract + §11.4/§11.6 Banca canonical + §15.2 tipología notif table 12-row canonical SFX mapping + §21.4 docking canonical + §22.4 Costa Naval flag + §26 sounds 4 tablas canonical full rewrite + §27 split §27.1 v1.0 preserved + §27.2 NEW 9 anti-patrones identidad SONAR post-pivot. **Doc ready-to-read para S2.0 planning.** Resto 7 docs B1 pendientes. |
 | 1.4 | 2026-05-03 | Founder + Cascade (S1.9) | **B1 status update: doc 8/8 done = 2/8 total (25%).** `01_roadmap.md` v1.4 → v1.5 surgical post-pivot SONAR. NOTICE r1 top-level (~80 líneas) + Sprint 2 full rewrite DIFERIDO + scope options D1 + 8 done criteria propuestos + blockers B1-B5/D1-D3 + pivot phases 1-12 status + §14.3 changelog + §15 TL;DR pivot-aware. B1 docs dependency breakdown: **independientes D3** (docs 6+7 light ejecutables Sonnet ~2h cada) + **dependientes D3** (docs 2-5 técnicos, naming `admirals_*` vs `sonar_*` resolución namespace). Ruta recomendada post-S1.9: (a) founder resuelve D1+D3 conversación ~30min desbloquea docs 2-5 + B2 SPRINT_PLAN_S2; o (b) Sonnet ataca docs 6+7 light mientras founder reflexiona. Resto blockers B2-B5 + D2 sin cambio post-S1.9. |
 | 1.5 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | 🏆 **B1 PHASE 6 MASS-PURGE CERRADO 8/8 (100%).** Session S1.9 EXTENDED ejecutó heavy docs-only work post decisiones founder D1+D3 resueltas. **Decisiones firmed:** D3=A Phase 8+9 AHORA antes S2 (ADR-013 firmed), D1=B Sprint 2 UI-heavy (ADR-015 firmed). `02_decision_log.md` v1.4 → v1.5 (ADR-013 + ADR-014 placeholder + ADR-015). **Docs 2-7 NOTICE r1 pattern applied:** `02_events_catalog.md` v1.1 + `03_db_schema.md` v1.1 + `04_api_contracts.md` v1.1 (C003 DEFERRED S3) + `05_state_machines.md` v1.1 + `06_fivem_standards.md` v1.1 + `07_bridges_compatibility.md` v1.1. Cada doc con header rebrand + NOTICE r1 top-level (~45-110 líneas per doc) estableciendo naming canonical mapping 1:1 (88 eventos + 28 tablas + 40+ callbacks + 16 FSMs) + schedule Phase 8+9 + reading guide + voz neutral ADR-012 §D3 + ADRs refs + changelog entry v1.1 + FIN bump. Legacy `admirals_*` inline preserved hasta Phase 8+9 execution per ADR-011 §5.5.8 excepciones. **Blockers pendientes post-S1.9 EXTENDED:** B2 SPRINT_PLAN_S2 (bloqueado por Phase 8+9+10 execution) + B4 smoke regression (requires founder server-local) + B5 tag + Phase 8 code refactor + Phase 9 migration 009 + D2 icons opcional. **Pre-Sprint 2 gate proper:** Phase 10 smoke regression green. **S2 arranque estimado ~2-3 sesiones calendario post-S1.9 EXTENDED** depending founder server availability. |
+| **1.6** | 2026-05-04 | Founder + Cascade (S1.10.5 Items E-G) | **ADR-016 identity v3 lock docs done.** (a) Header estado: ADR-016 done + docs refreshed. (b) PRODUCT_BIBLE v1.4 → v1.5 (palette 3-color canonical + dark-only doctrine + Tablet UI stack frozen + NUI perf budgets + §1 table + §1.1 metáfora + cross-refs ADR-016). (c) art_direction v3.0-locked IDENTITY V3 LOCK NOTICE. (d) sonar_tablet v1.3 IDENTITY V3 LOCK NOTICE. (e) brief_logo v3 LOCKED — SSoT canonical palette §4.1. (f) BOOTSTRAP v1.5 → v1.6 (SSoTs 20-row + part2 split awareness + ADR-016). (g) D2 logo: brief_logo v3 LOCKED, NO designer externo needed. (h) B5: añadir tag `sonar-identity-v3-lock HEAD` + original `sonar-identity-canonical 611a4f9`. Phase 8+9 code execution still 🔴 pending founder-available. |
+| **1.7** | 2026-05-04 | Founder + Cascade | **Phase 8+9+10 DONE.** Phase 8 code refactor `admirals_*` → `sonar_*` (resources + exports + events) ✅ + Phase 9 DB migration 009 (6 tablas + FKs + índices `sonar_*`) ✅ + Phase 10 smoke regression 30/30 cumulative ✅. B4 DONE. Estado header: 🟢 LISTO PARA S2.0. B5 tags pendientes ejecución founder (`sonar-identity-canonical` + `sonar-identity-v3-lock` + `phase-8-9-complete`). SPRINT_PLAN_S2 v0.1-draft desbloqueado para finalizar v1.0. |
+| **1.8** | 2026-05-04 | Founder + Cascade (S2.0 planning gate) | **B2 + B5 CERRADOS.** (a) **B2 DONE:** `progress/SPRINT_PLAN_S2.md` v0.1-draft → v1.0 firmable post-S2.0 review crítico DC1-DC11 + smoke ×50 + 11 pre-flags resueltos (F1 consumer pattern Bank historial DB directo §2.2.3 hasta C003 S3, F2 S2.1 re-purpose `Phase 8+9 execution` obsoleto → `Tablet scaffold setup`, F3 R1 obsoleto → R1' Tailwind v4+shadcn override, F4 §2.2 split en 3 categorías keybinds/callbacks/NUI-bridges-ad-hoc, F5 caret-minor pinning policy, F6 D6 supersedes `06_fivem_standards.md` §2.3 nota, F7 DC7 split DC7a frame-rate cliente ≥30fps + DC7b POI backend ≤500ms, F8 close SFX silent Apple Pro pattern, F9 Tailwind classes blacklist + permitidos alpha-layers, F10+F11 tsconfig strict mandatory S2.1 task primera con diff jsonc). Risk register refined R1-R8 + escalation triggers. Model allocation Opus/Sonnet refined + reminder regla permanente founder no AI auto-swap. (b) **B5 DONE:** 3 tags pushed (`sonar-identity-canonical` + `sonar-identity-v3-lock` + `phase-8-9-complete`). (c) Estado header: B2 🔴 → 🏆, B5 🟡 → 🏆. **🟢 Todos hard blockers ✅. S2.1 DESBLOQUEADO** — próxima sesión = `Tablet scaffold setup` (tsconfig strict + shadcn CLI init + tokens globals.css + Lucide/Framer install + dark canvas baseline). Resta solo D2 (icons opcional) + 5 soft-opcionales no-bloqueantes. |
 
 ---
 
 *"Antes de zarpar, verifica el casco."* — meta-regla S1 → S2.
-
-**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.5.**
+**FIN DEL DOCUMENTO `progress/PRE_S2_CHECKLIST.md` v1.8.**
