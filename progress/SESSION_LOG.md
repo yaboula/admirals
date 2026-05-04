@@ -2151,3 +2151,88 @@ S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crít
 ✅ Scope strict. NO tocó: code/resources/* (smoke baseline preserved), DB, art/branding/* (logo v3 locked), art/tools/*, `_archive/`, ADRs históricos 001-016, docs technical 02-07 v1.2, Bible v1.5, art_direction v3.0-locked, briefs, sonar_tablet v1.3, BOOTSTRAP v1.6, `.windsurf/*`, `02_decision_log_part2.md` v1.0. Solo progress/* (SPRINT_PLAN_S2 + PRE_S2_CHECKLIST + SESSION_LOG) tocados.
 
 ---
+
+### S2.1 — Tablet scaffold setup (code-heavy first post-planning)
+
+- **Fecha:** 2026-05-04
+- **Duración:** ~3.5h real (Sonnet 4.6 scaffold 9/10 DC + Opus 4.x Manager resolution shadcn init + R1 spike ~20min)
+- **Founder + Agent:** yaboula + Sonnet 4.6 (scaffold) + Opus 4.x (Manager close + R1 resolution)
+- **Sprint:** S2 — Oleada 1 — UI Foundation
+- **Perfil:** ⚡ code-heavy (tooling setup + stack install + R1 mitigation spike)
+- **Modelo:** Sonnet 4.6 scaffold execution + Opus 4.x Manager verdict final
+- **Goal:** scaffold `resources/sonar_tablet/web-src/` production-ready per SPRINT_PLAN_S2 v1.0 §7 S2.1 row — tsconfig strict + Tailwind v4 tokens + shadcn dark-only + D5 stack + dark canvas baseline
+- **Status:** ✅ Done (10/10 DC post-Manager intervention)
+
+### Cambios
+
+- **Created:**
+  - `resources/sonar_tablet/web-src/` (full Vite scaffold).
+  - `resources/sonar_tablet/web-src/src/styles/globals.css` (Tailwind v4 `@theme` tokens canonical + shadcn bridge post-R1-fix).
+  - `resources/sonar_tablet/web-src/components.json` (shadcn config base-nova).
+  - `resources/sonar_tablet/web-src/src/components/ui/button.tsx` (shadcn primitive `@base-ui/react` + cva variants).
+  - `resources/sonar_tablet/web-src/src/lib/utils.ts` (shadcn `cn()` helper).
+- **Modified:**
+  - `resources/sonar_tablet/web-src/package.json` — D5 stack install (framer-motion 11 + lucide-react + recharts + react-window + vite-bundle-visualizer); +6 shadcn deps post-init (@base-ui/react + @fontsource-variable/geist + cva + clsx + tailwind-merge + tw-animate-css); shadcn CLI moved to devDep; legacy zustand purged.
+  - `resources/sonar_tablet/web-src/tsconfig.app.json` — `strict: true` + `noUncheckedIndexedAccess: true` enabled (R6 mitigation).
+  - `resources/sonar_tablet/web-src/tsconfig.json` — baseUrl + paths alias `@/*` added (shadcn preflight requirement).
+  - `resources/sonar_tablet/web-src/vite.config.ts` — @tailwindcss/vite plugin + path alias + chunkSizeWarningLimit 500KB (D6 budget).
+  - `resources/sonar_tablet/web-src/index.html` — lang="es" + color-scheme dark + theme-color + anti-FOUC inline + Geist preload removed post-fontsource.
+  - `resources/sonar_tablet/web-src/src/App.tsx` — dark canvas baseline + Lucide `<Layers>` abstract icon + shadcn Button default+outline (R1 spike verify).
+  - `resources/sonar_tablet/web-src/src/main.tsx` — rootEl null guard + StrictMode.
+- **Deleted:**
+  - `resources/sonar_tablet/web-src/src/App.css` + `src/index.css` + `src/assets/{hero.png,react.svg,vite.svg}` + `public/icons.svg` (Vite template junk).
+  - `resources/sonar_tablet/web-src/public/fonts/` (self-host stub — replaced by fontsource npm delivery).
+
+### Decisiones tomadas
+
+- **Manager override defer shadcn CLI init:** agent S2.1 propuso defer init a S2.2 per "dead config sin uso" reasoning; Manager (founder green-lit Option A) override = ejecutar init AHORA per SSoT SPRINT_PLAN_S2 v1.0 §7 + R1 mitigation true spike pre-app-code. Razón: honor SSoT firmed S2.0 + blast radius R1-triggered mínimo en scaffold placeholder vs mayor en S2.2 shell+bridge+animation.
+- **R1 TRIGGERED + CONFIRMED fix forward:** shadcn@4.6 default style = `base-nova` (NO `new-york`) con `@base-ui/react` runtime + light/dark variant + `:root` oklch light mode vars + `--chart-*`/`--sidebar-*` token pollution + `@layer base` body @apply conflict con sonar baseline. **Fix forward** (~20min) vía `@theme inline` override bridging semantic tokens (`--color-background → sonar-black`, `--color-primary → sonar-orange`, `--color-muted/accent/etc → alpha layers sonar-white`) + eliminación light mode vars + `.dark` variant + `@custom-variant dark` + token pollution. R1 escalation trigger NOT triggered (no rollback Tailwind v3 LTS needed).
+- **F9 blacklist exception shadcn-generated code:** `src/components/ui/*.tsx` carries `dark:*` variants por shadcn design (light/dark-capable preset). Net behavior correct porque override tokens mapean a sonar canonical ambos modos OS. Blacklist F9 aplica a código user-authored (`src/App.tsx` + `src/components/{features,layouts}/*.tsx`), NO a `src/components/ui/*.tsx` shadcn-generated. Smoke S2.15 blacklist audit debe excluir `src/components/ui/`.
+- **Geist delivery pendiente S2.1 RESUELTO:** `@fontsource-variable/geist` npm auto-added por shadcn init. 3 WOFF2 subsets (cyrillic/latin-ext/latin) auto-bundled por Vite. Elimina manual download WOFF2 + preload index.html + `public/fonts/README.md` stub.
+
+### Issues pendientes
+
+- **Bundle budget impact tracked:** JS 47KB → 59KB gzip (+12KB shadcn deps), CSS 3.2KB → 4.7KB gzip. Still WELL under D6 500KB/200KB budgets (~12%/2%). Monitor con `vite-bundle-visualizer` pre-merge cada PR S2.2+.
+- **IDE lint warnings `@theme`/`@apply`:** cosmetic (vscode-tailwindcss extension for IntelliSense — optional install). Flagged S2.1-v1, no afecta build.
+- **`fxmanifest.lua` pendiente:** S2.2 scope (keybind + NUI bridge pattern).
+- **`favicon.svg` placeholder Vite default:** reemplazar por `art/branding/logo_v3/monogram_s.svg` cuando founder bajue asset (opcional, no bloquea S2.2).
+- **shadcn base-nova `@base-ui/react`** runtime dependency NO anticipated ADR-016 D5 — pragmatically accepted (bundle impact minimal), future shadcn `add X` may re-introduce R1-like conflicts requiring per-component verify.
+- **ESLint strictTypeChecked:** no habilitado S2.1, opcional S2.7 polish.
+
+### Handoff próxima sesión (S2.2)
+
+- **Label:** `Tablet shell + keybind TAB + NUI bridge + entrance animation`.
+- **Modelo recomendado:** Sonnet 4.6 (feature dev React/Lua integration).
+- **Duración estimada:** 3-4h.
+- **Goal:** React App shell router skeleton + `client.lua` keybind TAB + NUI bridge events Lua↔NUI bidireccional + open/close animation Framer Motion GPU-only + `fxmanifest.lua` create.
+- **Pre-requisitos lectura:**
+  - `progress/SESSION_LOG.md` entries S2.0 + S2.1.
+  - `progress/SPRINT_PLAN_S2.md` v1.0 §2 arquitectura + §2.2.1 keybind + §2.2.2 callbacks + §3 DC1+DC2 + §7 S2.2 row + §9 R3+R4.
+  - `docs/design/02_sonar_tablet.md` v1.3 §4 keybind + NUI bridge pattern.
+  - `docs/technical/06_fivem_standards.md` v1.1 NOTICE r1 §event prefixes + §NUI bridge pattern.
+  - `resources/sonar_bank/` client+server files (integration patterns).
+- **Files in scope S2.2:**
+  - `resources/sonar_tablet/fxmanifest.lua` (create).
+  - `resources/sonar_tablet/client/main.lua` (create: keybind TAB + NUI bridge client-side + state toggle).
+  - `resources/sonar_tablet/server/main.lua` (create: NUI bridge server-side callbacks skeleton).
+  - `resources/sonar_tablet/config.lua` (create: `Config.TabletKeybind = 'TAB'` + disable-override flag, R3 mitigation).
+  - `resources/sonar_tablet/web-src/src/App.tsx` (rewrite: router skeleton + AnimatePresence wrapper + keybind handler via postMessage).
+  - `resources/sonar_tablet/web-src/src/main.tsx` (wire NUI bridge listener postMessage).
+  - `resources/sonar_tablet/web-src/src/components/shell/TabletFrame.tsx` (create: frame container with open/close Framer Motion entrance/exit animation GPU-only).
+  - `resources/sonar_tablet/web-src/src/hooks/useNUIBridge.ts` (create: bidireccional Lua↔NUI event abstraction).
+  - `resources/sonar_tablet/web-src/src/hooks/useTabletVisibility.ts` (create: open/close state via bridge).
+- **Notas especiales S2.2:**
+  - **R3 mitigation obligatoria:** `Config.TabletKeybind` configurable + `disable-override` flag + grep `RegisterKeyMapping` cross-resource pre-merge (lb-phone / qb-phone / ox_inventory conflict potential).
+  - **R4 mitigation obligatoria:** animaciones GPU-only (`transform` + `opacity` ONLY) — NEVER `height`/`width`/`margin`/`padding`/`top`/`left`. Test FiveM Chromium local antes merge.
+  - **F9 blacklist exclude path:** smoke `grep` debe excluir `src/components/ui/*` (shadcn-generated con `dark:*` por design).
+  - **F8 close silent:** tablet close NO SFX (Apple Pro pattern). Open SFX `panel_open` aparece S2.6 (motion+sound signature session).
+  - **NUI bridge pattern:** `SendNUIMessage` (Lua→NUI) + `RegisterNUICallback` (NUI→Lua) + `postMessage` receiver hook React. Ver `06_fivem_standards.md` v1.1 NOTICE r1 §NUI bridge.
+  - **NO consumir C001/C002 todavía** — S2.4 scope (Bank app). S2.2 solo shell + keybind + animation.
+  - **fxmanifest.lua:** `fx_version 'cerulean'`, `game 'gta5'`, `ui_page 'web/index.html'`, `files { 'web/**/*' }`, build output path a `web/`.
+  - **Vite build path:** considera ajustar `vite.config.ts` `build.outDir` a `../web/` para FiveM resource delivery pattern.
+
+### Files in scope respetados
+
+✅ Scope strict. NO tocó: `docs/**/*` (todos SSoTs firmados), `progress/SPRINT_PLAN_S2.md` v1.0 firmado, `progress/PRE_S2_CHECKLIST.md` v1.8 firmado, DB/migrations, `resources/{sonar_bank,sonar_core,sonar_bridges}` (smoke baseline), `art/branding/`, `art/tools/logo_export/`, ADRs históricos, `.windsurf/*`. Solo `resources/sonar_tablet/` (scaffold nueva) + `progress/SESSION_LOG.md` (esta entry) tocados.
+
+---

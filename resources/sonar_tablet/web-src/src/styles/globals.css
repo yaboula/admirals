@@ -1,0 +1,114 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+/* ============================================================================
+ * SONAR Identity v3 — palette tokens canonical
+ * SSoT: docs/art/briefs/01_brief_logo.md v3 §4.1 (post-ADR-016 D1)
+ * Doctrine: dark-only product (ADR-016 D2) + 3-color strict (ADR-016 D3)
+ *
+ * R1 mitigation applied (S2.1 spike): shadcn@4.6 `base-nova` style introducía
+ * light mode :root + .dark variant + --chart-* + --sidebar-* tokens + @layer
+ * base @apply conflict. Fix forward: override semantic tokens → sonar canonical
+ * via @theme inline. NO light mode vars. NO .dark variant. NO token pollution.
+ * Geist delivered via @fontsource-variable/geist (npm) — NO manual self-host.
+ * ========================================================================== */
+
+@theme {
+  /* Palette — 3 tokens LOCKED (ADR-016 D1). NO añadir accents sin ADR. */
+  --color-sonar-black: #060607;
+  --color-sonar-orange: #ff5100;
+  --color-sonar-white: #fafafa;
+
+  /* Tipografía canonical (brief_logo v3 §4.2) — Geist via @fontsource-variable/geist */
+  --font-sans: "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+/* ============================================================================
+ * shadcn/ui semantic token bridge → sonar canonical
+ * Maps shadcn `bg-primary/bg-background/text-muted-foreground/etc` classes
+ * (usadas por button.tsx + future dialog/dropdown/card) a nuestros 3 colors
+ * + alpha-layers permitidos (§6 SPRINT_PLAN_S2 v1.0).
+ * ========================================================================== */
+
+@theme inline {
+  /* Surface tokens — siempre sonar-black (dark-only, ADR-016 D2) */
+  --color-background: var(--color-sonar-black);
+  --color-foreground: var(--color-sonar-white);
+  --color-card: var(--color-sonar-black);
+  --color-card-foreground: var(--color-sonar-white);
+  --color-popover: var(--color-sonar-black);
+  --color-popover-foreground: var(--color-sonar-white);
+
+  /* Brand primary — sonar-orange (CTAs, active states, focus rings) */
+  --color-primary: var(--color-sonar-orange);
+  --color-primary-foreground: var(--color-sonar-black);
+
+  /* Secondary / muted / accent — alpha layers sonar-white (surface elevation tonal) */
+  --color-secondary: color-mix(in oklab, var(--color-sonar-white) 5%, transparent);
+  --color-secondary-foreground: var(--color-sonar-white);
+  --color-muted: color-mix(in oklab, var(--color-sonar-white) 5%, transparent);
+  --color-muted-foreground: color-mix(in oklab, var(--color-sonar-white) 60%, transparent);
+  --color-accent: color-mix(in oklab, var(--color-sonar-white) 10%, transparent);
+  --color-accent-foreground: var(--color-sonar-white);
+
+  /* Destructive — semantic red (ADR-016 T2 allow red sparingly for errors/alerts) */
+  --color-destructive: oklch(0.65 0.22 25);
+  --color-destructive-foreground: var(--color-sonar-white);
+
+  /* Borders + inputs + rings — alpha layers + brand ring */
+  --color-border: color-mix(in oklab, var(--color-sonar-white) 10%, transparent);
+  --color-input: color-mix(in oklab, var(--color-sonar-white) 15%, transparent);
+  --color-ring: var(--color-sonar-orange);
+
+  /* Radius scale — shadcn convention preserved */
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+/* NO :root light mode vars — dark es default single mode (ADR-016 D2).
+ * NO .dark class — dark-only, sin light/dark variant switcher.
+ * NO @custom-variant dark — `dark:` prefix blacklisted (§6 SPRINT_PLAN_S2 F9).
+ * NO --chart-* / --sidebar-* tokens — not used, removed para evitar pollution.
+ * ========================================================================== */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    /* NUI scroll lock — FiveM Chromium embebido no scrollea el container root */
+    overflow: hidden;
+  }
+  #root {
+    min-height: 100vh;
+  }
+  /* Focus visible — brand ring orange (3-color strict, ADR-016 D3) */
+  *:focus-visible {
+    outline: 2px solid var(--color-sonar-orange);
+    outline-offset: 2px;
+  }
+  /* Selection — orange signal sobre dark canvas */
+  ::selection {
+    background-color: var(--color-sonar-orange);
+    color: var(--color-sonar-black);
+  }
+}
