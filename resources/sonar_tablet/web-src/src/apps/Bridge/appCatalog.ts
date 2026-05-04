@@ -84,7 +84,7 @@ export const APP_CATALOG: readonly AppTileDef[] = [
     label: 'Banca',
     lucideIcon: Landmark,
     route: 'bank',
-    status: 'stub-S2.4',
+    status: 'shipped',
   },
   {
     id: 'notas',

@@ -28,9 +28,24 @@ export interface NUITabletToggleMessage extends NUIMessage {
 export type NUIEndpoint =
   | 'sonar:tablet:close'
   | 'sonar:tablet:ping'
+  // S2.4 Bank app — forwarders NUI → server callbacks (consumer pattern).
+  | 'sonar:tablet:bank:getBalance'   // C001 sonar:bank:getBalance wrapper.
+  | 'sonar:tablet:bank:transfer'     // C002 sonar:bank:transfer wrapper.
+  | 'sonar:tablet:bank:getHistory'   // Bridge ad-hoc §2.2.3 (DEFERRED catalog S3).
 
-/** Generic response envelope retornado por RegisterNUICallback. */
+/**
+ * Generic response envelope retornado por RegisterNUICallback.
+ *
+ * Shapes esperadas per endpoint:
+ *   - `sonar:tablet:close` / `sonar:tablet:ping`: `{ ok: boolean, ... }`.
+ *   - `sonar:tablet:bank:*`: `{ success: boolean, data?|error_code? }` canonical
+ *      per SSoT §3.1. `ok` no aplica — por eso ambos fields opcionales.
+ *
+ * Callers deben narrow via discriminated union propio (ej. `BackendEnvelope`
+ * en `apps/Bank/bankApi.ts`).
+ */
 export interface NUIResponse {
-  ok: boolean
+  ok?: boolean
+  success?: boolean
   [key: string]: unknown
 }

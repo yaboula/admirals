@@ -2350,3 +2350,170 @@ S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crít
 ✅ 1 modify único: `components/ui/button.tsx` — addendum targeted F1 resolution. NO tocó nada más post-S2.3 entry original.
 
 ---
+
+
+## S2.4 — Bank app real (balance + history + transfer)
+
+- **Fecha:** 2026-05-05
+- **Duración:** ~1h15
+- **Founder + Agent:** yaboula + Cascade (Windsurf)
+- **Sprint:** S2 — UI Foundation
+- **Perfil:** 🔧 BUILDER
+- **Modelo:** Sonnet
+- **Goal:** Primera app funcional del Tablet. Balance vía C001 + Transfer vía C002 + Historial vía bridge ad-hoc §2.2.3 (consumer pattern temporal — R5 tech debt hasta C003 S3). Dark-only 3-color strict + Tab bar 3 vistas (Overview/History/Transfer) + anti-double-submit + error map human-readable.
+- **Status:** ✅ Done
+
+### Cambios
+
+**Lua side (sonar_tablet):**
+- Modified `resources/sonar_tablet/fxmanifest.lua` — restructurado: `shared_script` preservado + `client_scripts {}` con `@ox_lib/init.lua` + `client/main.lua` + `server_scripts {}` con `@sonar_core/lib/sonar.lua` + `@ox_lib/init.lua` + `server/main.lua` + `server/bank_history.lua`. Deps `sonar_bridges` + `sonar_bank` uncommented.
+- Created `resources/sonar_tablet/server/bank_history.lua` (~215 líneas) — cache local `_src_to_cid` via `SONAR.Identity.OnPlayerLoaded/Dropped` (no re-export cross-resource); `lib.callback.register sonar:tablet:bank:getHistory` con auth pivot + rate-limit bucket `bank.read` 30/10s (fail-closed pcall pattern match callbacks.lua:266-273, reusa bucket NO re-register) + inline JOIN query `sonar_bank_accounts`×`sonar_accounts` personal lookup + `SONAR.DB.FetchAll` movements limit 1..200 + audit `bank.read`/`tablet_history` siempre (user-initiated) + métricas `tablet.bank_history.*` + wrapper `getHistoryDirect(cid, limit)` con TODO R5 swap a C003 S3 documentado.
+- Modified `resources/sonar_tablet/client/main.lua` — 3 NUI→server forwarders (founder green-light ampliar "1 listener extra" a 3 por motivos anti-inyección NUI): `sonar:tablet:bank:getBalance` → C001, `sonar:tablet:bank:transfer` → C002, `sonar:tablet:bank:getHistory` → bridge ad-hoc. Helper `_forwardCallback` con pcall guard + shape canónica error fallback `CALLBACK_FAILED` + `_err_unknown` defensivo.
+
+**React side (sonar_tablet/web-src/src):**
+- Modified `types/nui.ts` — añadidos 3 `NUIEndpoint` union + relajado `NUIResponse.ok` a opcional (Bank responses usan `success` canónica SSoT §3.1 vs `ok` original tablet:close/ping).
+- Created `apps/Bank/types.ts` — BankBalance + BankMovement + BankMovementCategory (13 ENUM canónicos DB schema §4.2) + TransferRequest + TransferResponse discriminated + BankErrorCode union 17 códigos + class BankApiError.
+- Created `apps/Bank/bankApi.ts` — thin wrappers `getBalance(iban?)` / `transfer(req)` / `getHistory(limit)` + `uuidv4()` (crypto.randomUUID preferred, Math.random fallback) + `translateError(code)` Spanish mapper SSoT único.
+- Created `apps/Bank/BankOverview.tsx` — card IBAN mono + balance `Intl.NumberFormat es-ES EUR` + tier badge + relative time "hace Xmin" + skeleton shimmer + error boundary inline + botonera Transferir/Ver historial/Refrescar + console.warn si `getBalance` excede 200ms (DC5).
+- Created `apps/Bank/BankHistory.tsx` — `react-window` FixedSizeList virtualization always-on (row height 64px, list max 520px) + header con contador + botón Refrescar + empty state Lucide Inbox + amount colorizado (positivo `text-sonar-white`, negativo `text-sonar-orange`) + date format DD/MM HH:mm + signDisplay exceptZero EUR.
+- Created `apps/Bank/BankTransfer.tsx` — form controlled (3 inputs: IBAN destino uppercase + amount number step 0.01 min 0.01 max 1M + concepto max 120 chars con counter visible) + uuid v4 client-side por submit + anti-double-submit (disabled durante `kind: submitting`) + Loader2 spinner inline "Procesando…" + success state con transaction_id + new_balance_from + CTA "Volver al resumen" + error state mapeado `BankErrorCode` → copy `translateError()` con AlertTriangle text-sonar-orange.
+- Rewritten `apps/Bank/BankApp.tsx` (stub S2.3 → real S2.4, ~170 líneas) — sub-router interno useState `BankView` + shell-level `getBalance` cache (alimenta BankTransfer sin double-request) + `refreshKey` counter trigger refetch post-transfer success + header "Banca" + botón "← Volver" (dispatch BACK_TO_HOME reutiliza ESC handler S2.3) + tab bar Wallet/History/ArrowRightLeft con active state underline text-sonar-orange + ring-sonar-orange/40 focus + AnimatePresence mode="wait" reutilizando `viewSwitchInitial/Animate/Exit/Transition` de `lib/motion.ts` (GPU-only transform+opacity).
+- Modified `apps/Bridge/appCatalog.ts` — Banca `status: 'stub-S2.4'` → `'shipped'` (badge tile `✓`).
+
+### Decisiones tomadas
+
+- **3 listeners NUI (vs "1 extra" prompt):** founder green-light explícito — contratos API estrictos + anti-inyección NUI > forwarder genérico descartado. Justificación: C001/C002/bridge son 3 operaciones semánticamente distintas, cada una con contrato payload/response propio.
+- **Corrección `SONAR.RateLimit.Check` → `SONAR.Rate.Check`:** el prompt contiene nombre API incorrecto. Verificado en `sonar_core/lib/sonar.lua:221` — `SONAR.Rate.*` es el namespace canónico. Bucket `bank.read` reusado sin re-register per prompt.
+- **Cache local `_src_to_cid` en sonar_tablet/server:** `Bank.GetCitizenIdBySource` vive en VM `sonar_bank`, no exportado cross-resource. Añadir export nuevo requería modificar `sonar_bank` (prohibido scope). Alternativa: replicar cache local vía `SONAR.Identity.OnPlayerLoaded/Dropped` (lib disponible, mismo lifecycle hook que usa `sonar_bank/server/init.lua:47-54`). Evita nuevo export cross-resource + respeta "NO modificar sonar_bank".
+- **Inline query vs `Movements.GetByAccount`:** `SONAR.Bank.Movements` vive en VM `sonar_bank`, no callable cross-VM. Replicé query pattern inline en bank_history.lua (mismo ORDER + LIMIT cap 200) para mantener escope S2.4 strict sin modificar sonar_bank.
+- **Virtualization always-on (no threshold >50):** prompt dice "si >50". Dado que `FETCH_LIMIT=50` default y cap 200, ya estamos en o sobre el umbral. Simplificar a always-on elimina branch condicional + jank garantizado ≥55fps.
+- **`react-window` sin threshold switch:** dep ya presente en `package.json:23`. No deps nuevas (R2 mitigation).
+- **`NUIResponse.ok` → opcional:** Bank responses usan `success` (SSoT §3.1), no `ok`. Relajar tipo es correcto vs forzar dual shape. Existing tablet:close/ping responses (`{ ok: true }`) siguen válidos.
+- **SFX stubs `console.debug('[sound] ...')`:** per prompt (S2.6 real integration): `signal_emerge` (balance load), `layer_dive` (history open), `depth_press` (transfer submit).
+- **Motion reuse `lib/motion.ts` (vs nuevo):** eases `easeDepthDescent` + `durationBase` ya canonical S2.3 — consistency > new motion defs. Tab switch + AnimatePresence idéntico pattern que RouterSwitch global.
+
+### Verificación
+
+- `npx tsc --noEmit -p tsconfig.app.json`: **exit 0** (strict + noUncheckedIndexedAccess ON).
+- `npm run build`: 1958 modules, 2.80s, 0 warnings. Bundles:
+  - `index.js` 271.81 KB → **gzip 88.24 KB** (≪ 500 KB budget D6 ✅).
+  - `index.css` 33.00 KB → **gzip 6.52 KB** (≪ 200 KB budget ✅).
+  - `BankApp.js` 31.08 KB → **gzip 8.98 KB** (lazy chunk separado ✅).
+  - `MapApp.js` 1.29 KB → gzip 0.64 KB (preservado S2.3).
+  - `arrow-left.js` 0.33 KB shared icon chunk.
+- Blacklist §6 grep en `src/apps/Bank/**`: **0 matches** (`bg-white`/`bg-gray-*`/`bg-slate-*`/`bg-zinc-*`/`bg-neutral-*`/`bg-stone-*`/`text-gray-*`/`text-slate-*`/`text-zinc-*`/`text-neutral-*`/`dark:`/`#fff`/`#000`/`#2DD4BF`/`#175A5F`/`rgb(...)`/`hsl(...)`/hexes literales). Baseline dark-only 100% clean preservado.
+
+### DC review
+
+| DC | Status | Notas |
+|---|---|---|
+| DC-S2.4.1 balance C001 ≤200ms | 🟡 smoke pending | Código logging warn si excede. Verificación real = founder in-server. |
+| DC-S2.4.2 history consumer pattern R5 | 🟡 smoke pending | Bridge ad-hoc implementado + audit log. Verificación = founder con transfers previas S1. |
+| DC-S2.4.3 transfer A→B + refresh UI | ✅ arquitectura | Shell-level balance cache + refreshKey counter + `onSuccessBack` dispatcha view='overview'. |
+| DC-S2.4.4 errors human-readable | ✅ | 8 códigos C002 + 9 adicionales mapeados en `translateError()` SSoT único. |
+| DC-S2.4.5 anti-double-submit | ✅ | Botón `disabled` durante `kind: submitting` + request_id UUID v4 único por submit. |
+| DC-S2.4.6 blacklist §6 grep | ✅ | 0 matches en src/apps/Bank/**. |
+| DC-S2.4.7 tsc --noEmit strict | ✅ | Exit 0. |
+| DC-S2.4.8 build budgets | ✅ | JS main 88.24 KB gzip, CSS 6.52 KB gzip, BankApp lazy 8.98 KB gzip. |
+| DC-S2.4.9 bridge rate-limited + audit | ✅ | bucket `bank.read` + `SONAR.Log.Audit` siempre. |
+| DC-S2.4.10 ESC → BACK_TO_HOME | ✅ | Reutiliza RouterSwitch ESC handler S2.3 (capture phase, App.tsx:58-69). |
+| DC-S2.4.11 empty/loading states | ✅ | Skeleton shimmer Overview/History + Inbox empty state + error boundaries con retry. |
+| DC-S2.4.12 focus keyboard-nav | ✅ | `focus-visible:ring-sonar-orange/40` en tabs/inputs/buttons + `role="tablist"` + `aria-selected` + `aria-controls` tab↔panel binding. |
+
+**Code-review DC: 10/12 ✅ + 2/12 🟡 smoke-pending (DC-S2.4.1 + DC-S2.4.2 requieren verificación in-server founder — código arquitecturalmente correcto + logging defensivo en su sitio).**
+
+### Issues pendientes
+
+- **🟡 R5 tech debt (registered SPRINT_PLAN_S2 §9):** bridge ad-hoc `sonar:tablet:bank:getHistory` + `getHistoryDirect()` wrapper = deuda documentada hasta ship C003 `sonar:bank:getTransactions` S3. TODO inline en bank_history.lua apunta a swap implementation sin romper NUI contract. **NO promovido a `02_events_catalog.md`** per §2.2.3 DEFERRED catalog promotion.
+- **🟡 Smoke DC-S2.4.1/2:** verificación in-server founder pendiente. Código defensive logging presente (console.warn >200ms balance) + audit trail completo para debug.
+- **🟡 IBAN prefix UI placeholder:** form usa `SN-XXXX-XXXX-XXXX` como hint visual, pero sonar_bank `Config.IbanPrefix` puede diferir (verificar contra init.lua boot report). Copy-only issue — validación real server-side via `IBAN.Validate`. No bloquea.
+
+### Handoff próxima sesión (S2.5)
+
+- **Modelo recomendado:** Sonnet (feature dev NUI + Map marker rendering).
+- **Goal:** Map app real — GPS marker player frame-rate ≥30 fps (DC7a) + POI nodos admin-defined bridge ad-hoc `sonar:tablet:map:getNodes` (§2.2.3 DEFERRED catalog S3+) response ≤500ms (DC7b).
+- **Pre-requisitos:** `progress/SPRINT_PLAN_S2.md` §S2.5 + §2.2.3 + `docs/design/02_sonar_tablet.md` v1.3 Map section + patrón consumer bridge S2.4 como referencia arquitectural (cache source→cid + lib.callback.register + audit + rate-limit).
+- **Files in scope:** reemplazar stub `apps/Map/MapApp.tsx` + nuevos `apps/Map/{MapCanvas,POILayer}.tsx` + nuevo `resources/sonar_tablet/server/map_nodes.lua` (bridge ad-hoc admin-seeded POIs) + `client/main.lua` 1 listener extra `sonar:tablet:map:getNodes` + potencialmente listener GPS state stream.
+- **Notas especiales:** (a) Motion canonical `lib/motion.ts` ya extensible — añadir presets Map si necesario (NO bump S2.6 scope). (b) `react-leaflet` / canvas nativo / SVG raw — decisión founder pre-scope. (c) `appCatalog.ts` status update Logística route='map' → `'shipped'` tras S2.5 cierre.
+
+### Files in scope respetados
+
+✅ Scope strict: 1 modify fxmanifest + 1 modify client + 1 create bank_history.lua Lua side; 1 modify types/nui.ts + 1 modify appCatalog + 4 creates (types/bankApi/BankOverview/BankHistory/BankTransfer) + 1 rewrite BankApp React side. NO tocó `docs/**`, `progress/SPRINT_PLAN_S2.md`, `resources/{sonar_bank,sonar_core,sonar_bridges}/**`, `apps/Map/**`, `apps/Bridge/{BridgeHome,AppTile}`, `DB/migrations/**`, `art/**`. `components/ui/button.tsx` preservado post-addendum S2.3.1 (no consumido por Bank app S2.4 — formularios custom styled). No git commit.
+
+---
+
+
+## S2.4.1 — Sign-off post-smoke (DC 10/12 → 12/12)
+
+- **Fecha:** 2026-05-05
+- **Duración:** ~10min
+- **Founder + Agent:** yaboula + Cascade (Windsurf)
+- **Sprint:** S2 — UI Foundation
+- **Perfil:** 🔍 SMOKE
+- **Modelo:** Sonnet
+- **Goal:** Cerrar S2.4 con verificación in-server founder de los 2 DC pendientes.
+- **Status:** ✅ Done
+
+### Smoke evidence
+
+**Server-side (audit logs `sonar_core`):**
+```
+[01:29:48] [AUDIT] bank.read/tablet_history actor=R84D28UT target=ddfd2383-ab0c-4f2b-af68-6580a3ed4c40
+[01:29:54] [AUDIT] bank.read/tablet_history actor=R84D28UT target=ddfd2383-...
+[01:29:56] [AUDIT] bank.read/tablet_history actor=R84D28UT target=ddfd2383-...
+[01:29:58] [AUDIT] bank.read/tablet_history actor=R84D28UT target=ddfd2383-...
+[01:30:11] [AUDIT] bank.read/tablet_history actor=R84D28UT target=ddfd2383-...
+[01:30:26] [AUDIT] bank.read/tablet_history actor=R84D28UT target=ddfd2383-...
+```
+
+→ 6 invocations en ~40s, **0 RATE_LIMITED** (bucket bank.read 30/10s holds bajo ritmo humano), citizen_id resuelto correctamente desde cache `_src_to_cid` populated via `SONAR.Identity.OnPlayerLoaded`, account_id (UUID v4 shape correcto) resuelto via JOIN sonar_bank_accounts × sonar_accounts.
+
+**Client-side (NUI console F8):**
+```
+[sound] signal_emerge (balance loaded)  × 8  ← C001 OK, sin warning >200ms = ≤200ms confirmed
+[sound] layer_dive (history opened)     × 4  ← bridge ad-hoc OK
+[sound] depth_press (transfer submit)   × 1  ← C002 anti-double-submit OK (1 evento por click)
+```
+
+**Behaviour verificado por founder:**
+- ✅ Self-transfer bloqueado UI-side via `isValid` check (toIban !== balance.iban) — antes de hit C002.
+- ✅ Transfer A→B: saldo descontado del origen + nuevo saldo refleja en Overview tras `refreshKey` bump.
+- ✅ Anti-double-submit funcional (botón disabled + 1 single submit event).
+
+### DC final S2.4
+
+| # | DC | Estado |
+|---|---|---|
+| 1 | balance C001 ≤200ms | ✅ smoke verde (sin console.warn >200ms) |
+| 2 | history consumer pattern R5 | ✅ smoke verde (6 audits + UI render OK) |
+| 3 | transfer A→B + refresh UI | ✅ |
+| 4 | errors human-readable (incl. SELF_TRANSFER) | ✅ |
+| 5 | anti-double-submit | ✅ |
+| 6 | blacklist §6 grep | ✅ |
+| 7 | tsc --noEmit strict | ✅ |
+| 8 | build budgets D6 | ✅ |
+| 9 | bridge rate-limited + audit | ✅ |
+| 10 | ESC → BACK_TO_HOME | ✅ |
+| 11 | empty/loading states | ✅ |
+| 12 | focus keyboard-nav | ✅ |
+
+**12/12 ✅ — Sprint S2.4 ship-ready.**
+
+### Issues pendientes
+
+- **🟡 R5 tech debt registered:** bridge ad-hoc `sonar:tablet:bank:getHistory` permanece como deuda técnica documentada hasta C003 ship S3 (ver bank_history.lua TODO + SPRINT_PLAN_S2 §9).
+- Ningún bug bloqueante. SFX stubs `console.debug([sound] ...)` permanecen visibles en consola — neutralización via `Config.Debug` flag → tarea opcional S2.6 (sound signature integration).
+
+### Handoff próxima sesión (S2.5)
+
+- **Modelo recomendado:** Sonnet (Map app — render tech + GPS marker frame-rate sensitive).
+- **Goal:** Map app real (GPS marker ≥30fps + POI bridge ad-hoc `sonar:tablet:map:getNodes`).
+- **Pre-requisitos:** SPRINT_PLAN_S2 §S2.5 + §2.2.3 + `docs/design/02_sonar_tablet.md` v1.3 Map section.
+- **Files in scope:** `apps/Map/{MapCanvas,POILayer}.tsx` + `server/map_nodes.lua` (template = `bank_history.lua` consumer pattern S2.4) + 1 listener extra `client/main.lua` + `appCatalog` Logística → shipped.
+- **Pre-decisión founder:** render tech (react-leaflet vs SVG raw vs canvas nativo).
+
+### Files in scope respetados
+
+✅ Sign-off pure smoke entry. NO code changes esta sub-session — solo verificación + commit.
+
+---

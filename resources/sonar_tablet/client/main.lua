@@ -73,6 +73,63 @@ RegisterNUICallback('sonar:tablet:ping', function(data, cb)
 end)
 
 -- -----------------------------------------------------------------------------
+-- S2.4 Bank app — NUI → server forwarders (React fetchNUI → lib.callback.await).
+--
+-- Justificación ampliación "1 listener extra" prompt → 3 listeners:
+--   Los 3 callbacks backend (C001 balance, C002 transfer, bridge ad-hoc §2.2.3
+--   getHistory) son lib.callback server-side. NUI no los invoca directo; este
+--   client actúa como forwarder estricto — un contrato NUI ↔ server explícito
+--   por operación (vs forwarder genérico rechazado por founder por seguridad
+--   anti-inyección NUI y contratos API strict).
+-- -----------------------------------------------------------------------------
+
+-- Fallback response si server devuelve nil (defensive — no debería pasar).
+local function _err_unknown()
+  return { success = false, error_code = 'UNKNOWN', message = 'Respuesta vacía del servidor.' }
+end
+
+---Forward NUI request to server callback, return shape canónica al React.
+---Errores transitorios (timeout/network) se mapean a `{ success=false,
+---error_code='CALLBACK_FAILED' }` para que React los trate como error de UI.
+---@param callback_name string ej. 'sonar:bank:getBalance'
+---@param data table payload
+---@param cb fun(response: table) NUI callback.
+local function _forwardCallback(callback_name, data, cb)
+  -- lib.callback.await blocks coroutine hasta server response. Client-side OK
+  -- (NUI callback runs en coroutine thread).
+  local ok, response = pcall(lib.callback.await, callback_name, false, data or {})
+  if not ok then
+    if Config.Debug then
+      print(('[sonar_tablet] callback %s failed: %s'):format(callback_name, tostring(response)))
+    end
+    cb({
+      success    = false,
+      error_code = 'CALLBACK_FAILED',
+      message    = 'El servidor no respondió. Reintenta.',
+    })
+    return
+  end
+  cb(response or _err_unknown())
+end
+
+-- C001 — balance real player. Request opcional `{ iban? }`, default personal IBAN.
+RegisterNUICallback('sonar:tablet:bank:getBalance', function(data, cb)
+  _forwardCallback('sonar:bank:getBalance', data, cb)
+end)
+
+-- C002 — transfer player→player atomic. Request `{ from_iban, to_iban, amount,
+-- concept, request_id }` per SSoT §3.1 C002.
+RegisterNUICallback('sonar:tablet:bank:transfer', function(data, cb)
+  _forwardCallback('sonar:bank:transfer', data, cb)
+end)
+
+-- Bridge ad-hoc §2.2.3 — historial movements (consumer pattern temporal hasta
+-- C003 ship S3 — R5 tech debt documented en server/bank_history.lua).
+RegisterNUICallback('sonar:tablet:bank:getHistory', function(data, cb)
+  _forwardCallback('sonar:tablet:bank:getHistory', data, cb)
+end)
+
+-- -----------------------------------------------------------------------------
 -- External programmatic open (otros resources pueden abrir Tablet)
 -- Ej. admin command / phone contact tap / notification tap.
 -- -----------------------------------------------------------------------------
