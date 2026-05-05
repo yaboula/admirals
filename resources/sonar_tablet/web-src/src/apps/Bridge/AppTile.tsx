@@ -24,8 +24,8 @@ function statusBadgeLabel(status: AppTileDef['status']): string {
       return '✓'
     case 'stub-S2.4':
       return 'S2.4'
-    case 'stub-S2.5':
-      return 'S2.5'
+    case 'stub-S2.6':
+      return 'S2.6'
     case 'placeholder-future':
       return '—'
   }

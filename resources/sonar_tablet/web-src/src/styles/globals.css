@@ -88,10 +88,31 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-synthesis: none;
-    color-scheme: dark;
+    /*
+     * ⚠️  NO `color-scheme: dark`: en CEF pinta el canvas implícito del
+     * iframe negro, causando blackscreen sobre el juego. El theme dark
+     * ya se aplica vía tokens dentro del shell TabletFrame.
+     * Usamos `normal` explícito para garantizar canvas transparente.
+     */
+    color-scheme: normal;
+    background: transparent;
   }
+  /*
+   * ⚠️  CRITICAL FiveM NUI bugfix (2026-05-05):
+   * body/html/#root MUST be transparent. El iframe NUI es persistente (no
+   * se monta/desmonta con SetNuiFocus) — cualquier background no-transparente
+   * cubre el juego a pantalla completa: blackscreen selectplayer, loading
+   * screen, HUD overlay, etc. Síntoma reportado: pantalla negra al entrar
+   * al selectplayer; `ensure sonar_tablet stop` restaura game visible.
+   *
+   * Dark canvas per ADR-016 D2 (dark-only product) se aplica SOLO dentro
+   * del shell TabletFrame (bg-sonar-black/80 backdrop + bg-sonar-black
+   * frame) cuando visible=true. Fuera del shell NO debe haber pixel
+   * opaco alguno.
+   */
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: transparent;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -100,6 +121,7 @@
   }
   #root {
     min-height: 100vh;
+    background: transparent;
   }
   /* Focus visible — brand ring orange (3-color strict, ADR-016 D3) */
   *:focus-visible {

@@ -8,14 +8,14 @@ description 'SONAR Tablet NUI — universal interface shell (Bridge home + Bank 
 version     '0.1.0'
 
 -- =============================================================================
--- S2.4 scope: Bank app real — balance (C001) + transfer (C002) + historial
---            (NUI bridge ad-hoc §2.2.3 consumer pattern DEFERRED catalog S3).
+-- S2.5 scope: Map app real — GPS marker live + POI layer admin-seed
+--            (NUI bridge ad-hoc §2.2.3 consumer pattern DEFERRED catalog S3+).
 --
 -- S2.2 shipped: shell + keybind F2 + NUI bridge bidireccional Lua↔React.
 -- S2.3 shipped: Bridge home (SonarOS app grid 12) + router + lazy-load.
+-- S2.4 shipped: Bank app (C001 balance + C002 transfer + bridge ad-hoc history).
 --
 -- NO incluye (scope futuro):
---   - Map app (GPS + POIs)           → S2.5
 --   - Motion + Sound signature       → S2.6
 --
 -- Perf budgets D6 (ADR-016):
@@ -30,22 +30,25 @@ shared_script 'config.lua'
 
 client_scripts {
   -- ox_lib client-side: lib.callback.await para invocar callbacks C001/C002
-  -- (Bank) + bridge NUI ad-hoc §2.2.3 getHistory desde client/main.lua.
+  -- (Bank) + bridges NUI ad-hoc §2.2.3 getHistory + getNodes desde client/main.lua.
   '@ox_lib/init.lua',
   'client/main.lua',
+  'client/map_gps.lua',  -- S2.5 GPS poll thread (activación on-demand via NUI callback).
 }
 
 server_scripts {
   -- Helper lib sonar_core (cargada en VM sonar_tablet) — expone SONAR.{DB,Rate,
-  -- Log,Metrics,Identity,Bus} consumido por server/bank_history.lua.
+  -- Log,Metrics,Identity,Bus} consumido por bank_history + map_nodes.
   '@sonar_core/lib/sonar.lua',
-  -- ox_lib server-side: lib.callback.register para `sonar:tablet:bank:getHistory`.
+  -- ox_lib server-side: lib.callback.register para bridges NUI ad-hoc §2.2.3.
   '@ox_lib/init.lua',
   'server/main.lua',
   'server/bank_history.lua',  -- S2.4 NUI bridge ad-hoc §2.2.3 Bank historial.
+  'server/map_nodes.lua',     -- S2.5 NUI bridge ad-hoc §2.2.3 Map POIs admin-seed.
 }
 
--- NUI assets: Vite hash-named assets + favicon + fonts Geist WOFF2 (@fontsource).
+-- NUI assets: Vite hash-named assets + favicon + fonts Geist WOFF2 (@fontsource)
+-- + S2.5 map textura (placeholder SVG o JPG atlas real cuando exportado).
 files {
   'web/index.html',
   'web/favicon.svg',
@@ -54,6 +57,9 @@ files {
   'web/assets/*.woff2',
   'web/assets/*.svg',
   'web/assets/*.png',
+  'web/map/*.svg',
+  'web/map/*.jpg',
+  'web/map/*.webp',
 }
 
 dependencies {

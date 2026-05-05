@@ -129,6 +129,15 @@ RegisterNUICallback('sonar:tablet:bank:getHistory', function(data, cb)
   _forwardCallback('sonar:tablet:bank:getHistory', data, cb)
 end)
 
+-- Bridge ad-hoc §2.2.3 — Map POIs admin-seed (DEFERRED catalog promotion S3+,
+-- R8 tech debt documented en server/map_nodes.lua).
+RegisterNUICallback('sonar:tablet:map:getNodes', function(data, cb)
+  _forwardCallback('sonar:tablet:map:getNodes', data, cb)
+end)
+
+-- NOTA: `sonar:tablet:map:setPollActive` NO se forwardea — es puramente
+-- cliente-local, handled directamente en client/map_gps.lua:RegisterNUICallback.
+
 -- -----------------------------------------------------------------------------
 -- External programmatic open (otros resources pueden abrir Tablet)
 -- Ej. admin command / phone contact tap / notification tap.

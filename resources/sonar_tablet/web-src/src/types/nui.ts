@@ -9,7 +9,9 @@
 /** Acciones válidas Lua → NUI (via `SendNUIMessage`). */
 export type NUIMessageAction =
   | 'sonar:tablet:toggle'
-// Future S2.3+: 'sonar:tablet:openApp' | 'sonar:tablet:navigate' | 'sonar:tablet:notify'
+  // S2.5 Map app — GPS stream one-way client→NUI (4Hz default, guarded por
+  // `sonar:tablet:map:setPollActive` que togglea poll thread Lua-side R7).
+  | 'sonar:tablet:map:gpsUpdate'
 
 /** Base envelope shape. Action requerido; payload opcional per action. */
 export interface NUIMessage<T = unknown> {
@@ -24,6 +26,18 @@ export interface NUITabletToggleMessage extends NUIMessage {
   visible: boolean
 }
 
+/** S2.5 GPS update (Lua → NUI, one-way, 4Hz when MapApp mounted). */
+export interface NUIMapGpsUpdateMessage extends NUIMessage {
+  action: 'sonar:tablet:map:gpsUpdate'
+  payload: {
+    x: number
+    y: number
+    heading: number
+    speed: number
+    ts: number
+  }
+}
+
 /** Endpoints NUI → Lua (via `fetchNUI`). */
 export type NUIEndpoint =
   | 'sonar:tablet:close'
@@ -32,6 +46,9 @@ export type NUIEndpoint =
   | 'sonar:tablet:bank:getBalance'   // C001 sonar:bank:getBalance wrapper.
   | 'sonar:tablet:bank:transfer'     // C002 sonar:bank:transfer wrapper.
   | 'sonar:tablet:bank:getHistory'   // Bridge ad-hoc §2.2.3 (DEFERRED catalog S3).
+  // S2.5 Map app.
+  | 'sonar:tablet:map:getNodes'      // Bridge ad-hoc §2.2.3 (DEFERRED catalog S3+).
+  | 'sonar:tablet:map:setPollActive' // Cliente-local: togglea GPS poll thread (R7).
 
 /**
  * Generic response envelope retornado por RegisterNUICallback.

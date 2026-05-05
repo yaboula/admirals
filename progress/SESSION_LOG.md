@@ -2517,3 +2517,75 @@ S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crÃ­t
 âœ… Sign-off pure smoke entry. NO code changes esta sub-session â€” solo verificaciÃ³n + commit.
 
 ---
+
+
+### S2.5 — Map backend ship + UI deferred + CEF blackscreen fix
+
+- **Fecha:** 2026-05-05
+- **Duración:** ~4h real (build Map full ? smoke ? pivot backend-only + blackscreen debug)
+- **Founder + Agent:** yaboula + Cascade (Sonnet)
+- **Sprint:** S2 — UI Foundation
+- **Perfil:** ??? BUILDER + ?? DEBUGGER
+- **Modelo:** Sonnet 4.6
+- **Goal:** Map app real (GPS marker =30fps + POI bridge ad-hoc `sonar:tablet:map:getNodes`).
+- **Status:** ?? Partial — backend ship OK + blackscreen fix BONUS; UI visual deferida S2.6+ por decisión founder.
+
+### Cambios
+
+- **Created Lua:**
+  - `resources/sonar_tablet/server/map_nodes.lua` — callback POIs admin-seed + bucket `tablet.query` + audit `tablet.read/map_nodes` + DC7b =500ms warn + seed_version cache + R8 tech debt TODO swap-point a C-callback firmable S3+.
+  - `resources/sonar_tablet/client/map_gps.lua` — thread 4Hz con flag `_poll_active` gate (R7 perf mitigation) + NUI callback `sonar:tablet:map:setPollActive` + `SendNUIMessage('sonar:tablet:map:gpsUpdate')`.
+- **Created React (tree-shaken post-pivot pero preservados S2.6+):**
+  - `apps/Map/types.ts` (MapPOI, GpsState, WorldBounds, MapApiError).
+  - `apps/Map/mapApi.ts` (bridge §2.2.3 `getNodes` + `setPollActive` + `translateMapError`).
+  - `apps/Map/lib/projection.ts` (DEFAULT_BOUNDS + `worldToViewport` + `viewportToWorld` + `clampViewport`).
+  - `apps/Map/hooks/useGpsStream.ts` (rAF throttle =30fps DC7a + STALE_MS=3000 watchdog).
+  - `apps/Map/MapCanvas.tsx`, `POILayer.tsx`, `PlayerMarker.tsx` (componentes S2.5, ref S2.6+).
+- **Created assets:**
+  - `web-src/public/map/README.md` (workflow atlas export + bounds sync).
+  - `web-src/public/map/world.jpg` (atlas founder-provided, 929KB, bajo 1MB hard limit).
+- **Modified Lua:**
+  - `resources/sonar_tablet/fxmanifest.lua` (new scripts + `web/map/*.{svg,jpg,webp}` files + sonar_core client_script dep).
+  - `resources/sonar_tablet/config.lua` (MapGpsPollMs=250, MapWorldBounds, 5 MapPOIs admin-seed).
+  - `resources/sonar_tablet/client/main.lua` (forwarder `sonar:tablet:map:getNodes`; `sonar:tablet:map:setPollActive` NO forward — client-local only).
+- **Modified React:**
+  - `apps/Map/MapApp.tsx` (S2.5 real ? stub S2.6 post-pivot, copy "Mapa en desarrollo · available · S2.6+").
+  - `types/nui.ts` (action `sonar:tablet:map:gpsUpdate` + endpoints `sonar:tablet:map:getNodes|setPollActive`).
+  - `apps/Bridge/appCatalog.ts` (Logística status `'stub-S2.6'`; type `AppStatus` actualizado).
+  - `apps/Bridge/AppTile.tsx` (badge case `'stub-S2.6' ? 'S2.6'`).
+- **Modified global (CEF blackscreen fix — root cause):**
+  - `web-src/index.html` (removido `<meta name="color-scheme" content="dark">` + `<meta name="theme-color">`; comentarios CRITICAL inline anti-regresión).
+  - `web-src/src/styles/globals.css` (`color-scheme: dark` ? `normal` en html; `background: transparent` explícito en html/body/#root; removido `@apply bg-background` en body; comentarios CRITICAL inline).
+- **Deleted:**
+  - `web-src/public/map/world.svg` (placeholder reemplazado por `world.jpg` founder).
+
+### Decisiones tomadas
+
+- **CEF blackscreen root cause identificado:** `color-scheme: dark` + `<meta name="theme-color">` pintan el canvas implícito del iframe CEF en color oscuro **debajo del DOM**, causando fullscreen blackscreen sobre el juego incluso con body/#root transparentes. Fix upstream (no workaround): `color-scheme: normal` + remover metas + transparent explícito. Bug pre-existente desde S2.1 reportado como "al entrar al selectplayer queda pantalla negra".
+- **Map UI pivot a backend-only (founder call):** approach híbrido JPG estático + projection lineal tiene techo técnico bajo (aspect mismatch img `object-cover` vs SVG `preserveAspectRatio="none"`, bounds calibration manual sin atlas oficial, no tile-system). Resultado visible era distorsión no-pro contraria a identidad SONAR. Pivot: anular UI visual + preservar TODA la infra backend + componentes React tree-shaken para reuse S2.6+ cuando se rediseñe con approach pro (candidatos ADR: Leaflet tile-pyramid / natives FiveM DrawSprite / atlas oficial Rockstar).
+- **R7 perf mitigation validado:** `setPollActive(true)` al mount / `setPollActive(false)` al unmount garantiza que GPS poll 4Hz solo corre cuando MapApp está activo. Backend-only ship deja el thread en estado gated off por default (no-op hasta consumer S2.6+).
+
+### Issues pendientes
+
+- **?? R8 tech debt registrada:** bridge ad-hoc §2.2.3 `sonar:tablet:map:getNodes` sin catalog promotion — documentado inline en `server/map_nodes.lua` con swap-point preparado para callback firmable + tabla `sonar_map_pois` DB cuando ship S3+.
+- **?? Map UI redesign ADR pendiente:** approach pro requiere decision founder pre-S2.6+. Candidatos:
+  - Leaflet.js tile pyramid (zoom pro + POIs vectoriales + píxel-perfect).
+  - Natives FiveM `DrawSprite` + `GetPlayerBlipId` (render fuera NUI, ultra-preciso).
+  - Atlas oficial Rockstar con bounds exactos (OpenIV export + calibración).
+- **?? Stubs `console.debug('[sound] ...')` permanecen visibles en F8** (neutralización optional via `Config.Debug` flag ? tarea S2.6 sound signature integration).
+- **?? ESLint config broken pre-existente:** `eslint.config.js:15` `reactHooks.configs.flat.recommended` undefined en versión instalada. NO tocado (fuera scope S2.5, flag al founder).
+
+### Handoff próxima sesión (S2.6)
+
+- **Modelo recomendado:** Sonnet 4.6 (creative precision + Framer Motion patterns) ó Opus 4.x si founder decide abordar ADR Map UI redesign mismo sprint.
+- **Goal:** Motion signature completa (5 Framer Motion animations locked per §8) + Sound integration real (5 SFX canonical reemplazando `console.debug('[sound] ...')` stubs) + perf audit final D6.
+- **Pre-requisitos:** Leer SPRINT_PLAN_S2 §S2.6 + esta entry S2.5 (CEF blackscreen learnings + Map tech debt) + entry S2.4.1 + `docs/design/02_sonar_tablet.md` motion+sound sections + `lib/motion.ts` existente.
+- **Files in scope:** `lib/motion.ts` (extender 5 locked presets) + nuevo `hooks/useSfx.ts` + replace stubs en `apps/Bank/**` + `apps/Map/MapApp.tsx` (stub) + `components/shell/TabletFrame.tsx` (entrance/exit) + `App.tsx` (viewSwitchTransition). NO `apps/Map/{MapCanvas,POILayer,PlayerMarker,hooks,lib,mapApi,types}.tsx` (tree-shaken hasta S2.7+ o Map redesign dedicated session).
+- **Pre-decisión founder S2.6 opcional:** abordar Map UI redesign en S2.6 (requiere ADR firmable pre-scope tile-system/natives/atlas) o diferir a S3 dedicated sprint.
+- **Notas especiales:** (a) Map backend infra (server_scripts + client_scripts + config + fxmanifest files) queda **active pero no-op** — safe para shipping post-S2.6 sin riesgo de interferir con otros resources. (b) `public/map/world.jpg` preserved en repo (929KB, bajo budget adjacent D6 R2). (c) CEF blackscreen fix incluye comentarios CRITICAL inline en `index.html` + `globals.css` para prevenir regresión futura por otro AI agent.
+
+### Files in scope respetados
+
+? NO tocó `docs/**` (0 modificaciones). Modificó `progress/SESSION_LOG.md` solo via append (este entry). NO git commit hecho por AI — pending founder green-light. Único desvío scope S2.5 original: prompt indicaba "1 listener extra" + `{MapCanvas,POILayer}.tsx` solamente; real scope expandió a 3 componentes SVG + hook + lib + types + mapApi + client/map_gps.lua (justificado por estructura R7 poll gating + DC7a rAF throttle). Post-pivot backend-only, componentes React quedan tree-shaken — bundle impacto neto = 10KB menor que scope original.
+
+---

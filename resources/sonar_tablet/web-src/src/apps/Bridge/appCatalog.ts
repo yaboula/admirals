@@ -8,7 +8,7 @@
  * Status legend:
  *   - 'shipped'           ready (S2.3 home only + nav stubs).
  *   - 'stub-S2.4'         stub con copy "Coming S2.4" (Bank app real S2.4).
- *   - 'stub-S2.5'         stub con copy "Coming S2.5" (Map app real S2.5).
+ *   - 'stub-S2.6'         Map app UI deferida S2.6+ (backend ready, visual redesign).
  *   - 'placeholder-future' disabled tile, 3 slots reservados S3+.
  */
 import type { ComponentType } from 'react'
@@ -32,7 +32,7 @@ export type AppRoute = Extract<AppView, 'bank' | 'map'> | 'home' | null
 export type AppStatus =
   | 'shipped'
   | 'stub-S2.4'
-  | 'stub-S2.5'
+  | 'stub-S2.6'
   | 'placeholder-future'
 
 export interface AppTileDef {
@@ -70,7 +70,7 @@ export const APP_CATALOG: readonly AppTileDef[] = [
     label: 'Logística',
     lucideIcon: Truck,
     route: 'map',
-    status: 'stub-S2.5',
+    status: 'stub-S2.6',
   },
   {
     id: 'mensajes',

@@ -4,17 +4,33 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#060607" />
+    <!--
+      ⚠️  NO usar <meta name="color-scheme" content="dark"> ni
+      <meta name="theme-color">: en CEF/Chromium pintan el canvas
+      implícito del iframe (debajo del DOM) con color oscuro,
+      causando blackscreen fullscreen sobre el juego incluso cuando
+      body+#root son transparentes. Esto fue el root cause real del
+      blackscreen reportado en char selector (2026-05-05).
+    -->
     <title>SONAR Tablet</title>
     <!-- Geist variable fonts delivered via @fontsource-variable/geist (npm) — NO manual preload needed -->
-    <!-- Anti-FOUC dark canvas (ADR-016 D2 dark-only) -->
+    <!--
+      ⚠️  CRITICAL FiveM NUI: html/body MUST be transparent.
+      El iframe NUI es persistente (no se monta/desmonta) — cualquier bg
+      no-transparente cubre el juego a pantalla completa (blackscreen
+      selectplayer, loading screen, HUD overlay, etc.).
+      Dark canvas per ADR-016 D2 se aplica SOLO dentro de TabletFrame
+      (bg-sonar-black/80) cuando visible=true.
+    -->
     <style>
       html,
       body {
-        background-color: #060607;
+        background: transparent;
         color: #fafafa;
         margin: 0;
+      }
+      #root {
+        background: transparent;
       }
     </style>
   </head>
