@@ -5,12 +5,7 @@ import { useTabletVisibility } from '@/hooks/useTabletVisibility'
 import { TabletRouterProvider } from '@/context/TabletRouter'
 import { useTabletRouter } from '@/hooks/useTabletRouter'
 import BridgeHome from '@/apps/Bridge/BridgeHome'
-import {
-  viewSwitchAnimate,
-  viewSwitchExit,
-  viewSwitchInitial,
-  viewSwitchTransition,
-} from '@/lib/motion'
+import { viewSwitch } from '@/lib/motion'
 
 /**
  * SONAR Tablet — S2.3 shell + router.
@@ -73,10 +68,7 @@ function RouterSwitch() {
       <motion.div
         key={state.view}
         className="h-full w-full"
-        initial={viewSwitchInitial}
-        animate={viewSwitchAnimate}
-        exit={viewSwitchExit}
-        transition={viewSwitchTransition}
+        {...viewSwitch}
       >
         <Suspense fallback={<AppSkeleton />}>
           {state.view === 'home' && <BridgeHome />}

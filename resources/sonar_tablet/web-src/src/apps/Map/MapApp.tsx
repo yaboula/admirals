@@ -25,11 +25,22 @@
  * Tree-shake: este stub NO importa los módulos arriba → no entran al bundle
  * hasta que MapApp real vuelva a importarlos en S2.6+.
  */
+import { useEffect, useRef } from 'react'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { useTabletRouter } from '@/hooks/useTabletRouter'
+import { useSfx } from '@/hooks/useSfx'
 
 export default function MapApp() {
   const { dispatch } = useTabletRouter()
+  const { play } = useSfx()
+  const mountedRef = useRef(false)
+
+  // signal_emerge SFX on Map app mount — once, parity con Bank app open (DC-S2.6.6).
+  useEffect(() => {
+    if (mountedRef.current) return
+    mountedRef.current = true
+    play('signal_emerge')
+  }, [play])
 
   return (
     <div className="flex h-full flex-col bg-sonar-black">

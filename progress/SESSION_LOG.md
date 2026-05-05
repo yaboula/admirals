@@ -2589,3 +2589,54 @@ S2.0 planning gate cerrado clean. SPRINT_PLAN_S2 v1.0 firmable post review crít
 ? NO toc� `docs/**` (0 modificaciones). Modific� `progress/SESSION_LOG.md` solo via append (este entry). NO git commit hecho por AI � pending founder green-light. �nico desv�o scope S2.5 original: prompt indicaba "1 listener extra" + `{MapCanvas,POILayer}.tsx` solamente; real scope expandi� a 3 componentes SVG + hook + lib + types + mapApi + client/map_gps.lua (justificado por estructura R7 poll gating + DC7a rAF throttle). Post-pivot backend-only, componentes React quedan tree-shaken � bundle impacto neto = 10KB menor que scope original.
 
 ---
+
+## S2.6 — Motion + Sound signature canonical locked
+
+**Fecha:** 2026-05-05
+**Duración:** ~2h
+
+### Scope
+Motion presets locked + SFX engine Web Audio API premium sine + hotfixes visuales + sound pivot.
+
+### Archivos creados
+- esources/sonar_tablet/web-src/src/lib/sfx.ts — Web Audio API singleton, 5 canonical sines Apple/Tesla class, debounce 30ms, master vol 0.55
+- esources/sonar_tablet/web-src/src/hooks/useSfx.ts — React hook, lazy AudioContext init on first click gesture
+- esources/sonar_tablet/web-src/public/sfx/README.md — specs OGG assets placeholder (producción S3+)
+
+### Archivos modificados
+- src/lib/motion.ts — 5 presets LOCKED: tabletEntrance, tabletExit, viewSwitch, tabSwitch, listStagger (variants API)
+- src/components/shell/TabletFrame.tsx — tabletEntrance/tabletExit presets + panel_open SFX on visible mount
+- src/App.tsx — RouterSwitch usa viewSwitch preset (migrado desde legacy exports)
+- src/apps/Bridge/BridgeHome.tsx — listStagger container motion.div, variants passed to AppTile
+- src/apps/Bridge/AppTile.tsx — motion.button con variants prop + console_tap SFX on activate
+- src/apps/Bank/BankApp.tsx — tabSwitch preset + signal_emerge on mount (mountedRef) + layer_dive on tab click
+- src/apps/Bank/BankOverview.tsx — console.debug stub eliminado
+- src/apps/Bank/BankHistory.tsx — console.debug stub eliminado
+- src/apps/Bank/BankTransfer.tsx — depth_press on transfer success; stub eliminado
+- src/apps/Map/MapApp.tsx — signal_emerge on mount (mountedRef); stub eliminado
+
+### Hotfixes dentro de sesión
+1. **Regresión visual AppTile** — motion.div wrapper por tile rompía aspect-square en CSS Grid. Fix: motion.button directo con variants prop + w-full; sin wrapper extra.
+2. **SFX pivot OGG → Web Audio rev3** — Web Audio API rev1 sonaba genérico. Pivot a OGG (HTML Audio) descartado por falta de assets premium. Pivot final: Web Audio API rev3 con pure-sine Apple/Tesla class (1400Hz tap, 1000→660Hz glide, 1200+600Hz confirm, 880→1320Hz double-chirp, 600→900Hz swell).
+
+### Done Criteria S2.6
+- DC-S2.6.1 ✅ 5 presets exportados + MotionPreset type
+- DC-S2.6.2 ✅ 0 inline transition props en apps/shell (PlayerMarker GPS excluido — tree-shaken)
+- DC-S2.6.3 ✅ sfx.ts + useSfx.ts con 5 SFX Web Audio
+- DC-S2.6.4 ✅ lazy AudioContext init via document.addEventListener click once
+- DC-S2.6.5 ✅ 0 console.debug [sound] stubs
+- DC-S2.6.6 ✅ SFX triggers: panel_open/console_tap/signal_emerge/layer_dive/depth_press correctos
+- DC-S2.6.7 ✅ anti-spam debounce 30ms Map<SfxName, number>
+- DC-S2.6.8 🟡 GPU-only >=55fps — founder verifica in-server FiveM
+- DC-S2.6.9 ✅ JS 89KB gzip / CSS 6.6KB gzip / lazy chunks OK / 0 regression build
+- DC-S2.6.10 ✅ 0 className en sfx.ts/useSfx.ts
+- DC-S2.6.11 ✅ tsc --noEmit strict 0 errores
+- DC-S2.6.12 🟡 smoke in-server — founder verifica FiveM
+
+### Pendientes no-bloqueantes
+- Assets OGG reales (5 archivos) → public/sfx/ cuando producción S3+ brief_sound
+- Master volume UI → S3+ Settings app
+- DC-S2.6.8 + DC-S2.6.12 GPU/smoke in-server → founder
+
+### Próxima sesión sugerida
+S2.7 Polish + smoke regression S2 (20 pasos) + PRE_S2_CHECKLIST sign-off final

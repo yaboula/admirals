@@ -16,16 +16,12 @@
  *
  * Lazy-loaded chunk via `React.lazy()` en App.tsx (respeta D6 ≤500KB main gzip).
  */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, ArrowRightLeft, History, Wallet } from 'lucide-react'
 import { useTabletRouter } from '@/hooks/useTabletRouter'
-import {
-  viewSwitchAnimate,
-  viewSwitchExit,
-  viewSwitchInitial,
-  viewSwitchTransition,
-} from '@/lib/motion'
+import { tabSwitch } from '@/lib/motion'
+import { useSfx } from '@/hooks/useSfx'
 import BankOverview from './BankOverview'
 import BankHistory from './BankHistory'
 import BankTransfer from './BankTransfer'
@@ -48,12 +44,21 @@ const TABS: readonly TabDef[] = [
 
 export default function BankApp() {
   const { dispatch } = useTabletRouter()
+  const { play } = useSfx()
   const [view, setView] = useState<BankView>('overview')
+  const mountedRef = useRef(false)
   // Counter usado como useEffect dep para forzar refetch de balance tras
   // transfer exitosa o click "Refrescar" en overview.
   const [refreshKey, setRefreshKey] = useState(0)
   // Balance cached — alimenta BankTransfer.from_iban + saldo preview.
   const [balance, setBalance] = useState<BankBalance | null>(null)
+
+  // signal_emerge SFX on Bank app mount — once (DC-S2.6.6).
+  useEffect(() => {
+    if (mountedRef.current) return
+    mountedRef.current = true
+    play('signal_emerge')
+  }, [play])
 
   // Fetch balance propietario del shell (BankOverview también fetch, pero
   // shell-level cache sirve a BankTransfer sin double-request). Refetch en
@@ -113,7 +118,10 @@ export default function BankApp() {
               role="tab"
               aria-selected={active}
               aria-controls={`bank-panel-${t.id}`}
-              onClick={() => setView(t.id)}
+              onClick={() => {
+                play('layer_dive')
+                setView(t.id)
+              }}
               className={
                 'relative inline-flex items-center gap-2 px-3 py-2.5 text-xs transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sonar-orange/40 ' +
                 (active
@@ -141,10 +149,7 @@ export default function BankApp() {
             id={`bank-panel-${view}`}
             role="tabpanel"
             className="h-full w-full"
-            initial={viewSwitchInitial}
-            animate={viewSwitchAnimate}
-            exit={viewSwitchExit}
-            transition={viewSwitchTransition}
+            {...tabSwitch}
           >
             {view === 'overview' ? (
               <BankOverview

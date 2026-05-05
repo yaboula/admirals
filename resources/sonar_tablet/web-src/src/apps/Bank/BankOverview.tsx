@@ -58,9 +58,6 @@ export default function BankOverview({
         // eslint-disable-next-line no-console
         console.warn(`[sonar_tablet/bank] getBalance exceeded 200ms (${elapsedMs}ms)`)
       }
-      // Sound signature stub (S2.6 real integration).
-      // eslint-disable-next-line no-console
-      console.debug('[sound] signal_emerge (balance loaded)')
       setState({ kind: 'ready', balance, elapsedMs })
     } catch (err) {
       const code = err instanceof BankApiError ? err.error_code : 'UNKNOWN'

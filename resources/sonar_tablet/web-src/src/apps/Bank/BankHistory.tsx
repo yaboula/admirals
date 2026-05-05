@@ -92,9 +92,6 @@ export default function BankHistory() {
     setState({ kind: 'loading' })
     try {
       const movements = await getHistory(FETCH_LIMIT)
-      // Sound stub (S2.6 real integration).
-      // eslint-disable-next-line no-console
-      console.debug('[sound] layer_dive (history opened)')
       setState({ kind: 'ready', movements })
     } catch (err) {
       const code = err instanceof BankApiError ? err.error_code : 'UNKNOWN'

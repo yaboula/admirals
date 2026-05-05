@@ -15,6 +15,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { tabletEntrance, tabletExit } from '@/lib/motion'
+import { useSfx } from '@/hooks/useSfx'
 
 export interface TabletFrameProps {
   visible: boolean
@@ -22,10 +24,10 @@ export interface TabletFrameProps {
   children: ReactNode
 }
 
-// Easing curve canonical S2.2 — reutilizable en Bridge home / app transitions S2.3+.
-const EASE_SONAR_PREMIUM = [0.2, 0.8, 0.2, 1] as const
-
 export function TabletFrame({ visible, onClose, children }: TabletFrameProps) {
+  const { play } = useSfx()
+
+  // ESC key listener — active only when visible.
   useEffect(() => {
     if (!visible) return
     function onKeyDown(e: KeyboardEvent) {
@@ -37,6 +39,12 @@ export function TabletFrame({ visible, onClose, children }: TabletFrameProps) {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [visible, onClose])
+
+  // panel_open SFX on mount (DC-S2.6.6): fires when visible flips true.
+  useEffect(() => {
+    if (!visible) return
+    play('panel_open')
+  }, [visible, play])
 
   return (
     <AnimatePresence mode="wait">
@@ -55,10 +63,8 @@ export function TabletFrame({ visible, onClose, children }: TabletFrameProps) {
           <motion.div
             key="sonar-tablet-frame"
             className="relative h-[min(86vh,900px)] w-[min(92vw,1400px)] overflow-hidden rounded-2xl border border-sonar-white/10 bg-sonar-black shadow-2xl"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.28, ease: EASE_SONAR_PREMIUM }}
+            {...tabletEntrance}
+            exit={tabletExit.exit}
           >
             {children}
           </motion.div>

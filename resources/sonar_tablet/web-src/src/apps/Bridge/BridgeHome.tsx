@@ -10,10 +10,12 @@
  * Motion: opacity + translate-Y solo (viewSwitchTransition en App.tsx wrapper).
  */
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { APP_CATALOG } from '@/apps/Bridge/appCatalog'
 import type { AppTileDef } from '@/apps/Bridge/appCatalog'
 import { AppTile } from '@/apps/Bridge/AppTile'
 import { useTabletRouter } from '@/hooks/useTabletRouter'
+import { listStagger } from '@/lib/motion'
 
 function formatClock(d: Date): string {
   const hh = String(d.getHours()).padStart(2, '0')
@@ -54,15 +56,23 @@ export default function BridgeHome() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-8 py-8">
-        <div
+        <motion.div
           className="mx-auto grid max-w-5xl grid-cols-4 gap-4"
           role="grid"
           aria-label="SONAR app catalog"
+          variants={listStagger.container}
+          initial="hidden"
+          animate="show"
         >
           {APP_CATALOG.map((def) => (
-            <AppTile key={def.id} def={def} onActivate={handleActivate} />
+            <AppTile
+              key={def.id}
+              def={def}
+              onActivate={handleActivate}
+              variants={listStagger.child}
+            />
           ))}
-        </div>
+        </motion.div>
       </main>
 
       <footer className="border-t border-sonar-white/10 px-8 py-3">

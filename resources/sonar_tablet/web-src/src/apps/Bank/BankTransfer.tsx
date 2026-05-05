@@ -11,6 +11,7 @@
 import { useMemo, useState } from 'react'
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react'
 import { transfer, translateError, uuidv4 } from './bankApi'
+import { useSfx } from '@/hooks/useSfx'
 import {
   BankApiError,
   type BankBalance,
@@ -43,6 +44,7 @@ export interface BankTransferProps {
 }
 
 export default function BankTransfer({ balance, onSuccessBack }: BankTransferProps) {
+  const { play } = useSfx()
   const [toIban, setToIban] = useState('')
   const [amount, setAmount] = useState('')
   const [concept, setConcept] = useState('')
@@ -63,9 +65,6 @@ export default function BankTransfer({ balance, onSuccessBack }: BankTransferPro
     if (!balance || state.kind === 'submitting' || !isValid) return
 
     setState({ kind: 'submitting' })
-    // Sound stub (S2.6 real integration).
-    // eslint-disable-next-line no-console
-    console.debug('[sound] depth_press (transfer submit)')
 
     try {
       const data = await transfer({
@@ -75,6 +74,8 @@ export default function BankTransfer({ balance, onSuccessBack }: BankTransferPro
         concept: concept.slice(0, MAX_CONCEPT),
         request_id: uuidv4(),
       })
+      // depth_press SFX on success — ceremonial confirm class (DC-S2.6.6).
+      play('depth_press')
       setState({ kind: 'success', data })
     } catch (err) {
       const code = err instanceof BankApiError ? err.error_code : 'UNKNOWN'

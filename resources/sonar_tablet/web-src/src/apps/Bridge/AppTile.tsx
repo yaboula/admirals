@@ -11,11 +11,16 @@
  * + alpha-layers sobre esos 3.
  */
 import { memo } from 'react'
+import { motion } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import type { AppTileDef } from '@/apps/Bridge/appCatalog'
+import { useSfx } from '@/hooks/useSfx'
 
 export interface AppTileProps {
   def: AppTileDef
   onActivate: (def: AppTileDef) => void
+  /** Framer Motion variants passed from listStagger parent (BridgeHome). */
+  variants?: Variants
 }
 
 function statusBadgeLabel(status: AppTileDef['status']): string {
@@ -31,24 +36,28 @@ function statusBadgeLabel(status: AppTileDef['status']): string {
   }
 }
 
-function AppTileInner({ def, onActivate }: AppTileProps) {
+function AppTileInner({ def, onActivate, variants }: AppTileProps) {
+  const { play } = useSfx()
   const disabled = def.route === null
   const Icon = def.lucideIcon
   const badge = statusBadgeLabel(def.status)
 
   return (
-    <button
+    <motion.button
       type="button"
+      variants={variants}
       disabled={disabled}
       onClick={() => {
         if (disabled) return
+        // console_tap SFX before dispatch — immediate feedback (DC-S2.6.6).
+        play('console_tap')
         onActivate(def)
       }}
       aria-label={def.label}
       data-tile-id={def.id}
       data-tile-status={def.status}
       className={[
-        'group relative flex aspect-square flex-col items-center justify-center gap-3 rounded-xl',
+        'group relative flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-xl',
         'border border-sonar-white/10 bg-sonar-white/5',
         'outline-none transition-colors duration-150',
         disabled
@@ -75,7 +84,7 @@ function AppTileInner({ def, onActivate }: AppTileProps) {
       >
         {badge}
       </span>
-    </button>
+    </motion.button>
   )
 }
 
