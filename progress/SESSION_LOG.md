@@ -1179,3 +1179,72 @@ Backend Lead transitiona de nuevo a **Standby** post-push. Reactivation triggers
 - Goal: Re-evaluación post-Amendment Round 1 Backend Lead. Verificar parches H001-H006 + M001-M008 aplicados. Ratificar C-SEC-01/02/03 -> SIGNOFF -> LOCKED v1.0.
 - Modelo sugerido: Cascade (continuity)
 - Files in scope: `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` (amended), `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` (amended), `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` (amended), `docs/technical/08_audit_hooks.md` (SEC contracts ratification).
+
+---
+
+### BANK-SEC.1 — Security, Compliance & Audit Lead — Re-audit Amendment Round 1 + Veredicto PASS
+
+- **Fecha:** 2026-05-06
+- **Duración:** ~1h
+- **Founder + Agent:** yaboula + Cascade
+- **Sprint / Phase:** Phase A / BANK-SEC.1
+- **Perfil:** SEC (Security, Compliance & Audit Lead)
+- **Goal:** Re-audit 4 AMEND files DRAFT v0.2 (Backend Lead BANK-BE.AMEND.1) + verificar cierre 6 HIGH + 6 MEDIUM AMEND findings + cross-cutting impacts §4 + emitir veredicto PASS/FAIL + actualizar `08_audit_hooks.md` v0.2.
+- **Status:** ✅ Done — Veredicto **PASS** (Green-Light LOCK v1.0.1 R1)
+
+#### Outcomes
+
+- ✅ Re-audit H001 (`AMEND-C-BE-02` §1) — auth helpers canonical lib + AP-AUTH-1 prohibido. ✅ RESOLVED.
+- ✅ Re-audit H002 (`AMEND-C-BE-04` §1) — triple-path auth gate Transition + opts.caller_source mandatory + whitelist + audit hook. ✅ RESOLVED.
+- ✅ Re-audit H003 (`AMEND-C-BE-04` §2) — triple-defense sentinel (closure-upvalue + GlobalState replicated=false + SHA256 checksum) + probe fn monitoring. ✅ RESOLVED.
+- ✅ Re-audit H004 (`AMEND-C-BE-04` §3) — prepared statements posicionales `?` en lectura IN + UPDATE CASE WHEN THEN. Zero concat user data. ✅ RESOLVED.
+- ✅ Re-audit H005 (`AMEND-C-BE-03` §1) — guard `release_amount > 0` + `escrow_amount > 0` / `remaining_balance > 0` en 3 transitions. ✅ RESOLVED.
+- ✅ Re-audit H006 (`AMEND-C-BE-02` §2) — audit shape completa C038 con `previous_flag_snapshot` + `cross_ref_audit_id` double-entry forensics. ✅ RESOLVED.
+- ✅ Re-audit M002 (`AMEND-C-BE-02` §3 + `AMEND-C-BE-04` §4) — multi-entropy PRNG mix SHA256 → RFC 4122 v4. ✅ RESOLVED.
+- ✅ Re-audit M003 (`AMEND-C-BE-02` §4) — dual rate-limit recursive guard 1/min citizen + 10/min global + bypass single-row. ✅ RESOLVED.
+- ✅ Re-audit M004 (`AMEND-C-BE-05` §1) — CP1-A→CP1-B architectural migration founder APPROVED. Owner-only NetEvent + publish_balance_update helper + playerJoining lazy + cross-cutting impacts documentados. ✅ RESOLVED ARCHITECTURAL.
+- ✅ Re-audit M005 (`AMEND-C-BE-03` §2) — `locked` TTL 10min + cron `PurgeOrphans()` 5min + `orphan_purged` state + audit entry. ✅ RESOLVED.
+- ✅ Re-audit M006 (`AMEND-C-BE-02` §5) — convar-only HMAC secret + boot validation >=64 hex + `defensive_abort`. ✅ RESOLVED.
+- ✅ Re-audit M007 (`AMEND-C-BE-04` §5) — watchdog metric C thresholds canónicos (HEALTHY/DEGRADED/COMPROMISED/INSUFFICIENT) + counter integration + transition auth gate H002. ✅ RESOLVED.
+- ✅ Re-audit M008 (`AMEND-C-BE-04` §6) — escape `|` → `\|` + terminal sentinel `|END` + regex anclado `$` + UUID shape validation. ✅ RESOLVED.
+- ✅ Advisories ratificados: M001 ACCEPTED Phase A as-is + L001/L002 DEFERRED Phase B. ✅ Acknowledged.
+- ✅ **Ningún new finding** post-amendment — patches quirúrgicos no introducen superficies de ataque adicionales.
+- ✅ `08_audit_hooks.md` actualizado v0.2 RE-AUDIT (§8 findings closure + veredicto PASS + Green-Light LOCK v1.0.1 R1).
+
+#### Done criteria
+
+- [x] Re-audit 6 HIGH findings ✅ 6/6 RESOLVED PENDING-LOCK.
+- [x] Re-audit 6 MEDIUM AMEND findings (M002-M008 incl. M004 architectural) ✅ 6/6 RESOLVED.
+- [x] Cross-cutting impacts §4 validación ✅ C-BE-01 (+3 events), C-BE-02 (~15 callbacks + C001b), C-BE-04 (reconciliation emit refactor) — bien documentados, aplicación atómica posible.
+- [x] Veredicto formal emitido ✅ **PASS** — Green-Light otorgado para LOCK v1.0.1 R1.
+- [x] `08_audit_hooks.md` v0.2 actualizado ✅ evidencia §8 closure + version bump.
+
+#### Anti-tech-debt verification
+
+- [x] All commitments respected.
+- [x] NO edits a contratos LOCKED upstream (Separation of Duties — patches en AMEND files only).
+- [x] Idiomas docs ES + code EN estricto.
+- [x] Cross-references AMEND files citadas con `@path:LINE`.
+- [x] Sin scope creep cross-team.
+
+#### Files in scope respetados
+
+- ✅ NO toco: contratos LOCKED upstream C-BE-01..05 v1.0, schema DB v2.0, SSoTs canonical padre v1.3.
+- ✅ Modificados: `docs/technical/08_audit_hooks.md` (append §8 closure + version bump v0.2).
+- ✅ Referenciados: `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-02-r1-v0.2.md`, `AMEND-C-BE-03-r1-v0.2.md`, `AMEND-C-BE-04-r1-v0.2.md`, `AMEND-C-BE-05-r1-v0.2.md`, `README.md`.
+
+#### Pendientes próximos
+
+1. **Founder green-light LOCK v1.0.1 R1** → Backend Lead BANK-BE.LOCK.R1 reactivation (apply patches in-place atomic + cross-cutting edits + version bump).
+2. **Backend Lead BANK-BE.LOCK.R1** — aplicar 4 AMEND files a `docs/technical/bank_phase_a/` + cross-cutting C-BE-01/02/04 edits + bump v1.0 → v1.0.1 R1 LOCKED.
+3. **H2 sign_off.md** update Security Lead acceptance final.
+4. **H3 emission** Security → Frontend Lead (C-SEC-01/02/03 LOCKED v1.0 + C-BE-01..05 v1.0.1 R1 LOCKED).
+5. **DevOps Lead H4 runbook** — 4 convars obligation (M001 `sv_maxRateLimitResetGraceSeconds`, M006 `sonar_bank_atm_hmac_secret`, M007 `sonar_bank_watchdog_compromise_ratio_threshold` + `sonar_bank_watchdog_min_sample_size`, H002 `sonar_status_transition_whitelist`).
+6. **Phase B targets** — KVP persistence rate-limit (M001), FFI native crypto UUID (M002), EventSchema.validate gate (L001), persistent admin event queue (L002), dual-secret HMAC rotation (M006).
+
+#### Próxima sesión sugerida
+
+- Session ID: BANK-SEC.LOCK.R1 (o BANK-BE.LOCK.R1 Backend Lead)
+- Goal: LOCK promotion v1.0.1 R1 + H3 handoff ceremony Security → Frontend Lead.
+- Modelo sugerido: Cascade (continuity)
+- Files in scope: `docs/technical/bank_phase_a/` (5 contratos in-place patches), `docs/agents/teams/handoffs/h3_security_to_frontend/` (H3 package).

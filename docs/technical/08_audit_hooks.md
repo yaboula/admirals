@@ -336,7 +336,60 @@ Code review obligatorio pre-merge para Frontend + Backend Leads:
 | Version | Fecha | Cambios |
 |---|---|---|
 | v0.1 DRAFT | 2026-05-06 | BANK-SEC.0. C-SEC-01/02/03 + 6 HIGH + 8 MEDIUM + 2 LOW findings + exploit checklist + watchdog spec. |
+| v0.2 RE-AUDIT | 2026-05-06 | BANK-SEC.1. Re-audit Amendment Round 1 DRAFT v0.2 (Backend Lead BANK-BE.AMEND.1). 6 HIGH + 6 MEDIUM AMEND findings RESOLVED. M004 APPROVED architectural. M001 + L001 + L002 ratified. Veredicto PASS — Green-Light LOCK v1.0.1 R1. |
 
 ---
 
-FIN C-SEC-01/02/03 v0.1 DRAFT
+## 8. Re-audit findings closure — BANK-SEC.1
+
+> **Session:** BANK-SEC.1 — Security Lead re-audit Backend Lead Amendment Round 1 (BANK-BE.AMEND.1).
+> **Date:** 2026-05-06.
+> **Source package:** `docs/agents/teams/amendments/be_phase_a_r1/` (4 AMEND files + README).
+> **Veredicto:** ✅ **PASS** — Green-Light para LOCK v1.0.1 R1.
+
+### 8.1 HIGH findings — RESOLVED PENDING-LOCK
+
+| ID | Contrato | Patch ref | Veredicto | Notas Security Lead |
+|---|---|---|---|---|
+| **H001** | C-BE-02 | `AMEND-C-BE-02-r1-v0.2.md` §1 | ✅ RESOLVED | Auth helpers canonical lib (`sonar_bridges/lib/auth_helpers.lua`) con `resolve_citizen(source)` type-safe + nil-safe. Anti-pattern AP-AUTH-1 prohibido explícito. Notational disclaimer §2.3.2 elimina ambigüedad `source.citizen_id`. Boilperplate refactor a helper invocations. No residual bypass surface. |
+| **H002** | C-BE-04 | `AMEND-C-BE-04-r1-v0.2.md` §1 | ✅ RESOLVED | Triple-path auth gate (`internal_call`+whitelist, `source=0` console, P12 ACE) con `opts.caller_source` mandatory. Unauthorized attempts loggean + audit hook. `GetInvokingResource()` whitelist contra convar `sonar_status_transition_whitelist`. DoS surface cerrada. |
+| **H003** | C-BE-04 | `AMEND-C-BE-04-r1-v0.2.md` §2 | ✅ RESOLVED | Triple-defense robusta: (1) closure-local upvalue invisible externo, (2) `GlobalState` server-only `replicated=false`, (3) SHA256 checksum bytecode `string.dump`. Probe fn `_G._sonar_core_override_probe` monitoreada — su delección dispara `compromised_load_order`. `QBCore.__sonar_patched` eliminado por completo. Resistente a reasignación, wrapper injection y attribute nil-ization. |
+| **H004** | C-BE-04 | `AMEND-C-BE-04-r1-v0.2.md` §3 | ✅ RESOLVED | Prepared statements posicionales `?` en lectura (`IN (?)`) y UPDATE (`CASE WHEN ? THEN ? END`). Zero concatenación de datos usuario en string SQL. oxmysql driver sanitiza bindings. Anti-pattern AP-SQL-1 documentado. Inyección cerrada. |
+| **H005** | C-BE-03 | `AMEND-C-BE-03-r1-v0.2.md` §1 | ✅ RESOLVED | Guard `release_amount > 0` añadido a 3 transitions escrow + `escrow_amount > 0` / `remaining_balance > 0` defensive. Callback C010 valida positividad pre-FSM. Previene zero-value movement spam, audit noise y token bucket drainage attack. |
+| **H006** | C-BE-02 | `AMEND-C-BE-02-r1-v0.2.md` §2 | ✅ RESOLVED | Audit shape completa: `flag_id`, `resolver_id`, `resolution`, `resolution_notes`, `resolved_at`, `previous_flag_snapshot` (JSON pre-update row), `source_resource`. Doble-entry forensics con `cross_ref_audit_id` admin_force_action cross-reference. Atomic transaction UPDATE+INSERT. |
+
+### 8.2 MEDIUM AMEND findings — RESOLVED PENDING-LOCK
+
+| ID | Contrato | Patch ref | Veredicto | Notas Security Lead |
+|---|---|---|---|---|
+| **M002** | C-BE-02 / C-BE-04 | `AMEND-C-BE-02-r1-v0.2.md` §3 + `AMEND-C-BE-04-r1-v0.2.md` §4 | ✅ RESOLVED | Multi-entropy PRNG mix: `os.clock()` + `GetGameTimer()` + `os.time()*1000` + `math.random` re-seed per-call + optional `GetPlayerPing(source)`. SHA256 blob → RFC 4122 v4 format. 122-bit target entropy. Phase A acceptable; Phase B target FFI crypto. 1M collision test + concurrency test propuestos. |
+| **M003** | C-BE-02 | `AMEND-C-BE-02-r1-v0.2.md` §4 | ✅ RESOLVED | Dual rate-limit: standard token bucket + recursive guard independiente. 1 query/min per citizen + 10/min global. Bypass exception single-row `scope='self'` drill-down. `AUDIT_QUERY_THROTTLED` con `retry_after_ms`. Audit hook generado en reject. DoS recursivo cerrado. |
+| **M004** ⚠️ | C-BE-05 (+ cross-cutting) | `AMEND-C-BE-05-r1-v0.2.md` §1 | ✅ RESOLVED ARCHITECTURAL | CP1-A → CP1-B migration: `bank.balance.<cid>` + `bank.savings.<cid>` eliminados de GlobalState. `TriggerLatentClientEvent` owner-only con ownership check server-side. `publish_balance_update()` helper defensive. `playerJoining` lazy publish. Bandwidth O(N²)→O(1). Admin audit vía evento separado P11. Cross-cutting impacts documentados (C-BE-01 +3 events, C-BE-02 ~15 callbacks refactor + C001b, C-BE-04 reconciliation emit refactor). Founder APPROVED 2026-05-06. |
+| **M005** | C-BE-03 | `AMEND-C-BE-03-r1-v0.2.md` §2 | ✅ RESOLVED | `locked` TTL 10min vía columna `ttl_expires_at` reutilizada (zero migration). Cron `PurgeOrphans()` 5min. Estado `orphan_purged` transitorio. Audit entry `idempotency_key_orphan_purged` per row. Reuse post-purge vía `INSERT IGNORE`. DB Lead consultative confirmed column reuse OK. |
+| **M006** | C-BE-02 | `AMEND-C-BE-02-r1-v0.2.md` §5 | ✅ RESOLVED | Convar exclusiva `sonar_bank_atm_hmac_secret` en `server.cfg` (nunca repo/git/logs). Boot valida `#secret >= 64` o `defensive_abort`. Generación `openssl rand -hex 32`. Rotation manual on-demand. Phase B dual-secret window deferred. DevOps Lead H4 runbook obligation documentada. |
+| **M007** | C-BE-04 | `AMEND-C-BE-04-r1-v0.2.md` §5 | ✅ RESOLVED | Thresholds canónicos C-SEC-03 §6.2 implementados: HEALTHY ≥0.7, DEGRADED 0.1-0.7, COMPROMISED <0.1 con `emitted >= 50`, INSUFFICIENT_SAMPLE skip. Contadores instrumentados en `MutexEcho.encode/extract`. Transición a `compromised_load_order` con auth gate H002. Convars configurables. |
+| **M008** | C-BE-04 | `AMEND-C-BE-04-r1-v0.2.md` §6 | ✅ RESOLVED | Escape `|` → `\|` en `reason_string`. Terminal sentinel `|END` + regex anclado `$` extrae ÚLTIMO marker. Validación UUID shape pre-encode. Falsos positivos/negativos eliminados. Round-trip property test propuesto. |
+
+### 8.3 Advisories ratificados — no re-audit required
+
+| ID | Contrato | Decision founder 2026-05-06 | Status |
+|---|---|---|---|
+| **M001** | C-BE-02 | ACCEPTED Phase A as-is + convar `sv_maxRateLimitResetGraceSeconds=300` | ✅ Ratified. DevOps H4 runbook obligation. Phase B KVP persistence target. |
+| **L001** | C-BE-01 | DEFERRED Phase B | ✅ Ratified. Phase B `EventSchema.validate` gate. |
+| **L002** | C-BE-01 | DEFERRED Phase B | ✅ Ratified. Phase B persistent admin event queue. |
+
+### 8.4 New findings post-amendment
+
+**Ninguno.** Re-audit adversarial exhaustivo de 4 AMEND files (1515+ líneas) + cross-cutting impacts §4 no reveló vulnerabilidades nuevas ni parches incompletos. Patches quirúrgicos son mínimos, bien delimitados y no introducen superficies de ataque adicionales.
+
+### 8.5 Recommendation Security Lead
+
+> **Emito dictamen PASS formal.** Los 6 hallazgos HIGH están cerrados con parches robustos y probables de implementación correcta. Los 6 MEDIUM AMEND (incluido M004 arquitectónico founder-approved) satisfacen las recomendaciones originales. Cross-cutting impacts están correctamente documentados para aplicación atómica en LOCK v1.0.1 R1.
+>
+> **Green-Light otorgado** para que el Backend Lead aplique patches in-place a `docs/technical/bank_phase_a/` + cross-cutting edits + version bump v1.0.1 R1 LOCKED.
+>
+> **Condición LOCK:** Todos los test scenarios T-AMEND-*.X deben ejecutarse y PASS durante implementación Phase A code (pre-merge CI). Static lint rules propuestas (AP-AUTH-1, AP-UUID-1, AP-SQL-1, AP-HMAC-1, AP-CP1-1) deben integrarse en runbook DevOps Lead H4.
+
+---
+
+FIN C-SEC-01/02/03 v0.2 RE-AUDIT — PASS — Green-Light LOCK v1.0.1 R1
