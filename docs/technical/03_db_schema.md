@@ -1,13 +1,115 @@
 # 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `sonar_*` (pre-migration-009 legacy)
 
-> **Versión:** 1.2 (post Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical post S1.10.x). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). Table prefix `sonar_*` scheduled rename `sonar_*` Phase 9 migration 009 per ADR-013.
+> **Versión:** 1.3 DRAFT v0.1 (Bank Phase A extends — DB Lead authoring) post v1.2 LOCKED (S1.10.x Phase 8+9 namespace migration). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). v1.3 añade **Bank-domain Phase A extends** (audit ledger inmutable + compliance flags + status FSM + tax + government elections + Tier 4 features + empresas extends + idempotency keys + benchmarks).
+> **Engine canonical (Q-DB-A LOCKED 2026-05-06):** **MariaDB 12.x primary** + MySQL 8 best-effort compat. Adaptación features MariaDB-specific (CHECK constraint workarounds + INT UNSIGNED `ON UPDATE` MariaDB-illegal + system-versioned tables descartado audit ledger).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
 > **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
-> **ADRs relacionados:** ADR-010 (hybrid audit_log) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)**.
-> **Estado:** firmado.
+> **ADRs relacionados:** ADR-010 (hybrid audit_log) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)** + **ADR-018 🟡 proposed (Bank Lite mode hybrid 3-layer + cut ESX legacy + 8 CP integrated)**.
+> **Estado v1.2:** firmado (S1.10.x). **Estado v1.3:** 🟡 DRAFT v0.1 — DB Lead authoring post founder Q-DB-A→J green-light 2026-05-06. Sign-off triple pendiente (founder + DB Lead + Backend Lead consumer + Security Lead consumer).
 
-> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.5, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled).
+> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.6, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled), **`docs/agents/teams/01_SHARED_BRIEF.md`** v1.0 (Q1-Q16 + CP1-CP8 founder decisions), **`docs/agents/teams/slices/slice_database.md`** v1.0 (DB cherry-pick blueprint), **`docs/agents/teams/issues/issue_001_sonar_companies_pending.md`** (FK deferred Q-DB-E).
+
+---
+
+## 0.1 Changelog v1.2 → v1.3 DRAFT v0.1 (Bank Phase A extends)
+
+> **DB Lead authoring 2026-05-06.** Founder green-light Q-DB-A → Q-DB-J recibido. Esta DRAFT v0.1 entrega el núcleo crítico que desbloquea handoffs H1 (Backend Lead) + H2 (Security Lead). Iteraciones v0.2+ completarán scope total previo a LOCKED v1.0.
+
+### Decisiones founder vinculantes (sesión BANK-DB.0 — 2026-05-06)
+
+| Q | Resolución | Impact schema |
+|---|---|---|
+| **Q-DB-A** | Engine **MariaDB 12.x primary** lock. MySQL 8 best-effort compat. | DDL adaptado primitives MariaDB. Descartar `INVISIBLE INDEX` MySQL-only. CHECK multi-col `IS NULL` → app-layer (parser bug 12.2.2). |
+| **Q-DB-B** | **DECIMAL(14,2) fiat** (consistency migrations 003+006). **BIGINT UNSIGNED `raw_amount` + TINYINT UNSIGNED `decimals`** crypto-only. | Money columns Phase A en DECIMAL excepto `sonar_bank_crypto_wallets`. |
+| **Q-DB-C** | Path canonical migrations: `resources/sonar_core/migrations/010_*.sql` y siguientes. | Migrations DDL bajo `resources/sonar_core/migrations/`. |
+| **Q-DB-D** | `sonar_bank_accounts` ENUM **refactor 2-col** (`owner_type` + `account_class`). Normalización. | Migration 010 ALTER TABLE separa columns. |
+| **Q-DB-E** | **Opción 2** — `company_id CHAR(36)` opaque sin FK enforced. Issue #001 backend handoff. | Columnas `company_id` sin `FOREIGN KEY` constraint Phase A. |
+| **Q-DB-F** | Audit ledger **3-tier defense-in-depth**: triggers SIGNAL + role REVOKE UPDATE/DELETE + app-layer enforcer. SysVer descartado. | Triggers `BEFORE UPDATE/DELETE` SIGNAL SQLSTATE '45000' obligatorios. |
+| **Q-DB-G** | Particiones `sonar_bank_movements` extend hasta **Dic 2027** scope DB Phase A. | Migration 013 REORGANIZE PARTITION + 32 partitions mensuales 2026-09 → 2027-12. |
+| **Q-DB-H** | Privacy votes **dual-layer** — voto público hasheado + tabla auditoría cruda admin-only. | `sonar_govt_votes` (hash) + `sonar_govt_votes_audit` (raw, ACE `sonar.bank.govt.audit.full`). |
+| **Q-DB-I** | Stocks **híbrido** event-sourced + materialized snapshot on-trade. | `sonar_bank_stocks_transactions` (immutable append-only) + `sonar_bank_stocks_holdings` (materialized snapshot refresh on-trade). |
+| **Q-DB-J** | `sonar_bank_status` **single row global per-server** (CP8 FSM). | Tabla `sonar_bank_status` con PK fijo `id=1` + state ENUM 4 valores. |
+
+### Cuestionamientos preservados (Deviation from blueprint blocks — §29)
+
+Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + impact downstream para cada Q-DB-* divergencia con blueprint v1.2 — ver §29 (NEW Phase A).
+
+### Tablas NEW Bank Phase A
+
+| Sección | Tabla | Owner | Status DRAFT v0.1 |
+|---|---|---|---|
+| §22 | `sonar_bank_audit_ledger` (PARTITIONED RANGE month) | DB Lead | ✅ DRAFT v0.1 |
+| §22 | `sonar_bank_compliance_flags` | DB Lead | ✅ DRAFT v0.1 |
+| §23 | `sonar_bank_status` | DB Lead | ✅ DRAFT v0.1 |
+| §24 | `sonar_bank_tax_brackets` | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_bank_tax_history` | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_bank_subsidies` | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_govt_elections` | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_govt_election_candidates` | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_govt_votes` (hashed) | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_govt_votes_audit` (raw admin-only) | DB Lead | 🟡 Pending v0.2 |
+| §25 | `sonar_bank_loans` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_credit_scores` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_crypto_wallets` (BIGINT atomic) | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_stocks_transactions` (event-sourced) | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_stocks_holdings` (materialized) | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_recurring_payments` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_atm_minigame_attempts` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_physical_cards` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_loyalty_points` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_round_ups` | DB Lead | 🟡 Pending v0.3 |
+| §26 | `sonar_bank_business_treasuries` | DB Lead | 🟡 Pending v0.3 |
+| §26 | `sonar_bank_escrow_releases` (escrow partial release log) | DB Lead | 🟡 Pending v0.3 |
+| §27 | `sonar_bank_idempotency_keys` | DB Lead | 🟡 Pending v0.3 |
+
+### Tablas existing extends Bank Phase A
+
+| Tabla existing | Cambio | Migration | Status DRAFT v0.1 |
+|---|---|---|---|
+| `sonar_bank_accounts` | ALTER ENUM `type` → split `owner_type` + `account_class` (Q-DB-D) | 014 v0.2 | 🟡 Pending v0.2 |
+| `sonar_bank_accounts` | ADD `last_reconciled_at INT UNSIGNED NULL` (CP3 trust window) | 014 v0.2 | 🟡 Pending v0.2 |
+| `sonar_bank_movements` | ALTER ENUM `category` add `'tax_subsidy'`, `'loan_disbursement'`, `'loan_repayment'`, `'crypto_buy'`, `'crypto_sell'`, `'stock_buy'`, `'stock_sell'`, `'recurring_charge'`, `'round_up'`, `'loyalty_redeem'`, `'compliance_freeze'` | 015 v0.2 | 🟡 Pending v0.2 |
+| `sonar_bank_movements` | REORGANIZE PARTITIONS extend Sep 2026 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
+| `sonar_bank_audit_ledger` | REORGANIZE PARTITIONS extend Jan 2027 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
+| `sonar_escrows` | ADD `release_log_count TINYINT UNSIGNED NOT NULL DEFAULT 0` (FSM 6-states extends Q12) | 0NN v0.3 | 🟡 Pending v0.3 |
+
+### Migrations files DRAFT v0.1 (BANK-DB.1)
+
+| Archivo | Descripción | Status |
+|---|---|---|
+| `010_bank_audit_ledger.sql` | Tabla audit ledger inmutable + triggers SIGNAL + partitions May-Dec 2026 | ✅ DRAFT v0.1 |
+| `011_bank_compliance_flags.sql` | Tabla compliance flags + 5 patterns autoraise canonical Q10 | ✅ DRAFT v0.1 |
+| `012_bank_status_fsm.sql` | Tabla status FSM single-row global + trigger single-row + seed inicial | ✅ DRAFT v0.1 |
+| `013_bank_movements_partitions_extend.sql` | REORGANIZE partitions movements + audit_ledger hasta Dec 2027 (Q-DB-G) | ✅ DRAFT v0.1 |
+| `014_bank_accounts_owner_type_split.sql` | ALTER bank_accounts split owner_type + account_class (Q-DB-D) | 🟡 v0.2 |
+| `015_bank_movements_category_extend.sql` | ALTER movements ENUM category add 11 nuevos valores | 🟡 v0.2 |
+| `016_tax_brackets_history_subsidies.sql` | Tax tablas (brackets editable + history + subsidies) | 🟡 v0.2 |
+| `017_govt_elections_candidates_votes.sql` | Government tablas (elections FSM + candidates + votes hashed + votes_audit raw) | 🟡 v0.2 |
+| `018_bank_loans_credit_scores.sql` | Tier 4 — loans FSM + credit scores | 🟡 v0.3 |
+| `019_bank_crypto_wallets.sql` | Tier 4 — crypto wallets BIGINT atomic + decimals | 🟡 v0.3 |
+| `020_bank_stocks_holdings_transactions.sql` | Tier 4 — stocks event-sourced + materialized hybrid Q-DB-I | 🟡 v0.3 |
+| `021_bank_recurring_payments.sql` | Tier 4 — recurring/subscriptions | 🟡 v0.3 |
+| `022_bank_atm_minigame_attempts.sql` | Tier 4 — ATM minigame log | 🟡 v0.3 |
+| `023_bank_physical_cards.sql` | Tier 4 — physical card tokens | 🟡 v0.3 |
+| `024_bank_loyalty_points.sql` | Tier 4 — loyalty program | 🟡 v0.3 |
+| `025_bank_round_ups.sql` | Tier 4 — round-up savings | 🟡 v0.3 |
+| `026_bank_business_treasuries.sql` | Empresas extends — business treasuries multi-signer | 🟡 v0.3 |
+| `027_bank_escrow_releases.sql` | Escrow partial release log (FSM 6-states extends) | 🟡 v0.3 |
+| `028_bank_idempotency_keys.sql` | Idempotency keys table + TTL cron cleanup hint | 🟡 v0.3 |
+
+### Drift corrections SSoT v1.1 → v1.2
+
+| Sección | Drift v1.1 | Realidad migrations | Resolución v1.2 |
+|---|---|---|---|
+| §1.1 D3 | `utf8mb4_0900_ai_ci` | `utf8mb4_unicode_ci` (003 D1) | ✅ v1.2 corrige a `utf8mb4_unicode_ci` MariaDB-compat |
+| §1.4 | `updated_at ON UPDATE (UNIX_TIMESTAMP())` | App-managed (003 D2 — MariaDB-illegal INT UNSIGNED) | ✅ v1.2 documenta app-managed pattern |
+| §1.6 | CHECK XOR multi-col enforced | App-layer enforcement (003 D4 + 006 D1 — MariaDB 12.2.2 parser bug) | ✅ v1.2 documenta app-layer pattern |
+| §4.1 | CHECK XOR personal/company/cooperative/escrow active DDL | Active DDL pero comentado (006 línea 112-117) | ✅ v1.2 declara explicit comment app-layer enforced |
+| §4.2 | Particiones `p_2026_01..03` (Feb-Apr 2026) | Refrescado migration 003 D5 a `p_2026_05..08` + `p_future` | ✅ v1.2 sincroniza partitions reales + extends Dec 2027 (Q-DB-G) |
+| §4.1 | FK `owner_company_id → sonar_companies(id)` declarada | DEFERRED (003 D3) — `sonar_companies` no existe | ✅ v1.2 documenta DEFERRED + issue #001 |
+
+---
 
 ---
 
@@ -2337,6 +2439,452 @@ Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admir
 
 ---
 
+## 22. Bank Phase A — Audit ledger inmutable + Compliance flags (NEW v1.3 DRAFT v0.1)
+
+> **Status:** ✅ DRAFT v0.1 — DB Lead authoring 2026-05-06. Pending sign-off founder + Backend Lead consumer + Security Lead consumer.
+>
+> **Migrations:** `010_bank_audit_ledger.sql` + `011_bank_compliance_flags.sql`.
+
+### 22.1 sonar_bank_audit_ledger (PARTITIONED RANGE month)
+
+> **Audit ledger append-only inmutable.** Cada operación Bank-domain registrada con tier-1 defense-in-depth via triggers SIGNAL.
+
+```sql
+CREATE TABLE sonar_bank_audit_ledger (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  ts                    INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()) COMMENT 'partition key',
+
+  event_type            VARCHAR(64)     NOT NULL COMMENT 'canonical event taxonomy',
+  severity              ENUM('info','notice','warning','critical') NOT NULL DEFAULT 'info',
+
+  bank_account_iban     VARCHAR(20)     NULL COMMENT 'snapshot IBAN',
+  counterpart_iban      VARCHAR(20)     NULL,
+
+  actor_account_id      CHAR(36)        NULL,
+  actor_role            ENUM('citizen','company','government','admin','system','watchdog') NOT NULL DEFAULT 'system',
+
+  amount_delta          DECIMAL(14,2)   NULL,
+  balance_after         DECIMAL(14,2)   NULL,
+
+  correlation_id        CHAR(36)        NULL COMMENT 'Backend mutex CP2',
+  request_nonce         CHAR(36)        NULL,
+
+  related_movement_id   BIGINT UNSIGNED NULL,
+  related_escrow_id     CHAR(36)        NULL,
+  related_loan_id       CHAR(36)        NULL,
+  related_compliance_flag_id BIGINT UNSIGNED NULL,
+
+  context_data          JSON            NULL COMMENT 'metadata flexible per event_type',
+
+  source_resource       VARCHAR(64)     NOT NULL DEFAULT 'sonar_bank',
+  server_id             VARCHAR(32)     NULL,
+
+  PRIMARY KEY (id, ts),
+  KEY idx_sonar_bank_audit_ledger_iban_ts (bank_account_iban, ts DESC),
+  KEY idx_sonar_bank_audit_ledger_actor_ts (actor_account_id, ts DESC),
+  KEY idx_sonar_bank_audit_ledger_event_ts (event_type, ts DESC),
+  KEY idx_sonar_bank_audit_ledger_severity_ts (severity, ts DESC),
+  KEY idx_sonar_bank_audit_ledger_correlation (correlation_id),
+  KEY idx_sonar_bank_audit_ledger_movement (related_movement_id),
+  KEY idx_sonar_bank_audit_ledger_escrow (related_escrow_id),
+  KEY idx_sonar_bank_audit_ledger_loan (related_loan_id),
+  KEY idx_sonar_bank_audit_ledger_flag (related_compliance_flag_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  PARTITION BY RANGE (ts) (
+    PARTITION p_2026_05 VALUES LESS THAN (1748736000),
+    PARTITION p_2026_06 VALUES LESS THAN (1751328000),
+    PARTITION p_2026_07 VALUES LESS THAN (1754006400),
+    PARTITION p_2026_08 VALUES LESS THAN (1756684800),
+    PARTITION p_2026_09 VALUES LESS THAN (1759276800),
+    PARTITION p_2026_10 VALUES LESS THAN (1761955200),
+    PARTITION p_2026_11 VALUES LESS THAN (1764547200),
+    PARTITION p_2026_12 VALUES LESS THAN (1767225600),
+    -- ... extends Jan 2027 → Dec 2027 via migration 013 (Q-DB-G)
+    PARTITION p_future  VALUES LESS THAN MAXVALUE
+  );
+```
+
+**Triggers SIGNAL append-only enforcement (Q-DB-F tier 1):**
+
+```sql
+CREATE TRIGGER trg_sonar_bank_audit_ledger_no_update
+  BEFORE UPDATE ON sonar_bank_audit_ledger FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_bank_audit_ledger is append-only — UPDATE rejected';
+END;
+
+CREATE TRIGGER trg_sonar_bank_audit_ledger_no_delete
+  BEFORE DELETE ON sonar_bank_audit_ledger FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_bank_audit_ledger is append-only — DELETE rejected';
+END;
+```
+
+**Notas:**
+
+- **3-tier defense-in-depth** (Q-DB-F LOCKED 2026-05-06):
+  - Tier 1 — Triggers SIGNAL `BEFORE UPDATE/DELETE` (this migration).
+  - Tier 2 — `REVOKE UPDATE, DELETE ON sonar_bank_audit_ledger FROM 'sonar_bank_app_user'` (DevOps Lead post-H4).
+  - Tier 3 — App-level `BankAuditLedger.Append(payload)` lib only exposes INSERT (Backend Lead post-H1).
+- **System-versioned tables descartado** (Q-DB-F) — semántica wrong (SysVer permite UPDATE versionado, no rechaza).
+- **Particionamiento mensual** RANGE `ts` — pruning automático queries Government Console scope "Todas" + audit retention legal.
+- **Cron rolling forward** DevOps Lead post-H4 (per §17.2) — extiende partitions cuando se acercan p_future.
+- **No FK** a `sonar_bank_accounts.id` — IBAN snapshot porque cuenta puede cerrarse y audit debe sobrevivir.
+- **`actor_account_id`** sí FK ON DELETE SET NULL — auditor legal trail preservado aunque citizen account se borre.
+- **`context_data`** JSON column — schema per `event_type` documentado en `docs/technical/08_audit_hooks.md` (Security Lead C-SEC-01 post-H2).
+
+### 22.2 sonar_bank_compliance_flags
+
+> **Autoraise patterns canonical Q10 LOCKED 2026-05-06.** 5 patterns: structuring, large_transfer, late_tax, velocity, new_account_large_deposit.
+
+```sql
+CREATE TABLE sonar_bank_compliance_flags (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+  flag_type             ENUM('structuring','large_transfer','late_tax','velocity','new_account_large_deposit') NOT NULL,
+  severity              ENUM('info','notice','warning','critical') NOT NULL DEFAULT 'warning',
+  status                ENUM('open','investigating','resolved','false_positive') NOT NULL DEFAULT 'open',
+
+  citizen_account_id    CHAR(36)        NOT NULL,
+  bank_account_id       CHAR(36)        NULL,
+  company_id            CHAR(36)        NULL COMMENT 'FK sonar_companies(id) DEFERRED — issue #001',
+
+  raised_by             ENUM('system','admin','watchdog') NOT NULL DEFAULT 'system',
+  raised_by_account_id  CHAR(36)        NULL,
+
+  threshold_value       DECIMAL(14,2)   NULL,
+  observed_value        DECIMAL(14,2)   NULL,
+  time_window_seconds   INT UNSIGNED    NULL,
+
+  evidence              JSON            NULL,
+  related_movement_ids  JSON            NULL,
+
+  resolved_by_account_id CHAR(36)       NULL,
+  action_taken          VARCHAR(255)    NULL,
+  resolution_note       TEXT            NULL,
+
+  raised_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  resolved_at           INT UNSIGNED    NULL,
+
+  PRIMARY KEY (id),
+  KEY idx_sonar_bank_compliance_flags_citizen_status_raised (citizen_account_id, status, raised_at DESC),
+  KEY idx_sonar_bank_compliance_flags_bank_account (bank_account_id),
+  KEY idx_sonar_bank_compliance_flags_company (company_id),
+  KEY idx_sonar_bank_compliance_flags_type_raised (flag_type, raised_at DESC),
+  KEY idx_sonar_bank_compliance_flags_severity_status (severity, status),
+  KEY idx_sonar_bank_compliance_flags_raised_by (raised_by, raised_by_account_id),
+
+  CONSTRAINT fk_sonar_bank_compliance_flags_citizen
+    FOREIGN KEY (citizen_account_id) REFERENCES sonar_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_bank_compliance_flags_bank_account
+    FOREIGN KEY (bank_account_id) REFERENCES sonar_bank_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_bank_compliance_flags_resolved_by
+    FOREIGN KEY (resolved_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+  CONSTRAINT chk_sonar_bank_compliance_flags_threshold_sane CHECK (threshold_value IS NULL OR threshold_value >= 0),
+  CONSTRAINT chk_sonar_bank_compliance_flags_observed_sane CHECK (observed_value IS NULL OR observed_value >= 0),
+  CONSTRAINT chk_sonar_bank_compliance_flags_resolved_consistency CHECK (
+    (status IN ('open','investigating') AND resolved_at IS NULL AND resolved_by_account_id IS NULL)
+    OR (status IN ('resolved','false_positive') AND resolved_at IS NOT NULL)
+  )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Notas:**
+
+- **5 patterns canonical Q10** — NO incluir `unusual_destination_foreign_prefix` (Q8 multidivisa OFF — single currency).
+- **`evidence` JSON** — payload flexible per `flag_type`, schema documentado per pattern en `docs/technical/08_audit_hooks.md` (Security Lead C-SEC-03).
+- **Status FSM 4-state**: `open` → `investigating` → `resolved` | `false_positive`. CHECK enforces `resolved_at` consistency.
+- **`company_id`** sin FK enforced (Q-DB-E DEFERRED — issue #001). Backend Lead post-H1 valida `Companies.exists()` app-layer.
+
+### 22.3 Queries hot path §22
+
+```sql
+-- Q1: Audit Explorer "Mi cuenta últimos 30 días" (citizen-scope)
+SELECT id, ts, event_type, severity, amount_delta, balance_after, counterpart_iban
+FROM sonar_bank_audit_ledger
+WHERE bank_account_iban = ?
+  AND ts >= UNIX_TIMESTAMP() - 30*86400
+ORDER BY ts DESC LIMIT 100;
+-- Index: idx_sonar_bank_audit_ledger_iban_ts.
+
+-- Q2: Government Console scope "Todas" últimos 5 años filtered by event_type
+SELECT id, ts, event_type, actor_account_id, amount_delta, context_data
+FROM sonar_bank_audit_ledger
+WHERE event_type IN ('compliance_raise','admin_action','tax_payment')
+  AND ts >= UNIX_TIMESTAMP() - 5*365*86400
+ORDER BY ts DESC LIMIT 500;
+-- Index: idx_sonar_bank_audit_ledger_event_ts. Target <200ms (slice §8.3).
+
+-- Q3: Compliance dashboard "open critical flags"
+SELECT id, flag_type, citizen_account_id, observed_value, raised_at
+FROM sonar_bank_compliance_flags
+WHERE status = 'open' AND severity = 'critical'
+ORDER BY raised_at DESC LIMIT 50;
+-- Index: idx_sonar_bank_compliance_flags_severity_status.
+
+-- Q4: Audit chain por correlation-id (Backend mutex CP2 debugging)
+SELECT id, ts, event_type, actor_account_id, source_resource
+FROM sonar_bank_audit_ledger
+WHERE correlation_id = ?
+ORDER BY ts ASC;
+-- Index: idx_sonar_bank_audit_ledger_correlation.
+```
+
+---
+
+## 23. Bank Phase A — Status FSM (NEW v1.3 DRAFT v0.1)
+
+> **Status:** ✅ DRAFT v0.1. **Migration:** `012_bank_status_fsm.sql`.
+
+### 23.1 sonar_bank_status (single row global per-server)
+
+> **CP8 sonar_bank_status FSM** — single row global per-server (Q-DB-J LOCKED 2026-05-06). PK fijo `id=1` + trigger enforce.
+
+```sql
+CREATE TABLE sonar_bank_status (
+  id                       TINYINT UNSIGNED NOT NULL DEFAULT 1,
+
+  state                    ENUM('native_full','lite_mode_active','compromised_load_order','framework_missing') NOT NULL DEFAULT 'framework_missing',
+
+  framework_detected       ENUM('qbox','qbcore','esx_modern','esx_legacy','none') NOT NULL DEFAULT 'none',
+
+  bridge_version           VARCHAR(32)     NULL,
+
+  last_transition_reason   VARCHAR(255)    NULL,
+  last_transition_actor    ENUM('system','watchdog','admin') NOT NULL DEFAULT 'system',
+
+  experimental_handlers_ok TINYINT(1)      NOT NULL DEFAULT 0 COMMENT 'sv_experimentalStateBagsHandler + sv_experimentalNetGameEventHandler + sv_enableNetEventReassembly',
+
+  created_at               INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at               INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  transitioned_at          INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+
+  CONSTRAINT chk_sonar_bank_status_single_row CHECK (id = 1)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Trigger BEFORE INSERT enforce single-row.
+CREATE TRIGGER trg_sonar_bank_status_single_row BEFORE INSERT ON sonar_bank_status FOR EACH ROW
+BEGIN
+  IF NEW.id <> 1 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_bank_status is single-row global per-server (id must be 1)';
+  END IF;
+END;
+
+-- Initial seed.
+INSERT INTO sonar_bank_status (id, state, framework_detected, last_transition_reason, last_transition_actor)
+VALUES (1, 'framework_missing', 'none', 'initial seed migration 012 — awaiting defensive boot CP4 detection', 'system')
+ON DUPLICATE KEY UPDATE id = id;
+```
+
+**FSM transitions canonical (CP8):**
+
+```
+framework_missing  ─→  native_full          (CP4 boot — qbox/qbcore detected + bridges OK)
+                   ─→  lite_mode_active     (CP4 boot — esx_modern detected + degraded mode)
+                   ─→  compromised_load_order (CP4 watchdog — load order issue)
+
+native_full        ─→  compromised_load_order (CP4 watchdog runtime)
+                   ─→  lite_mode_active        (admin downgrade — diagnostic mode)
+
+lite_mode_active   ─→  native_full          (admin upgrade — bridges restored)
+                   ─→  compromised_load_order (CP4 watchdog runtime)
+
+compromised_load_order ─→  native_full | lite_mode_active  (admin recovery)
+```
+
+**Notas:**
+
+- **Single row global per-server** (Q-DB-J): el estado refleja el bridge runtime del server process, NO del citizen.
+- **Boot rejected si `framework_detected = 'esx_legacy'`** (Q16 cut ESX legacy spec) — error claro `legacy ESX 1.9.x not supported, upgrade to 1.10+ or use QBox/QBCore`.
+- **UI badge sonar_bank_status** footer always-visible Tablet Bank App (slice frontend §3 CP8) — lectura per-frame State Bag global publicado por Backend post-H1.
+- **`experimental_handlers_ok`** convars FiveM Q16.4 + CP7 — afecta perf benchmarks chaos test 200 concurrent.
+
+### 23.2 Queries hot path §23
+
+```sql
+-- Q1: Boot detection update (Backend Lead post-H1).
+UPDATE sonar_bank_status SET
+  state = 'native_full',
+  framework_detected = 'qbox',
+  bridge_version = '1.0.0',
+  last_transition_reason = 'boot detection complete',
+  last_transition_actor = 'system',
+  experimental_handlers_ok = 1,
+  updated_at = UNIX_TIMESTAMP(),
+  transitioned_at = UNIX_TIMESTAMP()
+WHERE id = 1;
+-- PK fijo — single row update <1ms.
+
+-- Q2: UI badge read (Tablet Bank app footer).
+SELECT state, framework_detected, last_transition_reason, transitioned_at
+FROM sonar_bank_status WHERE id = 1;
+-- PK fijo — read <1ms. Backend cache + State Bag publish.
+```
+
+---
+
+## 24-28. Bank Phase A — Tax + Government + Tier 4 + Empresas + Idempotency (Pending v0.2-v0.3)
+
+> **Status:** 🟡 Pending DRAFT v0.2 + v0.3. Tablas + DDL + indexes + queries hot path documented per slice §3.4 + §3.5 + §3.6 + §4 + §5.
+
+**Roadmap próximas iteraciones:**
+
+- **§24 v0.2 (BANK-DB.2):** `sonar_bank_tax_brackets` + `sonar_bank_tax_history` + `sonar_bank_subsidies` + `sonar_govt_elections` + `sonar_govt_election_candidates` + `sonar_govt_votes` + `sonar_govt_votes_audit` (dual-layer privacy Q-DB-H).
+- **§25 v0.3 (BANK-DB.3):** Tier 4 features (loans + credit_scores + crypto_wallets BIGINT atomic + stocks híbrido Q-DB-I + recurring + ATM + cards + loyalty + round_ups).
+- **§26 v0.3 (BANK-DB.3):** Empresas extends (`sonar_bank_business_treasuries` multi-signer + `sonar_bank_escrow_releases` partial release log).
+- **§27 v0.3 (BANK-DB.3):** `sonar_bank_idempotency_keys` (TTL 7 days + cron cleanup hint Backend Lead).
+- **§28 v0.4 (BANK-DB.4):** Performance benchmarks ejecutados — ver `progress/BENCHMARK_BANK_DB_v1.md`.
+
+---
+
+## 29. Deviations from blueprint Bank Phase A — founder Q-DB-A→J resolutions
+
+> **Bloque consolidado** documentando cada divergencia del blueprint v1.2 con su rationale + impact downstream. Referencia obligatoria handoffs H1 (Backend) + H2 (Security).
+
+### 🟡 Deviation Q-DB-A — Engine MariaDB 12.x primary, MySQL 8 best-effort compat
+
+**Blueprint v1.2 framing:** §6 + slice §6 mencionan MySQL 8 features (INVISIBLE INDEX, GENERATED columns indexable, EXPLAIN ANALYZE) y MariaDB 10.6+ alternativa.
+
+**Realidad operacional:** migrations 003 + 005 + 006 + 008 ejecutadas contra MariaDB 12.2.2 (`@resources/sonar_core/migrations/003_bank_schema.sql:27-50`). Workarounds documentados:
+
+- D1 collation `utf8mb4_unicode_ci` (NO `utf8mb4_0900_ai_ci`).
+- D2 `ON UPDATE (UNIX_TIMESTAMP())` MariaDB-illegal en INT UNSIGNED — app-managed.
+- D4 + 006 D1 CHECK XOR multi-col `IS NULL` parser bug — app-layer enforcement.
+
+**Resolución:** SSoT v1.3 lockea MariaDB 12.x primary. MySQL 8 best-effort compat (no testing prioritario). Features MySQL-only descartadas (INVISIBLE INDEX → usar `IGNORED` MariaDB con cuidado). System-versioned tables MariaDB 10.3+ disponible pero descartado audit ledger (Q-DB-F).
+
+**Impact downstream:**
+
+- Backend Lead post-H1 — `oxmysql` connection pool config + transactions tested vs MariaDB 12.x.
+- DevOps Lead post-H4 — DB role config + cron partitioning tested MariaDB 12.x. ESX legacy boot rejection (`framework_detected = 'esx_legacy'`).
+- Security Lead post-H2 — audit ledger triggers SIGNAL tested MariaDB 12.x.
+
+---
+
+### 🟡 Deviation Q-DB-B — DECIMAL fiat preserved, BIGINT atomic crypto-only
+
+**Blueprint v1.2 + slice §7 OQ-DB-01:** recommend BIGINT cents para fiat (perf).
+
+**Realidad operacional:** migrations 003 + 006 usan `DECIMAL(14,2)` y `DECIMAL(15,2)` — convención canonical. Cap DECIMAL(14,2) = 999.999.999.999,99 € (suficiente RP).
+
+**Resolución:** SSoT v1.3 mantiene **DECIMAL(14,2) fiat** (consistency + readability + MariaDB-native + retrocompat 8 migrations producción). **BIGINT UNSIGNED `raw_amount` + TINYINT UNSIGNED `decimals`** **solo** crypto wallets (BTC 8, ETH 18 — decimals variables inherentes).
+
+**Impact downstream:**
+
+- Backend Lead post-H1 — money flow lib mantiene DECIMAL math + `format()` display. Crypto wallets aparte.
+- Frontend Lead post-H3 — display layer convierte crypto `raw_amount / 10^decimals`.
+
+---
+
+### 🟡 Deviation Q-DB-C — Migrations path `resources/sonar_core/migrations/`
+
+**Blueprint v1.2 + prompt §4.3:** path `migrations/<NNN>_*.sql` (root).
+
+**Realidad operacional:** path canonical es `resources/sonar_core/migrations/` — runner Lua `@resources/sonar_core/server/migrations.lua` con checksum tampering detection (006 D10).
+
+**Resolución:** SSoT v1.3 documenta path canonical `resources/sonar_core/migrations/010_*.sql`+. Migration files Phase A bajo este path.
+
+---
+
+### 🟡 Deviation Q-DB-D — `sonar_bank_accounts.type` ENUM split 2-col
+
+**Blueprint v1.2 + prompt §4.2.1:** ENUM `type` extend a `checking/savings/business_treasury/govt_treasury/escrow/crypto_wallet` (mono-column).
+
+**Realidad operacional:** ENUM existing `personal/company/cooperative/escrow` modela **tipo de owner**. Extends mono-column mezcla owner-type con account-class (confusión conceptual).
+
+**Resolución:** SSoT v1.3 split en **2 columnas** (Q-DB-D LOCKED):
+
+- `owner_type ENUM('personal','company','cooperative','government','escrow_managed')`.
+- `account_class ENUM('checking','savings','business_treasury','govt_treasury','escrow','crypto_wallet')`.
+
+**Migration 014 v0.2** ALTER bank_accounts split + backfill data existing.
+
+---
+
+### 🟡 Deviation Q-DB-E — `sonar_companies` deferred — opaque `company_id`
+
+**Blueprint v1.2:** asume `sonar_companies` exists (FKs implícitas).
+
+**Realidad operacional:** `sonar_companies` no existe (`@resources/sonar_core/migrations/003_bank_schema.sql:36-40` D3 deferred S2+ nunca materializado).
+
+**Resolución:** Opción 2 LOCKED — `company_id CHAR(36) NULL` opaque sin FK. Issue #001 backend handoff.
+
+**Impact downstream:**
+
+- Backend Lead post-H1 enforce app-layer `Companies.exists(company_id)` validation.
+- Issue #001 → FK promotion migration aditiva post-Phase A cuando `sonar_companies` se cree.
+- Indexes secundarios `company_id` ya creados Phase A — perf future-proof.
+
+---
+
+### 🟡 Deviation Q-DB-F — Audit ledger 3-tier defense-in-depth, SysVer descartado
+
+**Blueprint v1.2 + slice OQ-DB-03:** defense-in-depth (triggers + app-level). Slice §6 menciona MariaDB 10.6+ system-versioned tables como alternativa.
+
+**Resolución:** SSoT v1.3 lockea **3-tier**:
+
+1. **Tier 1** — Triggers SIGNAL `BEFORE UPDATE/DELETE` (migration 010).
+2. **Tier 2** — `REVOKE UPDATE, DELETE ON sonar_bank_audit_ledger FROM 'sonar_bank_app_user'` (DevOps Lead post-H4).
+3. **Tier 3** — App-level `BankAuditLedger.Append(payload)` lib only INSERT (Backend Lead post-H1).
+
+**SysVer descartado** — semántica wrong (permite UPDATE versionado, no rechaza). Append-only puro requiere triggers SIGNAL.
+
+---
+
+### 🟡 Deviation Q-DB-G — Particiones extend Sep 2026 → Dec 2027
+
+**Blueprint v1.2 + SSoT v1.1 §17:** cron mensual rolling forward "S2+" — nunca implementado.
+
+**Realidad operacional:** migration 003 D5 partitions May-Aug 2026 + p_future MAXVALUE catchall. Riesgo perf chaos test Sept 2026+.
+
+**Resolución:** Migration 013 REORGANIZE PARTITION extend `sonar_bank_movements` + `sonar_bank_audit_ledger` hasta Dec 2027 (32 partitions mensuales). Cron rolling forward DevOps Lead post-H4 obligatorio Nov 2027 antes de p_future fill.
+
+---
+
+### 🟡 Deviation Q-DB-H — Privacy votes dual-layer hash + audit raw
+
+**Blueprint v1.2 + slice §3.1:** anonymous (hash citizen_id) vs transparent (raw citizen_id) — open question.
+
+**Resolución:** Dual-layer LOCKED:
+
+- `sonar_govt_votes (voter_hash CHAR(64))` — público, hash SHA-256 `citizen_id + election_id + server_salt`.
+- `sonar_govt_votes_audit (citizen_id CHAR(36))` — admin-only, ACE `sonar.bank.govt.audit.full`. Permite investigaciones impugnación + fraude.
+
+**Migration 017 v0.2** crea ambas tablas + ACE check enforced application-layer Backend Lead.
+
+---
+
+### 🟡 Deviation Q-DB-I — Stocks híbrido event-sourced + materialized snapshot
+
+**Blueprint v1.2 + slice §3.4:** stocks model — relación N:M con `avg_buy_price` materialized vs event-sourced.
+
+**Resolución:** Híbrido LOCKED:
+
+- `sonar_bank_stocks_transactions` — event-sourced append-only (immutable audit).
+- `sonar_bank_stocks_holdings` — materialized snapshot refresh on-trade (perf reads dashboard).
+
+**Migration 020 v0.3** crea ambas + trigger AFTER INSERT en transactions update holdings (FIFO/avg_buy_price computed).
+
+---
+
+### 🟡 Deviation Q-DB-J — `sonar_bank_status` single-row global per-server
+
+**Blueprint v1.2 + slice §3.6 + OQ-DB-05:** per-server vs per-citizen open question.
+
+**Resolución:** Single row global per-server LOCKED. PK fijo `id=1` + trigger BEFORE INSERT enforce. State refleja bridge runtime del server process, NO citizen.
+
+**Impact downstream:**
+
+- Frontend Lead post-H3 — UI badge footer Tablet Bank app lee `state` per-frame via State Bag global.
+- Backend Lead post-H1 — `BankStatus.Transition(new_state, reason)` lib gestiona FSM transitions.
+- DevOps Lead post-H4 — boot rejection si `framework_detected = 'esx_legacy'`.
+
+---
+
 ## 21. Changelog
 
 | Versión | Fecha | Autor | Cambios |
@@ -2344,7 +2892,8 @@ Este documento es **el contrato de persistencia** del ecosistema SONAR (ex-Admir
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 20 secciones, ~2335 líneas, 28 tablas DDL completo + ~60 índices justificados + queries hot path + migrations strategy + particionado + backup + diccionario datos. **Firmable Oleada 0.** |
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `sonar_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_sonar_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `sonar_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
 | 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
+| 1.3 DRAFT v0.1 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **🟡 DRAFT v0.1 Bank Phase A extends — BANK-DB.1.** Founder green-light Q-DB-A→J 2026-05-06 (sesión BANK-DB.0 onboarding + handshake + cuestionamientos). NEW §22 (audit ledger inmutable + compliance flags + queries hot path) + NEW §23 (status FSM single-row CP8) + §24-§28 roadmap pending v0.2-v0.3 (tax + government + Tier 4 + empresas + idempotency) + NEW §29 deviations from blueprint (10 Q-DB-* resolutions documented). Header v1.2→v1.3 + changelog table tablas NEW + tablas existing extends + drift corrections SSoT v1.1 vs realidad migrations. **Migrations files DRAFT v0.1:** `010_bank_audit_ledger.sql` + `011_bank_compliance_flags.sql` + `012_bank_status_fsm.sql` + `013_bank_movements_partitions_extend.sql`. **Issue #001** `sonar_companies` pending (Q-DB-E opaque company_id deferred). **NO touched:** §1-§20 SSoT v1.2 LOCKED foundational. Pending sign-off triple (founder + Backend consumer post-H1 + Security consumer post-H2). |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.2**
+**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.3 DRAFT v0.1 (Bank Phase A — DB Lead authoring 2026-05-06)**
