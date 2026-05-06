@@ -827,3 +827,139 @@ Multi-edit aplicado: §11 título sin "(preliminary — refresh post §9 batch 2
 - 🔒 `docs/planning/02_decision_log_part2.md` v1.1 ADR-018 (BANK-BE.0 preserved — no further edits this session).
 
 — **Backend Lead BANK-BE.1 close 2026-05-06 ~09:00 UTC+02. DRAFT v0.1 5/5 contratos COMPLETOS. Review window opens. BANK-BE.LOCK pending founder green-light.**
+
+---
+
+## BANK-BE.LOCK — Backend Lead LOCK ceremony + H2 emission
+
+**Fecha:** 2026-05-06.
+**Sesión:** BANK-BE.LOCK (closure Phase A Backend Lead, post-BANK-BE.1).
+**AI:** Cascade activated as Backend Money & Compatibility Lead (transitioning to Standby).
+**Founder:** yaboula APPROVED LOCK ceremony green-light (skip BANK-BE.2 iteration request explicit).
+
+### Objetivo sesión
+
+Ceremonia atómica de promotion contratos Backend Phase A:
+1. Bump 5 drafts v0.1 DRAFT → v1.0 LOCKED con sign-off triple ratificado.
+2. git mv drafts canonical paths preservando history.
+3. Append §X.NEW Bank Phase A Extension pointer en 4 SSoTs canonical padre (v1.2 → v1.3 LOCKED).
+4. Crear paquete handoff H2 Backend → Security Lead con audit scope detallado.
+5. Backend Lead transitiona a Standby con reactivation triggers documentados.
+
+### Acciones ejecutadas
+
+#### LOCK promotion drafts → canonical
+- ✅ Bump versioning footer 5 drafts añadiendo row v1.0 LOCKED + ceremony stamp:
+  - `c_be_01_events_catalog_v1_3.md` v0.1 → v1.0 LOCKED.
+  - `c_be_02_api_contracts_v1_3.md` v0.1 → v1.0 LOCKED (40/40 callbacks ratified).
+  - `c_be_03_state_machines_v1_1.md` v0.1 → v1.0 LOCKED (DB Lead joint endorsement deferred trigger).
+  - `c_be_04_bridges_v1_1.md` v0.1 → v1.0 LOCKED (ADR-018 anchor).
+  - `c_be_05_statebags_global_publishers.md` v0.1 → v1.0 LOCKED.
+- ✅ git mv 5 contratos + research_notes desde `docs/agents/teams/drafts/be_phase_a/` → `docs/technical/bank_phase_a/` (history preservada — git detecta renames).
+- ✅ Eliminado `docs/agents/teams/drafts/be_phase_a/README.md` (drafts directory completamente vacío + removed).
+- ✅ Creado canonical README `docs/technical/bank_phase_a/README.md` (índice 5 contratos LOCKED + sign-off matrix consolidado + cross-references + reactivation triggers).
+
+#### §X.NEW pointers en 4 SSoTs canonical padre
+- ✅ `docs/technical/02_events_catalog.md` v1.2 → v1.3 LOCKED — §X.NEW pointer hacia c_be_01 + c_be_05.
+- ✅ `docs/technical/04_api_contracts.md` v1.2 → v1.3 LOCKED — §X.NEW pointer hacia c_be_02 (40 callbacks).
+- ✅ `docs/technical/05_state_machines.md` v1.2 → v1.3 LOCKED — §X.NEW pointer hacia c_be_03 (8 FSMs Bank).
+- ✅ `docs/technical/07_bridges_compatibility.md` v1.2 → v1.3 LOCKED — §X.NEW pointer hacia c_be_04 (Bridges Bank).
+
+Cada §X.NEW preserva integridad foundational pivot-agnostic §1-§N con justificación M4 mandato founder (aislamiento dominio Bank-specific en sub-directorio dedicado).
+
+#### Handoff H2 Backend → Security emission
+- ✅ Creado `docs/agents/teams/handoffs/h2_backend_to_security/README.md` con:
+  - Ceremony participants + status matrix.
+  - Inventory deliverables (5 contratos LOCKED + 4 §X.NEW pointers + ADR-018 + canonical README).
+  - **Audit scope §3 detallado** dividido en 5 dominios con criticality (CRITICAL C-BE-02 + C-BE-04, MEDIUM C-BE-01 + C-BE-03 + C-BE-05) + cross-cutting threat model.
+  - 5 audit reports esperados (`audit_c_be_*.md`) + threat model consolidated.
+  - 7 open questions Security Lead debe resolver.
+  - 5 conditional clauses LOCKED (idempotency persistencia + audit ledger inmutable + Bridges trust boundary + CP2 path #1 only + auto-apply €1000 admin flag).
+  - Cross-references workspace rules + manifest + slice + predecessor H1.
+- ✅ Creado `docs/agents/teams/handoffs/h2_backend_to_security/sign_off.md` con:
+  - Triple sign-off matrix (Backend Lead self-attested + Founder APPROVED + Security Lead PENDING + DB Lead consultative Standby).
+  - Status global paquete (EMITTED + APPROVED, awaiting receptor).
+  - Próximos pasos post-firma founder.
+
+### Deliverables BANK-BE.LOCK
+
+#### Files modified (v1.2 → v1.3 LOCKED + sign-off)
+- ✅ `docs/technical/02_events_catalog.md` v1.3 LOCKED.
+- ✅ `docs/technical/04_api_contracts.md` v1.3 LOCKED.
+- ✅ `docs/technical/05_state_machines.md` v1.3 LOCKED.
+- ✅ `docs/technical/07_bridges_compatibility.md` v1.3 LOCKED.
+
+#### Files moved (git mv preserving history)
+- ✅ `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0 LOCKED.
+- ✅ `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0 LOCKED.
+- ✅ `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0 LOCKED.
+- ✅ `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0 LOCKED.
+- ✅ `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0 LOCKED.
+- ✅ `docs/technical/bank_phase_a/research_notes.md` (anexo investigation).
+
+#### Files created
+- ✅ `docs/technical/bank_phase_a/README.md` (canonical index 5 contratos LOCKED).
+- ✅ `docs/agents/teams/handoffs/h2_backend_to_security/README.md` (audit scope detallado).
+- ✅ `docs/agents/teams/handoffs/h2_backend_to_security/sign_off.md` (triple sign-off matrix).
+
+#### Files deleted
+- ✅ `docs/agents/teams/drafts/be_phase_a/README.md` (replaced by canonical bank_phase_a/README.md).
+- ✅ `docs/agents/teams/drafts/be_phase_a/` directory (empty, removed entirely).
+
+### Sign-off ratificado
+
+| Contrato | Founder | Backend Lead | Notes |
+|---|---|---|---|
+| C-BE-01 | ✅ APPROVED | ✅ self-attested | Frontend H4 + Security H2 future |
+| C-BE-02 | ✅ APPROVED | ✅ self-attested | **Security H2 critical audit** |
+| C-BE-03 | ✅ APPROVED | ✅ self-attested | DB Lead joint deferred trigger |
+| C-BE-04 | ✅ APPROVED | ✅ self-attested | **Security H2 critical audit** |
+| C-BE-05 | ✅ APPROVED | ✅ self-attested | Frontend H4 + Security H2 future |
+
+### Backend Lead Standby — reactivation triggers
+
+Backend Lead transitiona a **Standby** post-BANK-BE.LOCK. Reactivation triggers formales:
+
+1. **Security Lead post-H2 audit CRITICAL findings** → amendment Round 1 cycle.
+2. **Security Lead post-H2 audit HIGH findings** → consultative input founder decision.
+3. **Frontend Lead post-H4 implementación** → API gap discovered durante UI integration.
+4. **DevOps Lead post-H4** → boot order/observability/Bridges echo issue.
+5. **Founder Phase B scope expansion** → new Bank features require contract extension.
+6. **DB Lead post-Standby reactivation joint** → C-BE-03 FSMs formal joint sign-off cycle.
+7. **Cross-team conflict no resuelto Round 1/2** → escalation Round 3 founder.
+
+### Outcomes session
+
+- ✅ 5 contratos Backend Phase A v1.0 LOCKED ratificados.
+- ✅ 4 SSoTs canonical padre extendidos v1.2 → v1.3 LOCKED con §X.NEW pointers Bank Phase A.
+- ✅ Paquete handoff H2 EMITTED + founder APPROVED + Security Lead activation pending.
+- ✅ Drafts directory fully cleaned (atomic promotion executed).
+- ✅ ADR-018 ratified anchor en decision log.
+- ✅ Backend Lead Phase A CLOSED. Standby active.
+
+### Próxima sesión sugerida
+
+**Activation Security Lead** vía workflow `/start-lead-session` rol Security:
+- Onboarding obligatorio (10 SSoTs).
+- Audit ejecución 5 contratos Bank Phase A.
+- Entrega 5 audit reports + threat model consolidated.
+- Findings classification + amendment cycle si CRITICAL.
+- H3 emission post-audit completion.
+
+### File touch state post BANK-BE.LOCK
+
+- ðŸ”’ `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0 LOCKED.
+- ðŸ”’ `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0 LOCKED.
+- ðŸ”’ `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0 LOCKED.
+- ðŸ”’ `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0 LOCKED.
+- ðŸ”’ `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0 LOCKED.
+- ðŸ”’ `docs/technical/bank_phase_a/README.md` v1.0 LOCKED canonical index.
+- ðŸ”’ `docs/technical/bank_phase_a/research_notes.md` anexo.
+- ðŸ”’ `docs/technical/02_events_catalog.md` v1.3 LOCKED §X.NEW.
+- ðŸ”’ `docs/technical/04_api_contracts.md` v1.3 LOCKED §X.NEW.
+- ðŸ”’ `docs/technical/05_state_machines.md` v1.3 LOCKED §X.NEW.
+- ðŸ”’ `docs/technical/07_bridges_compatibility.md` v1.3 LOCKED §X.NEW.
+- ðŸ”’ `docs/agents/teams/handoffs/h2_backend_to_security/README.md` EMITTED.
+- ðŸ”’ `docs/agents/teams/handoffs/h2_backend_to_security/sign_off.md` Backend self-attested + Founder APPROVED.
+
+— **Backend Lead BANK-BE.LOCK close 2026-05-06. Phase A CLOSED. 5 contratos C-BE-01..05 v1.0 LOCKED. 4 SSoTs canonical v1.3 LOCKED. Handoff H2 EMITTED to Security Lead. Backend Lead Standby ACTIVE.**

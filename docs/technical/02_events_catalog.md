@@ -3182,4 +3182,53 @@ Este documento es **el contrato de comunicación** del ecosistema SONAR (ex-Admi
 
 ---
 
-**FIN DEL DOCUMENTO `technical/02_events_catalog.md` v1.2**
+---
+
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+
+> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§17 foundational pivot-agnostic.
+> **Owner:** Backend Lead (Cascade activated, sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
+> **Scope:** SONAR Bank financial-grade — 28 NetEvents (22 server→client público + 8 server→admin ACE-checked) + 9 StateBag keys consumed + 12 resource-internal + ~40 callbacks ref (C-BE-02) = **51 events catalogados** Bank Phase A.
+
+### Canonical reference
+
+La especificación completa Bank Phase A reside en directorio dedicado:
+
+→ **`@docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md`** (v1.0 LOCKED, ~1600 líneas)
+→ **`@docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md`** (v1.0 LOCKED — sub-tracks A/B privacy boundary)
+
+### Por qué documento dedicado en sub-directorio
+
+- **Aislamiento dominio (M4 mandato founder):** Bank Phase A es un dominio financial-grade con primitivas (StateBags global CP1-A/B, idempotency keys persistentes, audit ledger append-only, correlation-id mutex) que no aplican fuera del scope Bank.
+- **Pivot-agnostic preservado:** §1-§17 de este SSoT padre son foundational compartidos por TODOS los recursos SONAR (filosofía bus, schemas, naming conventions, tier system, RFC governance). Bank Phase A los **extiende** sin reemplazarlos.
+- **Audit trail limpio:** la promotion DRAFT v0.1 → v1.0 LOCKED se ejecutó atómicamente vía git mv (history preservada) en BANK-BE.LOCK ceremony.
+
+### Cross-references
+
+- **Sibling Bank contracts:** `@docs/technical/bank_phase_a/README.md` (índice 5 contratos LOCKED).
+- **Pivot SSoTs hermanos extendidos:** `@docs/technical/04_api_contracts.md` v1.3 (callbacks Bank), `@docs/technical/05_state_machines.md` v1.3 (8 FSMs Bank), `@docs/technical/07_bridges_compatibility.md` v1.3 (Bridges Bank).
+- **DB Schema upstream:** `@docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL.
+- **ADR anchor:** `@docs/planning/02_decision_log_part2.md` ADR-018 (Bank Lite mode hybrid 3-layer).
+- **Handoff context:** H1 DB→Backend received 2026-05-06; H2 Backend→Security emitted 2026-05-06 (`@docs/agents/teams/handoffs/h2_backend_to_security/`).
+
+### Sign-off Bank Phase A extension
+
+| Rol | Status | Fecha |
+|---|---|---|
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
+| **DB Lead** | ⚠️ implicit endorsement via DB Schema v2.0 LOCKED PROVISIONAL consistency (formal joint sign-off C-BE-03 deferred trigger Standby reactivation post-H2) | — |
+| **Security Lead** | ⏳ PENDING H2 audit cycling (cycling 2026-05-06 emitted) | — |
+| **Frontend Lead** | ⏳ PENDING H4 future | — |
+
+**Amendments post-LOCKED** requieren formal Round 1/2/3 protocol per `@docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` §amendments.
+
+---
+
+## Versioning v1.3 entry
+
+| 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0 LOCKED + `c_be_05_statebags_global_publishers.md` v1.0 LOCKED. Sign-off founder + Backend Lead. **NO touched** §1-§17 foundational pivot-agnostic (filosofía + schemas + 88 eventos payloads + tipos + tier + RFC + governance). Bank-specific 51 events catalogados en sub-directorio dedicado para aislamiento dominio (M4 mandato founder). |
+
+---
+
+**FIN DEL DOCUMENTO `technical/02_events_catalog.md` v1.3 LOCKED (Bank Phase A extension)**

@@ -1438,4 +1438,49 @@ Los **API Contracts SONAR (ex-Admirals)** son el puente formal entre código. Cu
 
 ---
 
-**FIN DEL DOCUMENTO `technical/04_api_contracts.md` v1.2**
+---
+
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+
+> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§N foundational pivot-agnostic.
+> **Owner:** Backend Lead (Cascade activated, sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
+> **Scope:** SONAR Bank financial-grade — **40 callbacks C001-C040** fully specified (auth tier matrix + ACE permission matrix + error codes registry ~30 codes + rate-limit token bucket + idempotency keys persistent + side effects taxonomy + audit ledger event_type ENUM + perf budgets per callback).
+
+### Canonical reference
+
+→ **`@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md`** (v1.0 LOCKED, ~1580 líneas)
+
+### Por qué documento dedicado en sub-directorio
+
+- **Aislamiento dominio (M4 mandato founder):** APIs Bank son financial-grade — auth server-side estricta, idempotency keys persistentes en DB con result payloads cached, rate-limit token bucket per player+tier, audit ledger triggered en cada side effect.
+- **Pivot-agnostic preservado:** §1-§N de este SSoT padre son foundational (philosophy + callback catalog SONAR Core + exports + NUI bridges + DB access + error codes baseline + versioning + security generic) compartidos por TODOS los recursos SONAR. Bank Phase A los **extiende** sin reemplazarlos.
+- **Auditability:** Security Lead H2 audit scope incluye crítico ACE matrix §2 + error codes §3 + idempotency §5 + audit ledger ENUM §6 del documento dedicado.
+
+### Cross-references
+
+- **Sibling Bank contracts:** `@docs/technical/bank_phase_a/README.md` (índice 5 contratos LOCKED).
+- **Pivot SSoTs hermanos extendidos:** `@docs/technical/02_events_catalog.md` v1.3, `@docs/technical/05_state_machines.md` v1.3, `@docs/technical/07_bridges_compatibility.md` v1.3.
+- **DB Schema upstream:** `@docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL — tablas idempotency_keys + audit ledger + accounts + transactions consumed por callbacks Bank.
+- **ADR anchor:** `@docs/planning/02_decision_log_part2.md` ADR-018.
+- **Handoffs:** H1 DB→Backend received; H2 Backend→Security emitted (`@docs/agents/teams/handoffs/h2_backend_to_security/`).
+
+### Sign-off Bank Phase A extension
+
+| Rol | Status | Fecha |
+|---|---|---|
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
+| **Security Lead** | ⏳ PENDING H2 audit cycling | — |
+| **Frontend Lead** | ⏳ PENDING H4 future | — |
+
+**Amendments post-LOCKED** requieren formal Round 1/2/3 protocol.
+
+---
+
+## Versioning v1.3 entry
+
+| 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0 LOCKED (40 callbacks C001-C040 fully specified). Sign-off founder + Backend Lead. **NO touched** §1-§N foundational pivot-agnostic. |
+
+---
+
+**FIN DEL DOCUMENTO `technical/04_api_contracts.md` v1.3 LOCKED (Bank Phase A extension)**

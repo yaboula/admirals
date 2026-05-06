@@ -846,4 +846,50 @@ Las **State Machines SONAR (ex-Admirals)** formalizan el ciclo de vida de cada e
 
 ---
 
-**FIN DEL DOCUMENTO `technical/05_state_machines.md` v1.2**
+---
+
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+
+> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§N foundational pivot-agnostic.
+> **Owner:** Backend Lead joint con DB Lead (sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
+> **Scope:** SONAR Bank financial-grade — **8 FSMs core Bank** consolidadas: account_lifecycle + transaction_lifecycle + reconciliation_correlation + anti_fraud_review + government_decision + admin_audit_action + api_idempotency_lifecycle + bridge_correlation_mutex.
+
+### Canonical reference
+
+→ **`@docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md`** (v1.0 LOCKED, ~440 líneas — states + transitions + guards + actions + persistence patterns + recovery + testing matrix + anti-patterns)
+
+### Por qué documento dedicado en sub-directorio
+
+- **Aislamiento dominio (M4 mandato founder):** FSMs Bank tienen invariants financial-grade (e.g. transaction_lifecycle requires reconciliation_correlation FSM completion before COMMIT, idempotency_lifecycle requires unique key constraint enforcement, bridge_correlation_mutex requires CP2 path #1 only).
+- **Joint ownership Backend + DB Lead:** persistence patterns están en DB Schema v2.0 LOCKED PROVISIONAL (FSM tables 7 — accounts/transactions/reconciliation/fraud_reviews/govt_decisions/admin_audits/idempotency_keys). Backend Lead define semantics + transitions + guards.
+- **Pivot-agnostic preservado:** §1-§N de este SSoT padre son foundational (16 FSMs core SONAR + transitions schema + guards/actions semantics + recovery strategies + testing matrix + anti-patterns) — Bank Phase A **extiende** con 8 FSMs Bank-specific.
+
+### Cross-references
+
+- **Sibling Bank contracts:** `@docs/technical/bank_phase_a/README.md`.
+- **Pivot SSoTs hermanos extendidos:** `@docs/technical/02_events_catalog.md` v1.3, `@docs/technical/04_api_contracts.md` v1.3, `@docs/technical/07_bridges_compatibility.md` v1.3.
+- **DB Schema upstream:** `@docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL (7 FSM tables backing).
+- **ADR anchor:** `@docs/planning/02_decision_log_part2.md` ADR-018.
+- **Handoffs:** H1 DB→Backend received; H2 Backend→Security emitted.
+
+### Sign-off Bank Phase A extension
+
+| Rol | Status | Fecha |
+|---|---|---|
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
+| **DB Lead** | ⚠️ implicit endorsement via DB Schema v2.0 PROVISIONAL — formal joint sign-off **DEFERRED** trigger Standby reactivation post-H2 Security audit | — |
+| **Security Lead** | ⏳ PENDING H2 audit cycling | — |
+| **Frontend Lead** | ⏳ PENDING H4 future (consume state ENUMs para UI badges) | — |
+
+**Amendments post-LOCKED** requieren formal Round 1/2/3 protocol.
+
+---
+
+## Versioning v1.3 entry
+
+| 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0 LOCKED (8 FSMs Bank). Sign-off founder + Backend Lead. DB Lead joint endorsement deferred. **NO touched** §1-§N foundational pivot-agnostic 16 FSMs core SONAR. |
+
+---
+
+**FIN DEL DOCUMENTO `technical/05_state_machines.md` v1.3 LOCKED (Bank Phase A extension)**

@@ -681,4 +681,6 @@ end
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial extends v1.2 con 8 CP integrated + Q-BE-pre-05/11/12 founder LOCKED. ADR-018 anchor. |
 
-— **C-BE-04 DRAFT v0.1** open review.
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + DevOps Lead (consumer consultative — review boot order + watchdog metrics + bridges echo) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_04_*` → `docs/technical/bank_phase_a/c_be_04_*`. Pointer §X.NEW en `docs/technical/07_bridges_compatibility.md` v1.2 → v1.3 LOCKED. ADR-018 anchor referenced. |
+
+— **C-BE-04 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off founder + Backend Lead. **Effective immediately.** Security Lead recibe via H2 (audit Bridges trust boundaries). DevOps Lead via H4 (boot order + observability). Amendments require formal Round 1/2/3 protocol.

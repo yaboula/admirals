@@ -441,4 +441,6 @@ Cada FSM requires smoke test cases:
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial post Q-BE-pre-01 founder LOCKED 8 FSMs. credit_score_recompute + audit_archive deferred Phase B. |
 
-— **C-BE-03 DRAFT v0.1** open review (joint Backend + DB Lead — DB Lead reactivation needed para sign-off).
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested. **DB Lead joint sign-off DEFERRED** — DB Lead Standby reactivation trigger formal post-H2 Security Lead audit (low risk: 8 FSMs estructurales LOCKED en DB Schema v2.0 PROVISIONAL — DB Lead implícitamente endorsed via schema consistency). Promoted: `drafts/be_phase_a/c_be_03_*` → `docs/technical/bank_phase_a/c_be_03_*`. Pointer §X.NEW en `docs/technical/05_state_machines.md` v1.2 → v1.3 LOCKED. |
+
+— **C-BE-03 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off founder + Backend Lead. **DB Lead joint endorsement deferred trigger** — pending DB Lead Standby reactivation signature post-H2 audit completion. Amendments require formal Round 1/2/3 protocol.

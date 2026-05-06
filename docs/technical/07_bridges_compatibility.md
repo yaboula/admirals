@@ -1178,4 +1178,51 @@ Este doc define:
 
 *"Una abstracción bien diseñada es dinero en el banco. Una abstracción mal diseñada es un banco que quiebra."*
 
-**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.2**
+---
+
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+
+> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§N foundational pivot-agnostic.
+> **Owner:** Backend Lead (sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
+> **Scope:** SONAR Bank financial-grade — **Bridges Layer Bank Phase A** (architectural principles + Core Override QBox/QBCore monkey-patch + Lite Mode ESX 1.10+ triple-layer hybrid + correlation-id mutex CP2 + reconciliation pipeline async CP3 + defensive boot + watchdog CP4 + cut ESX legacy <1.10).
+
+### Canonical reference
+
+→ **`@docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md`** (v1.0 LOCKED, ~680 líneas — architectural principles + resource topology + boot sequence + Bridges API extensions + correlation-id mutex lib + reconciliation pipeline + defensive boot + ADR-018 anchor)
+
+### Por qué documento dedicado en sub-directorio
+
+- **Aislamiento dominio (M4 mandato founder):** Bank Bridges tienen primitives financial-grade (correlation-id mutex hash-mutex prohibido CP2 path #1 only, reconciliation async pipeline CP3, defensive boot watchdog CP4 sentinel attribute + indirect metric). Estos son Bank-only NO aplican a inventory/phone/job bridges.
+- **Pivot-agnostic preservado:** §1-§N de este SSoT padre son foundational (Bridges architecture + interfaces + tier system + adapters + SDK + lifecycle hooks + versioning + anti-patterns) compartidos por TODOS bridges SONAR. Bank Phase A los **extiende** con Bridges.Bank.* concrete implementation.
+- **Trust boundary:** Security Lead H2 audit scope incluye Bridges Bank trust boundaries (Core Override threat model + Lite Mode triple-layer integrity + CP2 mutex correctness).
+
+### Cross-references
+
+- **Sibling Bank contracts:** `@docs/technical/bank_phase_a/README.md`.
+- **Pivot SSoTs hermanos extendidos:** `@docs/technical/02_events_catalog.md` v1.3, `@docs/technical/04_api_contracts.md` v1.3, `@docs/technical/05_state_machines.md` v1.3.
+- **DB Schema upstream:** `@docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL.
+- **ADR anchor:** `@docs/planning/02_decision_log_part2.md` ADR-018 (Bank Lite mode hybrid 3-layer architecture canonical).
+- **Handoffs:** H1 DB→Backend received; H2 Backend→Security emitted.
+
+### Sign-off Bank Phase A extension
+
+| Rol | Status | Fecha |
+|---|---|---|
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
+| **Security Lead** | ⏳ PENDING H2 audit cycling (audit scope incluye Bridges trust boundaries crítico) | — |
+| **DevOps Lead** | ⏳ PENDING H4 future (boot order + watchdog metrics + bridges echo) | — |
+
+**Amendments post-LOCKED** requieren formal Round 1/2/3 protocol.
+
+---
+
+## Versioning v1.3 entry
+
+| 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0 LOCKED (Bridges Bank Phase A — Core Override + Lite Mode + correlation-id mutex CP2 + reconciliation pipeline CP3 + defensive boot CP4 + ADR-018 anchor). Sign-off founder + Backend Lead. **NO touched** §1-§N foundational pivot-agnostic Bridges Layer SONAR. |
+
+---
+
+*"Una abstracción bien diseñada es dinero en el banco. Una abstracción mal diseñada es un banco que quiebra."*
+
+**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.3 LOCKED (Bank Phase A extension)**

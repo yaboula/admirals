@@ -357,4 +357,6 @@ Cualquier change Tier 1-2 events post-LOCKED v1.0 requires:
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 (BANK-BE.1) | DRAFT inicial extends v1.2 con ~22 server→client público + 8 server→admin ACE-checked + 12 resource-internal + 9 StateBag keys consumed. Tier classification (7+12+5+4 = 28 NetEvents +9 bags + ~40 callbacks ref C-BE-02 + 12 internal = **51 events catalogados**). |
 
-— **C-BE-01 DRAFT v0.1** open review.
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic post-DRAFT v0.1 review window. Sign-off triple ratificado: founder yaboula APPROVED + Backend Lead self-attested + Frontend Lead (consumer consultative consumer-of-events) acknowledged via H4 future. Promoted DRAFT → canonical: `docs/agents/teams/drafts/be_phase_a/c_be_01_events_catalog_v1_3.md` → `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md`. Pointer §X.NEW Bank Phase A added en `docs/technical/02_events_catalog.md` v1.2 → v1.3 LOCKED. |
+
+— **C-BE-01 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off ratified founder + Backend Lead. **Effective immediately.** Consumer Leads (Frontend H4 + Security H2) reciben este contrato en estado LOCKED. Amendments requieren formal Round 1/2/3 protocol per `@docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` §amendments.

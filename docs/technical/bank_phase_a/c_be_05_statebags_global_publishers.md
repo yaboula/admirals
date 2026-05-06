@@ -262,4 +262,6 @@ Frontend Lead consume via `AddStateBagChangeHandler('global', 'bank.balance.<cit
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial post Q-BE-pre-02/03 founder LOCKED. CP1 re-definido sub-tracks A/B. 7 public bags + 7 restricted NetEvent domains. |
 
-— **C-BE-05 DRAFT v0.1** open review.
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Frontend Lead (consumer consultative — consume StateBag change handlers per CP1-A pattern §3-§4) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_05_*` → `docs/technical/bank_phase_a/c_be_05_*`. Pointer cross-ref en `docs/technical/02_events_catalog.md` v1.3 LOCKED §statebags-global-publishers (sub-section reference). |
+
+— **C-BE-05 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off founder + Backend Lead. **Effective immediately.** Security Lead recibe via H2 (audit privacy boundary CP1-A vs CP1-B). Frontend Lead via H4. Amendments require formal Round 1/2/3 protocol.
