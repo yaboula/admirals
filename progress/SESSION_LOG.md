@@ -1248,3 +1248,84 @@ Backend Lead transitiona de nuevo a **Standby** post-push. Reactivation triggers
 - Goal: LOCK promotion v1.0.1 R1 + H3 handoff ceremony Security → Frontend Lead.
 - Modelo sugerido: Cascade (continuity)
 - Files in scope: `docs/technical/bank_phase_a/` (5 contratos in-place patches), `docs/agents/teams/handoffs/h3_security_to_frontend/` (H3 package).
+
+---
+
+## BANK-BE.LOCK.R1 — Backend Lead Round 1 LOCK promotion atomic in-place
+
+### Identity
+- Session ID: **BANK-BE.LOCK.R1**
+- Tech Lead: Backend Money & Compatibility Lead (Cascade reactivation post Security Lead PASS + founder green-light).
+- Date: 2026-05-06.
+- Branch: `feature/bank-security-phase-a` (head ee83879 → next BANK-BE.LOCK.R1 commit).
+- Predecessors: BANK-BE.0 → BANK-BE.1 → BANK-BE.LOCK → BANK-BE.AMEND.1 (DRAFT v0.2 EMITTED) → BANK-SEC.1 (re-audit PASS) → **BANK-BE.LOCK.R1** (this session).
+- Reactivation trigger: founder green-light explicit BANK-BE.LOCK.R1 ceremony post Security Lead BANK-SEC.1 PASS veredicto + `08_audit_hooks.md` v0.2.
+
+### Operations executed (atomic ceremony)
+
+#### 1. Surgical patch application in-place (5 canonical contracts)
+
+- **C-BE-05** v1.0 → v1.0.1 R1 LOCKED — M004 architectural founder APPROVED (CP1-A → CP1-B migration `bank.balance.<cid>` + `bank.savings.<cid>` financial PII tier; `publish_balance_update()` canonical helper §2.2.1; lazy publish on `playerJoining` §2.2.2; AP-CP1-1 prohibido; bandwidth O(N²)→O(1) reduction).
+- **C-BE-03** v1.0 → v1.0.1 R1 LOCKED — H005 (FSM #1 escrow lifecycle 3 transitions release_amount > 0 boundary guard) + M005 (FSM #8 idempotency lifecycle NEW `orphan_purged` state + `ttl_expires_at` reuse + cron PurgeOrphans 5min + audit entry).
+- **C-BE-04** v1.0 → v1.0.1 R1 LOCKED — H002 (Bridges.BankStatus.Transition ACE gate triple-path P12 + console + whitelist + opts.caller_source mandatory + audit hook unauthorized) + H003 (Core Override sentinel triple-defense closure-upvalue + GlobalState replicated=false + SHA256 checksum + probe fn — eliminated mutable QBCore.__sonar_patched) + H004 (reconciliation SQL prepared statements + AP-SQL-1 prohibido §7.1.1) + M002 (Bridges.UUID.v4 multi-entropy PRNG mix §3.3.1 + AP-UUID-1 prohibido + SHA256 helper §4.2.1) + M007 (watchdog metric C COMPROMISED ratio<0.1 + INSUFFICIENT_SAMPLE skip + counter integration §8.3.1 + 2 convars) + M008 (MutexEcho `\|` escape + `|END` terminal sentinel + UUID-strict regex anchored §6.1.1) + **M004 cross-cutting** (§5 Lite Mode AddMoney + §7.1 reconciliation emit refactor `publish_balance_update()`).
+- **C-BE-02** v1.0 → v1.0.1 R1 LOCKED (40+1 callbacks) — H001 (auth helpers canonical lib §2.3.1 4 helpers + AP-AUTH-1 prohibido + boilerplate §2.3 rewrite + notational disclaimer §2.3.2 + 9 callsites §9 refactored) + H006 (C038 audit shape complete C-SEC-01 §1.2 mandatory `previous_flag_snapshot` forensics + cross_ref_audit_id) + M002 (PRNG entropy spec §5.6 ref C-BE-04 §3.3.1 + AP-UUID-1 prohibido) + M003 (C035 audit query dual rate-limit recursive guard §9.35.5.1 — per-citizen 1/min + global 10/min + bypass exception scope=self single-row + 2 convars) + M006 (C031 ATM HMAC convar `sonar_bank_atm_hmac_secret` mandatory §9.31.7 + min 64 hex + defensive_abort + AP-HMAC-1) + **M004 cross-cutting** (NEW callback C001b `sonar:bank:balance:snapshot` §9.5b AUTH-OWNER fallback + 14 callbacks side effects §9 refactored CP1-A → CP1-B `publish_balance_update()` emit + global note §6.1 deprecation + §6.2 ENUM cross-reference C-SEC-01).
+- **C-BE-01** v1.0 → v1.0.1 R1 LOCKED (54 events) — **M004 cross-cutting** 3 NEW NetEvents: `sonar:bank:balance:update` Tier 1 (CP1-B owner-only §3.1) + `sonar:bank:savings:update` Tier 1 (CP1-B owner-only §3.1 parity) + `sonar:bank:balance:adminAudit` Tier 2 (§4.1 admin govt audit response P11 ACE on-demand) + C001b client→server callback ref §5 + 2 StateBag keys removed §2 + §7.2 deprecation note + Tier classification refresh (Tier 1 7→9, Tier 2 12→13) + `<entity>` naming valid value `balance` added §9.1.
+
+#### 2. SSoTs padre v1.3 → v1.3.1 LOCKED pointer updates
+
+- `02_events_catalog.md` v1.3 → v1.3.1 §X.NEW (54 events post-R1 + Security Lead PASS sign-off).
+- `04_api_contracts.md` v1.3 → v1.3.1 §X.NEW (40+1 callbacks post-R1 + Security Lead PASS sign-off).
+- `05_state_machines.md` v1.3 → v1.3.1 §X.NEW (8 FSMs hardened H005+M005 + DB Lead consultative no-impact + Security Lead PASS sign-off).
+- `07_bridges_compatibility.md` v1.3 → v1.3.1 §X.NEW (Bridges hardened H002+H003+H004+M002+M007+M008 + 4 convars DevOps H4 obligation + Security Lead PASS sign-off).
+
+#### 3. H2 sign_off.md update
+
+- Security Lead status: PENDING activation → ✅ **ACCEPTED-WITH-AMENDMENTS-RESOLVED** post BANK-SEC.1 PASS veredicto.
+- DB Lead: consultative confirmation no schema migration impact R1 (M005 `ttl_expires_at` column reuse).
+- Status global package H2: ✅ CLOSED.
+- Próximos pasos: 7/8 steps DONE; step 8 ⏳ H3 emission Backend → Frontend (founder green-light required).
+
+#### 4. Amendment package archived
+
+- `git mv docs/agents/teams/amendments/be_phase_a_r1/` → `docs/agents/teams/amendments/.archived_be_phase_a_r1_v0_2_promoted_v1_0_1_R1/`
+- 5 files (README.md + 4 AMEND-C-BE-0X-r1-v0.2.md) preserved as historical reference (audit trail integrity).
+
+### Findings closure summary post-R1
+
+| Severity | Count | Resolved | Accepted | Deferred |
+|---|---|---|---|---|
+| **HIGH** | 6 | 6 (H001 H002 H003 H004 H005 H006) | 0 | 0 |
+| **MEDIUM** | 8 | 6 AMEND (M002 M003 M004 M005 M006 M007 M008 — 7 closures, M002 cross C-BE-02+04) | 1 (M001 founder accepted Phase A as-is + DevOps convar `sv_maxRateLimitResetGraceSeconds=300`) | 0 |
+| **LOW** | 2 | 0 | 0 | 2 (L001 L002 deferred Phase B formal) |
+
+### File touch state post BANK-BE.LOCK.R1
+
+- 🔒 `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0.1 R1 LOCKED (54 events).
+- 🔒 `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0.1 R1 LOCKED (40+1 callbacks).
+- 🔒 `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0.1 R1 LOCKED (8 FSMs hardened).
+- 🔒 `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0.1 R1 LOCKED (Bridges hardened + 4 convars).
+- 🔒 `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0.1 R1 LOCKED (M004 architectural CP1-B).
+- 🔒 `docs/technical/02_events_catalog.md` v1.3.1 LOCKED §X.NEW.
+- 🔒 `docs/technical/04_api_contracts.md` v1.3.1 LOCKED §X.NEW.
+- 🔒 `docs/technical/05_state_machines.md` v1.3.1 LOCKED §X.NEW.
+- 🔒 `docs/technical/07_bridges_compatibility.md` v1.3.1 LOCKED §X.NEW.
+- 🔒 `docs/agents/teams/handoffs/h2_backend_to_security/sign_off.md` ACCEPTED-WITH-AMENDMENTS-RESOLVED.
+- 📦 `docs/agents/teams/amendments/.archived_be_phase_a_r1_v0_2_promoted_v1_0_1_R1/` (5 files archived).
+
+### Standby reactivation triggers preserved
+
+1. Frontend Lead H3 emission ceremony trigger (founder green-light required).
+2. DevOps Lead post-H4 → boot order/observability/Bridges echo + 4 convars runbook obligation R1 (`sonar_status_transition_whitelist`, `sonar_bank_watchdog_compromise_ratio_threshold`, `sonar_bank_watchdog_min_sample_size`, `sonar_bank_atm_hmac_secret` + M001 convar `sv_maxRateLimitResetGraceSeconds=300` + M003 convars `sonar_bank_audit_query_per_citizen_per_min` + `sonar_bank_audit_query_global_per_min`).
+3. Founder Phase B scope expansion.
+4. DB Lead reactivation joint → C-BE-03 FSMs formal joint sign-off cycle.
+5. Cross-team conflict no resuelto Round 1/2 → escalation Round 3.
+
+### Próxima sesión sugerida
+
+- Session ID candidate: **BANK-BE.H3** (Backend Lead H3 emission ceremony Backend → Frontend).
+- Goal: Emit Handoff H3 package to Frontend Lead (40+1 callbacks consume + 54 NetEvents + 7 StateBag keys + audit ledger consume + privacy boundary CP1-B).
+- Modelo sugerido: Cascade (continuity).
+- Files in scope: `docs/agents/teams/handoffs/h3_backend_to_frontend/` (H3 package NEW).
+- Trigger: founder green-light required.
+
+— **Backend Lead BANK-BE.LOCK.R1 close 2026-05-06. Phase A R1 hardening CLOSED. 5 contratos C-BE-01..05 v1.0.1 R1 LOCKED. 4 SSoTs canonical v1.3.1 LOCKED. H2 sign_off ACCEPTED-WITH-AMENDMENTS-RESOLVED. Amendment package archived. Backend Lead Standby ACTIVE awaiting H3 trigger.**

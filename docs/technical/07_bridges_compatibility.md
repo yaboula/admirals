@@ -1180,15 +1180,15 @@ Este doc define:
 
 ---
 
-## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK.R1)
 
-> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§N foundational pivot-agnostic.
-> **Owner:** Backend Lead (sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
-> **Scope:** SONAR Bank financial-grade — **Bridges Layer Bank Phase A** (architectural principles + Core Override QBox/QBCore monkey-patch + Lite Mode ESX 1.10+ triple-layer hybrid + correlation-id mutex CP2 + reconciliation pipeline async CP3 + defensive boot + watchdog CP4 + cut ESX legacy <1.10).
+> **Estado:** v1.3.1 LOCKED — extensión Bank-specific Phase A R1 amendment hardening. Sin tocar §1-§N foundational pivot-agnostic.
+> **Owner:** Backend Lead (sessions BANK-BE.0 / BANK-BE.1 / BANK-BE.LOCK / BANK-BE.AMEND.1 / BANK-BE.LOCK.R1).
+> **Scope:** SONAR Bank financial-grade — **Bridges Layer Bank Phase A** + R1 hardening: H002 (`Bridges.BankStatus.Transition` ACE gate triple-path P12 + console + whitelist) + H003 (Core Override sentinel hardening triple-defense closure-upvalue + GlobalState replicated=false + SHA256 checksum + probe fn) + H004 (reconciliation pipeline SQL prepared statements posicionales + AP-SQL-1 prohibido) + M002 (Bridges.UUID.v4 multi-entropy PRNG mix §3.3.1 + AP-UUID-1 prohibido) + M007 (watchdog metric C action threshold COMPROMISED ratio<0.1 + INSUFFICIENT_SAMPLE skip + counter integration) + M008 (MutexEcho `\|` escape + `|END` terminal sentinel + UUID-strict regex anchored). M004 cross-cutting balance emit refactor.
 
 ### Canonical reference
 
-→ **`@docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md`** (v1.0 LOCKED, ~680 líneas — architectural principles + resource topology + boot sequence + Bridges API extensions + correlation-id mutex lib + reconciliation pipeline + defensive boot + ADR-018 anchor)
+→ **`@docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md`** (v1.0.1 R1 LOCKED — Bridges Bank Phase A + R1 hardening 6 findings + 4 convars DevOps H4 runbook obligation)
 
 ### Por qué documento dedicado en sub-directorio
 
@@ -1208,10 +1208,10 @@ Este doc define:
 
 | Rol | Status | Fecha |
 |---|---|---|
-| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
-| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
-| **Security Lead** | ⏳ PENDING H2 audit cycling (audit scope incluye Bridges trust boundaries crítico) | — |
-| **DevOps Lead** | ⏳ PENDING H4 future (boot order + watchdog metrics + bridges echo) | — |
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK + BANK-BE.LOCK.R1 green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) v1.0.1 R1 | 2026-05-06 |
+| **Security Lead** | ✅ ACCEPTED-FINAL (BANK-SEC.1 re-audit PASS veredicto Bridges trust boundaries hardened H002 + H003 + H004 + watchdog M007 + `08_audit_hooks.md` v0.2) | 2026-05-06 |
+| **DevOps Lead** | ⏳ PENDING H4 future (boot order + watchdog metrics + bridges echo + 4 convars runbook obligation R1: `sonar_status_transition_whitelist`, `sonar_bank_watchdog_compromise_ratio_threshold`, `sonar_bank_watchdog_min_sample_size`, `sonar_bank_atm_hmac_secret`) | — |
 
 **Amendments post-LOCKED** requieren formal Round 1/2/3 protocol.
 
@@ -1220,9 +1220,10 @@ Este doc define:
 ## Versioning v1.3 entry
 
 | 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0 LOCKED (Bridges Bank Phase A — Core Override + Lite Mode + correlation-id mutex CP2 + reconciliation pipeline CP3 + defensive boot CP4 + ADR-018 anchor). Sign-off founder + Backend Lead. **NO touched** §1-§N foundational pivot-agnostic Bridges Layer SONAR. |
+| 1.3.1 | 2026-05-06 | Founder + Backend Lead + Security Lead (BANK-BE.LOCK.R1) | **v1.3.1 LOCKED — Bank Phase A R1 amendment hardening pointer.** Append updated pointer C-BE-04 v1.0.1 R1 LOCKED: H002 (Bridges.BankStatus.Transition ACE gate triple-path) + H003 (Core Override sentinel triple-defense + SHA256 checksum) + H004 (reconciliation SQL prepared statements + AP-SQL-1 prohibido) + M002 (Bridges.UUID.v4 multi-entropy PRNG §3.3.1) + M007 (watchdog metric C threshold canonical) + M008 (MutexEcho delimiter escape + terminal sentinel) + M004 cross-cutting (§5 Lite Mode AddMoney + §7.1 reconciliation — `publish_balance_update()` helper canonical replaces deprecated CP1-A `bank.balance.*` writes). 4 convars DevOps H4 runbook obligation. Sign-off founder + Backend Lead + Security Lead PASS (BANK-SEC.1 re-audit veredicto). **NO touched** §1-§N foundational pivot-agnostic Bridges Layer SONAR. |
 
 ---
 
 *"Una abstracción bien diseñada es dinero en el banco. Una abstracción mal diseñada es un banco que quiebra."*
 
-**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.3 LOCKED (Bank Phase A extension)**
+**FIN DEL DOCUMENTO `technical/07_bridges_compatibility.md` v1.3.1 LOCKED (Bank Phase A R1 extension)**

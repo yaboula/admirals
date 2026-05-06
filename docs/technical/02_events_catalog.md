@@ -3184,18 +3184,18 @@ Este documento es **el contrato de comunicación** del ecosistema SONAR (ex-Admi
 
 ---
 
-## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK.R1)
 
-> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§17 foundational pivot-agnostic.
-> **Owner:** Backend Lead (Cascade activated, sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
-> **Scope:** SONAR Bank financial-grade — 28 NetEvents (22 server→client público + 8 server→admin ACE-checked) + 9 StateBag keys consumed + 12 resource-internal + ~40 callbacks ref (C-BE-02) = **51 events catalogados** Bank Phase A.
+> **Estado:** v1.3.1 LOCKED — extensión Bank-specific Phase A R1 amendment hardening. Sin tocar §1-§17 foundational pivot-agnostic.
+> **Owner:** Backend Lead (Cascade activated, sessions BANK-BE.0 / BANK-BE.1 / BANK-BE.LOCK / BANK-BE.AMEND.1 / BANK-BE.LOCK.R1).
+> **Scope:** SONAR Bank financial-grade — v1.0.1 R1 promoted post Security Lead BANK-SEC.1 PASS veredicto: 24 server→client público + 9 server→admin ACE-checked + 12 resource-internal + 7 StateBag keys consumed (2 removed M004) + 40+1 callbacks ref (C-BE-02 incl. C001b NEW) = **54 events catalogados** Bank Phase A (51 baseline + 3 NEW M004: `balance:update` + `savings:update` + `balance:adminAudit`).
 
 ### Canonical reference
 
 La especificación completa Bank Phase A reside en directorio dedicado:
 
-→ **`@docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md`** (v1.0 LOCKED, ~1600 líneas)
-→ **`@docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md`** (v1.0 LOCKED — sub-tracks A/B privacy boundary)
+→ **`@docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md`** (v1.0.1 R1 LOCKED, 54 events catalogados)
+→ **`@docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md`** (v1.0.1 R1 LOCKED — sub-tracks A/B privacy boundary post M004 architectural CP1-A → CP1-B migration)
 
 ### Por qué documento dedicado en sub-directorio
 
@@ -3215,11 +3215,11 @@ La especificación completa Bank Phase A reside en directorio dedicado:
 
 | Rol | Status | Fecha |
 |---|---|---|
-| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
-| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
-| **DB Lead** | ⚠️ implicit endorsement via DB Schema v2.0 LOCKED PROVISIONAL consistency (formal joint sign-off C-BE-03 deferred trigger Standby reactivation post-H2) | — |
-| **Security Lead** | ⏳ PENDING H2 audit cycling (cycling 2026-05-06 emitted) | — |
-| **Frontend Lead** | ⏳ PENDING H4 future | — |
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK + BANK-BE.LOCK.R1 green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) v1.0.1 R1 | 2026-05-06 |
+| **DB Lead** | ⚠️ implicit endorsement via DB Schema v2.0 LOCKED PROVISIONAL consistency (no schema migration impact R1 — confirmed M005 column reuse) | 2026-05-06 |
+| **Security Lead** | ✅ ACCEPTED-FINAL (BANK-SEC.1 re-audit PASS veredicto + `08_audit_hooks.md` v0.2) | 2026-05-06 |
+| **Frontend Lead** | ⏳ PENDING H3 future | — |
 
 **Amendments post-LOCKED** requieren formal Round 1/2/3 protocol per `@docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` §amendments.
 
@@ -3228,7 +3228,8 @@ La especificación completa Bank Phase A reside en directorio dedicado:
 ## Versioning v1.3 entry
 
 | 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0 LOCKED + `c_be_05_statebags_global_publishers.md` v1.0 LOCKED. Sign-off founder + Backend Lead. **NO touched** §1-§17 foundational pivot-agnostic (filosofía + schemas + 88 eventos payloads + tipos + tier + RFC + governance). Bank-specific 51 events catalogados en sub-directorio dedicado para aislamiento dominio (M4 mandato founder). |
+| 1.3.1 | 2026-05-06 | Founder + Backend Lead + Security Lead (BANK-BE.LOCK.R1) | **v1.3.1 LOCKED — Bank Phase A R1 amendment hardening pointer.** Append updated pointer C-BE-01 v1.0.1 R1 LOCKED (54 events — +3 NEW M004 `balance:update` Tier 1 + `savings:update` Tier 1 + `balance:adminAudit` Tier 2; 2 StateBag keys removed CP1-A → CP1-B) + C-BE-05 v1.0.1 R1 LOCKED (M004 architectural founder APPROVED + `publish_balance_update()` helper canonical + lazy publish on `playerJoining`). Sign-off founder + Backend Lead + Security Lead PASS (BANK-SEC.1 re-audit veredicto). **NO touched** §1-§17 foundational pivot-agnostic. |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/02_events_catalog.md` v1.3 LOCKED (Bank Phase A extension)**
+**FIN DEL DOCUMENTO `technical/02_events_catalog.md` v1.3.1 LOCKED (Bank Phase A R1 extension)**

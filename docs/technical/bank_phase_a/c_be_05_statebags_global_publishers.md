@@ -1,11 +1,11 @@
-# C-BE-05 — StateBags Global Publishers Spec (DRAFT v0.1)
+# C-BE-05 — StateBags Global Publishers Spec (LOCKED v1.0.1 R1)
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** Frontend Lead (consume bags client-side reactive) + Security Lead (audit privacy boundaries).
-> **Status:** 🟡 **DRAFT v0.1 — review window open.** No LOCKED hasta sign-off triple founder + Backend + Frontend (consultative) + Security (consultative).
-> **Fecha:** 2026-05-06 (BANK-BE.0).
-> **Path canonical post-LOCKED:** sub-section dentro de `docs/technical/02_events_catalog.md` v1.3 §statebags-global-publishers.
-> **CP origin:** CP1 mandatory (State Bags global mandatory) + Q-BE-pre-02/03 founder LOCKED 2026-05-06 (privacy redefinition).
+> **Status:** � **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
+> **Fecha:** 2026-05-06 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0.1 R1 LOCKED. Pointer cross-ref `docs/technical/02_events_catalog.md` v1.3.1 §statebags-global-publishers.
+> **CP origin:** CP1 mandatory (State Bags global mandatory) + Q-BE-pre-02/03 founder LOCKED 2026-05-06 + **M004 architectural founder APPROVED 2026-05-06** (financial PII privacy non-negotiable).
 
 ---
 
@@ -32,15 +32,17 @@ CP1 distingue dos sub-tracks per privacy boundary:
 
 **Conclusión:** sensitive state **NO va en GlobalState**. Va en discrete NetEvents directos a target source(s) con ACE check server-side.
 
-### 1.4 Anti-pattern eliminado
+### 1.4 Anti-patterns eliminados
 
 - ❌ ~~`GlobalState['bank.compliance.<citizen_id>'] = { flags: [...detalles...] }`~~ → leak privacy.
 - ❌ ~~`GlobalState['bank.escrow.<escrow_id>'] = { participants, amount, state }`~~ → leak shared state a non-participants.
 - ❌ ~~`TriggerClientEvent` broadcast a -1 (all clients) Bank balance~~ → CP1 explicitly prohíbe.
+- ❌ **NEW v1.0.1 R1 (M004 founder APPROVED):** ~~`GlobalState['bank.balance.<citizen_id>'] = number`~~ + ~~`GlobalState['bank.savings.<citizen_id>'] = number`~~ → financial PII tier prohibido en CP1-A (read-broadcast a todos clients FiveM-nativo permite leer balance ajeno con citizen_id derivable de roster). Migrated to CP1-B NetEvent pattern §2.2.1.
 
-### 1.5 Pattern correcto
+### 1.5 Patterns correctos (v1.0.1 R1 actualizado)
 
-- ✅ `GlobalState['bank.balance.<citizen_id>'] = number` — citizen propio lee, otros clients también pueden leer pero NO es leak (balance no es PII per se en este contexto).
+- ✅ **NEW v1.0.1 R1 (M004):** `TriggerLatentClientEvent('sonar:bank:balance:update', ownerSource, { balance, account_class, occurred_at, correlation_id, schema_version })` — owner-only fire post citizen_id == owner check (CP1-B). Helper canonical `publish_balance_update(cid, value, account_class, opts)` per §2.2.1.
+- ✅ **NEW v1.0.1 R1 (M004 parity):** `TriggerLatentClientEvent('sonar:bank:savings:update', ownerSource, payload)` — savings idem balance, financial PII tier idéntico.
 - ✅ `TriggerLatentClientEvent('sonar:bank:complianceDetail', adminSource, payload)` — admin-only fire post ACE check.
 - ✅ `TriggerLatentClientEvent('sonar:bank:escrowStateChanged', payerSource, payload); TriggerLatentClientEvent('sonar:bank:escrowStateChanged', payeeSource, payload)` — participants only.
 
@@ -50,10 +52,14 @@ CP1 distingue dos sub-tracks per privacy boundary:
 
 ### 2.1 Public bags (CP1-A) — broadcast all clients OK
 
+> **REMOVED v1.0.1 R1 (M004 founder APPROVED 2026-05-06):**
+> - ~~`bank.balance.<citizen_id>`~~ → migrated to CP1-B `sonar:bank:balance:update` NetEvent (§2.2.1).
+> - ~~`bank.savings.<citizen_id>`~~ → migrated to CP1-B `sonar:bank:savings:update` NetEvent (parity).
+>
+> **Razón:** financial-grade privacy non-negotiable. CP1-A read-broadcast a todos clients FiveM-nativo NO permite filtrado per-client server-side — cualquier cliente con citizen_id derivable (vía roster `GetPlayers()`) lee balance ajeno. Contradice principio Zero-Knowledge.
+
 | Key pattern | Type | Owner writer | Reader pattern | Privacy classification |
 |---|---|---|---|---|
-| `bank.balance.<citizen_id>` | `number` (DECIMAL atomic — fiat units, e.g. `1234.56` for €1,234.56) | `sonar_bank_app/server/balance_publisher.lua` | Frontend `AddStateBagChangeHandler('global', 'bank.balance.<citizen_id_self>')` | **Public-safe.** Citizen propio + servidor ven. Otros clients pueden leer numéricamente — no PII directa. |
-| `bank.savings.<citizen_id>` | `number` (DECIMAL atomic) | mismo | mismo | Public-safe. Mismo razonamiento balance. |
 | `bank.business_treasury.<company_id>` | `number` (DECIMAL atomic) | `sonar_bank_app/server/treasury_publisher.lua` | Frontend treasury widget Empresas Dashboard | Public-safe — treasury balances son visibles en Government Console anyway. |
 | `bank.compliance.<citizen_id>.public` | `{ has_active_flags: boolean, count: number }` | `sonar_bank_app/server/compliance_publisher.lua` (raise hooks Security Lead spec post-H2) | Frontend badge UI | **Public-safe reduced shape.** NO detalle (flag_type, severity, evidence). Detalle vía CP1-B NetEvent admin-only. |
 | `bank.govt.taxBrackets` | `[{ income_min, income_max, rate }, ...]` | `sonar_bank_app/server/govt_publisher.lua` (admin sets via callback C015) | Frontend tax calculator | **Public-safe.** Tax brackets son ley pública en el server. |
@@ -66,15 +72,20 @@ CP1 distingue dos sub-tracks per privacy boundary:
 
 **Pattern:** **NO se publican en GlobalState.** Backend fires NetEvent dirigido al target source con ACE check server-side antes.
 
+> **Notational disclaimer (v1.0.1 R1 cross-ref H001 fix):** `source.citizen_id ∈ {...}` es shorthand para `auth.require_participant(source, allowed_ids)` helper canonical (`@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` §2.3 + §A11). NO accesso `source.citizen_id` directo (source es player handle integer, NO table — H001 fix).
+
 | Domain | NetEvent name | Target audience | ACE / role check |
 |---|---|---|---|
+| **Account balance update (NEW v1.0.1 R1 M004)** | `sonar:bank:balance:update` | **Owner only** — single target source resolved from `Bridges.Player.GetSourceByCitizenId(citizen_id)` | Server-side: target online AND `Bridges.Player.GetCitizenId(target_source) == account.owner_id`. NO admin broadcast (admin path uses `:adminAudit` separate event con P11 ACE). |
+| **Savings balance update (NEW v1.0.1 R1 M004 parity)** | `sonar:bank:savings:update` | Owner only — same target resolution. | Same nil-safe + ownership check. |
+| **Account balance admin audit (NEW v1.0.1 R1 M004)** | `sonar:bank:balance:adminAudit` | Admin govt clients ONLY (audit query response) | `IsPlayerAceAllowed(src, 'sonar.bank.govt.audit.full')` (P11). Fired ON-DEMAND post C035 audit query callback. NO push automatic on every mutation. |
 | Compliance flag detail | `sonar:bank:compliance:detail` | Admin govt clients only | `IsPlayerAceAllowed(src, 'sonar.bank.govt.audit.full')` |
-| Escrow state change | `sonar:bank:escrow:stateChanged` | Payer source + Payee source + admin clients (3 fires separados) | Per-target identity check: source.citizen_id ∈ {escrow.payer_id, escrow.payee_id} OR `sonar.bank.govt.audit.full` |
+| Escrow state change | `sonar:bank:escrow:stateChanged` | Payer source + Payee source + admin clients (3 fires separados) | Per-target identity check: `auth.require_participant(source, {escrow.payer_id, escrow.payee_id})` OR `sonar.bank.govt.audit.full` |
 | Audit ledger query result | `sonar:bank:audit:queryResult` | Requester (per Q13 3 scopes — Mis cuentas / Mis empresas / Todas govt) | Per-scope ACE: `sonar.bank.audit.self` / `sonar.bank.empresas.<id>` / `sonar.bank.govt.audit.full` |
-| Loan approval/rejection | `sonar:bank:loan:decisionResult` | Loan applicant source + admin source | source.citizen_id == loan.applicant_id OR admin |
+| Loan approval/rejection | `sonar:bank:loan:decisionResult` | Loan applicant source + admin source | `auth.require_owner(source, loan.applicant_id)` OR admin |
 | Election votes raw access | `sonar:bank:elections:votesRaw` | Admin govt clients only (Q-DB-H dual-layer privacy) | `IsPlayerAceAllowed(src, 'sonar.bank.govt.audit.full')` |
-| Business treasury approval pending | `sonar:bank:business:approvalPending` | Multi-signers de la empresa (M-of-N) | source.citizen_id ∈ business.signers_list |
-| Physical card pin failure / freeze | `sonar:bank:card:pinFailure` | Card owner source only | source.citizen_id == card.owner_id |
+| Business treasury approval pending | `sonar:bank:business:approvalPending` | Multi-signers de la empresa (M-of-N) | `auth.require_participant(source, business.signers_list)` |
+| Physical card pin failure / freeze | `sonar:bank:card:pinFailure` | Card owner source only | `auth.require_owner(source, card.owner_id)` |
 
 **Implementación standard (boilerplate):**
 
@@ -95,6 +106,83 @@ local function fire_restricted(event_name, citizen_id, payload, ace_perm)
 end
 ```
 
+#### 2.2.1 `sonar:bank:balance:update` canonical spec (NEW v1.0.1 R1 — M004)
+
+**Purpose:** notify balance owner of any balance change (mutation reactivity replaces deprecated CP1-A StateBag pattern eliminado v1.0.1 R1).
+
+**Server-side fire pattern (boilerplate canonical):**
+
+```lua
+-- sonar_bank_app/server/balance_publisher.lua (v1.0.1 R1 rewrite from CP1-A → CP1-B)
+local function publish_balance_update(citizen_id, balance, account_class, opts)
+  -- account_class: 'main' | 'savings' (route to corresponding event below).
+  -- opts: { correlation_id?, occurred_at? } optional.
+
+  -- Resolve target source from citizen_id (offline → no fire, balance persisted DB anyway).
+  local target_source = Bridges.Player.GetSourceByCitizenId(citizen_id)
+  if not target_source or target_source <= 0 then
+    -- Player offline → skip event fire. Balance read on next login via callback C001b `bank.balance.snapshot` o playerJoining hook §2.2.2.
+    return
+  end
+
+  -- Server-side ownership check defensive (target must own this citizen_id).
+  local target_cid = Bridges.Player.GetCitizenId(target_source)
+  if target_cid ~= citizen_id then
+    -- Source mismatch — defensive abort, do NOT fire (would leak balance to wrong player on edge case).
+    log_security_alert('balance_publish_source_mismatch', { citizen_id = citizen_id, target_source = target_source, resolved_cid = target_cid })
+    return
+  end
+
+  -- Event name routing per account_class
+  local event_name = (account_class == 'savings') and 'sonar:bank:savings:update' or 'sonar:bank:balance:update'
+
+  -- Latent fire (NOT critical-priority — balance updates batched-acceptable).
+  TriggerLatentClientEvent(event_name, target_source, 50000, {  -- 50KB/s budget per Q-FE-pre cap (Frontend Lead amendable H4)
+    citizen_id = citizen_id,
+    balance = balance,
+    account_class = account_class,
+    occurred_at = (opts and opts.occurred_at) or (os.time() * 1000),
+    correlation_id = (opts and opts.correlation_id) or Bridges.UUID.v4(),
+    schema_version = '1.0',
+  })
+end
+```
+
+**Performance budget:**
+
+- Per-event payload: ~150 bytes. Latent rate budget 50KB/s/player → 333 events/s sustained per player. Bank balance changes typically <1/min — headroom enormous.
+- Replaces CP1-A `GlobalState[key] = value` (FiveM native event ~80 bytes broadcast a todos N clients) → migration **REDUCES total bandwidth** en N-player server (de O(N) por balance change a O(1)).
+
+#### 2.2.2 Initial balance snapshot — replace hydrate-on-boot pattern (NEW v1.0.1 R1 — M004)
+
+**Pre-M004 pattern:** §4.1 boot init hydrate ALL balances from DB → publish to GlobalState. Player connects → reads StateBag immediately.
+
+**Post-M004 pattern:** balance NO se hydrata broadcast. Player connect:
+
+1. **Server-side `playerJoining` handler** (`sonar_bank_app/server/connect_handler.lua`):
+   ```lua
+   AddEventHandler('playerJoining', function()
+     local source = source
+     -- Defer balance fetch until citizen_id resolves post-character-load.
+     Citizen.SetTimeout(2000, function()
+       local cid = Bridges.Player.GetCitizenId(source)
+       if not cid then return end  -- char not loaded; client will request via callback C001b
+       local balance = MySQL.scalar.await('SELECT balance FROM sonar_bank_accounts WHERE owner_id = ? AND account_class = ? LIMIT 1', { cid, 'main' })
+       local savings = MySQL.scalar.await('SELECT balance FROM sonar_bank_accounts WHERE owner_id = ? AND account_class = ? LIMIT 1', { cid, 'savings' })
+       publish_balance_update(cid, balance or 0, 'main', { correlation_id = 'connect_initial' })
+       publish_balance_update(cid, savings or 0, 'savings', { correlation_id = 'connect_initial' })
+     end)
+   end)
+   ```
+
+2. **Client-side fallback callback C001b** `sonar:bank:balance:snapshot`:
+   - Auth: AUTH-OWNER (returns own balances only).
+   - Returns `{ main: number, savings: number, occurred_at, correlation_id }`.
+   - Use case: client UI mount lifecycle requests balances if no `:update` event received yet (timing race).
+   - Spec canonical en `@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` §9 NEW callback C001b (v1.0.1 R1).
+
+**Bandwidth impact:** N-player server: previously hydrate on boot = N × StateBag write broadcast (O(N²) read-fan). NEW pattern: lazy per-player connect = O(1) per join. **Significant bandwidth reduction.**
+
 ### 2.3 NO publicar (out-of-CP1 — internal server only)
 
 | Data | Razón NO bag/event |
@@ -113,8 +201,8 @@ end
 
 | Componente | Valores válidos | Ejemplo |
 |---|---|---|
-| `bank` | Prefijo fijo Bank Phase A. | `bank.balance.123` |
-| `<domain>` | `balance` / `savings` / `business_treasury` / `compliance` / `govt` / `bridges` / `elections` / `recurring`. | `bank.balance.123` |
+| `bank` | Prefijo fijo Bank Phase A. | `bank.business_treasury.abc-123` (post v1.0.1 R1 M004: `bank.balance.*` + `bank.savings.*` removed from StateBag — see §2.1) |
+| `<domain>` | `business_treasury` / `compliance` / `govt` / `bridges` / `elections` / `recurring`. **REMOVED v1.0.1 R1 (M004):** `balance` / `savings` (now CP1-B NetEvent — see §2.2.1). | `bank.business_treasury.abc-123` |
 | `<id_or_scope>` | `<citizen_id>` (uuid o numeric per `sonar_citizens.id` Q-DB-A) / `<company_id>` (CHAR(36)) / `<election_id>` / `'taxBrackets'` (literal scope). | `bank.business_treasury.abc-123-def-456` |
 | `<sub_field>` opcional | `public` / `summary` / `active` (reduced shape qualifiers). | `bank.compliance.123.public` |
 
@@ -125,6 +213,7 @@ end
 - ❌ ~~`Bank.Balance.123`~~ — PascalCase (rompe convention).
 - ❌ ~~`bank.balance.123.detail.transactions`~~ — depth >3 (shallow limitation + confusing).
 - ❌ Keys dynamic per-session (e.g. `bank.session.<random>`) — no es state bag use case.
+- ❌ **NEW v1.0.1 R1 (M004 enforcement) AP-CP1-1:** ~~`bank.balance.<cid>`~~ + ~~`bank.savings.<cid>`~~ — financial PII tier prohibido en CP1-A. Use CP1-B NetEvent `sonar:bank:balance:update` / `sonar:bank:savings:update` per §2.2.1.
 
 ---
 
@@ -134,33 +223,57 @@ end
 
 `onResourceStart('sonar_bank_app')`:
 1. Verify `BankStatus.IsDisabled()` — si disabled, **NO publish bags** (defensive).
-2. Hydrate bags desde DB:
+2. Hydrate bags desde DB (v1.0.1 R1 reduced scope post-M004):
    ```
-   SELECT bank_account_id, citizen_id, balance, account_class FROM sonar_bank_accounts WHERE owner_type = 'citizen';
-   → for each: GlobalState['bank.balance.<citizen_id>'] = balance (filter account_class = 'main').
-   → for each: GlobalState['bank.savings.<citizen_id>'] = balance (filter account_class = 'savings').
+   -- REMOVED v1.0.1 R1 (M004): NO hydrate bank.balance.* / bank.savings.* — these now lazy-publish per-player connect via §2.2.2 pattern.
+   -- Remaining hydrates:
+   SELECT * FROM sonar_bank_business_treasuries → GlobalState['bank.business_treasury.<company_id>'] = balance.
+   SELECT * FROM sonar_bank_recurring_summary → GlobalState['bank.recurring.<citizen_id>.summary'] = ...
    ```
 3. Hydrate `bank.govt.taxBrackets` desde `sonar_bank_tax_brackets`.
 4. Hydrate `bank.bridges.status` desde `sonar_bank_status` (CP8 FSM single-row).
-5. Log info `[SONAR][bank] hydrate complete: <N> bags initialized`.
+5. Hydrate `bank.compliance.<citizen_id>.public` reduced shape.
+6. Hydrate `bank.govt.subsidies.active`.
+7. Hydrate `bank.elections.<election_id>` (active elections only).
+8. **NEW v1.0.1 R1 (M004):** Register `playerJoining` handler per §2.2.2 — lazy publish balance/savings on connect.
+9. Log info `[SONAR][bank] hydrate complete: <N> bags initialized (M004 R1: balance/savings excluded — lazy per-connect publish active).`
 
-### 4.2 Update on mutation
+### 4.2 Update on mutation (v1.0.1 R1 amended)
 
-Cada lib Bank mutation (transfer, deposit, escrow release, payroll, etc.) actualiza bag(s) afectados **en mismo transaction commit DB**. Pattern:
+Cada lib Bank mutation (transfer, deposit, escrow release, payroll, etc.) actualiza state(s) afectado(s) **en mismo transaction commit DB**. **v1.0.1 R1 change:** balance/savings updates ahora usan helper `publish_balance_update(cid, value, account_class, opts)` (NetEvent CP1-B) — NUNCA `GlobalState['bank.balance.*']` direct write (eliminated v1.0.1 R1).
+
+Pattern boilerplate post-M004:
 
 ```lua
-local function transfer_atomic(payer_cid, payee_cid, amount, reason)
+local function transfer_atomic(payer_cid, payee_cid, amount, reason, opts)
+  -- ... DB transaction begin + UPDATE accounts + INSERT movements + INSERT audit ...
   MySQL.transaction.await({...})  -- DB atomic
-  -- post-commit success:
-  local new_payer_balance = GlobalState['bank.balance.' .. payer_cid] - amount
-  local new_payee_balance = GlobalState['bank.balance.' .. payee_cid] + amount
-  GlobalState['bank.balance.' .. payer_cid] = new_payer_balance
-  GlobalState['bank.balance.' .. payee_cid] = new_payee_balance
+
+  -- Post-COMMIT side effects:
+  -- (1) Balance updates — v1.0.1 R1 M004 pattern (CP1-B NetEvent target):
+  publish_balance_update(payer_cid, payer_new_balance, 'main', { correlation_id = opts.correlation_id })
+  publish_balance_update(payee_cid, payee_new_balance, 'main', { correlation_id = opts.correlation_id })
+
+  -- (2) Other StateBag updates remain CP1-A (e.g. business_treasury, recurring summary):
+  if opts.affected_company_id then
+    GlobalState['bank.business_treasury.' .. opts.affected_company_id] = treasury_new_balance  -- CP1-A still OK
+  end
+
+  -- (3) NetEvent fires (other CP1-B domains): escrow, compliance, etc — unchanged.
   -- audit ledger append + correlation-id metadata + idempotency commit (libs separadas)
 end
 ```
 
-**Invariant:** bag value siempre refleja DB authoritative balance post-commit. Pre-commit (mid-transaction) NO update bag — evita inconsistency si transaction rollback.
+**Anti-pattern AP-CP1-1 prohibido (v1.0.1 R1 M004 enforcement):**
+```lua
+-- ❌ NUNCA. v1.0.1 R1 eliminó CP1-A para balance/savings.
+GlobalState['bank.balance.' .. cid] = balance
+
+-- ✅ SIEMPRE.
+publish_balance_update(cid, balance, 'main', { correlation_id = ... })
+```
+
+**Invariant:** state value siempre refleja DB authoritative balance post-commit. Pre-commit (mid-transaction) NO update state — evita inconsistency si transaction rollback.
 
 ### 4.3 Cleanup on disconnect / cleanup periodic
 
@@ -193,17 +306,22 @@ end
 
 ### 5.2 Read-side performance Frontend
 
-Frontend Lead consume via `AddStateBagChangeHandler('global', 'bank.balance.<citizen_id_self>', handler)` para subscription reactive. NO query polling. Throughput driven by Backend emit rate.
+**v1.0.1 R1 M004 update:** balance/savings reactive consumption via `RegisterNetEvent('sonar:bank:balance:update', handler)` + `RegisterNetEvent('sonar:bank:savings:update', handler)` (NetEvent CP1-B) — replaces deprecated `AddStateBagChangeHandler` pattern para estos dos domains.
+
+Other public bags (business_treasury / govt / bridges / elections / recurring summary / compliance public) consume via `AddStateBagChangeHandler('global', '<key>', handler)` (CP1-A unchanged).
+
+NO query polling. Throughput driven by Backend emit rate.
 
 ---
 
 ## 6. Security threats + mitigations
 
-### 6.1 Threat: client lee balance otro citizen
+### 6.1 Threat: client lee balance otro citizen — RESOLVED v1.0.1 R1 (M004)
 
-- **Posibilidad:** YES — `GetStateBagValue('global', 'bank.balance.456')` desde client 123. Engine no filtra reads.
-- **Mitigation:** balance NO es PII directa. Player puede inspeccionar otros balances pero NO actuar sin auth server-side. Mutaciones requieren callback con auth check server-side (C-BE-02).
-- **Acceptable risk:** YES, per founder scope public-safe (game con economía visible — feature, no bug).
+- **Pre v1.0.1 R1 (legacy CP1-A):** ~~Posibilidad YES — `GetStateBagValue('global', 'bank.balance.456')` desde client 123. Engine no filtra reads. Mitigated as accepted risk.~~
+- **v1.0.1 R1 status (post M004 founder APPROVED):** **MITIGATED ARCHITECTURAL.** `bank.balance.<cid>` + `bank.savings.<cid>` removed from CP1-A. NetEvent CP1-B `sonar:bank:balance:update` fires only to owner source post defensive ownership check. Other clients NO reciben balance ajeno via engine-native channel.
+- **Residual surface:** admin govt audit query C035 emits `sonar:bank:balance:adminAudit` to admin source ONLY (P11 ACE-checked). Non-admin clients cannot subscribe.
+- **Acceptable risk:** ZERO leak. Financial-grade Zero-Knowledge principle satisfied (founder pillar).
 
 ### 6.2 Threat: client lee compliance detail
 
@@ -261,7 +379,7 @@ Frontend Lead consume via `AddStateBagChangeHandler('global', 'bank.balance.<cit
 | Version | Fecha | Cambios |
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial post Q-BE-pre-02/03 founder LOCKED. CP1 re-definido sub-tracks A/B. 7 public bags + 7 restricted NetEvent domains. |
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Frontend Lead (consumer consultative) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_05_*` → `docs/technical/bank_phase_a/c_be_05_*`. Pointer cross-ref en `docs/technical/02_events_catalog.md` v1.3 LOCKED §statebags-global-publishers. |
+| **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 architectural patch Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 DRAFT (founder yaboula APPROVED 2026-05-06): **M004** (`bank.balance.<cid>` + `bank.savings.<cid>` migrated CP1-A → CP1-B; `sonar:bank:balance:update` + `sonar:bank:savings:update` + `sonar:bank:balance:adminAudit` NEW NetEvents canonical; `publish_balance_update()` helper canonical; `playerJoining` lazy publish handler; AP-CP1-1 anti-pattern explicit; bandwidth impact O(N²)→O(1) reduction; financial-grade Zero-Knowledge principle non-negotiable). Sin schema migration impact. **Cross-cutting LOCK-time impacts** aplicados atomic: C-BE-01 (+3 NetEvents → 54 events total), C-BE-02 (callback side effects refactor + new C001b snapshot callback), C-BE-04 (reconciliation pipeline §7.1 step 5 emit refactor). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2 RE-AUDIT. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
 
-| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Frontend Lead (consumer consultative — consume StateBag change handlers per CP1-A pattern §3-§4) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_05_*` → `docs/technical/bank_phase_a/c_be_05_*`. Pointer cross-ref en `docs/technical/02_events_catalog.md` v1.3 LOCKED §statebags-global-publishers (sub-section reference). |
-
-— **C-BE-05 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off founder + Backend Lead. **Effective immediately.** Security Lead recibe via H2 (audit privacy boundary CP1-A vs CP1-B). Frontend Lead via H4. Amendments require formal Round 1/2/3 protocol.
+— **C-BE-05 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** Frontend Lead via H4 future inherits CP1-B pattern para balance/savings. Amendments adicionales require formal Round 2/3 protocol.

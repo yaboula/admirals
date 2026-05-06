@@ -1,11 +1,11 @@
-# C-BE-01 — Events Catalog v1.3 Bank Phase A (DRAFT v0.1)
+# C-BE-01 — Events Catalog v1.3 Bank Phase A (LOCKED v1.0.1 R1) — 54 events
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** Frontend Lead (consume NetEvents client-side handlers + StateBag change handlers) + Security Lead (audit events + ACE check checkpoints).
-> **Status:** 🟡 **DRAFT v0.1 — review window open.** No LOCKED hasta sign-off triple founder + Backend + Frontend (consultative) + Security (consultative).
-> **Fecha:** 2026-05-06 (BANK-BE.1).
-> **Path canonical post-LOCKED:** extends `docs/technical/02_events_catalog.md` v1.2 → v1.3 con NEW §X Bank Phase A.
-> **Cross-ref foundation:** C-BE-05 v0.1 (StateBags privacy contract) + C-BE-03 v0.1 (8 FSMs transitions emit events) + C-BE-04 v0.1 (Bridges API).
+> **Status:** � **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
+> **Fecha:** 2026-05-06 (BANK-BE.1 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0.1 R1 LOCKED. Pointer §X.NEW `docs/technical/02_events_catalog.md` v1.3.1.
+> **Cross-ref:** C-BE-02 v1.0.1 R1 (40+1 callbacks — C001b NEW M004) + C-BE-03 v1.0.1 R1 (FSM hardening) + C-BE-04 v1.0.1 R1 (Bridges) + C-BE-05 v1.0.1 R1 (CP1-A → CP1-B M004 architectural).
 
 ---
 
@@ -34,11 +34,11 @@
 
 | Categoría | Pattern | Cantidad Phase A |
 |---|---|---|
-| **2.1 NetEvents server→client (público)** | `TriggerClientEvent` o `TriggerLatentClientEvent` a target source(s). | ~22 events |
-| **2.2 NetEvents server→admin (restringido ACE)** | `TriggerLatentClientEvent` con ACE check `sonar.bank.govt.audit.full`. | ~8 events |
-| **2.3 NetEvents client→server (callbacks user-initiated)** | `RegisterServerEvent` + `lib.callback.register` ox_lib pattern. | ~40 (los ~40 callbacks C-BE-02 — registrados aquí solo sumariamente, detalle full en C-BE-02). |
+| **2.1 NetEvents server→client (público)** | `TriggerClientEvent` o `TriggerLatentClientEvent` a target source(s). | **24 events** (22 + 2 NEW v1.0.1 R1 M004: `balance:update` + `savings:update`) |
+| **2.2 NetEvents server→admin (restringido ACE)** | `TriggerLatentClientEvent` con ACE check `sonar.bank.govt.audit.full`. | **9 events** (8 + 1 NEW v1.0.1 R1 M004: `balance:adminAudit`) |
+| **2.3 NetEvents client→server (callbacks user-initiated)** | `RegisterServerEvent` + `lib.callback.register` ox_lib pattern. | **40+1** (40 callbacks C-BE-02 + C001b NEW v1.0.1 R1 M004 `balance:snapshot` fallback) — detalle full en C-BE-02. |
 | **2.4 AddEventHandler resource-internal (cross-resource sin network roundtrip)** | `AddEventHandler` server-side coordinación entre `sonar_bridges` ↔ `sonar_bank` ↔ `sonar_bank_app`. | ~12 events |
-| **2.5 StateBag change handlers (CP1-A consumption pattern)** | Frontend Lead consume vía `AddStateBagChangeHandler('global', 'bank.<key>', handler)`. | 9 keys (ver C-BE-05 §2.1). |
+| **2.5 StateBag change handlers (CP1-A consumption pattern)** | Frontend Lead consume vía `AddStateBagChangeHandler('global', 'bank.<key>', handler)`. | **7 keys** (9 − 2 v1.0.1 R1 M004: `bank.balance.<cid>` + `bank.savings.<cid>` REMOVED — migrated CP1-B NetEvent). Ver C-BE-05 v1.0.1 R1 §2.1. |
 
 ---
 
@@ -70,6 +70,8 @@
 | `sonar:bank:elections:phaseChanged` | 2 | FSM #5 phase transition | broadcast all (phase change is public) | `{ election_id, phase_from, phase_to, ends_at, candidate_count }` | C-BE-03 §6.3 |
 | `sonar:bank:business:approvalPending` (CP1-B) | 2 | C040 multi-signer create | signers list per ACE | `{ correlation_id, approval_id, action, amount?, expires_at, signers_required }` | C-BE-02 C040 + C-BE-05 §2.2 |
 | `sonar:bank:business:approvalResolved` | 2 | C040 quorum reached / expired / cancelled | initiator + signers + admin | `{ correlation_id, approval_id, resolution: 'approved' \| 'rejected' \| 'expired' \| 'cancelled' }` | C-BE-03 §7.3 |
+| `sonar:bank:balance:update` (CP1-B) **NEW v1.0.1 R1 M004** | 1 | Backend `publish_balance_update(cid, balance, 'main', opts)` post-commit (C001 transfer / C002 savings deposit / C006 close / C009 escrow fund / C010 escrow release / C012 escrow refund / C016 subsidy grant / C018 subsidy claim / C020 loan decide / C021 loan repay / C023 stocks buy / C024 stocks sell / C031 ATM / C032 card request / reconciliation pipeline / Lite Mode AddMoney) | **Owner source ONLY** — single target resolved from `Bridges.Player.GetSourceByCitizenId(citizen_id)` + ownership defensive check | `{ citizen_id, balance, account_class='main', occurred_at, correlation_id, schema_version }` | C-BE-05 v1.0.1 R1 §2.2.1 + C-BE-02 v1.0.1 R1 §6.1 |
+| `sonar:bank:savings:update` (CP1-B) **NEW v1.0.1 R1 M004** | 1 | Backend `publish_balance_update(cid, balance, 'savings', opts)` post-commit (C002 / C003 / C006 / Round-Up auto-deposit) | Owner source ONLY — same target resolution + ownership check | `{ citizen_id, balance, account_class='savings', occurred_at, correlation_id, schema_version }` | C-BE-05 v1.0.1 R1 §2.2.1 |
 
 ### 3.2 Privacy classification per CP1-A/B
 
@@ -103,6 +105,7 @@ end)
 | `sonar:bank:tax:bracketsUpdated` | C015 admin update brackets | Admin govt clients (broadcast confirmation) | `{ correlation_id, brackets_new, updated_by, occurred_at }` | `sonar.bank.govt.tax.write` |
 | `sonar:bank:subsidy:granted` | C016 admin grant subsidy | Recipient + admin | `{ correlation_id, subsidy_id, recipient_citizen_id, amount, category, expires_at }` | `sonar.bank.govt.subsidy.write` |
 | `sonar:bank:cron:tickReport` (Tier 4) | Cron tick recurring + business approvals | DevOps clients only | `{ correlation_id, tick_type, processed_count, errors_count, duration_ms }` | `sonar.devops.bank.diagnostics` |
+| `sonar:bank:balance:adminAudit` (CP1-B) **NEW v1.0.1 R1 M004** | C035 audit query scope='govt_full' on-demand response | Admin govt clients only (audit query response — NO push automatic on every mutation) | `{ correlation_id, citizen_id, balance_main, balance_savings, occurred_at, schema_version }` | `sonar.bank.govt.audit.full` (P11) |
 
 ### 4.2 ACE fire pattern boilerplate
 
@@ -171,6 +174,8 @@ sonar:bank:compliance:resolveFlag    C038 (admin)
 
 sonar:bank:business:treasuryGet      C039
 sonar:bank:business:approvalCreate   C040
+
+sonar:bank:balance:snapshot          C001b  -- NEW v1.0.1 R1 M004 (M004 fallback path post-connect UI mount, AUTH-OWNER own balances only)
 ```
 
 **Detalle full (request schema + response schema + auth + rate-limit + idempotency + side effects + error codes + perf target + test scenarios) en `c_be_02_api_contracts_v1_3.md`.**
@@ -186,7 +191,7 @@ sonar:bank:business:approvalCreate   C040
 | `sonar:bank:internal:movementRecorded` | `sonar_bank/server/movements.lua` post movement INSERT | `sonar_bridges/lib/audit_ledger.lua` (audit append) + `sonar_bank_app/server/round_up.lua` (Round-Up hook) | `{ correlation_id, movement_id, citizen_id, amount, category, balance_after }` | Audit + Round-Up triggers no requieren network roundtrip — same server. |
 | `sonar:bank:internal:fsmTransition` | `<FSM>.Transition` lib post-commit | `sonar_bridges/lib/audit_ledger.lua` + Security Lead C-SEC-01 audit hooks | `{ fsm_name, entity_id, state_from, state_to, triggered_by, correlation_id }` | Centralized audit hook listener. |
 | `sonar:bank:internal:bankStatusChanged` | `Bridges.BankStatus.Transition` | Cron job manager (pause/resume) + StateBag publisher (`bank.bridges.status` emit) + admin notification fire | `{ state_from, state_to, reason, watchdog_metrics }` | FSM #7 cascade trigger. |
-| `sonar:bank:internal:reconciliationApplied` | Reconciliation pipeline §7 batch process | `sonar_bridges/lib/audit_ledger.lua` (batch append) + StateBag emit (`bank.balance.<cid>`) | `{ batch_id, applied_count, citizen_ids, deltas }` | Batch coordination. |
+| `sonar:bank:internal:reconciliationApplied` | Reconciliation pipeline §7 batch process | `sonar_bridges/lib/audit_ledger.lua` (batch append) + **v1.0.1 R1 M004** `publish_balance_update()` per item (CP1-B NetEvent — replaces deprecated `bank.balance.<cid>` StateBag emit) | `{ batch_id, applied_count, citizen_ids, deltas }` | Batch coordination. |
 | `sonar:bank:internal:reconciliationFlagged` | Reconciliation pipeline (CP5 above-threshold) | `sonar_bank_app/server/compliance_publisher.lua` (raise flag `reconciliation_delta_above_threshold`) + admin event fire `sonar:bank:reconciliation:flagRaised` | `{ citizen_id, delta, threshold }` | Compliance integration. |
 | `sonar:bank:internal:complianceFlagRaised` | `sonar_bank_app/server/compliance_publisher.lua` (autoraise rules) | `sonar_bridges/lib/audit_ledger.lua` + StateBag emit (`bank.compliance.<cid>.public` reduced shape per CP1-A) + admin event fire `sonar:bank:compliance:detail` (CP1-B per ACE) | `{ flag_id, citizen_id, flag_type, severity, evidence }` | Triple downstream coordination. |
 | `sonar:bank:internal:idempotencyKeyCommitted` | `IdempotencyKeys.Complete` lib | Audit ledger (optional metadata trace) | `{ key, domain, status: 'completed' \| 'failed' }` | Idempotency observability. |
@@ -230,12 +235,12 @@ return () => {
 };
 ```
 
-### 7.2 Tabla resumen (full detail en C-BE-05 §2.1)
+### 7.2 Tabla resumen (full detail en C-BE-05 v1.0.1 R1 §2.1)
 
 | StateBag key pattern | Type | Frontend consumer widget |
 |---|---|---|
-| `bank.balance.<citizen_id>` | number | Bank app overview balance display |
-| `bank.savings.<citizen_id>` | number | Savings widget |
+| ~~`bank.balance.<citizen_id>`~~ **REMOVED v1.0.1 R1 M004** | ~~number~~ → migrated to CP1-B NetEvent `sonar:bank:balance:update` (§3.1) | Bank app overview balance display — consume vía `RegisterNetEvent('sonar:bank:balance:update')` + C001b `balance:snapshot` fallback (§5 + C-BE-02 §9.5b). |
+| ~~`bank.savings.<citizen_id>`~~ **REMOVED v1.0.1 R1 M004** | ~~number~~ → migrated to CP1-B NetEvent `sonar:bank:savings:update` (§3.1) | Savings widget — consume vía `RegisterNetEvent('sonar:bank:savings:update')` + C001b fallback. |
 | `bank.business_treasury.<company_id>` | number | Empresas Dashboard treasury widget |
 | `bank.compliance.<citizen_id>.public` | `{ has_active_flags, count }` | Compliance badge UI |
 | `bank.govt.taxBrackets` | `[{ income_min, income_max, rate }, ...]` | Tax calculator |
@@ -244,18 +249,20 @@ return () => {
 | `bank.elections.<election_id>` | `{ phase, ends_at, candidate_count }` | Elections widget |
 | `bank.recurring.<citizen_id>.summary` | `{ active_count, next_payment_at }` | Recurring widget |
 
+**v1.0.1 R1 M004 deprecation note:** `bank.balance.<cid>` y `bank.savings.<cid>` REMOVIDOS de CP1-A por financial-grade privacy (Zero-Knowledge para terceros, founder APPROVED 2026-05-06). Frontend consumption pattern post-R1 documentado §3.1 NEW rows + C-BE-05 v1.0.1 R1 §2.2.1 helper canonical `publish_balance_update()`.
+
 ---
 
 ## 8. Tier classification testing matrix Bank Phase A
 
 | Tier | Cantidad | Eventos | Testing requirement |
 |---|---|---|---|
-| **Tier 1 (critical — money correctness)** | 7 | `transfer:complete` + `escrow:created/funded/stateChanged/released` + `loan:decisionResult/defaulted` | 100% test coverage. Smoke chaos test C-DO-01 mandatory. Idempotency replay verified per E14 transition metadata. |
-| **Tier 2 (important — UX critical)** | 12 | `transfer:failed` + `savings:depositComplete/withdrawComplete` + `escrow:disputeOpened/refunded` + `loan:applied/repaymentRecorded` + `recurring:tickFailed/cancelled` + `card:pinFailure` + `elections:phaseChanged` + `business:approvalPending/approvalResolved` | 80% coverage. Manual smoke test scenarios. |
+| **Tier 1 (critical — money correctness)** | **9** (7 + 2 NEW M004) | `transfer:complete` + `escrow:created/funded/stateChanged/released` + `loan:decisionResult/defaulted` + **`balance:update`** (NEW v1.0.1 R1 M004) + **`savings:update`** (NEW v1.0.1 R1 M004) | 100% test coverage. Smoke chaos test C-DO-01 mandatory. Idempotency replay verified per E14 transition metadata. M004 events: privacy boundary T-AMEND-M004.1–7 (C-BE-05 v1.0.1 R1 §1.10). |
+| **Tier 2 (important — UX critical)** | **13** (12 + 1 NEW M004) | `transfer:failed` + `savings:depositComplete/withdrawComplete` + `escrow:disputeOpened/refunded` + `loan:applied/repaymentRecorded` + `recurring:tickFailed/cancelled` + `card:pinFailure` + `elections:phaseChanged` + `business:approvalPending/approvalResolved` + **`balance:adminAudit`** (NEW v1.0.1 R1 M004 admin response) | 80% coverage. Manual smoke test scenarios. |
 | **Tier 3 (informational — nice-to-have)** | 5 | `account:closed` + `recurring:created` + `tax:bracketsUpdated` + `subsidy:granted` + `compliance:detail` | 50% coverage. Visual confirmation only. |
 | **Tier 4 (ornament — Phase A optional)** | 4 | `cron:tickReport` + `bridgesEchoDropped` + `bridgesEchoOrphaned` + `auditLedgerAppended` (DevOps observability) | 0% coverage Phase A. Phase B telemetry feed. |
 
-**Total events Phase A:** 22 server→client público + 8 server→admin + 12 resource-internal + 9 StateBag keys (consumed via handlers) = **51 events catalogados**.
+**Total events Phase A v1.0.1 R1:** 24 server→client público + 9 server→admin + 12 resource-internal + 7 StateBag keys (consumed via handlers, 2 removed M004) + C001b client→server new callback ref C-BE-02 = **54 events catalogados** (51 baseline v1.0 + 3 NEW v1.0.1 R1 M004 — `balance:update` + `savings:update` + `balance:adminAudit`).
 
 ---
 
@@ -271,7 +278,7 @@ sonar:<domain>:<entity>:<verb_or_state>
 |---|---|---|
 | `sonar` | Prefijo fijo (per ADR-013 namespace migration). | `sonar:bank:transfer:complete` |
 | `<domain>` | `bank` (Phase A scope). Otros dominios SONAR (`tablet`, `phone`, `inventory`) en otros catalogs. | mismo |
-| `<entity>` | `transfer`, `savings`, `account`, `escrow`, `tax`, `subsidy`, `loan`, `stocks`, `recurring`, `crypto`, `atm`, `card`, `audit`, `compliance`, `business`, `elections`, `status`, `reconciliation`, `cron`, `internal` (resource-internal sub-namespace). | mismo |
+| `<entity>` | `transfer`, `savings`, `account`, `escrow`, `tax`, `subsidy`, `loan`, `stocks`, `recurring`, `crypto`, `atm`, `card`, `audit`, `compliance`, `business`, `elections`, `status`, `reconciliation`, `cron`, `balance` (NEW v1.0.1 R1 M004), `internal` (resource-internal sub-namespace). | mismo |
 | `<verb_or_state>` | Verb past tense (`complete`, `failed`, `applied`, `recorded`) o noun state change (`stateChanged`, `phaseChanged`, `approvalPending`). | mismo |
 
 ### 9.2 Anti-patterns prohibidos
@@ -358,5 +365,6 @@ Cualquier change Tier 1-2 events post-LOCKED v1.0 requires:
 | **v0.1 DRAFT** | 2026-05-06 (BANK-BE.1) | DRAFT inicial extends v1.2 con ~22 server→client público + 8 server→admin ACE-checked + 12 resource-internal + 9 StateBag keys consumed. Tier classification (7+12+5+4 = 28 NetEvents +9 bags + ~40 callbacks ref C-BE-02 + 12 internal = **51 events catalogados**). |
 
 | **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic post-DRAFT v0.1 review window. Sign-off triple ratificado: founder yaboula APPROVED + Backend Lead self-attested + Frontend Lead (consumer consultative consumer-of-events) acknowledged via H4 future. Promoted DRAFT → canonical: `docs/agents/teams/drafts/be_phase_a/c_be_01_events_catalog_v1_3.md` → `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md`. Pointer §X.NEW Bank Phase A added en `docs/technical/02_events_catalog.md` v1.2 → v1.3 LOCKED. |
+| **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 cross-cutting LOCK-time impact reactive a M004 architectural founder APPROVED 2026-05-06 (CP1-A → CP1-B migration `bank.balance.<cid>` + `bank.savings.<cid>`): **3 NEW NetEvents** — `sonar:bank:balance:update` Tier 1 (CP1-B owner-only §3.1 NEW row + emisor §6.1 reconciliation refactor) + `sonar:bank:savings:update` Tier 1 (CP1-B owner-only §3.1 NEW row, parity savings) + `sonar:bank:balance:adminAudit` Tier 2 (§4.1 NEW row admin govt audit query response P11 ACE on-demand). **+1 NEW callback ref** — C001b `sonar:bank:balance:snapshot` §5 (AUTH-OWNER fallback path post-connect UI mount, detail full C-BE-02 v1.0.1 R1 §9.5b). **2 StateBag keys REMOVED** — §2 categorías ajustada (9 → 7 keys consumed) + §7.2 deprecation note + Frontend consumption pattern reescrito. **Tier classification refresh:** Tier 1 7 → 9 events + Tier 2 12 → 13 events. **Total events catalogados:** 51 → **54** (+3 NEW M004). Cross-cutting impacts: C-BE-02 v1.0.1 R1 (~14 callbacks side effects refactor + C001b NEW) + C-BE-04 v1.0.1 R1 (§7.1 reconciliation emit refactor + §5 Lite Mode AddMoney) + C-BE-05 v1.0.1 R1 (architectural owner contract). Sin schema migration impact (DB Lead consultative confirmed). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
 
-— **C-BE-01 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off ratified founder + Backend Lead. **Effective immediately.** Consumer Leads (Frontend H4 + Security H2) reciben este contrato en estado LOCKED. Amendments requieren formal Round 1/2/3 protocol per `@docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` §amendments.
+— **C-BE-01 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** Frontend Lead recibe vía H3 futuro (54 events canonical — incluye 3 NEW M004 + C001b ref). Amendments adicionales require formal Round 2/3 protocol per `@docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` §amendments.

@@ -1,10 +1,10 @@
-# C-BE-03 — State Machines v1.1 Bank Phase A (DRAFT v0.1)
+# C-BE-03 — State Machines v1.1 Bank Phase A (LOCKED v1.0.1 R1)
 
 > **Owners:** Backend Money & Compatibility Lead + Database & Data Integrity Lead (joint).
 > **Consumer Leads:** Security Lead (audit transitions) + Frontend Lead (UI badges per state).
-> **Status:** 🟡 **DRAFT v0.1 — review window open.** No LOCKED hasta sign-off triple founder + Backend + DB + Security (consultative) + Frontend (consultative).
-> **Fecha:** 2026-05-06 (BANK-BE.0).
-> **Path canonical post-LOCKED:** extends `docs/technical/05_state_machines.md` v1.2 → v1.3 con NEW §X Bank Phase A FSMs.
+> **Status:** � **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
+> **Fecha:** 2026-05-06 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0.1 R1 LOCKED. Pointer §X.NEW `docs/technical/05_state_machines.md` v1.3.1.
 > **Joint authoring:** DB Lead aporta persistence column + DDL constraints. Backend Lead aporta runtime logic + transition guards + side effects + lib spec.
 
 ---
@@ -64,9 +64,9 @@ Founder approval 2026-05-06: **8 FSMs Phase A** consolidados. `credit_score_reco
 | From | To | Trigger event | Guard | Action atomic |
 |---|---|---|---|---|
 | `pending_funding` | `funded` | C009 `bank.escrow.fund` callback success | payer_balance ≥ escrow_amount, idempotency_key fresh | UPDATE escrows.state, UPDATE bank_accounts.balance (payer + escrow), INSERT 2 movements + audit |
-| `funded` | `released_partial` | C010 `bank.escrow.release` callback (partial mode) | release_amount < escrow_amount, payer/payee/admin permission | INSERT releases, UPDATE escrows.balance + state, UPDATE accounts, audit |
-| `funded` | `released_full` | C010 `bank.escrow.release` callback (full mode) | release_amount == escrow_amount | INSERT release row terminal, UPDATE state, audit |
-| `released_partial` | `released_full` | C010 final release | release_amount == remaining_balance | INSERT release final, audit |
+| `funded` | `released_partial` | C010 `bank.escrow.release` callback (partial mode) | **`release_amount > 0` AND `release_amount < escrow_amount`** AND payer/payee/admin permission AND `escrow_amount > 0` (defensive) | INSERT releases, UPDATE escrows.balance + state, UPDATE accounts, audit |
+| `funded` | `released_full` | C010 `bank.escrow.release` callback (full mode) | **`release_amount > 0` AND `release_amount == escrow_amount`** AND `escrow_amount > 0` | INSERT release row terminal, UPDATE state, audit |
+| `released_partial` | `released_full` | C010 final release | **`release_amount > 0` AND `release_amount == remaining_balance`** AND `remaining_balance > 0` | INSERT release final, audit |
 | `released_partial` | `disputed` | C011 `bank.escrow.dispute` callback | requester ∈ {payer, payee} OR admin | UPDATE state, INSERT dispute_reason, audit |
 | `funded` | `disputed` | C011 `bank.escrow.dispute` | mismo | mismo |
 | `disputed` | `released_full` | admin resolution C010 force | admin role check | audit + state |
@@ -78,6 +78,7 @@ Founder approval 2026-05-06: **8 FSMs Phase A** consolidados. `credit_score_reco
 - `escrows.balance` == sum(release events remaining) — pre-Q12 post-T4 escrow balance derivable desde releases log Q-DB-I-style. **Backend Lead Phase A:** persistir `balance` material + verify on every transition (defensive).
 - Sum(payer_account.delta + payee_account.delta + escrow_account.delta) per transition == 0 (zero-sum money movement).
 - Solo terminal states `released_full` + `refunded` cierran escrow row (post-terminal cualquier callback retorna `INVALID_TRANSITION`).
+- **NEW v1.0.1 R1 (H005 fix):** Todos los release transitions del FSM #1 escrow_lifecycle DEBEN guardar `release_amount > 0` explicit + `escrow_amount > 0` o `remaining_balance > 0` defensive check. Zero-value releases prohibidos — error code `INVALID_PAYLOAD` con field=`release_amount` y reason `must_be_positive`. Esto previene movement spam + audit noise + token bucket drainage attack.
 
 ### 2.4 Side effects per transition
 
@@ -86,6 +87,12 @@ Founder approval 2026-05-06: **8 FSMs Phase A** consolidados. `credit_score_reco
 - NetEvent: `sonar:bank:escrow:stateChanged` fire a {payer_source, payee_source, admin_sources_active}.
 - Audit ledger: 1 entry per transition con event_type `escrow_state_change` + correlation_id + before/after state + amount.
 - Compliance flags raise check: `large_transfer` pattern (Security Lead C-SEC-03 spec post-H2) si amount > €10k threshold.
+- **NEW v1.0.1 R1 (H005 callback-level enforcement):** C010 `bank.escrow.release` (`@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` §9.10) DEBE validar `payload.release_amount > 0` ANTES del FSM transition attempt. FSM guard es defensive secondary line. Validation order:
+  1. Schema validation (`release_amount` is number).
+  2. Positive check (`release_amount > 0`).
+  3. Auth check (payer/payee/admin per AUTH-OWNER_OR_PARTICIPANT or AUTH-ROLE_OR_OWNER).
+  4. FSM guard re-validates positive (defensive double-check) + boundary check vs `remaining_balance`.
+  5. Atomic transaction execute.
 
 ---
 
@@ -300,17 +307,19 @@ Bridges.BankStatus.RegisterChangeHandler(fn) → unregister_fn
 
 | State | Descripción | Terminal |
 |---|---|---|
-| `locked` | Key inserted con `INSERT IGNORE`. Operation in flight. | NO |
+| `locked` | Key inserted con `INSERT IGNORE`. Operation in flight. **NEW v1.0.1 R1 (M005):** TTL 10min `ttl_expires_at` defensive — orphan keys post-crash reclaimable via cron. | NO (transient — debe transit a `completed`/`failed` o ser orphan-cleaned). |
 | `completed` | Operation finished success. `result_payload` JSON cached. | **YES** (until TTL 7d expiry purge). |
 | `failed` | Operation finished error. `result_payload` JSON contains error details. | **YES** (until TTL 7d expiry purge). |
+| `orphan_purged` | **NEW v1.0.1 R1 (M005):** transient marker for keys que estuvieron en `locked` past TTL → cron cleanup transition. Logged + audited. Row eligible for reuse with same key (rare scenario — fresh `INSERT IGNORE` succeeds). | **YES** (immediately purged). |
 
 ### 9.2 Transitions
 
 | From | To | Trigger | Guard |
 |---|---|---|---|
-| (insert) | `locked` | `IdempotencyKeys.Lock(key, domain, payload_hash)` | INSERT IGNORE (key not exist) |
-| `locked` | `completed` | `IdempotencyKeys.Complete(key, result_payload)` | operation success path |
-| `locked` | `failed` | `IdempotencyKeys.Fail(key, error_payload)` | operation error path |
+| (insert) | `locked` | `IdempotencyKeys.Lock(key, domain, payload_hash)` | INSERT IGNORE (key not exist) — **set `ttl_expires_at = NOW() + 10min`** (v1.0.1 R1 M005) |
+| `locked` | `completed` | `IdempotencyKeys.Complete(key, result_payload)` | operation success path — set `ttl_expires_at = NOW() + 7d` |
+| `locked` | `failed` | `IdempotencyKeys.Fail(key, error_payload)` | operation error path — set `ttl_expires_at = NOW() + 7d` |
+| `locked` | `orphan_purged` | **NEW v1.0.1 R1 (M005):** Cron `IdempotencyKeys.PurgeOrphans()` tick — query `WHERE state='locked' AND ttl_expires_at < NOW()` → delete rows + audit entry per row | `ttl_expires_at < NOW()` (10min stale) |
 
 **Replay logic** (Q-BE-pre-06 founder approved storage `result_payload` JSON):
 
@@ -324,8 +333,25 @@ Bridges.BankStatus.RegisterChangeHandler(fn) → unregister_fn
 - DB: `sonar_bank_idempotency_keys` UPDATE state + result_payload JSON.
 - StateBag: NO (internal).
 - NetEvent: NO (internal).
-- Audit ledger: NO (idempotency es backend mechanism, no business audit event).
-- Cron: TTL purge 7d cron tick (DevOps Lead H4 deploy).
+- Audit ledger: **NEW v1.0.1 R1 (M005):** entry `event_type='idempotency_key_orphan_purged'` por cada row purged orphan post-crash. Forensics shape `{key, domain, payload_hash, locked_at, ttl_expires_at, purged_at, source_resource}`.
+- Cron:
+  - **TTL purge 7d** (existing): `WHERE state IN ('completed','failed') AND ttl_expires_at < NOW()` daily tick.
+  - **NEW v1.0.1 R1 (M005) Orphan purge 10min:** cron tick **frequency 5min** runs `IdempotencyKeys.PurgeOrphans()`:
+    - Query `WHERE state='locked' AND ttl_expires_at < NOW()`.
+    - For each orphan: DELETE row + INSERT audit ledger entry `event_type='idempotency_key_orphan_purged'`.
+    - Log warn `idempotency: purged N orphan keys (post-crash recovery)`.
+  - DevOps Lead H4 deploy schedule both crons.
+
+### 9.4 Schema impact (v1.0.1 R1 M005)
+
+**DB Schema v2.0 LOCKED PROVISIONAL** `sonar_bank_idempotency_keys` (migration 028) ya tiene column `ttl_expires_at` — reusable. Patch v1.0.1 R1 reusa columna existente sin migration adicional:
+
+- `state='locked'` rows: `ttl_expires_at = NOW() + 10min` (overload semantic — column purpose extends para locked TTL también).
+- `state='completed'/'failed'` rows: `ttl_expires_at = NOW() + 7d` (existing).
+
+**DB Lead consultative confirmation:** column `ttl_expires_at` schema permits both semantics ✅. No DB Lead reactivation needed.
+
+**Cross-cutting C-BE-02 §6.2 audit ENUM addition:** entry `idempotency_key_orphan_purged` (forensics).
 
 ---
 
@@ -440,7 +466,7 @@ Cada FSM requires smoke test cases:
 | Version | Fecha | Cambios |
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial post Q-BE-pre-01 founder LOCKED 8 FSMs. credit_score_recompute + audit_archive deferred Phase B. |
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested. **DB Lead joint sign-off DEFERRED** — trigger formal post-H2 Security Lead audit. Promoted: `drafts/be_phase_a/c_be_03_*` → `docs/technical/bank_phase_a/c_be_03_*`. Pointer §X.NEW en `docs/technical/05_state_machines.md` v1.2 → v1.3 LOCKED. |
+| **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 surgical patches Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 (founder APPROVED 2026-05-06): **H005** (FSM #1 escrow zero-amount release guard — `release_amount > 0` + defensive `escrow_amount > 0` boundary checks across 3 transitions; callback C010 enforcement order §2.4) + **M005** (FSM #8 idempotency_lifecycle — `locked` orphan TTL 10min via column `ttl_expires_at` reuse + cron `PurgeOrphans` 5min frequency + new state `orphan_purged` + audit ENUM `idempotency_key_orphan_purged`). Sin schema migration impact (DB Lead consultative confirmed column reuse). DB Lead joint endorsement deferred trigger preserved per v1.0. Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS + DB Lead consultative endorsed. |
 
-| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested. **DB Lead joint sign-off DEFERRED** — DB Lead Standby reactivation trigger formal post-H2 Security Lead audit (low risk: 8 FSMs estructurales LOCKED en DB Schema v2.0 PROVISIONAL — DB Lead implícitamente endorsed via schema consistency). Promoted: `drafts/be_phase_a/c_be_03_*` → `docs/technical/bank_phase_a/c_be_03_*`. Pointer §X.NEW en `docs/technical/05_state_machines.md` v1.2 → v1.3 LOCKED. |
-
-— **C-BE-03 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off founder + Backend Lead. **DB Lead joint endorsement deferred trigger** — pending DB Lead Standby reactivation signature post-H2 audit completion. Amendments require formal Round 1/2/3 protocol.
+— **C-BE-03 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS + DB Lead consultative. **DB Lead joint endorsement formal deferred** preserved. Amendments adicionales require formal Round 2/3 protocol.

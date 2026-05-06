@@ -1,11 +1,11 @@
-# C-BE-02 — API Contracts v1.3 Bank Phase A — ~40 callbacks (DRAFT v0.1)
+# C-BE-02 — API Contracts v1.3 Bank Phase A — 40+1 callbacks (LOCKED v1.0.1 R1)
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** Frontend Lead (consume callbacks UI) + Security Lead (audit auth + ACE matrix + idempotency + rate-limits).
-> **Status:** 🟡 **DRAFT v0.1 — review window open.** No LOCKED hasta sign-off triple founder + Backend + Frontend (consultative) + Security (consultative).
-> **Fecha:** 2026-05-06 (BANK-BE.1).
-> **Path canonical post-LOCKED:** extends `docs/technical/04_api_contracts.md` v1.2 → v1.3 con NEW §X Bank Phase A.
-> **Cross-ref foundation:** C-BE-01 v0.1 (NetEvents emitted) + C-BE-03 v0.1 (FSM transitions invoked) + C-BE-04 v0.1 (Bridges API consumed) + C-BE-05 v0.1 (StateBags emitted post-commit).
+> **Status:** 🟢 **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
+> **Fecha:** 2026-05-06 (BANK-BE.1 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0.1 R1 LOCKED. Pointer §X.NEW `docs/technical/04_api_contracts.md` v1.3.1.
+> **Cross-ref:** C-BE-01 v1.0.1 R1 (54 NetEvents — 3 NEW M004) + C-BE-03 v1.0.1 R1 (FSM hardening H005 + M005) + C-BE-04 v1.0.1 R1 (Bridges API + UUID PRNG §3.3.1 + 4 convars) + C-BE-05 v1.0.1 R1 (CP1-B publish_balance_update canonical helper).
 
 ---
 
@@ -26,7 +26,7 @@
 
 - **A9 (Q-BE-pre-04)** Granularidad **~40 callbacks** mantenida. Granular > monolithic per audit + perf + security review.
 - **A10 (Q-BE-pre-06)** Idempotency **DB persistent** (`sonar_bank_idempotency_keys` migration 028) + **`result_payload` JSON cached** (replay devuelve mismo payload sin recompute).
-- **A11** **Auth Server-side mandatory en cada callback** — `IsPlayerAceAllowed(src, perm)` o `source.citizen_id == resource.owner_id` o equivalent. NUNCA trust client claim.
+- **A11** **Auth Server-side mandatory en cada callback** — `IsPlayerAceAllowed(src, perm)` o resolución `local citizen_id = Bridges.Player.GetCitizenId(source)` + nil-check obligatorio + comparación contra `resource.owner_id` o equivalent. **NUNCA `source.citizen_id` como acceso directo** — `source` es integer player handle, NO table (anti-pattern AP-AUTH-1 prohibido `@.windsurf/rules/bank.md` — v1.0.1 R1 H001 fix). NUNCA trust client claim.
 - **A12** **Rate-limit explícito por callback** — token bucket via lib `sonar_bridges/lib/rate_limiter.lua` (NEW BANK-BE.1 commitment) — convars configurables defaults sensibles.
 - **A13** **Idempotency keys mandatory en mutations**, optional en reads idempotentes (e.g. `bank.account.getInfo` natural idempotente sin key requerido).
 - **A14** **Side effects documentados explícitamente** — DB writes + StateBag emits + NetEvents fired + audit ledger entries + cron triggers + cross-resource events. **Security Lead C-SEC-01 audit hook integration referenced explicitly.**
@@ -45,8 +45,8 @@ Cada callback declara explícitamente uno de los 5 auth tiers:
 | Tier | Descripción | Check pattern |
 |---|---|---|
 | **AUTH-PUBLIC** | No auth — read-only data pública (e.g. `bank.tax.getBrackets`, `bank.subsidy:list`). | `source > 0` (player connected) — sin ACE check |
-| **AUTH-OWNER** | Solo owner del recurso. | `source.citizen_id == resource.owner_id` |
-| **AUTH-OWNER_OR_PARTICIPANT** | Owner o participant explícito (e.g. escrow → payer/payee). | `source.citizen_id ∈ {resource.payer_id, resource.payee_id}` |
+| **AUTH-OWNER** | Solo owner del recurso. | `auth.require_owner(source, resource.owner_id)` — internamente: `local cid = Bridges.Player.GetCitizenId(source); return cid ~= nil and cid == resource.owner_id` (v1.0.1 R1 H001) |
+| **AUTH-OWNER_OR_PARTICIPANT** | Owner o participant explícito (e.g. escrow → payer/payee). | `auth.require_participant(source, {resource.payer_id, resource.payee_id})` — same nil-safe pattern, set membership |
 | **AUTH-ROLE** | Role-based check via ACE permission. | `IsPlayerAceAllowed(source, '<perm>')` |
 | **AUTH-ROLE_OR_OWNER** | Role-based OR owner (admin override path). | OR-combination |
 
@@ -78,21 +78,25 @@ lib.callback.register('sonar:bank:<entity>:<verb>', function(source, payload)
     return { status = 'error', error = { code = 'BANK_DISABLED', reason = GetResourceKvpString('sonar_bank_disabled') } }
   end
 
-  -- A11: Auth check server-side mandatory
-  local citizen_id = Bridges.Player.GetCitizenId(source)
+  -- A11 (v1.0.1 R1 H001 fix): Auth check server-side mandatory via canonical helpers.
+  -- ⚠️ NUNCA usar `source.citizen_id` — anti-patrón AP-AUTH-1 prohibido (source es integer, no table).
+  local auth = require('sonar_bridges/lib/auth_helpers')
+  local citizen_id, err = auth.require_citizen(source)
   if not citizen_id then
-    return { status = 'error', error = { code = 'AUTH_REQUIRED' } }
+    return { status = 'error', error = { code = err == 'CITIZEN_UNRESOLVED' and 'AUTH_REQUIRED' or err } }
   end
 
-  -- Per-callback specific auth tier:
-  -- (AUTH-OWNER example) if not is_owner(citizen_id, payload.resource_id) then return { code = 'AUTH_FORBIDDEN' } end
-  -- (AUTH-ROLE example) if not IsPlayerAceAllowed(source, '<perm>') then return { code = 'AUTH_ACE_DENIED' } end
+  -- Per-callback specific auth tier (use auth helpers, NUNCA inline source.citizen_id):
+  -- (AUTH-OWNER) local ok, e = auth.require_owner(source, resource.owner_id); if not ok then return { error = { code = e } } end
+  -- (AUTH-ROLE) if not IsPlayerAceAllowed(source, '<perm>') then return { error = { code = 'AUTH_ACE_DENIED' } } end
+  -- (AUTH-OWNER_OR_PARTICIPANT) local ok, e = auth.require_participant(source, {resource.payer_id, resource.payee_id}); ...
+  -- (AUTH-ROLE_OR_OWNER) local ok, scope, e = auth.require_role_or_owner(source, '<perm>', resource.owner_id); ...
 
   -- A12: Rate-limit check
   local rl_ok, rl_err = RateLimiter.check(citizen_id, '<callback_id>', <budget>)
   if not rl_ok then return { status = 'error', error = { code = 'RATE_LIMIT_EXCEEDED', retry_after_ms = rl_err.retry_after_ms } } end
 
-  -- A13: Idempotency (mutations only)
+  -- A13: Idempotency (mutations only). Bridges.UUID.v4 spec §5.6 PRNG multi-entropy (v1.0.1 R1 M002 fix).
   local idempotency_key = payload.idempotency_key or Bridges.UUID.v4()
   local cached = IdempotencyKeys.Lock(idempotency_key, '<callback_domain>', payload)
   if cached.replay then return cached.result end
@@ -101,6 +105,71 @@ lib.callback.register('sonar:bank:<entity>:<verb>', function(source, payload)
   -- ... final IdempotencyKeys.Complete(idempotency_key, result)
 end)
 ```
+
+### 2.3.1 Auth helpers lib (NEW v1.0.1 R1 — H001 fix) — `sonar_bridges/lib/auth_helpers.lua`
+
+**Mandatory canonical helpers** — todo callback DEBE usar estos en lugar de inline checks. Anti-patrón H001 prohibido.
+
+```lua
+-- sonar_bridges/lib/auth_helpers.lua (NEW BANK-BE.AMEND.1 H001 fix)
+local M = {}
+
+local function resolve_citizen(source)
+  if type(source) ~= 'number' or source <= 0 then return nil, 'INVALID_SOURCE' end
+  local cid = Bridges.Player.GetCitizenId(source)
+  if not cid or cid == '' then return nil, 'CITIZEN_UNRESOLVED' end
+  return cid, nil
+end
+
+function M.require_citizen(source)
+  -- Returns citizen_id or nil + error_code. Use as: local cid, err = auth.require_citizen(source); if not cid then return ... end
+  return resolve_citizen(source)
+end
+
+function M.require_owner(source, owner_id)
+  -- Returns true | false + error_code.
+  local cid, err = resolve_citizen(source)
+  if not cid then return false, err end
+  if cid ~= owner_id then return false, 'AUTH_FORBIDDEN' end
+  return true, nil
+end
+
+function M.require_participant(source, allowed_ids)
+  -- allowed_ids: array of citizen_id strings (e.g. {payer_id, payee_id}).
+  local cid, err = resolve_citizen(source)
+  if not cid then return false, err end
+  for _, allowed in ipairs(allowed_ids) do
+    if cid == allowed then return true, nil end
+  end
+  return false, 'AUTH_FORBIDDEN'
+end
+
+function M.require_role_or_owner(source, ace_perm, owner_id)
+  if IsPlayerAceAllowed(source, ace_perm) then return true, 'role', nil end
+  local cid, err = resolve_citizen(source)
+  if not cid then return false, nil, err end
+  if cid == owner_id then return true, 'owner', nil end
+  return false, nil, 'AUTH_FORBIDDEN'
+end
+
+return M
+```
+
+**Anti-patrón AP-AUTH-1 (H001 root cause — v1.0.1 R1 prohibición explícita):**
+```lua
+-- ❌ NUNCA. source es integer, source.citizen_id evalúa nil. Si owner_id también es nil (govt/system rows) → bypass.
+if source.citizen_id == account.owner_id then ... end
+
+-- ✅ SIEMPRE.
+local ok, err = auth.require_owner(source, account.owner_id)
+if not ok then return { status='error', error={ code=err } } end
+```
+
+### 2.3.2 Notational disclaimer (NEW v1.0.1 R1 — H001 fix)
+
+A lo largo del §9 callback specifications, las descripciones textuales como _"source must equal payer (auto-derived from `source.citizen_id`)"_ o _"AUTH-OWNER (citizen_id default = `source.citizen_id`)"_ son **shorthand semántico**. **El código real DEBE usar `auth.require_*` helpers** §2.3.1 — NUNCA acceso directo `source.citizen_id`.
+
+A partir de v1.0.1 R1, todas estas descripciones se reescriben como `Bridges.Player.GetCitizenId(source)` o invocación helper canónica para evitar ambigüedad.
 
 ---
 
@@ -271,6 +340,15 @@ end
 - **Reads idempotentes** (account.getInfo + tax.getBrackets + audit.query): idempotency_key OPTIONAL — natural idempotente sin DB write.
 - **Reads paginated cursor-based** (audit.query + transactions list): idempotency_key OPTIONAL pero cursor-based pagination recomendado para consistencia.
 
+### 5.6 PRNG entropy spec (NEW v1.0.1 R1 — M002 fix)
+
+`Bridges.UUID.v4()` (`@docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` §3.3.1 v1.0.1 R1) es la **única source canónica** de UUIDs en SONAR Bank — correlation_id (CP2 mutex), idempotency_key fallback (§5.2), audit hook correlation_id, sentinel signatures (C-BE-04 §4.2 H003).
+
+- **PRNG:** combinación de 4 entropy sources mixed via SHA256 — `os.clock()` + `GetGameTimer()` + `os.time()*1000` + per-call `GetPlayerPing(source)` (or `math.random` reseeded). Output 8-4-4-4-12 hex (RFC 4122 v4).
+- **Rationale:** `math.random()` plain en FiveM Lua usa seed estática inicial (predictable post-boot) → riesgo CSPRNG insuficiente para correlation-id mutex (CP2). Mixing 4 sources eleva entropy efectiva y previene predicción adversaria por resource cheat que llame `Bridges.UUID.v4()` paralelo intentando colisión.
+- **Anti-patrón AP-UUID-1 prohibido (M002 root cause):** `math.random` directo sin re-seed, naïve `string.format('%x...', math.random(), ...)`, external no-canonical lib.
+- **Phase B target:** migrar a FFI crypto nativo si disponible vía oxmysql/lua-crypto bindings.
+
 ---
 
 ## 6. Side effects taxonomy (A14)
@@ -280,7 +358,7 @@ end
 Cada callback documenta explícitamente sus side effects en estas categorías:
 
 1. **DB writes** — tablas afectadas + INSERT/UPDATE/DELETE counts.
-2. **StateBag emits** — keys publicadas (CP1-A) post-commit.
+2. **StateBag emits** — keys publicadas (CP1-A) post-commit. **⚠️ v1.0.1 R1 M004:** `bank.balance.<cid>` y `bank.savings.<cid>` REMOVIDOS de CP1-A — financial PII tier — migrated a CP1-B NetEvent `sonar:bank:balance:update` / `sonar:bank:savings:update` via helper canonical `publish_balance_update(cid, balance, account_class, opts)` (per `c_be_05` §2.2.1). Toda referencia §9 a "StateBag emits: `bank.balance.<cid>`" debe leerse como "NetEvent fire `sonar:bank:balance:update` → owner source via `publish_balance_update()`" — versión textual literal §9 preservada por trazabilidad histórica + amendment changelog §13.
 3. **NetEvents fired** — events emitted (server→client público + server→admin restringido + resource-internal).
 4. **Audit ledger entries** — `sonar_bank_audit_ledger` rows appended (event_type + correlation_id + actor + payload).
 5. **Cron triggers** — schedule new cron jobs (e.g. recurring tick post create).
@@ -313,6 +391,12 @@ business_approval_created  -- C040
 business_approval_resolved -- FSM #6
 status_transition          -- FSM #7 sonar_bank_status
 reconciliation_auto_applied
+```
+
+**Shape canonical per event_type** — para audit hooks críticos (HIGH+ severity) la shape mandatory está definida en `@docs/technical/08_audit_hooks.md` §1.2 C-SEC-01 spec (v1.0.1 R1 H006 reforzado). Backend Lead implementations DEBEN cumplir shape mínima — e.g. `compliance_flag_resolved` MUST include `previous_flag_snapshot` (forensics tamper detection). Diferencias requieren amendment formal Round.
+
+```text
+-- (canonical ENUM continúa abajo si más event_types existen)
 reconciliation_flagged
 compliance_flag_raised
 compliance_flag_resolved
@@ -346,6 +430,7 @@ DevOps Lead C-DO-01 smoke test harness verifica per-callback p99 contra budget. 
 | ID | Event name | Auth tier | Rate-limit | Idempotency | Perf tier | FSM ref | Status |
 |---|---|---|---|---|---|---|---|
 | **C001** | `sonar:bank:transfer` | AUTH-OWNER | NORMAL | YES mandatory | MEDIUM | — | ✅ §9.1 |
+| **C001b** | `sonar:bank:balance:snapshot` (NEW v1.0.1 R1 M004) | AUTH-OWNER | HIGH | NO | FAST | — | ✅ §9.5b |
 | **C002** | `sonar:bank:savings:deposit` | AUTH-OWNER | NORMAL | YES | MEDIUM | — | ✅ §9.2 |
 | **C003** | `sonar:bank:savings:withdraw` | AUTH-OWNER | NORMAL | YES | MEDIUM | — | ✅ §9.3 |
 | **C004** | `sonar:bank:account:getInfo` | AUTH-OWNER | HIGH | NO | FAST | — | ✅ §9.4 |
@@ -410,7 +495,7 @@ DevOps Lead C-DO-01 smoke test harness verifica per-callback p99 contra budget. 
 #### 9.1.1 Identifier
 
 - **Event name:** `sonar:bank:transfer`
-- **Auth tier:** AUTH-OWNER (payer must be source.citizen_id).
+- **Auth tier:** AUTH-OWNER (payer must be `Bridges.Player.GetCitizenId(source)`).
 - **FSM ref:** — (no direct FSM, but emits `transfer:complete` event Tier 1).
 
 #### 9.1.2 Request schema
@@ -453,8 +538,8 @@ interface TransferResponseSuccess {
 
 #### 9.1.4 Auth check details
 
-- `source.citizen_id` resolved via `Bridges.Player.GetCitizenId(source)`.
-- Payer account ownership: `sonar_bank_accounts.owner_id == source.citizen_id AND owner_type = 'citizen'`.
+- `citizen_id` resolved via `auth.require_citizen(source)` helper §2.3.1 (v1.0.1 R1 H001).
+- Payer account ownership: `sonar_bank_accounts.owner_id == citizen_id AND owner_type = 'citizen'` (use `auth.require_owner(source, account.owner_id)`).
 - Payee account existence: `sonar_bank_accounts.iban == payload.to_iban` row exists.
 - Self-transfer guard: `payer_iban != to_iban` (returns `VALIDATION_FAIL` field=`to_iban`).
 
@@ -538,7 +623,7 @@ interface SavingsDepositRequest {
 ```
 
 #### 9.2.4 Auth check
-- Owner check: `account_class='main'` + `account_class='savings'` rows owned por `source.citizen_id`.
+- Owner check: `account_class='main'` + `account_class='savings'` rows owned por `Bridges.Player.GetCitizenId(source)` (via `auth.require_owner` helper §2.3.1).
 - Both accounts must exist (auto-create savings if missing — Phase A decision per Q-DB-D).
 
 #### 9.2.5 Rate-limit
@@ -549,7 +634,7 @@ interface SavingsDepositRequest {
 
 #### 9.2.7 Side effects
 1. **DB atomic:** UPDATE main balance -= amount, UPDATE savings balance += amount, INSERT 2 movements (`category='savings_deposit_out'` + `'savings_deposit_in'`).
-2. **StateBag emits:** `bank.balance.<cid>` + `bank.savings.<cid>`.
+2. **CP1-B NetEvent emit (v1.0.1 R1 M004):** `publish_balance_update(cid, balance_main_after, 'main', {correlation_id})` + `publish_balance_update(cid, balance_savings_after, 'savings', {correlation_id})` — replaces deprecated CP1-A `bank.balance.<cid>` + `bank.savings.<cid>` StateBag writes.
 3. **NetEvents:** `sonar:bank:savings:depositComplete` → owner.
 4. **Resource-internal:** `sonar:bank:internal:movementRecorded` × 2.
 5. **Audit ledger:** `event_type='savings_deposit'` entry.
@@ -621,13 +706,76 @@ interface AccountGetInfoRequest {
 
 ### 9.5 C005 — `sonar:bank:account:list`
 
-Returns all accounts owned by source.citizen_id (across account_classes). AUTH-OWNER. Rate HIGH. Read-only. p99 <50ms (multi-row DB query small N).
+Returns all accounts owned by `Bridges.Player.GetCitizenId(source)` (across account_classes). AUTH-OWNER. Rate HIGH. Read-only. p99 <50ms (multi-row DB query small N).
 
 #### Request: `{ }` (empty payload — derives from source).
 
 #### Response: `{ status: 'ok', data: { accounts: [{ account_id, iban, balance, account_class, currency, opened_at }, ...] } }`.
 
 #### Test scenarios: happy (citizen with multi-account) + happy (citizen no savings yet) + employee con business_treasury access (returns combined personal + business accounts).
+
+---
+
+### 9.5b C001b — `sonar:bank:balance:snapshot` (NEW v1.0.1 R1 — M004 cross-cutting)
+
+#### 9.5b.1 Identifier
+- **Event name:** `sonar:bank:balance:snapshot`
+- **Auth tier:** AUTH-OWNER (returns own balances only — NO admin path; admin queries via C035 scope='govt_full' fire `:adminAudit` separately).
+- **FSM ref:** — (read-only).
+
+#### 9.5b.2 Request schema
+```typescript
+interface BalanceSnapshotRequest {
+  correlation_id?: string;
+}
+```
+
+#### 9.5b.3 Response schema
+```typescript
+{ status: 'ok', data: { main: number, savings: number, occurred_at: number, correlation_id: string } }
+// Errors: BANK_DISABLED | AUTH_REQUIRED | RATE_LIMIT_EXCEEDED | RESOURCE_NOT_FOUND (no accounts row)
+```
+
+#### 9.5b.4 Auth check
+- `auth.require_citizen(source)` helper §2.3.1 (returns own citizen_id only). NO `citizen_id` payload param accepted (prevents impersonation).
+
+#### 9.5b.5 Rate-limit
+- Tier: **HIGH** (read fallback path, low cost). Convar overrides: `sonar_bank_ratelimit_high_capacity` / `sonar_bank_ratelimit_high_refill`.
+
+#### 9.5b.6 Idempotency
+- Optional (read — natural idempotente).
+
+#### 9.5b.7 Side effects
+1. **DB:** SELECT `balance, account_class FROM sonar_bank_accounts WHERE owner_id = ? AND account_class IN ('main','savings')` — single query, 1-2 rows.
+2. **NetEvent:** none (inline response only — NO `sonar:bank:balance:update` fire to avoid event storm; consumer reads inline data directly).
+3. **Audit ledger:** none Phase A (read-only fallback path — do not pollute audit ledger). Phase B may add Tier-4 sampling.
+
+#### 9.5b.8 Error codes
+`BANK_DISABLED` / `AUTH_REQUIRED` / `RATE_LIMIT_EXCEEDED` / `RESOURCE_NOT_FOUND` (no accounts row — atypical, suggests citizen never bootstrapped).
+
+#### 9.5b.9 Performance
+- Tier: **FAST** — p99 <30ms (single PK index lookup).
+
+#### 9.5b.10 Test scenarios
+- **Happy:** UI mount post-connect → returns current main + savings balances.
+- **Auth fail:** non-resolvable source (citizen char not loaded) → `AUTH_REQUIRED`.
+- **Idempotency-free:** 5 rapid calls → 5 successful responses (no idempotency state).
+- **Rate-limit:** flood attempt → `RATE_LIMIT_EXCEEDED`.
+- **No accounts row:** edge case (citizen pre-bootstrap) → `RESOURCE_NOT_FOUND` o defaults `{main:0, savings:0}` (Backend Lead default = `RESOURCE_NOT_FOUND`).
+- **Race condition vs `:update`:** client receives snapshot + concurrent `:update` event → client implementation reconciles by `occurred_at` max (Frontend Lead C-FE-* spec).
+
+**Use case (Frontend Lead C-FE-* mount lifecycle):**
+```lua
+-- Client UI mount fallback if `sonar:bank:balance:update` event lost during connect.
+local snap = lib.callback.await('sonar:bank:balance:snapshot', false)
+if snap and snap.status == 'ok' then
+  SetNuiFocusKeepBalance(snap.data.main)
+  SetNuiFocusKeepSavings(snap.data.savings)
+end
+-- Subsequent `sonar:bank:balance:update` events override snapshot value (event-driven post-mount).
+```
+
+**Cross-reference:** `c_be_05` §2.2.2 (M004 lazy-publish on `playerJoining` is primary path — C001b is fallback only).
 
 ---
 
@@ -665,7 +813,7 @@ interface AccountCloseRequest {
 
 #### 9.6.7 Side effects
 1. **DB atomic:** UPDATE main balance += closing balance, UPDATE closing account balance=0 + status='closed', INSERT 2 movements (`'account_close_out'` + `'account_close_in'`).
-2. **StateBag emits:** `bank.balance.<cid>` + remove closed account bag (e.g. `bank.savings.<cid>` set to nil).
+2. **CP1-B NetEvent emit (v1.0.1 R1 M004):** `publish_balance_update(cid, balance_main_after, 'main', {correlation_id})` + `publish_balance_update(cid, 0, '<closed_class>', {correlation_id})` (zero-out signal to consumer) — replaces deprecated CP1-A balance/savings StateBag writes.
 3. **NetEvents:** `sonar:bank:account:closed` → owner + admin.
 4. **Audit ledger:** `event_type='account_closed'` entry.
 5. **Idempotency state:** Lock → Complete.
@@ -707,7 +855,7 @@ interface EscrowCreateRequest {
 ```
 
 #### 9.7.4 Auth check
-- Source must equal payer (auto-derived from source.citizen_id).
+- Source must equal payer (auto-derived via `auth.require_owner(source, escrow.payer_citizen_id)`).
 - Payee citizen_id must exist in `sonar_citizens`.
 
 #### 9.7.5 Rate-limit
@@ -768,7 +916,7 @@ interface EscrowFundRequest {
 ```
 
 #### 9.9.4 Auth check
-- Payer match: source.citizen_id == escrow.payer_citizen_id.
+- Payer match: `auth.require_owner(source, escrow.payer_citizen_id)` (helper §2.3.1).
 - FSM transition guard: state == 'pending_funding'.
 
 #### 9.9.5 Rate-limit
@@ -779,7 +927,7 @@ interface EscrowFundRequest {
 
 #### 9.9.7 Side effects
 1. **DB atomic:** UPDATE escrow.state='funded' + balance=amount, UPDATE payer balance -= amount, INSERT movement (`category='escrow_fund'`).
-2. **StateBag emits:** `bank.balance.<payer_cid>` updated.
+2. **CP1-B NetEvent emit (v1.0.1 R1 M004):** `publish_balance_update(payer_cid, payer_balance_after, 'main', {correlation_id})` — replaces deprecated CP1-A `bank.balance.<payer_cid>` StateBag write.
 3. **NetEvents:**
    - `sonar:bank:escrow:funded` → payer + payee.
    - `sonar:bank:escrow:stateChanged` (CP1-B) → payer + payee + admin (ACE-checked).
@@ -837,7 +985,7 @@ interface EscrowReleaseRequest {
 
 #### 9.10.7 Side effects
 1. **DB atomic:** INSERT releases log row, UPDATE escrow.balance -= amount + state per FSM table, UPDATE payee balance += amount, INSERT movements.
-2. **StateBag emits:** `bank.balance.<payee_cid>` updated.
+2. **CP1-B NetEvent emit (v1.0.1 R1 M004):** `publish_balance_update(payee_cid, payee_balance_after, 'main', {correlation_id})` — replaces deprecated CP1-A `bank.balance.<payee_cid>` StateBag write.
 3. **NetEvents:**
    - `sonar:bank:escrow:released` → payer + payee.
    - `sonar:bank:escrow:stateChanged` (CP1-B) → admin observers + participants.
@@ -882,7 +1030,7 @@ AUTH-ROLE `sonar.bank.govt.escrow.admin`. Rate ADMIN. Idempotency mandatory. FSM
 
 **Response:** `{ status: 'ok', data: { escrow_id, amount_refunded, state_new: 'refunded', balance_after_payer } }`.
 
-**Side effects:** DB atomic (UPDATE escrow.state='refunded' + balance=0, UPDATE payer balance += amount, INSERT movement `'escrow_refund'`) + StateBag `bank.balance.<payer_cid>` + NetEvents `escrow:refunded` (payer + admin) + audit `event_type='escrow_refunded'` + `admin_force_action`.
+**Side effects:** DB atomic (UPDATE escrow.state='refunded' + balance=0, UPDATE payer balance += amount, INSERT movement `'escrow_refund'`) + **v1.0.1 R1 M004** `publish_balance_update(payer_cid, balance_after, 'main', opts)` (CP1-B NetEvent — replaces deprecated CP1-A `bank.balance.<payer_cid>` StateBag) + NetEvents `escrow:refunded` (payer + admin) + audit `event_type='escrow_refunded'` + `admin_force_action`.
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / AUTH_ACE_DENIED / RATE_LIMIT_EXCEEDED / IDEMPOTENCY_INFLIGHT / INVALID_TRANSITION / RESOURCE_NOT_FOUND.
 
@@ -942,7 +1090,7 @@ AUTH-ROLE `sonar.bank.govt.subsidy.write`. Rate ADMIN. Idempotency mandatory.
 
 **Response:** `{ status: 'ok', data: { subsidy_id, granted_at, expires_at, balance_recipient_after } }`.
 
-**Side effects:** INSERT `sonar_bank_subsidies` + UPDATE recipient balance += amount + INSERT movement `'subsidy_grant'` + StateBag `bank.balance.<recipient_cid>` + StateBag `bank.govt.subsidies.active` updated + NetEvent `sonar:bank:subsidy:granted` (recipient + admin) + audit `event_type='admin_subsidy_granted'`.
+**Side effects:** INSERT `sonar_bank_subsidies` + UPDATE recipient balance += amount + INSERT movement `'subsidy_grant'` + **v1.0.1 R1 M004** `publish_balance_update(recipient_cid, balance_after, 'main', opts)` (CP1-B NetEvent — replaces deprecated `bank.balance.<recipient_cid>` StateBag) + StateBag `bank.govt.subsidies.active` updated (CP1-A still OK — public knowledge) + NetEvent `sonar:bank:subsidy:granted` (recipient + admin) + audit `event_type='admin_subsidy_granted'`.
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / AUTH_ACE_DENIED / RATE_LIMIT_EXCEEDED / IDEMPOTENCY_INFLIGHT / VALIDATION_FAIL / RESOURCE_NOT_FOUND (recipient).
 
@@ -968,7 +1116,7 @@ AUTH-OWNER. Rate NORMAL. Idempotency mandatory.
 
 **Response:** `{ status: 'ok', data: { subsidy_id_claimed, amount_received, balance_after } }`.
 
-**Side effects:** UPDATE subsidy claim status + UPDATE recipient balance += amount + INSERT movement `'subsidy_claim'` + StateBag balance + NetEvent + audit `event_type='subsidy_claim_recorded'`.
+**Side effects:** UPDATE subsidy claim status + UPDATE recipient balance += amount + INSERT movement `'subsidy_claim'` + **v1.0.1 R1 M004** `publish_balance_update(recipient_cid, balance_after, 'main', opts)` (CP1-B NetEvent) + NetEvent `sonar:bank:subsidy:claimed` + audit `event_type='subsidy_claim_recorded'`.
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / RATE_LIMIT_EXCEEDED / IDEMPOTENCY_INFLIGHT / VALIDATION_FAIL / RESOURCE_NOT_FOUND (subsidy expired / already claimed) / COMPLIANCE_FLAG_BLOCK.
 
@@ -1000,7 +1148,7 @@ interface LoanApplyRequest {
 ```
 
 #### 9.19.4 Auth check
-- Source.citizen_id matches applicant. Active loan check (max 3 simultaneous active per Phase A).
+- `auth.require_owner(source, applicant_citizen_id)` matches applicant (helper §2.3.1). Active loan check (max 3 simultaneous active per Phase A).
 
 #### 9.19.5 Rate-limit
 - Tier: **LOW** + max 1 application per day per citizen (separate quota outside token bucket).
@@ -1034,7 +1182,7 @@ AUTH-ROLE `sonar.bank.govt.loan.admin`. Rate ADMIN. Idempotency mandatory. FSM #
 
 **Response:** `{ status: 'ok', data: { loan_id, state_new, principal_disbursed?, repayment_schedule?, decided_at } }`.
 
-**Side effects:** Atomic transaction: UPDATE loan.state + (if approved) UPDATE applicant balance += principal + INSERT movement `'loan_disbursement'` + StateBag balance + INSERT repayment_schedule rows + NetEvent `sonar:bank:loan:decisionResult` (CP1-B → applicant + admin ACE) + audit `event_type='loan_decided'`.
+**Side effects:** Atomic transaction: UPDATE loan.state + (if approved) UPDATE applicant balance += principal + INSERT movement `'loan_disbursement'` + **v1.0.1 R1 M004** `publish_balance_update(applicant_cid, balance_after, 'main', opts)` (CP1-B NetEvent — replaces deprecated balance StateBag) + INSERT repayment_schedule rows + NetEvent `sonar:bank:loan:decisionResult` (CP1-B → applicant + admin ACE) + audit `event_type='loan_decided'`.
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / AUTH_ACE_DENIED / RATE_LIMIT_EXCEEDED / IDEMPOTENCY_INFLIGHT / INVALID_TRANSITION / RESOURCE_NOT_FOUND.
 
@@ -1050,7 +1198,7 @@ AUTH-OWNER (borrower). Rate NORMAL. Idempotency mandatory. FSM #2 transitions `a
 
 **Response:** `{ status: 'ok', data: { loan_id, amount_paid, balance_remaining, state_new, balance_after } }`.
 
-**Side effects:** Atomic: UPDATE loan.balance_remaining -= amount, UPDATE borrower balance -= amount, INSERT movement `'loan_repayment'`, IF balance_remaining=0 → state='paid_off', StateBag balance + NetEvent `sonar:bank:loan:repaymentRecorded` (borrower + admin) + audit `event_type='loan_repayment_recorded'`.
+**Side effects:** Atomic: UPDATE loan.balance_remaining -= amount, UPDATE borrower balance -= amount, INSERT movement `'loan_repayment'`, IF balance_remaining=0 → state='paid_off', **v1.0.1 R1 M004** `publish_balance_update(borrower_cid, balance_after, 'main', opts)` (CP1-B NetEvent) + NetEvent `sonar:bank:loan:repaymentRecorded` (borrower + admin) + audit `event_type='loan_repayment_recorded'`.
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / AUTH_FORBIDDEN / RATE_LIMIT_EXCEEDED / IDEMPOTENCY_INFLIGHT / VALIDATION_FAIL (amount > balance_remaining) / INSUFFICIENT_FUNDS / INVALID_TRANSITION (state != 'active_repaying') / RESOURCE_NOT_FOUND.
 
@@ -1101,7 +1249,7 @@ interface StocksBuyRequest {
 
 #### 9.23.7 Side effects
 1. **DB atomic:** UPDATE buyer balance -= total_cost, INSERT/UPDATE `sonar_bank_stocks_holdings` (avg_price recompute), INSERT movement `'stock_purchase'`.
-2. **StateBag emits:** `bank.balance.<cid>` updated. NO bag emit per holding (heavy + Q12 Tier 4 no realtime ticker).
+2. **CP1-B NetEvent emit (v1.0.1 R1 M004):** `publish_balance_update(cid, balance_after, 'main', opts)` — replaces deprecated `bank.balance.<cid>` StateBag. NO emit per holding (heavy + Q12 Tier 4 no realtime ticker).
 3. **NetEvents:** `sonar:bank:stocks:buyComplete` → buyer.
 4. **Resource-internal:** `movementRecorded`.
 5. **Audit ledger:** `event_type='stock_purchase'` entry.
@@ -1256,6 +1404,32 @@ AUTH-OWNER. Rate NORMAL. Idempotency mandatory. p99 <200ms.
 
 **Note:** Actual outcome callback (success/fail post-minigame) → defer Phase B spec C031b. Phase A: session creation + token generation only.
 
+#### 9.31.7 HMAC secret management (NEW v1.0.1 R1 — M006 fix)
+
+**`server_secret` provenance + storage + rotation:**
+
+- **Storage:** **convar exclusiva `sonar_bank_atm_hmac_secret`** declarada en `server.cfg` (NUNCA en `.lua` file dentro del repo). Default value vacío `""` → resource fail boot defensivo (`defensive_abort('atm_hmac_secret_missing', ...)`) si convar empty.
+- **Provenance:** generated by sysadmin ANTES de primera deploy via `openssl rand -hex 32` (32 bytes / 64 hex chars entropy mínima). Documented en runbook DevOps H4 deploy guide.
+- **Min length:** 32 bytes (64 hex chars). Resource boot valida `#secret >= 64` o defensive abort.
+- **Rotation:** manual on-demand (no auto-rotation Phase A). Sysadmin updates `server.cfg` convar + `txAdmin restart sonar_bank` → all in-flight ATM sessions invalidated (acceptable: ATM minigame TTL <60s). Phase B: rolling dual-secret window (current + previous accepted 5min) for zero-downtime rotation.
+- **NEVER:** secret en `.lua` file, en git history, en logs (incluso debug). HMAC verify falla siempre logged WITHOUT secret material.
+- **Audit:** boot event `atm_hmac_secret_loaded_OK` (sin secret material) + `atm_hmac_secret_failed_validation` si len<64.
+
+**Anti-patrón AP-HMAC-1 prohibido (M006 root cause):**
+```lua
+-- ❌ NUNCA. Hardcoded, leakable via repo / git history / file extraction.
+local SECRET = 'my_super_secret_42'
+
+-- ✅ SIEMPRE.
+local SECRET = GetConvar('sonar_bank_atm_hmac_secret', '')
+if #SECRET < 64 then
+  defensive_abort('atm_hmac_secret_missing_or_short', 'sonar_bank_atm_hmac_secret convar must be set in server.cfg, min 64 hex chars (openssl rand -hex 32).')
+  return
+end
+```
+
+**DevOps Lead H4 runbook obligation:** documentar steps generación + storage + rotation HMAC secret. Backend Lead M006 cross-cutting handoff DevOps cuando active.
+
 ---
 
 ### 9.32 C032 — `sonar:bank:card:requestPhysical`
@@ -1290,7 +1464,7 @@ interface CardRequestPhysicalRequest {
 
 #### 9.32.7 Side effects
 1. **DB atomic:** INSERT `sonar_bank_physical_cards` (state='pending_request', card_id generated, masked_pan visible, real_pan stored encrypted), UPDATE owner balance -= card_fee, INSERT movement `'card_issuance_fee'`.
-2. **StateBag emits:** `bank.balance.<owner_cid>` updated.
+2. **CP1-B NetEvent emit (v1.0.1 R1 M004):** `publish_balance_update(owner_cid, balance_after, 'main', opts)` — replaces deprecated `bank.balance.<owner_cid>` StateBag.
 3. **NetEvents:** `sonar:bank:card:requestSubmitted` → owner.
 4. **Resource-internal:** `fsmTransition` (initial create).
 5. **Audit ledger:** `event_type='card_request_submitted'` entry.
@@ -1404,12 +1578,25 @@ interface AuditQueryRequest {
 ```
 
 #### 9.35.4 Auth check
-- scope='self' → AUTH-OWNER (citizen_id default = source.citizen_id).
+- scope='self' → AUTH-OWNER (citizen_id default = `Bridges.Player.GetCitizenId(source)` via `auth.require_citizen` helper §2.3.1).
 - scope='empresa' → AUTH-ROLE `sonar.bank.empresas.<empresa_id>` (employee/owner).
 - scope='govt_full' → AUTH-ROLE `sonar.bank.govt.audit.full`.
 
 #### 9.35.5 Rate-limit
 - Tier: **NORMAL** + max query rows budget (cap 500 per request).
+
+#### 9.35.5.1 Special recursive rate-limit (NEW v1.0.1 R1 — M003 fix)
+
+C035 implementa **dual rate-limit**:
+1. **Standard token bucket** §4.3 framework (tier NORMAL or LOW per scope).
+2. **Recursive guard NEW (M003):** independiente del bucket general.
+   - **Per-citizen:** max **1 audit query per minute** per `citizen_id` (sliding window 60s).
+   - **Global:** max **10 audit queries per minute** server-wide (sliding window 60s).
+   - **Storage:** in-RAM ring buffer (Phase A acceptable per M001 advisory) en `sonar_bridges/lib/audit_query_throttle.lua` NEW.
+   - **On reject:** return `{ status='error', error={ code='AUDIT_QUERY_THROTTLED', retry_after_ms=<remaining_window> } }` + audit hook `audit_hook_rate_limit_violation` con context `recursive_audit_query`.
+   - **Bypass exception:** queries con scope=`'self'` **single-row by movement_id** (e.g. drill-down detail single audit_id) **excluyen** del recursive guard — usan bucket general only.
+
+**Rationale:** previene DoS recursivo (audit log of audit log → explosion logarítmica O(n²)) + mantiene UX legítimo (admin self-audit detail single-record). Convars `sonar_bank_audit_query_per_citizen_per_min=1` + `sonar_bank_audit_query_global_per_min=10` configurables sysadmin (DevOps H4 runbook).
 
 #### 9.35.6 Idempotency
 - Optional (read with cursor — natural idempotente per cursor).
@@ -1460,7 +1647,28 @@ AUTH-ROLE `sonar.bank.govt.compliance.admin`. Rate ADMIN. Idempotency mandatory.
 
 **Request:** `{ flag_id, resolution: 'resolved' | 'rejected' | 'escalated', resolution_notes: string (mandatory), idempotency_key?, correlation_id? }`. **Response:** `{ status: 'ok', data: { flag_id, status_new, resolved_at, resolver_id } }`.
 
-**Side effects:** UPDATE `sonar_bank_compliance_flags.status` + UPDATE `bank.compliance.<cid>.public` reduced bag (count decrement/recompute) + audit `event_type='compliance_flag_resolved'` con full resolution_notes (admin trail) + audit `event_type='admin_force_action'` cross-reference.
+**Side effects (v1.0.1 R1 H006 hardened — full audit shape per C-SEC-01 §1.2):**
+
+1. **DB UPDATE** `sonar_bank_compliance_flags` SET `status=payload.resolution`, `resolved_at=NOW()`, `resolver_id=citizen_id`, `resolution_notes=payload.resolution_notes` WHERE flag_id=payload.flag_id (atomic transaction with §2 step audit insert).
+2. **DB SNAPSHOT pre-update** — SELECT row antes de UPDATE → serialize as JSON → pass como `previous_flag_snapshot` al audit hook (forensics tamper detection — H006 mandatory).
+3. **StateBag** — UPDATE `bank.compliance.<citizen_id_target>.public` reduced bag (count decrement / status histogram recompute) — CP1-A pattern.
+4. **Audit ledger** — INSERT `event_type='compliance_flag_resolved'` con shape canónica C-SEC-01 `audit_hook_compliance_flag_resolved`:
+   ```json
+   {
+     "event_type": "compliance_flag_resolved",
+     "occurred_at": <epoch_ms>,
+     "correlation_id": "<uuid_v4>",
+     "flag_id": <int>,
+     "resolver_id": "<admin_citizen_id>",
+     "resolution": "resolved" | "rejected" | "escalated",
+     "resolution_notes": "<string mandatory>",
+     "resolved_at": <epoch_ms>,
+     "previous_flag_snapshot": { /* full pre-update flag row JSON */ },
+     "source_resource": "sonar_bank_app"
+   }
+   ```
+5. **Audit ledger cross-reference** — INSERT segundo entry `event_type='admin_force_action'` con `cross_ref_audit_id` apuntando al `compliance_flag_resolved` row recién insertado (admin override path forensics).
+6. **NetEvent** server→admin `sonar:bank:compliance:flagResolved` (target P10 admins) — payload pública minimal `{flag_id, status_new, resolver_id, resolved_at}`. NO `previous_flag_snapshot` (queda solo en audit ledger).
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / AUTH_ACE_DENIED / RATE_LIMIT_EXCEEDED / IDEMPOTENCY_INFLIGHT / RESOURCE_NOT_FOUND / INVALID_TRANSITION (already resolved).
 
@@ -1472,7 +1680,7 @@ AUTH-OWNER (employee or owner of the empresa). Rate HIGH. Read-only. p99 <50ms (
 
 **Request:** `{ company_id }`. **Response:** `{ status: 'ok', data: { company_id, balance, currency, employees_with_access: number, recent_movements_count } }`.
 
-**Auth check:** `sonar.bank.empresas.<company_id>` ACE granted OR source.citizen_id in business_owners table.
+**Auth check:** `sonar.bank.empresas.<company_id>` ACE granted OR `Bridges.Player.GetCitizenId(source)` in business_owners table (use `auth.require_role_or_owner` helper §2.3.1).
 
 **Errors:** BANK_DISABLED / AUTH_REQUIRED / AUTH_FORBIDDEN / RATE_LIMIT_EXCEEDED / RESOURCE_NOT_FOUND.
 
@@ -1577,5 +1785,6 @@ interface BusinessApprovalCreateRequest {
 | **v0.1 DRAFT** | 2026-05-06 (BANK-BE.1) | DRAFT inicial completo — framework §1-§7 (philosophy + auth tiers + ACE matrix + error codes registry + rate-limit framework + idempotency framework + side effects taxonomy + perf budgets) + tabla canonical 40 callbacks §8 + spec full C001-C040 §9.1-§9.40 (cumplimiento estructura formal §9.x.1-§9.x.10 — auth server-side + rate-limit explícito + idempotency keys + side effects audit ledger triggers per directriz founder BANK-BE.1). |
 
 | **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic post-DRAFT v0.1 review window. Sign-off triple ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead (consumer consultative — review crítico ACE matrix §2 + error codes §3 + idempotency §5 + audit ledger ENUM §6) handoff via H2. Promoted DRAFT → canonical: `docs/agents/teams/drafts/be_phase_a/c_be_02_api_contracts_v1_3.md` → `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md`. Pointer §X.NEW Bank Phase A added en `docs/technical/04_api_contracts.md` v1.2 → v1.3 LOCKED. 40/40 callbacks C001-C040 ratificados. |
+| **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 surgical patches Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 (founder APPROVED 2026-05-06): **H001** (`source.citizen_id` nil bypass — auth helpers canonical lib §2.3.1 `auth.require_citizen` + `require_owner` + `require_participant` + `require_role_or_owner` + boilerplate rewrite §2.3 + AP-AUTH-1 prohibido + notational disclaimer §2.3.2 + 9 callsites §9 reescritos a `Bridges.Player.GetCitizenId(source)` o helper canonical) + **H006** (C038 `compliance_flag_resolved` audit shape completa C-SEC-01 §1.2 mandatory `previous_flag_snapshot` forensics + cross_ref_audit_id) + **M002** (PRNG entropy spec §5.6 multi-entropy mix referenced canonical C-BE-04 §3.3.1 + AP-UUID-1 prohibido) + **M003** (C035 dual rate-limit recursive guard §9.35.5.1 — per-citizen 1/min + global 10/min sliding window + bypass exception scope='self' single-row + 2 convars sysadmin) + **M006** (C031 ATM HMAC secret management §9.31.7 — convar `sonar_bank_atm_hmac_secret` mandatory min 64 hex chars + defensive_abort si missing/short + audit boot events + AP-HMAC-1 prohibido). **Cross-cutting M004** (founder APPROVED architectural — CP1-A → CP1-B migration `bank.balance.<cid>` + `bank.savings.<cid>`): NEW callback **C001b** `sonar:bank:balance:snapshot` §9.4b + 14 callbacks side effects §9 reescritos `StateBag emits: bank.balance.<cid>` → `publish_balance_update(cid, balance, account_class, opts)` CP1-B NetEvent emit (C001 transfer / C002 savings deposit / C003 savings withdraw / C006 close / C009 escrow fund / C010 escrow release / C012 escrow refund / C016 subsidy grant / C018 subsidy claim / C020 loan decide / C021 loan repay / C023 stocks buy / C024 stocks sell / C031 ATM / C032 card request — listing canónico §6.1) + global note §6.1.2 deprecation + §6.2 ENUM cross-reference C-SEC-01 audit hook shape. Sin schema migration impact (DB Lead consultative confirmed). 4 convars DevOps H4 runbook (`sonar_bank_audit_query_per_citizen_per_min`, `sonar_bank_audit_query_global_per_min`, `sonar_bank_atm_hmac_secret`, cross-ref C-BE-04 M007). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
 
-— **C-BE-02 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off ratified founder + Backend Lead. **Effective immediately.** Security Lead recibe este contrato en estado LOCKED via handoff H2 — audit scope detallado en `@docs/agents/teams/handoffs/h2_backend_to_security/README.md`. Frontend Lead recibe vía H4 futuro. Amendments require formal Round 1/2/3 protocol.
+— **C-BE-02 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** Frontend Lead recibe vía H3 futuro (40+1 callbacks canonical). Amendments adicionales require formal Round 2/3 protocol.

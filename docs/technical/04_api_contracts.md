@@ -1440,15 +1440,15 @@ Los **API Contracts SONAR (ex-Admirals)** son el puente formal entre código. Cu
 
 ---
 
-## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK.R1)
 
-> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§N foundational pivot-agnostic.
-> **Owner:** Backend Lead (Cascade activated, sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
-> **Scope:** SONAR Bank financial-grade — **40 callbacks C001-C040** fully specified (auth tier matrix + ACE permission matrix + error codes registry ~30 codes + rate-limit token bucket + idempotency keys persistent + side effects taxonomy + audit ledger event_type ENUM + perf budgets per callback).
+> **Estado:** v1.3.1 LOCKED — extensión Bank-specific Phase A R1 amendment hardening. Sin tocar §1-§N foundational pivot-agnostic.
+> **Owner:** Backend Lead (Cascade activated, sessions BANK-BE.0 / BANK-BE.1 / BANK-BE.LOCK / BANK-BE.AMEND.1 / BANK-BE.LOCK.R1).
+> **Scope:** SONAR Bank financial-grade — **40+1 callbacks C001-C040 + C001b** fully specified post R1 hardening (H001 auth helpers canonical lib `auth.require_*` + AP-AUTH-1 prohibido + H006 audit shape completa C-SEC-01 + M002 PRNG entropy spec + M003 audit query dual rate-limit recursive guard + M006 ATM HMAC convar mandatory + M004 cross-cutting CP1-A → CP1-B 14 callbacks side effects refactor + C001b NEW `balance:snapshot` fallback).
 
 ### Canonical reference
 
-→ **`@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md`** (v1.0 LOCKED, ~1580 líneas)
+→ **`@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md`** (v1.0.1 R1 LOCKED, 40+1 callbacks)
 
 ### Por qué documento dedicado en sub-directorio
 
@@ -1468,10 +1468,10 @@ Los **API Contracts SONAR (ex-Admirals)** son el puente formal entre código. Cu
 
 | Rol | Status | Fecha |
 |---|---|---|
-| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
-| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
-| **Security Lead** | ⏳ PENDING H2 audit cycling | — |
-| **Frontend Lead** | ⏳ PENDING H4 future | — |
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK + BANK-BE.LOCK.R1 green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) v1.0.1 R1 | 2026-05-06 |
+| **Security Lead** | ✅ ACCEPTED-FINAL (BANK-SEC.1 re-audit PASS veredicto + `08_audit_hooks.md` v0.2) | 2026-05-06 |
+| **Frontend Lead** | ⏳ PENDING H3 future | — |
 
 **Amendments post-LOCKED** requieren formal Round 1/2/3 protocol.
 
@@ -1480,7 +1480,8 @@ Los **API Contracts SONAR (ex-Admirals)** son el puente formal entre código. Cu
 ## Versioning v1.3 entry
 
 | 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0 LOCKED (40 callbacks C001-C040 fully specified). Sign-off founder + Backend Lead. **NO touched** §1-§N foundational pivot-agnostic. |
+| 1.3.1 | 2026-05-06 | Founder + Backend Lead + Security Lead (BANK-BE.LOCK.R1) | **v1.3.1 LOCKED — Bank Phase A R1 amendment hardening pointer.** Append updated pointer C-BE-02 v1.0.1 R1 LOCKED: H001 (auth helpers canonical lib + AP-AUTH-1 prohibido + 9 callsites refactored) + H006 (C038 audit shape complete C-SEC-01 §1.2 mandatory `previous_flag_snapshot`) + M002 (PRNG entropy spec §5.6) + M003 (C035 dual rate-limit recursive guard §9.35.5.1) + M006 (C031 ATM HMAC convar mandatory §9.31.7) + M004 cross-cutting (C001b NEW `balance:snapshot` callback fallback + 14 callbacks side effects CP1-A → CP1-B refactor `publish_balance_update()`). Sign-off founder + Backend Lead + Security Lead PASS (BANK-SEC.1 re-audit veredicto). **NO touched** §1-§N foundational pivot-agnostic. |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/04_api_contracts.md` v1.3 LOCKED (Bank Phase A extension)**
+**FIN DEL DOCUMENTO `technical/04_api_contracts.md` v1.3.1 LOCKED (Bank Phase A R1 extension)**

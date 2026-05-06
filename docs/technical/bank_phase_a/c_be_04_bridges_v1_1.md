@@ -1,11 +1,11 @@
-# C-BE-04 — Bridges Compatibility Layer v1.1 Bank Phase A (DRAFT v0.1)
+# C-BE-04 — Bridges Compatibility Layer v1.1 Bank Phase A (LOCKED v1.0.1 R1)
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** DevOps Lead (fxmanifest + load order + boot sequence) + Security Lead (audit watchdog + ACE checks + exploit prevention).
-> **Status:** 🟡 **DRAFT v0.1 — review window open.** No LOCKED hasta sign-off triple founder + Backend + DevOps (consultative) + Security (consultative).
-> **Fecha:** 2026-05-06 (BANK-BE.0).
-> **Path canonical post-LOCKED:** extends `docs/technical/07_bridges_compatibility.md` v1.2 → v1.3 con NEW §X Bank Phase A.
-> **ADR anchor:** ADR-018 (Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns) — proposed BANK-BE.0, sign target H2.
+> **Status:** 🟢 **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
+> **Fecha:** 2026-05-06 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0.1 R1 LOCKED. Pointer §X.NEW `docs/technical/07_bridges_compatibility.md` v1.3.1.
+> **ADR anchor:** ADR-018 (Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns) — ratificado BANK-BE.LOCK + R1 hardening Round 1.
 
 ---
 
@@ -165,11 +165,11 @@ Bridges.Bank.GetBalance(citizen_id, account_class)                → number | e
 Bridges.Bank.Transfer(from_iban, to_iban, amount, reason, opts)   → result
 Bridges.Bank.GetStatus()                                          → string  -- CP8 FSM 4 states
 Bridges.Bank.IsDisabled()                                         → boolean
-Bridges.BankStatus.GetState()                                     → string
-Bridges.BankStatus.Transition(new_state, reason, metrics)         → success | error
-Bridges.BankStatus.IsDisabled()                                   → boolean
-Bridges.BankStatus.RegisterChangeHandler(fn)                      → unregister_fn
-Bridges.UUID.v4()                                                 → string
+Bridges.BankStatus.GetState()                                     → string  -- READ-ONLY public (no auth gate)
+Bridges.BankStatus.Transition(new_state, reason, metrics, opts)   → success | error  -- ⚠️ AUTH-GATED v1.0.1 R1 (H002): caller MUST be source=0 (console) OR P12 ACE OR whitelisted internal_call. opts.caller_source mandatory non-nil. See §3.2.1.
+Bridges.BankStatus.IsDisabled()                                   → boolean  -- READ-ONLY public (no auth gate)
+Bridges.BankStatus.RegisterChangeHandler(fn)                      → unregister_fn  -- READ-ONLY listener registration. Handler runs in caller resource sandbox. NO mutation capability.
+Bridges.UUID.v4()                                                 → string  -- v1.0.1 R1 multi-entropy PRNG mix per §3.3.1 (M002 fix)
 
 -- opts table canonical shape:
 opts = {
@@ -188,11 +188,123 @@ result = {
 }
 ```
 
+### 3.2.1 `Bridges.BankStatus.Transition` auth gate (NEW v1.0.1 R1 — H002 fix)
+
+Export crítico — fuerza transitions FSM Bank Status (§4.x compromised_load_order / lite_mode_active / framework_missing). DoS-capable si exposed sin gate.
+
+**Auth contract:**
+
+```lua
+function Bridges.BankStatus.Transition(new_state, reason, metrics, opts)
+  -- opts.caller_source: number (mandatory v1.0.1 R1) — player handle of caller. 0 = console.
+  -- opts.internal_call: boolean (optional) — true si caller es internal SONAR resource (whitelist).
+  if not opts or type(opts.caller_source) ~= 'number' then
+    return { status = 'error', error = { code = 'AUTH_GATE_REQUIRED', message = 'caller_source mandatory in opts' } }
+  end
+
+  -- Allowed paths:
+  -- 1. Internal call from sonar_* resources (whitelisted).
+  if opts.internal_call and is_whitelisted_resource(GetInvokingResource()) then
+    -- Whitelist: sonar_bridges, sonar_bank, sonar_bank_app, sonar_core (defined convar `sonar_status_transition_whitelist`).
+    return _do_transition(new_state, reason, metrics)
+  end
+
+  -- 2. Console invocation (server-only command, e.g. txAdmin / sysadmin).
+  if opts.caller_source == 0 then
+    return _do_transition(new_state, reason, metrics)
+  end
+
+  -- 3. Player with P12 ACE permission (DevOps diagnostics).
+  if IsPlayerAceAllowed(opts.caller_source, 'sonar.devops.bank.diagnostics') then
+    return _do_transition(new_state, reason, metrics)
+  end
+
+  -- Reject: log security incident + audit hook
+  log_security_alert('bankstatus_transition_unauthorized', {
+    caller_source = opts.caller_source,
+    invoking_resource = GetInvokingResource(),
+    attempted_state = new_state,
+  })
+  audit_hook_auth_fail({
+    callback_id = 'Bridges.BankStatus.Transition',
+    source = opts.caller_source,
+    citizen_id_attempted = Bridges.Player.GetCitizenId(opts.caller_source),
+    reason = 'unauthorized_status_mutation_attempt',
+    timestamp = os.time() * 1000,
+  })
+  return { status = 'error', error = { code = 'AUTH_FORBIDDEN', message = 'P12 ACE required or console call' } }
+end
+```
+
+**Whitelist convar:** `sonar_status_transition_whitelist` default `"sonar_bridges,sonar_bank,sonar_bank_app,sonar_core"` (CSV). Sysadmin can adjust if custom resource extensions.
+
+**Internal callsites:** all sonar_bridges code paths (defensive_abort, watchdog_check_tier) call with `opts={caller_source=0, internal_call=true}`.
+
+**Audit hook integration:** every Transition call (success OR fail) generates `audit_hook_watchdog_status_change` if state actually changed. Unauthorized attempts log `audit_hook_auth_fail`.
+
 ### 3.3 Backwards compatibility
 
 Existing callsites `Bridges.Bank.AddMoney(cid, 100, 'reason')` (3-arg) → continúan funcionando. `opts` parameter optional (default `nil`). Si `opts == nil` → mutex correlation-id auto-generated + idempotency_key auto-generated (UUID v4) + metadata empty.
 
 **Impact existing code:** **ZERO breaking** — solo adds opts capability.
+
+### 3.3.1 `Bridges.UUID.v4` PRNG entropy spec (NEW v1.0.1 R1 — M002 fix)
+
+`Bridges.UUID.v4()` es la **única canonical UUID source** en SONAR Bank — correlation_id (CP2 mutex), idempotency_key fallback (C-BE-02 §5.2), audit hook correlation_id, sentinel signatures (§4.2 H003).
+
+**Implementation spec (`sonar_bridges/lib/uuid.lua`):**
+
+```lua
+-- sonar_bridges/lib/uuid.lua (v1.0.1 R1 hardened entropy mix)
+local M = {}
+
+-- Per-call entropy mix:
+--   1. os.clock() — sub-second monotonic (process-local).
+--   2. GetGameTimer() — FiveM-internal monotonic ms.
+--   3. os.time()*1000 — wall-clock epoch ms.
+--   4. math.random(1, 2^31-1) — re-seeded each call.
+--   5. (optional) GetPlayerPing(source) if source > 0 (network-derived noise).
+-- All combined → SHA256 → first 32 hex chars → formatted RFC 4122 v4 (8-4-4-4-12).
+
+local function reseed_random()
+  math.randomseed(os.clock() * 1e9 + GetGameTimer() + os.time())
+end
+
+function M.v4(opts)
+  reseed_random()
+  local entropy_blob = string.format(
+    '%f|%d|%d|%d|%d',
+    os.clock(),
+    GetGameTimer(),
+    os.time() * 1000,
+    math.random(1, 2147483647),
+    (opts and opts.source and opts.source > 0) and (GetPlayerPing(opts.source) or 0) or 0
+  )
+  local hash = sha256_hex(entropy_blob)  -- 64 hex chars
+  local version_nibble = '4'
+  local variant_nibble_choices = { '8', '9', 'a', 'b' }
+  local variant_nibble = variant_nibble_choices[(tonumber(hash:sub(17, 17), 16) % 4) + 1]
+  return string.format(
+    '%s-%s-%s%s-%s%s-%s',
+    hash:sub(1, 8),
+    hash:sub(9, 12),
+    version_nibble, hash:sub(14, 16),
+    variant_nibble, hash:sub(18, 20),
+    hash:sub(21, 32)
+  )
+end
+
+return M
+```
+
+**Performance budget:** <0.5ms p99 per call (1KB string SHA256 ~negligible).
+
+**Anti-patterns:**
+- ❌ **AP-UUID-1 (v1.0.1 R1):** `string.format('%x%x%x', math.random(), os.time(), os.clock())` — entropy mix naïve insuficiente, predictable post-boot.
+- ❌ `math.random()` plain sin reseed — deterministic per state-shared.
+- ❌ External library no-canonical — rompe SSoT.
+
+**Phase B target:** migrate to FFI native crypto (`require('crypto.random_bytes')(16)` if available) — eliminates pure-Lua SHA256 dependency.
 
 ---
 
@@ -213,8 +325,10 @@ Existing callsites `Bridges.Bank.AddMoney(cid, 100, 'reason')` (3-arg) → conti
 -- Aplica solo si framework_detect ∈ {QBox, QBCore} (CP4 detect).
 
 local function install_qbcore_override()
-  if QBCore.__sonar_patched then
-    log_warn('core_override: already patched, skipping (idempotent boot)')
+  -- v1.0.1 R1 H003: idempotent check via GlobalState (NOT public attribute).
+  local existing = GlobalState['sonar_bridges.core_override.sentinel']
+  if existing and existing.signature then
+    log_warn('core_override: already patched (sentinel signature ' .. existing.signature .. '), skipping idempotent boot')
     return
   end
 
@@ -244,21 +358,60 @@ local function install_qbcore_override()
     end,
   })
 
-  -- Apply sentinel attribute (B detection)
-  QBCore.__sonar_patched = {
+  -- v1.0.1 R1 H003: hardened sentinel triple-defense (eliminado QBCore.__sonar_patched mutable):
+  --   Layer 1: closure-local upvalue (NOT public attribute).
+  --   Layer 2: GlobalState read-only replicated=false (server-only sentinel).
+  --   Layer 3: SHA256 checksum of the patched function for integrity verification at watchdog time.
+
+  local sentinel_signature = Bridges.UUID.v4()
+  local patched_addmoney_fn = patched_player_functions_mt.__index({}, 'AddMoney')  -- materialize patched function reference
+  local patched_checksum = sha256_hex(string.dump(patched_addmoney_fn))  -- function bytecode hash
+
+  -- Defense layer 1: closure-local upvalue (NOT exposed to global)
+  local _sentinel_upvalue = {
     applied_at = os.time() * 1000,
-    version = '1.0',
-    sentinel_signature = Bridges.UUID.v4(),  -- per-boot unique to detect re-load
+    version = '1.0.1',
+    signature = sentinel_signature,
+    checksum = patched_checksum,
+    fn_ref = patched_addmoney_fn,  -- direct reference for re-verification
   }
 
-  -- Schedule watchdog tier checks
+  -- Defense layer 2: GlobalState server-only (replicated=false) — read-only from client perspective.
+  GlobalState:set('sonar_bridges.core_override.sentinel', {
+    applied_at = _sentinel_upvalue.applied_at,
+    signature = sentinel_signature,
+    checksum = patched_checksum,
+  }, false)  -- replicated=false → NOT sent to clients.
+
+  -- Defense layer 3: closure-local watchdog probe function (introspect upvalue at call time).
+  _G._sonar_core_override_probe = function()
+    local current_fn = QBCore.Functions and QBCore.Functions.AddMoney  -- whatever current mapping
+    return {
+      sentinel = _sentinel_upvalue,
+      fn_still_patched = (current_fn == _sentinel_upvalue.fn_ref),
+      checksum_current = current_fn and sha256_hex(string.dump(current_fn)) or nil,
+    }
+  end
+
+  -- ⚠️ NUNCA: QBCore.__sonar_patched = ... (public mutable attribute — removed v1.0.1 R1 H003 fix).
+
+  -- Schedule watchdog tier checks (consume probe via _G._sonar_core_override_probe)
   Citizen.SetTimeout(30000, function() watchdog_check_tier(1, 'T+30s_initial') end)
   Citizen.SetTimeout(300000, function() watchdog_check_tier(2, 'T+5min_progressive') end)
   Citizen.SetTimeout(1800000, function() watchdog_check_tier(3, 'T+30min_long_tail') end)
 
-  log_info('core_override: QBCore monkey-patch applied + sentinel set + watchdog scheduled')
+  log_info('core_override: QBCore monkey-patch applied + hardened sentinel (closure + GlobalState + checksum) + watchdog scheduled')
 end
 ```
+
+### 4.2.1 SHA256 utility (NEW v1.0.1 R1 — H003 dependency)
+
+`sha256_hex(input_string)` lib helper required for function bytecode hashing. Implementation options:
+
+- **Phase A:** pure-Lua SHA256 implementation (e.g. adapted from `lua-sha256` library, ~150 LoC) en `sonar_bridges/lib/sha256.lua`.
+- **Phase B:** native FFI binding (`oxmysql` ships with mysql native crypto OR `lua-crypto` if available) for perf.
+
+Performance budget: bytecode hash function (typically <2KB string) → <5ms p99. Watchdog checks <1Hz → no perf concern.
 
 ### 4.3 Caveats + edge cases
 
@@ -330,8 +483,10 @@ function Bridges.Bank.AddMoney(citizen_id, amount, reason, opts)
     })
     -- Audit ledger append
     BankAuditLedger.Append({ event_type = 'bank_addmoney_lite', citizen_id = citizen_id, amount = amount, correlation_id = opts.correlation_id })
-    -- StateBag publish (CP1-A)
-    GlobalState['bank.balance.' .. citizen_id] = (GlobalState['bank.balance.' .. citizen_id] or 0) + amount
+    -- v1.0.1 R1 M004 cross-cutting: balance update via CP1-B NetEvent (replaces deprecated CP1-A `GlobalState['bank.balance.*']`).
+    -- Per c_be_05 §2.2.1 publish_balance_update() canonical helper (target = owner source only, ownership defensive check inside).
+    local balance_after = MySQL.scalar.await('SELECT balance FROM sonar_bank_accounts WHERE citizen_id = ? AND account_class = ? LIMIT 1', { citizen_id, account_class })
+    publish_balance_update(citizen_id, balance_after, account_class, { correlation_id = opts.correlation_id })
     -- Idempotency complete
     IdempotencyKeys.Complete(opts.idempotency_key, { status = 'ok', data = { balance_after = ... } })
     return { status = 'ok', data = {...}, correlation_id = opts.correlation_id }
@@ -380,16 +535,41 @@ function MutexEcho.drop_echo(correlation_id)
   pending_echoes[correlation_id] = nil
 end
 
+-- v1.0.1 R1 M008: escape `|` in reason_string prior to concat + use append-at-tail strict format.
+-- Strict format: append marker `|sonar_correlation:<uuid>|END` AT END of reason. Extract only LAST match (rightmost).
+
 function MutexEcho.encode_correlation_id(reason_string, correlation_id)
-  -- Encode UUID into reason metadata. Format: "{original_reason}|sonar_correlation:{uuid}"
-  return string.format('%s|sonar_correlation:%s', reason_string or '', correlation_id)
+  -- Sanitize reason_string: escape pre-existing `|` to prevent collision.
+  local safe_reason = (reason_string or ''):gsub('|', '\\|')  -- backslash escape
+  -- Validate correlation_id format (defensive — must match v4 UUID hex shape).
+  if not correlation_id:match('^[0-9a-f]+%-[0-9a-f]+%-[0-9a-f]+%-[0-9a-f]+%-[0-9a-f]+$') then
+    error('encode_correlation_id: invalid correlation_id format (expected UUID v4 lowercase hex)', 2)
+  end
+  -- Append marker at END with terminal sentinel `|END` for unambiguous parse.
+  return string.format('%s|sonar_correlation:%s|END', safe_reason, correlation_id)
 end
 
 function MutexEcho.extract_correlation_id(reason_string)
   if not reason_string then return nil end
-  return string.match(reason_string, 'sonar_correlation:([0-9a-f%-]+)')
+  -- Match strict pattern: `|sonar_correlation:<UUID-shape>|END` AT END of string.
+  -- Anchored `$` end ensures we only match the trailing sonar marker, not any embedded variant.
+  local cid = string.match(reason_string,
+    '|sonar_correlation:([0-9a-f]+%-[0-9a-f]+%-[0-9a-f]+%-[0-9a-f]+%-[0-9a-f]+)|END$')
+  return cid
 end
 ```
+
+### 6.1.1 Encoding format invariants (NEW v1.0.1 R1 — M008 fix)
+
+Format wire `{escaped_reason}|sonar_correlation:{uuid_v4}|END`:
+
+- **Escape pipe** in `reason_string` (replace `|` → `\|`) before concat → prevents collision when external resource emits `addAccountMoney` reason that legitimately contains `|`.
+- **Terminal sentinel `|END`** anchors extract regex to trailing UUID — defense against intermediate forged `|sonar_correlation:` markers within `reason_string`.
+- **Strict UUID shape regex** `[0-9a-f]+%-` 5 segments — prevents accepting non-UUID payloads (e.g. attacker injects `sonar_correlation:malicious_string`).
+- **Anchored `$` extraction** ensures we always extract THE LAST sonar marker (the one our encode just added), not any embedded forgery.
+- **Decode validation:** `encode_correlation_id` validates UUID shape pre-encode (errors on malformed input). `extract_correlation_id` returns `nil` if no clean match (caller MUST treat as orphan event).
+
+**Defense-in-depth:** combined con §3.3.1 R1 M002 multi-entropy UUID + AP-UUID-1 prohibition, attacker collision attack surface essentially eliminated.
 
 ### 6.2 Anti-pattern explicit prohibido
 
@@ -455,11 +635,16 @@ function Reconciliation.process_batch(batch)
   end
 
   -- Step 3: batch SQL multi-row read current balances
+  -- v1.0.1 R1 H004: prepared statement with positional placeholders (NO string.format/concat with user data)
   if #pending == 0 then return end
-  local citizen_ids_str = table.concat(map(pending, function(x) return string.format("'%s'", x.player_id) end), ',')
-  local rows = MySQL.query.await(string.format([[
-    SELECT citizen_id, balance FROM sonar_bank_accounts WHERE citizen_id IN (%s) AND account_class = 'main'
-  ]], citizen_ids_str))
+  local pending_ids = {}
+  for _, item in ipairs(pending) do
+    table.insert(pending_ids, item.player_id)
+  end
+  -- Build placeholders: "?,?,?" matching pending_ids count
+  local placeholders = string.rep('?,', #pending_ids):sub(1, -2)  -- "?,?,?"
+  local sql_select = 'SELECT citizen_id, balance FROM sonar_bank_accounts WHERE citizen_id IN (' .. placeholders .. ") AND account_class = 'main'"
+  local rows = MySQL.query.await(sql_select, pending_ids)  -- positional binding, fully sanitized by oxmysql driver
 
   -- Step 4: compute deltas + apply or flag
   local apply_batch = {}
@@ -476,19 +661,25 @@ function Reconciliation.process_batch(batch)
   end
 
   -- Step 5: batch SQL multi-row UPDATE apply
+  -- v1.0.1 R1 H004: prepared CASE expression with positional placeholders (zero string concat user data)
   if #apply_batch > 0 then
-    local update_pairs = {}
+    local case_clauses = {}
+    local case_args = {}     -- alternating cid + balance pairs
+    local in_args = {}        -- citizen_ids for WHERE IN clause
     for _, x in ipairs(apply_batch) do
-      table.insert(update_pairs, string.format("WHEN '%s' THEN %f", x.citizen_id, x.new_balance))
+      table.insert(case_clauses, 'WHEN ? THEN ?')
+      table.insert(case_args, x.citizen_id)
+      table.insert(case_args, x.new_balance)
+      table.insert(in_args, x.citizen_id)
     end
-    -- Use CASE expression for batch update single statement
-    local sql = string.format([[
-      UPDATE sonar_bank_accounts
-      SET balance = CASE citizen_id %s END,
-          last_reconciled_at = NOW()
-      WHERE citizen_id IN (%s) AND account_class = 'main'
-    ]], table.concat(update_pairs, ' '), citizen_ids_str)
-    MySQL.update.await(sql)
+    local in_placeholders = string.rep('?,', #in_args):sub(1, -2)
+    local sql_update = 'UPDATE sonar_bank_accounts SET balance = CASE citizen_id ' .. table.concat(case_clauses, ' ') ..
+                ' END, last_reconciled_at = NOW() WHERE citizen_id IN (' .. in_placeholders .. ") AND account_class = 'main'"
+    -- Final args array: case_args (cid+balance pairs) followed by in_args (cids only)
+    local final_args = {}
+    for _, a in ipairs(case_args) do table.insert(final_args, a) end
+    for _, a in ipairs(in_args) do table.insert(final_args, a) end
+    MySQL.update.await(sql_update, final_args)
 
     -- Append audit ledger entries (batch INSERT)
     BankAuditLedger.AppendBatch(map(apply_batch, function(x)
@@ -500,9 +691,13 @@ function Reconciliation.process_batch(batch)
       cache_lru[x.citizen_id] = { balance_cached = x.new_balance, last_updated_ms = GetGameTimer(), source = 'reconciliation_apply' }
     end
 
-    -- Emit StateBag updates (CP1-A) batched 10ms-paced
+    -- v1.0.1 R1 M004 cross-cutting: balance updates via CP1-B NetEvent (replaces deprecated CP1-A pattern)
+    -- Per c_be_05 §2.2.1 publish_balance_update() canonical helper.
     for _, x in ipairs(apply_batch) do
-      GlobalState['bank.balance.' .. x.citizen_id] = x.new_balance
+      publish_balance_update(x.citizen_id, x.new_balance, 'main', {
+        correlation_id = x.correlation_id or 'reconciliation_apply',
+        occurred_at = GetGameTimer(),
+      })
     end
   end
 
@@ -515,6 +710,22 @@ function Reconciliation.process_batch(batch)
   end
 end
 ```
+
+### 7.1.1 Anti-pattern explicit prohibido (NEW v1.0.1 R1 — H004 fix)
+
+```lua
+-- ❌ NUNCA en SONAR Bank reconciliation pipeline (o ANY oxmysql query con datos externos):
+local sql = string.format("SELECT * FROM accounts WHERE citizen_id IN (%s)", citizen_ids_str)  -- SQL injection vulnerable.
+
+-- ✅ SIEMPRE: prepared statement with positional placeholders.
+local placeholders = string.rep('?,', #ids):sub(1, -2)
+local sql = 'SELECT * FROM accounts WHERE citizen_id IN (' .. placeholders .. ')'
+MySQL.query.await(sql, ids)  -- oxmysql sanitizes per-arg.
+```
+
+**Static lint enforcement (Phase B):** propose lint rule `sonar_lint_no_sqlformat_concat.lua` to DevOps Lead C-DO-* — flags `string.format` con SQL keyword adjacent + `..` concat con SQL string + variable.
+
+**Cross-cutting:** este anti-patrón aplica a TODO callsite oxmysql en SONAR Bank (no solo reconciliation). Backend Lead Phase A implementación code review obligatoria pre-merge §exploit-prevention checklist `@docs/technical/08_audit_hooks.md` §5.
 
 ### 7.2 Performance target verification
 
@@ -586,36 +797,112 @@ local watchdog_metrics = {
 function watchdog_check_tier(tier_num, tier_label)
   local current_state = Bridges.BankStatus.GetState()
 
-  -- B sentinel attribute check
+  -- v1.0.1 R1 H003: hardened sentinel B check via probe function (closure introspection, NOT mutable attribute).
   if current_state == 'native_full' then
-    if not (QBCore and QBCore.__sonar_patched) and not (qbx_core and qbx_core.__sonar_patched) then
-      Bridges.BankStatus.Transition('compromised_load_order', 'sentinel_attribute_missing_tier_' .. tier_num, watchdog_metrics)
-      log_security_alert('watchdog_sentinel_fail', { tier = tier_label, current_state = current_state })
+    local probe_fn = _G._sonar_core_override_probe
+    if not probe_fn then
+      -- Probe function gone → cheat removed our closure access. Critical compromise.
+      Bridges.BankStatus.Transition('compromised_load_order', 'probe_fn_missing_tier_' .. tier_num, watchdog_metrics, { caller_source = 0, internal_call = true })
+      log_security_alert('watchdog_probe_missing', { tier = tier_label })
+      return
+    end
+
+    local probe_result = probe_fn()
+    -- Triple check:
+    --   (a) Sentinel data present in closure upvalue.
+    --   (b) Function reference still equals patched_addmoney_fn (NOT reassigned to original by cheat).
+    --   (c) Checksum still matches stored checksum (function not silently replaced).
+    if not probe_result.sentinel or not probe_result.fn_still_patched or
+       probe_result.checksum_current ~= probe_result.sentinel.checksum then
+      Bridges.BankStatus.Transition('compromised_load_order', 'sentinel_integrity_fail_tier_' .. tier_num, watchdog_metrics, { caller_source = 0, internal_call = true })
+      log_security_alert('watchdog_sentinel_fail_hardened', {
+        tier = tier_label,
+        sentinel_present = probe_result.sentinel ~= nil,
+        fn_still_patched = probe_result.fn_still_patched,
+        checksum_match = probe_result.checksum_current == (probe_result.sentinel and probe_result.sentinel.checksum),
+      })
+      return
+    end
+
+    -- Cross-check GlobalState server-only sentinel still present (defense layer 2).
+    local gs_sentinel = GlobalState['sonar_bridges.core_override.sentinel']
+    if not gs_sentinel or gs_sentinel.signature ~= probe_result.sentinel.signature then
+      Bridges.BankStatus.Transition('compromised_load_order', 'globalstate_sentinel_mismatch_tier_' .. tier_num, watchdog_metrics, { caller_source = 0, internal_call = true })
+      log_security_alert('watchdog_gs_sentinel_mismatch', { tier = tier_label })
       return
     end
   end
 
-  -- C métrica indirecta check (Lite Mode)
-  if current_state == 'lite_mode_active' then
-    -- Window: events observed last N minutes vs events with sonar correlation
-    local total = watchdog_metrics.esx_events_observed
-    local with_corr = watchdog_metrics.esx_events_with_sonar_correlation
-    if total > 10 then  -- significant sample size
-      local ratio = with_corr / total
-      if ratio < 0.3 then  -- expect at least 30% to be SONAR-initiated (rest external/UI/etc)
-        -- LOW ratio is fine if non-SONAR external mutations dominate
-        -- HIGH external ratio is normal — but if our own SONAR mutations don't carry correlation-id, BUG
-        -- Métrica realmente útil: verificar SONAR mutations DO carry correlation-id
-        -- Backend Lead v0.2: refinar métrica — count emitted vs received correlation-ids
+  -- C métrica indirecta check (Lite Mode) — v1.0.1 R1 M007 fix per C-SEC-03 §6.2 thresholds
+  if current_state == 'lite_mode_active' or current_state == 'native_full' then
+    -- Refined metric (R1 M007): SONAR-emitted correlation-ids vs received-back ratio.
+    -- Window: rolling 5min (windows reset by tier scheduler).
+    local emitted = watchdog_metrics.sonar_emitted_correlation_ids or 0
+    local received = watchdog_metrics.sonar_received_correlation_ids or 0
+
+    if emitted < 50 then
+      -- INSUFFICIENT_SAMPLE — skip decision, log debug only.
+      log_debug('watchdog: metric C insufficient sample (emitted=' .. emitted .. ', received=' .. received .. ', tier=' .. tier_label .. ')')
+    else
+      local ratio = received / emitted
+
+      if ratio >= 0.7 then
+        -- HEALTHY — silent OK.
+      elseif ratio >= 0.1 then
+        -- DEGRADED — log warn, metric DevOps Lead.
+        log_warn(string.format('watchdog: metric C DEGRADED ratio=%.3f (emitted=%d received=%d) tier=%s state=%s',
+          ratio, emitted, received, tier_label, current_state))
+      else
+        -- COMPROMISED — ratio < 0.1 AND emitted >= 50 → transition.
+        log_security_alert('watchdog_metric_c_compromised', {
+          tier = tier_label,
+          current_state = current_state,
+          emitted = emitted,
+          received = received,
+          ratio = ratio,
+        })
+        Bridges.BankStatus.Transition('compromised_load_order',
+          string.format('metric_c_below_action_threshold_ratio_%.3f_tier_%s', ratio, tier_label),
+          watchdog_metrics,
+          { caller_source = 0, internal_call = true }  -- v1.0.1 R1 H002 auth gate compliance
+        )
+        return  -- transition emitted, exit watchdog tick
       end
     end
+
+    -- Reset window counters for next tier window
+    watchdog_metrics.sonar_emitted_correlation_ids = 0
+    watchdog_metrics.sonar_received_correlation_ids = 0
+    watchdog_metrics.last_metric_window_start = GetGameTimer()
   end
 
   log_info('watchdog: tier ' .. tier_label .. ' check passed (state=' .. current_state .. ')')
 end
 ```
 
-**OQ-CBE04-01:** refinar métrica C v0.2 — falta consenso métrica final + threshold concreto. Default Phase A: log only, no transition compromise based on métrica C alone (B sentinel sufficient).
+### 8.3.1 Metric C counters integration (NEW v1.0.1 R1 — M007 fix)
+
+Counters incremented at instrumentation points:
+
+- **`sonar_emitted_correlation_ids`** — incremented inside `MutexEcho.encode_correlation_id(reason, cid)` cada call que emit a ESX `addAccountMoney`/`removeAccountMoney`.
+- **`sonar_received_correlation_ids`** — incremented inside `MutexEcho.extract_correlation_id(reason)` cuando match `≠ nil` — confirma ESX returned event with our correlation-id intact.
+
+Window reset cada tier check (per `watchdog_check_tier` cleanup at end). Alternative: rolling 5min sliding window if FiveM tick budget permits (Phase B optimization).
+
+**Action thresholds (v1.0.1 R1 M007 canonical per C-SEC-03 §6.2):**
+
+| Ratio (received/emitted) | Sample size | Status | Action |
+|---|---|---|---|
+| ≥ 0.7 | emitted ≥ 50 | HEALTHY | Silent |
+| 0.1 ≤ ratio < 0.7 | emitted ≥ 50 | DEGRADED | log warn, metric DevOps |
+| < 0.1 | emitted ≥ 50 | COMPROMISED | **Transition `compromised_load_order`** + audit hook + security alert |
+| any | emitted < 50 | INSUFFICIENT_SAMPLE | Skip decision, log debug |
+
+**Convars:**
+- `sonar_bank_watchdog_compromise_ratio_threshold` default `0.1` (configurable).
+- `sonar_bank_watchdog_min_sample_size` default `50` (configurable).
+
+**~~OQ-CBE04-01~~ RESOLVED v1.0.1 R1 (M007 fix):** métrica C thresholds canonical per C-SEC-03 §6.2 — HEALTHY ≥0.7 / DEGRADED 0.1-0.7 / COMPROMISED <0.1+samp≥50 transition / INSUFFICIENT_SAMPLE skip. Counter integration via MutexEcho §8.3.1. See §8.3 watchdog block above.
 
 ---
 
@@ -680,7 +967,7 @@ end
 | Version | Fecha | Cambios |
 |---|---|---|
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial extends v1.2 con 8 CP integrated + Q-BE-pre-05/11/12 founder LOCKED. ADR-018 anchor. |
+| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + DevOps Lead (consumer consultative) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_04_*` → `docs/technical/bank_phase_a/c_be_04_*`. Pointer §X.NEW en `docs/technical/07_bridges_compatibility.md` v1.2 → v1.3 LOCKED. ADR-018 anchor referenced. |
+| **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 surgical patches Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 (founder APPROVED 2026-05-06): **H002** (Bridges.BankStatus.Transition ACE gate triple-path — P12 + console + whitelist internal_call + opts.caller_source mandatory + audit hook unauthorized attempts) + **H003** (Core Override sentinel hardening triple-defense: closure-upvalue + GlobalState replicated=false + SHA256 checksum + probe fn introspection — eliminated public attribute QBCore.__sonar_patched mutability vulnerability) + **H004** (reconciliation pipeline SQL prepared statements posicionales §7.1 steps 3+5 + AP-SQL-1 explicit prohibido §7.1.1) + **M002** (Bridges.UUID.v4 multi-entropy PRNG mix spec §3.3.1 + AP-UUID-1 prohibition + SHA256 helper §4.2.1) + **M007** (watchdog metric C action threshold COMPROMISED ratio<0.1 transition + INSUFFICIENT_SAMPLE skip + counter integration MutexEcho instrumentation §8.3.1 + 2 convars) + **M008** (MutexEcho delimiter `\|` escape + terminal sentinel `|END` + anchored UUID-strict regex §6.1 + invariants §6.1.1). **Cross-cutting M004 balance emit refactor** §5 Lite Mode `Bridges.Bank.AddMoney` + §7.1 step 5 reconciliation pipeline — `GlobalState['bank.balance.*']` reemplazado por `publish_balance_update()` helper canonical (per c_be_05 §2.2.1 v1.0.1 R1). 4 convars DevOps H4 runbook obligation: `sonar_status_transition_whitelist`, `sonar_bank_watchdog_compromise_ratio_threshold`, `sonar_bank_watchdog_min_sample_size`, `sonar_bank_atm_hmac_secret` (cross-ref C-BE-02 M006). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
 
-| **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + DevOps Lead (consumer consultative — review boot order + watchdog metrics + bridges echo) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_04_*` → `docs/technical/bank_phase_a/c_be_04_*`. Pointer §X.NEW en `docs/technical/07_bridges_compatibility.md` v1.2 → v1.3 LOCKED. ADR-018 anchor referenced. |
-
-— **C-BE-04 v1.0 LOCKED** 2026-05-06 (BANK-BE.LOCK ceremony). Sign-off founder + Backend Lead. **Effective immediately.** Security Lead recibe via H2 (audit Bridges trust boundaries). DevOps Lead via H4 (boot order + observability). Amendments require formal Round 1/2/3 protocol.
+— **C-BE-04 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** DevOps Lead via H4 (boot order + observability + 4 convars runbook). Amendments adicionales require formal Round 2/3 protocol.

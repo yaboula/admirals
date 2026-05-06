@@ -848,15 +848,15 @@ Las **State Machines SONAR (ex-Admirals)** formalizan el ciclo de vida de cada e
 
 ---
 
-## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK)
+## §X.NEW — Bank Phase A Extension (LOCKED 2026-05-06 BANK-BE.LOCK.R1)
 
-> **Estado:** v1.3 LOCKED — extensión Bank-specific Phase A. Sin tocar §1-§N foundational pivot-agnostic.
-> **Owner:** Backend Lead joint con DB Lead (sessions BANK-BE.0/BANK-BE.1/BANK-BE.LOCK).
-> **Scope:** SONAR Bank financial-grade — **8 FSMs core Bank** consolidadas: account_lifecycle + transaction_lifecycle + reconciliation_correlation + anti_fraud_review + government_decision + admin_audit_action + api_idempotency_lifecycle + bridge_correlation_mutex.
+> **Estado:** v1.3.1 LOCKED — extensión Bank-specific Phase A R1 amendment hardening. Sin tocar §1-§N foundational pivot-agnostic.
+> **Owner:** Backend Lead joint con DB Lead (sessions BANK-BE.0 / BANK-BE.1 / BANK-BE.LOCK / BANK-BE.AMEND.1 / BANK-BE.LOCK.R1).
+> **Scope:** SONAR Bank financial-grade — **8 FSMs core Bank** + R1 hardening: H005 (FSM #1 escrow lifecycle release_amount > 0 boundary guard 3 transitions) + M005 (FSM #8 idempotency orphan TTL `orphan_purged` state + cron PurgeOrphans 5min + audit entry).
 
 ### Canonical reference
 
-→ **`@docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md`** (v1.0 LOCKED, ~440 líneas — states + transitions + guards + actions + persistence patterns + recovery + testing matrix + anti-patterns)
+→ **`@docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md`** (v1.0.1 R1 LOCKED — 8 FSMs + H005 escrow guard hardening + M005 idempotency orphan TTL purge)
 
 ### Por qué documento dedicado en sub-directorio
 
@@ -876,11 +876,11 @@ Las **State Machines SONAR (ex-Admirals)** formalizan el ciclo de vida de cada e
 
 | Rol | Status | Fecha |
 |---|---|---|
-| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK green-light) | 2026-05-06 |
-| **Backend Lead (Cascade)** | ✅ self-attested (owner) | 2026-05-06 |
-| **DB Lead** | ⚠️ implicit endorsement via DB Schema v2.0 PROVISIONAL — formal joint sign-off **DEFERRED** trigger Standby reactivation post-H2 Security audit | — |
-| **Security Lead** | ⏳ PENDING H2 audit cycling | — |
-| **Frontend Lead** | ⏳ PENDING H4 future (consume state ENUMs para UI badges) | — |
+| **Founder yaboula** | ✅ APPROVED (BANK-BE.LOCK + BANK-BE.LOCK.R1 green-light) | 2026-05-06 |
+| **Backend Lead (Cascade)** | ✅ self-attested (owner) v1.0.1 R1 | 2026-05-06 |
+| **DB Lead** | ⚠️ implicit endorsement via DB Schema v2.0 LOCKED PROVISIONAL consistency (no schema migration impact R1 — confirmed `ttl_expires_at` column reuse for M005 orphan purge) | 2026-05-06 |
+| **Security Lead** | ✅ ACCEPTED-FINAL (BANK-SEC.1 re-audit PASS veredicto + `08_audit_hooks.md` v0.2) | 2026-05-06 |
+| **Frontend Lead** | ⏳ PENDING H3 future (consume state ENUMs para UI badges) | — |
 
 **Amendments post-LOCKED** requieren formal Round 1/2/3 protocol.
 
@@ -889,7 +889,8 @@ Las **State Machines SONAR (ex-Admirals)** formalizan el ciclo de vida de cada e
 ## Versioning v1.3 entry
 
 | 1.3 | 2026-05-06 | Founder + Backend Lead (BANK-BE.LOCK) | **v1.3 LOCKED — Bank Phase A extension §X.NEW.** Append pointer hacia `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0 LOCKED (8 FSMs Bank). Sign-off founder + Backend Lead. DB Lead joint endorsement deferred. **NO touched** §1-§N foundational pivot-agnostic 16 FSMs core SONAR. |
+| 1.3.1 | 2026-05-06 | Founder + Backend Lead + Security Lead (BANK-BE.LOCK.R1) | **v1.3.1 LOCKED — Bank Phase A R1 amendment hardening pointer.** Append updated pointer C-BE-03 v1.0.1 R1 LOCKED: H005 (FSM #1 escrow lifecycle 3 transitions hardened with `release_amount > 0 AND release_amount <= escrow_balance` boundary guard) + M005 (FSM #8 idempotency lifecycle NEW `orphan_purged` state + `ttl_expires_at` column reuse + cron `PurgeOrphans` 5min sweep + `event_type='idempotency_orphan_purged'` audit entry). Sin schema migration impact (DB Lead consultative confirmed). Sign-off founder + Backend Lead + Security Lead PASS (BANK-SEC.1 re-audit veredicto). **NO touched** §1-§N foundational pivot-agnostic 16 FSMs core SONAR. |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/05_state_machines.md` v1.3 LOCKED (Bank Phase A extension)**
+**FIN DEL DOCUMENTO `technical/05_state_machines.md` v1.3.1 LOCKED (Bank Phase A R1 extension)**
