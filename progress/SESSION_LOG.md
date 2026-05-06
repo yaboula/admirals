@@ -1462,3 +1462,188 @@ Stack canonical lockeado en ADR-017 D5: React 19.2.4 + Vite 6.x (Rolldown stable
 - Trigger: founder review feedback + green-light promotion path A vs B vs C decisions.
 
 — **Frontend & UX Premium Lead BANK-FE.0 close 2026-05-06. Phase A drafting CLOSED. 3 contratos C-FE-01/02/03 DRAFT v0.1 EMITTED + ADR-017 proposed + design-tokens.json + FE_BACKEND_REQUESTS.md backlog 5 items + H3 package self-attested. Frontend Lead ACTIVE awaiting founder review cycle.**
+
+---
+
+## BANK-BE.LOCK.R2 — Backend Lead Round 2 Amendment + Steps A→F implementation BOOTABLE
+
+### Identity
+- Session ID: **BANK-BE.LOCK.R2**
+- Tech Lead: Backend Money & Compatibility Lead (Cascade reactivation post BANK-FE.0 + founder green-light Round 2 amendment cycle path A REQ-FE-001 + REQ-FE-002).
+- Date: 2026-05-06.
+- Branch: `feature/bank-security-phase-a` (head BANK-FE.0 commit → BANK-BE.LOCK.R2 next commit).
+- Predecessors: BANK-BE.0 → BANK-BE.1 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-SEC.1 PASS → BANK-BE.LOCK.R1 → BANK-FE.0 (REQ-FE-001/002 backlog) → **BANK-BE.LOCK.R2** (this session).
+- Reactivation trigger: founder green-light explicit Round 2 amendment cycle + acceptance REQ-FE-001 (bootstrap snapshot p99 < 80ms) + REQ-FE-002 (recent recipients callback) + directive privileged path bug fix (recurring charge cron borrower offline).
+- Scope mandate: implementación incremental Step A → Step F con sign-off founder green-light antes de proceder cada step gate.
+
+### Founder directives absorbidas (BANK-BE.LOCK.R2)
+
+- **REQ-FE-001 APPROVED Path A:** bootstrap snapshot consolidado (REQ-FE-001) implementación obligatoria budget p99 < 80ms.
+- **REQ-FE-002 APPROVED Path A:** recent recipients endpoint Transfer Express mode (REQ-FE-002) implementación obligatoria con índice indexado + cache LRU.
+- **Bug-fix directive:** recurring charge cron debe operar borrower offline → diseño privileged path `TransferService.ExecuteAsSystem(...)` sentinel `src=0` bypass auth player + enforce all other invariants (ownership / balances / FSM / idempotency / audit / publish).
+- **Step gate discipline:** Step A foundation libs antes Step B repos; Step B+C+D consecutivos green-light; Step E callbacks + Step F boot orchestration green-light final.
+- **Boot resource directive:** `sonar_bank_app` debe ser BOOTABLE end-of-session con smoke test fatal-abort defensivo.
+
+### Operations executed (atomic ceremony BANK-BE.LOCK.R2)
+
+#### 1. Step A — Foundation libs (12 files, ~2,800 LOC)
+
+- `server/lib/enums.lua` — canonical enums (event_type / fsm states / error codes refs).
+- `server/lib/errors.lua` — error codes registry + canonical builder (`E.RATE_LIMITED`, `E.AUTH_FAIL`, `E.NOT_FOUND`, etc.).
+- `server/lib/validators.lua` — input sanitization + shape validators (citizen_id / IBAN / UUID / amount / composite payload schema).
+- `server/lib/db.lua` — H004 AP-SQL-1 prepared statements wrapper + transaction wrapper deadlock retry + `DB.Parallel` helper REQ-FE-001 + convenience helpers.
+- `server/lib/uuid.lua` — M002 multi-entropy UUID v4 + Bridges.UUID.v4 delegation + validation + short prefix.
+- `server/lib/hmac.lua` — M006 ATM HMAC convar enforcement boot-time defensive abort + pure Lua SHA-256 + HMAC-SHA256 + RFC 4231 self-test.
+- `server/lib/rate_limit.lua` — token bucket dual rate-limit M003 recursive guard + per-player + audit query buckets + reset/introspection.
+- `server/lib/audit.lua` — C-SEC-01 §1.2 append-only ledger H006 `previous_flag_snapshot` + batched async flush + queue overflow guard.
+- `server/lib/idempotency.lua` — DB-backed lifecycle persistent keys + multi-layer LRU + M005 orphan TTL purge cron + audit emit.
+- `server/lib/publish.lua` — M004 CP1-B canonical `publish_balance_update()` Player StateBag + lazy publish playerJoining + admin audit emit.
+- `server/lib/auth.lua` — H001 helpers `RequireCitizen` / `RequireAdmin` / `RequireOwnership` + ACE gate + joint ownership check + ResolveCitizenSrc reverse lookup.
+- `server/lib/perf.lua` — perf budget tracker ring buffers + percentile computation + budget breach alerting + REQ-FE-001 health check.
+
+#### 2. Step B — Repositories DAOs (8 files, ~960 LOC)
+
+- `server/repos/accounts.lua` — CRUD + balance updates + joint owners + REQ-FE-001 snapshot query descriptor.
+- `server/repos/transactions.lua` — insert/update/select + REQ-FE-002 `GetRecentRecipients` aggregation indexed query + bootstrap snapshot queries.
+- `server/repos/recipients.lua` — saved recipients CRUD + favorite + bootstrap snapshot.
+- `server/repos/audit_query.lua` — read-only ledger queries paginated by citizen / target / event_type + outstanding notices bootstrap.
+- `server/repos/recurring.lua` — list/get/insert/status/next_charge/due_for_charge + bootstrap snapshot.
+- `server/repos/loans.lua` — list/get/insert/status/reduce/payments + bootstrap snapshot.
+- `server/repos/portfolio.lua` — list/buy(weighted avg cost upsert)/sell + bootstrap snapshot.
+- `server/repos/cards.lua` — list/get/insert/status/pin_hash + bootstrap snapshot.
+
+#### 3. Step C — Services FSM + business logic (9 files, ~2,100 LOC)
+
+- `server/services/bootstrap_service.lua` — REQ-FE-001 parallel queries + per-citizen LRU cache + `Perf.Wrap('bootstrap_snapshot')` + lightweight balance fallback.
+- `server/services/recipients_service.lua` — REQ-FE-002 LRU cache + alias join + CSV parsing + CRUD saved recipients.
+- `server/services/transfer_service.lua` — FSM orchestration + idempotency + audit + M004 publish + ExecuteToSavings/FromSavings + **privileged ExecuteAsSystem** (sentinel `src=0` bypass auth + enforce ownership/balances/FSM/idempotency/audit/publish).
+- `server/services/account_service.lua` — open / freeze / unfreeze (H006 `previous_flag_snapshot`) / close / joint owners / KYC.
+- `server/services/loan_service.lua` — request / approve / reject / payment + audit + publish.
+- `server/services/recurring_service.lua` — subscribe / cancel / pause / resume + **fixed `ChargeDue` to use privileged `ExecuteAsSystem`** (cron borrower offline-safe).
+- `server/services/portfolio_service.lua` — buy / sell + market price stub + idempotency + audit + publish.
+- `server/services/card_service.lua` — issue / freeze / change_pin (HMAC verification) + audit.
+- `server/services/admin_service.lua` — Tier 3 audit query M003 dual rate-limit + govt freeze (H006) / balance adjust / govt audit / ATM withdraw (M006 HMAC) / fraud review / watchdog report (M007) / reconcile pipeline placeholder.
+
+#### 4. Step D — State / Events / NUI (5 files, ~610 LOC)
+
+- `server/state/cache.lua` — generic LRU class + TTL + stats + eviction (consumed by services).
+- `server/state/statebags.lua` — M004 §2.2.2 `playerJoining` lazy publish hook CP1-B + `playerDropped` cleanup + hot-restart replay.
+- `server/events/netevents.lua` — canonical NetEvent names catalog + typed S→C emitter helpers + defensive C2S listener registration audit on abuse.
+- `server/events/audit_emit.lua` — high-level domain audit emit helpers wrapping `lib/audit.Write` (account lifecycle / transfers / govt+admin / watchdog).
+- `server/nui/bridge.lua` — server-side stub safe client config snapshot whitelisted runtime config + feature flags.
+
+#### 5. Step E — Callbacks (10 files, ~1,400 LOC, 49 endpoints)
+
+- `server/callbacks/_wrap.lua` — defensive `Wrap.Register(name, opts, handler)` enforcing input shape → auth gate → rate-limit → recursive guard → perf wrap → service delegation → error normalization.
+- `server/callbacks/bootstrap.lua` — C001, C001b, NUI_CONFIG (3).
+- `server/callbacks/account.lua` — C002, C003, C015, C016, C019, C020, C021, C037, C038, C039 (10).
+- `server/callbacks/transfer.lua` — C005, C006, C007, C008 (4).
+- `server/callbacks/recipients.lua` — C009, C010, C011, C012 REQ-FE-002 (4).
+- `server/callbacks/loan.lua` — C022, C023, C024, C025, C026 (5).
+- `server/callbacks/recurring.lua` — C013, C014, C017, C018a, C018b (5).
+- `server/callbacks/portfolio.lua` — C027, C028, C029 (3).
+- `server/callbacks/card.lua` — C030, C032, C033, C034, C040 (5).
+- `server/callbacks/admin.lua` — C031, C035, C036, C036b, C041, C042, C043, C044, C045, C046 (10).
+
+> **Net unique contract IDs = 40** (matches `04_api_contracts.md` §X.NEW). 49 file-level entries incluyen sub-variants (C001b, C018a/b, C036b) + NUI bootstrap.
+
+#### 6. Step F — Boot orchestration + cron + smoke test (3 files, ~530 LOC)
+
+- `server/boot/init.lua` — 4 phases: defensive_abort (HMAC.LoadSecret + SelfTest + smoke.Run) → workers (Audit.StartFlushTicker + Cron.Start) → hooks (statebags.Init + netevents.RegisterServerListeners + nui.Init) → startup banner with diagnostics.
+- `server/boot/cron.lua` — idempotency orphan purge (M005) + recurring charge sweep (privileged ExecuteAsSystem) + watchdog heartbeat (M007) + start/stop/stats.
+- `server/boot/smoke.lua` — 8 boot-time checks (lib / services / repos / callbacks presence + HMAC self-test + DB ping + UUID generation + enums presence) + fatal abort on failure.
+
+#### 7. fxmanifest finalization
+
+- `resources/sonar_bank_app/fxmanifest.lua` v`1.0.1-r1-step-f` BOOTABLE — strict load order: external helpers → 12 lib → state cache → 8 repos → statebags hook → 9 services → 2 events → nui → 10 callbacks (49 callbacks) → 3 boot files (smoke + cron + init).
+- Dependencies wired: `oxmysql`, `sonar_core`, `sonar_bridges`, `sonar_bank`, `ox_lib`. No cycles.
+
+### Done criteria
+
+- [x] **Step A foundation libs** ✅ 12 files / ~2,800 LOC / R1 rules H001+H004+H006+M002+M003+M004+M005+M006+M007 implementadas.
+- [x] **Step B repos DAOs** ✅ 8 files / ~960 LOC / prepared SQL only / REQ-FE-001 + REQ-FE-002 query descriptors.
+- [x] **Step C services FSM** ✅ 9 files / ~2,100 LOC / privileged path `ExecuteAsSystem` operational.
+- [x] **Step D state/events/nui** ✅ 5 files / ~610 LOC / M004 CP1-B publish hook live.
+- [x] **Step E callbacks 49 endpoints** ✅ 10 files / ~1,400 LOC / 40 unique contract IDs net + sub-variants.
+- [x] **Step F boot orchestration** ✅ 3 files / ~530 LOC / 8 smoke checks fatal-abort.
+- [x] **Privileged path bug fix** ✅ recurring charge cron borrower-offline safe via sentinel `src=0`.
+- [x] **fxmanifest BOOTABLE** ✅ v`1.0.1-r1-step-f` strict load order no cycles.
+- [x] **REQ-FE-001 contractually delivered** ✅ parallel queries + LRU + Perf.Wrap budget tracked (real p99 deferred a harness post-H3).
+- [x] **REQ-FE-002 contractually delivered** ✅ indexed query + alias join + LRU cache.
+
+### Anti-tech-debt verification
+
+- [x] NO ESX legacy <1.10 fallback.
+- [x] NO multidivisa Phase A.
+- [x] NO TriggerClientEvent manual Bank state (M004 CP1-B canonical via `publish_balance_update()`).
+- [x] NO hash-mutex code path (CP2 path #1 only).
+- [x] NO reconciliation sync inline (CP3 mandatory async — placeholder `admin_service.lua` deferred BANK-BE.RECON).
+- [x] NO server boot sin defensive check (Phase 1 `defensive_abort` HMAC + smoke fatal-abort).
+- [x] Idiomas docs ES + code EN estricto.
+- [x] Cross-references blueprint citadas con `@path:LINE` en reporte H3.
+- [x] NO inline SQL concatenation (`lib/db.lua` AP-SQL-1).
+- [x] NO inline `Bridges.Player.GetCitizenId` en callbacks (centralizado `lib/auth.lua` H001).
+- [x] Sin scope creep cross-team.
+
+### Findings closure post-R2
+
+| Severity | Count | Resolved | Accepted | Deferred |
+|---|---|---|---|---|
+| **HIGH** | 0 R2 NEW | — | — | — |
+| **MEDIUM** | 1 (recurring charge cron borrower offline) | 1 (privileged path `ExecuteAsSystem` sentinel `src=0`) | 0 | 0 |
+| **LOW** | 0 R2 NEW | — | — | — |
+
+R1 findings inherited 100% closed (per BANK-BE.LOCK.R1 entry).
+
+### Files in scope respetados
+
+- ✅ NO toco contratos LOCKED (`docs/technical/bank_phase_a/c_be_*` v1.0.1 R1 LOCKED).
+- ✅ NO toco SSoTs canonical v1.3.1 LOCKED.
+- ✅ NO toco H2/H3 sign_off.md.
+- ✅ NO toco design DRAFT BANK-FE.0 (`docs/design/03..05_*.md`).
+- ✅ Modificados/creados implementación-only:
+  - 🟢 `resources/sonar_bank_app/fxmanifest.lua` v1.0.1-r1-step-f BOOTABLE.
+  - 🟢 `resources/sonar_bank_app/config.lua` runtime convars + feature flags.
+  - 🟢 `resources/sonar_bank_app/server/lib/*.lua` (12 files Step A).
+  - 🟢 `resources/sonar_bank_app/server/repos/*.lua` (8 files Step B).
+  - 🟢 `resources/sonar_bank_app/server/services/*.lua` (9 files Step C).
+  - 🟢 `resources/sonar_bank_app/server/state/*.lua` (2 files Step D).
+  - 🟢 `resources/sonar_bank_app/server/events/*.lua` (2 files Step D).
+  - 🟢 `resources/sonar_bank_app/server/nui/bridge.lua` (Step D).
+  - 🟢 `resources/sonar_bank_app/server/callbacks/*.lua` (10 files Step E — 49 endpoints).
+  - 🟢 `resources/sonar_bank_app/server/boot/*.lua` (3 files Step F).
+
+**Total: 48 archivos / ~8,500 LOC implementación / BOOTABLE.**
+
+### Open questions / deferred
+
+- **Real p99/p95 benchmark execution** — deferred a harness Lua post-H3 joint DevOps Lead BANK-DO.0.
+- **Reconcile pipeline implementation** — placeholder `admin_service.lua` deferred a BANK-BE.RECON sub-session (CP3 mandatory async).
+- **Market price feed** — stubbed `portfolio_service.lua` (no Phase A scope).
+- **Issue-001 `sonar_companies`** — opaque `company_id` standby DB Lead (Q-DB-E inherited).
+
+### File touch state post BANK-BE.LOCK.R2
+
+- 🟢 `resources/sonar_bank_app/fxmanifest.lua` v1.0.1-r1-step-f BOOTABLE.
+- 🟢 `resources/sonar_bank_app/config.lua` runtime convars.
+- 🟢 `resources/sonar_bank_app/server/**/*.lua` (46 archivos implementación A→F).
+- 🟢 `progress/SESSION_LOG.md` BANK-BE.LOCK.R2 entry appended.
+
+### Standby reactivation triggers preserved
+
+1. Frontend Lead BANK-FE.LOCK promotion → consultative Backend joint sign-off C-FE-03 endorsement.
+2. Frontend Lead post-integration UI gap → Round 3 amendment cycle (si gaps callbacks descubiertos).
+3. DevOps Lead BANK-DO.0 → harness Lua p99/p95 benchmark execution + 6 convars runbook (M001 + M003×2 + M006 + M007×2 + H002).
+4. Security Lead BANK-SEC.2 re-audit R2 deltas (privileged path `ExecuteAsSystem` + Steps A→F implementation review).
+5. Founder Phase B scope expansion.
+6. Reconcile pipeline implementación → BANK-BE.RECON sub-session.
+
+### Próxima sesión sugerida
+
+- Session ID candidate: **BANK-FE.1** (Frontend Lead UI build inicia con backend BOOTABLE + 49 callbacks live + REQ-FE-001/002 contractually delivered).
+- Goal: Frontend Lead arranca Vite scaffold + componentes Step 1 sobre backend implementado (mock mode dev fallback + integration callbacks staging cuando ready).
+- Modelo sugerido: Cascade (continuity).
+- Files in scope: `resources/sonar_bank_app/web-src/**` (NEW) + DRAFT C-FE-01/02/03 → DRAFT v0.2 iteration concurrent.
+- Trigger: founder green-light explícito iniciar UI build (per directive final BANK-BE.LOCK.R2 close).
+
+— **Backend Money & Compatibility Lead BANK-BE.LOCK.R2 close 2026-05-06. Round 2 amendment cycle CLOSED. 48 archivos / ~8,500 LOC implementación Steps A→F MERGED. `sonar_bank_app` v1.0.1-r1-step-f BOOTABLE. 49 callbacks live + REQ-FE-001/002 contractually delivered + privileged path bug-fix MERGED. R1 hardened rules (H001+H004+H006+M002..M007) implementadas. Backend Lead Standby ACTIVE awaiting BANK-SEC.2 re-audit + DevOps harness p99/p95 + Frontend Lead UI build (BANK-FE.1 next). Hibernación Absoluta ENGAGED.**
