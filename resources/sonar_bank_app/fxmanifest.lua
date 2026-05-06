@@ -119,6 +119,15 @@ server_scripts {
 }
 
 -- =============================================================================
+-- BANK-FE.2 — Client-side NUI bridge (React fetch ↔ server lib.callback)
+-- =============================================================================
+
+client_scripts {
+  '@ox_lib/init.lua',                   -- exposes lib.callback.await client-side
+  'client/nui_bridge.lua',              -- BANK-FE.2 NUI ↔ server proxy + NetEvent forwarder
+}
+
+-- =============================================================================
 -- BANK-FE.1 — NUI bundle (built from web-src/ → web/)
 -- =============================================================================
 -- Frontend pipeline:

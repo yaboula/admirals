@@ -348,3 +348,305 @@
     background: none;
   }
 }
+
+/* ============================================================================
+   BANK-FE.2 — VANGUARDIA 2026
+   Aurora ambient · conic glass edge · scroll-aware blur · magnetic ·
+   tilt 3D · animated counters · variable font weight transitions.
+   All effects honour prefers-reduced-motion + prefers-reduced-transparency.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   §A. Aurora ambient backdrop — pulsing radial color field
+   --------------------------------------------------------------------------- */
+
+@keyframes tactile-aurora-pan {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+  50%  { transform: translate3d(2%,   2%, 0) scale(1.06); }
+  100% { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+}
+
+@keyframes tactile-aurora-hue {
+  0%   { filter: hue-rotate(0deg)   blur(80px) saturate(1.1); }
+  50%  { filter: hue-rotate(-8deg)  blur(96px) saturate(1.2); }
+  100% { filter: hue-rotate(0deg)   blur(80px) saturate(1.1); }
+}
+
+.tactile-aurora-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.tactile-aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(80px) saturate(1.1);
+  will-change: transform, filter;
+  animation:
+    tactile-aurora-pan 18s ease-in-out infinite,
+    tactile-aurora-hue 24s ease-in-out infinite;
+}
+
+.tactile-aurora-blob.--orange {
+  width: 60vw;
+  height: 60vw;
+  top: -20vh;
+  left: -10vw;
+  background: radial-gradient(circle, oklch(0.65 0.22 40 / 0.20), transparent 65%);
+}
+
+.tactile-aurora-blob.--magenta {
+  width: 50vw;
+  height: 50vw;
+  bottom: -25vh;
+  right: -15vw;
+  background: radial-gradient(circle, oklch(0.55 0.20 350 / 0.10), transparent 70%);
+  animation-delay: -6s, -8s;
+}
+
+.tactile-aurora-blob.--cyan {
+  width: 40vw;
+  height: 40vw;
+  top: 40%;
+  right: 15%;
+  background: radial-gradient(circle, oklch(0.70 0.14 230 / 0.06), transparent 70%);
+  animation-delay: -12s, -16s;
+}
+
+.tactile-aurora-grain {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, oklch(1 0 0 / 0.02) 1px, transparent 0);
+  background-size: 3px 3px;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* ---------------------------------------------------------------------------
+   §B. Conic glass edge — slow-rotating gradient border
+   --------------------------------------------------------------------------- */
+
+@keyframes tactile-conic-spin {
+  from { --tactile-conic-angle: 0deg; }
+  to   { --tactile-conic-angle: 360deg; }
+}
+
+@property --tactile-conic-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.tactile-conic-edge {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  isolation: isolate;
+}
+
+.tactile-conic-edge::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--tactile-conic-angle),
+    oklch(0.65 0.22 40 / 0.55) 0deg,
+    oklch(0.78 0.18 55 / 0.30) 60deg,
+    transparent 140deg,
+    transparent 240deg,
+    oklch(0.65 0.22 40 / 0.30) 320deg,
+    oklch(0.65 0.22 40 / 0.55) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+  animation: tactile-conic-spin 9s linear infinite;
+}
+
+/* ---------------------------------------------------------------------------
+   §C. Scroll-aware topbar blur (intensity driven via CSS var from JS)
+   --------------------------------------------------------------------------- */
+
+.tactile-scroll-topbar {
+  --tactile-scroll-progress: 0;
+  --tactile-blur-amount: calc(8px + var(--tactile-scroll-progress) * 24px);
+  --tactile-bg-alpha: calc(0.10 + var(--tactile-scroll-progress) * 0.55);
+  background-color: oklch(0.04 0.005 270 / var(--tactile-bg-alpha));
+  backdrop-filter: blur(var(--tactile-blur-amount)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--tactile-blur-amount)) saturate(180%);
+  border-bottom: 1px solid
+    oklch(1 0 0 / calc(0.04 + var(--tactile-scroll-progress) * 0.06));
+  transition: background-color 200ms var(--ease-in-out-smooth),
+              border-color 200ms var(--ease-in-out-smooth);
+  will-change: backdrop-filter, background-color;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .tactile-scroll-topbar {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: var(--color-surface-card);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   §D. Magic spotlight — radial gradient that follows mouse pointer.
+   JS sets --tactile-spotlight-x/y on hover.
+   --------------------------------------------------------------------------- */
+
+.tactile-spotlight-host {
+  --tactile-spotlight-x: 50%;
+  --tactile-spotlight-y: 50%;
+  --tactile-spotlight-opacity: 0;
+  position: relative;
+  isolation: isolate;
+}
+
+.tactile-spotlight-host::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    600px circle at var(--tactile-spotlight-x) var(--tactile-spotlight-y),
+    oklch(0.65 0.22 40 / 0.18),
+    transparent 45%
+  );
+  opacity: var(--tactile-spotlight-opacity);
+  transition: opacity 240ms var(--ease-out-quart);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tactile-spotlight-host > * {
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tactile-spotlight-host::before { display: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   §E. Tilt 3D — perspective container + transform driven by JS
+   --------------------------------------------------------------------------- */
+
+.tactile-tilt-perspective {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+.tactile-tilt-target {
+  --tactile-tilt-x: 0deg;
+  --tactile-tilt-y: 0deg;
+  transform: rotateX(var(--tactile-tilt-x)) rotateY(var(--tactile-tilt-y));
+  transition: transform 380ms var(--ease-out-quart);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tactile-tilt-target {
+    transform: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   §F. Variable font weight — Inter Variable wght axis breathing on hover
+   --------------------------------------------------------------------------- */
+
+.tactile-wght-breathing {
+  font-variation-settings: 'wght' 600;
+  transition: font-variation-settings 320ms var(--ease-in-out-smooth);
+}
+
+.tactile-wght-breathing:hover,
+.tactile-wght-breathing.--accent {
+  font-variation-settings: 'wght' 740;
+}
+
+.tactile-display-balance {
+  font-feature-settings: 'tnum' 1, 'lnum' 1, 'cv02' 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-variation-settings: 'wght' 720, 'opsz' 32;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   §G. Magnetic adornment — JS sets translate via CSS vars
+   --------------------------------------------------------------------------- */
+
+.tactile-magnetic-host {
+  --tactile-mag-x: 0px;
+  --tactile-mag-y: 0px;
+}
+
+.tactile-magnetic-target {
+  transform: translate3d(var(--tactile-mag-x), var(--tactile-mag-y), 0);
+  transition: transform 240ms var(--ease-spring-premium);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tactile-magnetic-target { transform: none !important; }
+}
+
+/* ---------------------------------------------------------------------------
+   §H. Marquee divider (subtle separator with traveling highlight)
+   --------------------------------------------------------------------------- */
+
+@keyframes tactile-divider-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.tactile-divider-shimmer {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.65 0.22 40 / 0.32) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: tactile-divider-shimmer 4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tactile-divider-shimmer { animation: none; background-position: 50% 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   §I. Sidebar item active rail
+   --------------------------------------------------------------------------- */
+
+.tactile-rail-active {
+  position: relative;
+}
+
+.tactile-rail-active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  box-shadow: 0 0 12px oklch(0.65 0.22 40 / 0.6);
+}

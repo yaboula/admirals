@@ -24,8 +24,10 @@ interface PresetSpec {
 const SPRING_SOFT: Transition = { type: 'spring', stiffness: 180, damping: 24, mass: 1 }
 const SPRING_SNAPPY: Transition = { type: 'spring', stiffness: 380, damping: 30, mass: 1 }
 const SPRING_PREMIUM: Transition = { type: 'spring', stiffness: 220, damping: 18, mass: 0.9, restSpeed: 0.5 }
-const EASE_OUT_EXPO: number[] = [0.16, 1, 0.3, 1]
-const EASE_OUT_QUART: number[] = [0.25, 1, 0.5, 1]
+type CubicBezier = [number, number, number, number]
+const EASE_OUT_EXPO: CubicBezier = [0.16, 1, 0.3, 1]
+const EASE_OUT_QUART: CubicBezier = [0.25, 1, 0.5, 1]
+const EASE_SPRING_PREMIUM: CubicBezier = [0.34, 1.56, 0.64, 1]
 
 const PRESETS: Record<MotionPresetName, PresetSpec> = {
   'page-enter': {
@@ -62,7 +64,7 @@ const PRESETS: Record<MotionPresetName, PresetSpec> = {
   },
   'confirm-ripple': {
     animate: { scale: [1, 1.04, 1] },
-    transition: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] },
+    transition: { duration: 0.4, ease: EASE_SPRING_PREMIUM },
   },
   'wizard-step-slide': {
     initial: { opacity: 0, x: 24 },
