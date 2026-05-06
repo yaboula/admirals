@@ -34,14 +34,15 @@
 
 **By signing, I attest:**
 
-- ☐ Reviewed `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL §22-§29.
-- ☐ Reviewed `progress/BENCHMARK_BANK_DB_v1.md` v0.5 estimaciones fundadas + condicional clauses understood.
-- ☐ Reviewed 19 migrations files (010-028) Tier 4 + Empresas + Idempotency + Tax + Government.
-- ☐ Acepto LOCKED PROVISIONAL strategy — DDL aprobado estructural + benchmarks ejecutables post-H1.
-- ☐ Authorize Backend Lead activation + harness Lua implementation + Bank libs scope.
-- ☐ Acknowledge AMENDMENT v2.1 trigger paths si target fail (per condicional clauses §6 README).
+- ✅ Reviewed `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL §22-§29.
+- ✅ Reviewed `progress/BENCHMARK_BANK_DB_v1.md` v0.5 estimaciones fundadas + condicional clauses understood.
+- ✅ Reviewed 19 migrations files (010-028) Tier 4 + Empresas + Idempotency + Tax + Government.
+- ✅ Acepto LOCKED PROVISIONAL strategy — DDL aprobado estructural + benchmarks ejecutables post-H1 (Opción A).
+- ✅ Authorize Backend Lead activation + harness Lua implementation + Bank libs scope.
+- ✅ Acknowledge AMENDMENT v2.1 trigger paths si target fail (per condicional clauses §6 README).
+- ✅ Anti-Hallucination policy DB Lead aplicada correctamente — estimaciones estructurales NO numbers fabricated.
 
-**Signature:** ☐ **yaboula** — Founder — `_____________`
+**Signature:** ✅ **yaboula** — Founder — **APPROVED 2026-05-06 (BANK-DB.4 close ceremony)**
 
 ---
 
@@ -79,9 +80,13 @@
 
 ## Outcome
 
-**Pending all signatures →** Schema permanece **v2.0 LOCKED PROVISIONAL**.
+**Status 2026-05-06:** ✅ DB Lead self-signed + ✅ Founder APPROVED → 🟡 Backend Lead pending activation + 🟡 Security Lead pending H2.
 
-**On all signatures completed →** Backend Lead activation autorizada → handoff H1 complete → Backend Phase A coding begins.
+**Schema permanece v2.0 LOCKED PROVISIONAL** hasta Backend Lead post-H1 ejecuta benchmarks reales harness Lua.
+
+**Founder green-light Opción A confirmado:** NO pruebas DB manuales aisladas — benchmark real responsabilidad Backend Lead harness Lua post-H1.
+
+**Backend Lead activation autorizada** → onboarding canonical (workflow `/start-lead-session`) → BANK-BE.0 session inicia.
 
 **On benchmark real execution post-H1 success →** Schema promoted **v2.0 LOCKED MEASURED** (final).
 

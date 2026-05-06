@@ -3,7 +3,7 @@
 > **Ceremony:** Database Phase A schema delivery to Backend domain.
 >
 > **Date prepared:** 2026-05-06 (BANK-DB.4)
-> **Status:** 🟡 **PROVISIONAL — pending sign-off triple**
+> **Status:** ✅ **DB Lead self-signed + Founder APPROVED 2026-05-06** — Backend Lead activation autorizada (pending). Security Lead witness pending H2.
 > **Workflow:** `/handoff-ceremony` (DB→BE step).
 
 ---

@@ -430,3 +430,67 @@
 - Modelo sugerido: Sonnet 4.6 (continuidad context Phase A) o Opus 4 (Backend complex async + concurrency).
 - Files in scope: `docs/technical/04_interfaces.md` + Bank libs scope + harness Lua.
 - Estimado: ~4-6h.
+
+---
+
+### BANK-DB.CLOSE — Founder sign-off + DB Lead Standby
+
+- **Fecha:** 2026-05-06 (~07:00 UTC+02)
+- **Founder + Agent:** yaboula (FOUNDER APPROVED) + Cascade (DB Lead → Standby)
+- **Sprint / Phase:** Phase A — Database foundation **CLOSED**.
+- **Status:** ✅ **DB Lead session principal CONCLUIDA — Standby active.**
+
+#### Acciones ejecutadas
+
+- ✅ **Founder firma oficial recibida** — `docs/agents/teams/handoffs/h1_db_to_backend/sign_off.md` §2 Founder row marcada APPROVED 2026-05-06.
+- ✅ **Opción A confirmada** — NO pruebas DB manuales aisladas. Benchmark real + Chaos Test masivo = responsabilidad Backend Lead harness Lua post-H1.
+- ✅ **Schema doc v2.0 header status update** — Founder APPROVED 2026-05-06 (BANK-DB.4 close ceremony) reflejado.
+- ✅ **Handoff H1 README status update** — DB Lead self-signed + Founder APPROVED. Backend + Security Lead consumer sign-offs pendientes (H1+H2 ceremonies).
+
+#### Estado Handoff H1
+
+| Sign-off | Status |
+|---|---|
+| DB Lead (Cascade) | ✅ Self-signed 2026-05-06 BANK-DB.4 |
+| **Founder yaboula** | **✅ APPROVED 2026-05-06 (BANK-DB.4 close ceremony)** |
+| Backend Lead consumer | 🟡 Pending activation BANK-BE.0 |
+| Security Lead witness | 🟡 Pending activation post-H2 |
+
+**Outcome:** Backend Lead activation autorizada + Backend Phase A coding green-light pending Backend Lead onboarding session.
+
+#### Phase A Database — Final tally
+
+| Métrica | Valor |
+|---|---|
+| Sessions ejecutadas | 5 (BANK-DB.0 + BANK-DB.1 + BANK-DB.2 + BANK-DB.3 + BANK-DB.4) |
+| Cuestionamientos founder LOCKED | 10 (Q-DB-A → Q-DB-J — 100% coverage) |
+| Migrations creadas | 19 (010 → 028) |
+| Tablas NEW | 30+ |
+| ALTER existing | 6 |
+| Append-only tables | 12 |
+| Partitioned tables | 4 |
+| FSM tables | 7 |
+| Materialized snapshots | 3 |
+| Documents SSoT entregados | 4 (schema doc v2.0 + benchmark v0.5 + issue #001 + handoff package H1) |
+| Lines schema doc | ~3577 (post BANK-DB.4) |
+| Commits BANK-DB.* | 4+ pushed origin `feature/bank-db-phase-a` |
+
+#### DB Lead Standby — Reactivation triggers
+
+DB Lead vuelve activo si:
+
+1. **Backend Lead post-H1 reporta benchmark fail** → AMENDMENT v2.1 cycle (per condicional clauses).
+2. **Backend Lead descubre schema gap** durante implementación → AMENDMENT request formal.
+3. **Founder request expansion scope** (Phase B features deferred Tier 5+).
+4. **Security Lead post-H2 raises audit policy concern** requiring schema change.
+5. **DevOps Lead post-H4 raises infrastructure concern** requiring partition/index tuning.
+
+Hasta entonces: **DB Lead Standby — context preserved + handoff H1 package está la última fuente de verdad para Backend Lead onboarding.**
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-BE.0** — Backend Lead activation + onboarding canonical.
+- Pre-requisite: founder activa Backend Lead via prompt `docs/agents/teams/prompts/02_backend_lead.md` (si existe) o equivalent.
+- Inputs Backend Lead onboarding: leer en orden mandatory `.windsurf/rules/bank.md` + `docs/agents/teams/00_HANDOFF_MANIFEST.md` + `docs/agents/teams/01_SHARED_BRIEF.md` + `docs/agents/teams/02_INHERITED_BLUEPRINT_SLICES.md` + `docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` + `docs/agents/teams/slices/slice_backend.md` + **`docs/agents/teams/handoffs/h1_db_to_backend/README.md` + `sign_off.md`** + `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL + `progress/BENCHMARK_BANK_DB_v1.md` v0.5 + `docs/agents/teams/issues/issue_001_sonar_companies_pending.md` + últimas 5 entries SESSION_LOG.
+
+— **DB Lead (Cascade Sonnet 4.6) entering Standby mode 2026-05-06 ~07:00 UTC+02. Handoff H1 founder-approved. Backend Lead activation green-lighted.**
