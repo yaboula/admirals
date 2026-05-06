@@ -966,6 +966,155 @@ Backend Lead transitiona a **Standby** post-BANK-BE.LOCK. Reactivation triggers 
 
 ---
 
+## BANK-BE.AMEND.1 — Backend Lead Standby reactivation + Round 1 amendment emit
+
+**Fecha:** 2026-05-06.
+**Sesión:** BANK-BE.AMEND.1 (reactivación Standby trigger #1 post-Security Lead audit HIGH findings).
+**AI:** Cascade Backend Lead Standby OFF → DRAFT v0.2 emission → Standby ON.
+**Founder:** yaboula APPROVED DRAFT v0.2 + 4 advisories decisions + branching policy Separation of Duties enforce.
+
+### Reactivation trigger
+
+Security Lead BANK-SEC.0 emitió `docs/technical/08_audit_hooks.md` v0.1 DRAFT (C-SEC-01/02/03 consolidados) con 16 findings sobre C-BE-01..05 v1.0 LOCKED:
+- **6 HIGH** (H001-H006) → trigger AMEND obligatorio Round 1.
+- **8 MEDIUM** (M001-M008) → 6 AMEND + 2 ADVISORY (M001 + M004 founder decision).
+- **2 LOW** (L001-L002) → ADVISORY Phase B.
+
+Branch operativo: `feature/bank-security-phase-a` (audit context + Backend amendments coexisten coherentemente).
+
+### Acciones ejecutadas
+
+#### Lectura audit + planning
+- ✅ Audit report leído integral (343 líneas).
+- ✅ Verificación line refs sobre canonical contracts LOCKED (`grep` + `read_file` targeted: §1.A11, §2.1, §6.2, §9.31, §9.35, §9.38 C-BE-02 / §2.2, §9.2 C-BE-03 / §3.2, §4.2, §6.1, §7.1, §8.3 C-BE-04 / §1.5, §2.1, §4.1 C-BE-05).
+
+#### Amendment package emit (5 files)
+- ✅ Creado directorio `docs/agents/teams/amendments/be_phase_a_r1/`.
+- ✅ `README.md` (~190 líneas) — package overview + traceability matrix 6 HIGH + 6 MEDIUM AMEND + 3 advisories ratified + sign-off matrix + DB Lead impact verification + Process post-Security re-audit (Separation of Duties).
+- ✅ `AMEND-C-BE-02-r1-v0.2.md` (307 líneas) — 5 patches surgical:
+  * §1 H001 — `source.citizen_id` nil bypass eradication via lib `auth_helpers.lua` canónica (4 helpers nil-safe) + AP-AUTH-1 prohibido + global notational shorthand replace en §9 callbacks.
+  * §2 H006 — C038 resolveFlag audit shape completa C-SEC-01 con `previous_flag_snapshot` mandatory + 6-step atomic side effects + JSONSchema validation.
+  * §3 M002-partial — UUID v4 PRNG entropy spec multi-source mix + AP-UUID-1 prohibido (cross-ref C-BE-04 §3.3 lib).
+  * §4 M003 — C035 audit query dual rate-limit recursive guard (1/min citizen + 10/min global + bypass exception scope=self single-row).
+  * §5 M006 — ATM HMAC secret convar `sonar_bank_atm_hmac_secret` mandatory + 32 bytes minimum + defensive boot validate + DevOps Lead H4 runbook obligation.
+- ✅ `AMEND-C-BE-03-r1-v0.2.md` (147 líneas) — 2 patches surgical:
+  * §1 H005 — FSM #1 escrow guard hardening: `release_amount > 0` + boundary checks across 3 transitions + callback C010 §2.4 enforcement order 5 steps.
+  * §2 M005 — FSM #8 idempotency_lifecycle TTL `locked` 10min + cron `PurgeOrphans` 5min freq + new state `orphan_purged` + audit ENUM `idempotency_key_orphan_purged` + DB column `ttl_expires_at` reuse (no migration).
+- ✅ `AMEND-C-BE-04-r1-v0.2.md` (555 líneas) — 6 patches surgical:
+  * §1 H002 — `Bridges.BankStatus.Transition()` triple-path auth gate (whitelist internal_call + console source=0 + P12 ACE) + audit hook unauthorized attempts.
+  * §2 H003 — Core Override sentinel triple-defense (closure-upvalue + GlobalState `replicated=false` + SHA256 checksum + probe fn introspection); eliminado `QBCore.__sonar_patched` mutable.
+  * §3 H004 — Reconciliation pipeline SQL prepared statements posicionales (read query + UPDATE CASE expression dual args array); anti-patrón `string.format` con SQL prohibido §7.1.1.
+  * §4 M002-partial — Bridges.UUID.v4 lib spec implementación (`sonar_bridges/lib/uuid.lua` SHA256 mix + reseed math.random); SHA256 utility helper §4.2.1.
+  * §5 M007 — Watchdog metric C action threshold canonical C-SEC-03 §6.2 (HEALTHY ≥0.7 / DEGRADED ≥0.1 / COMPROMISED <0.1+samp≥50 transition / INSUFFICIENT_SAMPLE skip); MutexEcho counter integration §8.3.1.
+  * §6 M008 — MutexEcho delimiter `\|` escape + terminal sentinel `|END` + UUID-strict regex anchored `$`; encoding rationale §6.1.1.
+- ✅ Presentación founder: 6 HIGH fixes enumerados + 4 advisories decisions requested.
+
+#### Founder decisions ratified 2026-05-06
+- ✅ **M001 ACCEPTED** Phase A as-is + convar `sv_maxRateLimitResetGraceSeconds=300` (DevOps Lead H4 runbook obligation).
+- ✅ **M004 APPROVED ARCHITECTURAL** — `bank.balance.<cid>` + `bank.savings.<cid>` migrate CP1-A → CP1-B inmediato. Backend Lead extension PARITY savings (financial PII tier idéntico).
+- ✅ **L001 DEFERRED Phase B** formal.
+- ✅ **L002 DEFERRED Phase B** formal.
+- ✅ **Branching policy Separation of Duties:** NO in-place LOCK ahora. Push DRAFT v0.2 + Backend Standby ON. Security Lead re-audit gate ANTES de LOCK promotion v1.0.1 R1.
+
+#### M004 architectural patch emit
+- ✅ `AMEND-C-BE-05-r1-v0.2.md` (~340 líneas) — patch architectural:
+  * §0 Founder approval ratification + Backend Lead extension parity savings rationale.
+  * §1.1-§1.2 §1.5 patterns correctos rewrite + §2.1 public bags table remove rows balance/savings + §2.2 restricted bags expand con 3 NEW rows (`sonar:bank:balance:update` + `sonar:bank:savings:update` + `sonar:bank:balance:adminAudit`).
+  * §1.4 NetEvent canonical spec `publish_balance_update()` helper + server-side ownership check defensive + bandwidth budget (50KB/s per player).
+  * §1.5 Initial balance snapshot pattern: `playerJoining` lazy publish + new callback C001b `sonar:bank:balance:snapshot` AUTH-OWNER fallback.
+  * §1.6-§1.7 §3 naming convention examples + anti-patrón AP-CP1-1 prohibido.
+  * §1.8-§1.9 §4.1 boot init scope reducción (NO hydrate balance/savings — lazy per-connect) + §4.2 transfer_atomic boilerplate refactor con `publish_balance_update()` calls + AP-CP1-1 prohibido inline.
+  * §3 Founder optional decision SPLIT vs PARITY (default PARITY, override window).
+  * §4 Cross-cutting LOCK-time impacts:
+    - C-BE-01: add 3 NEW NetEvents (`sonar:bank:balance:update` Tier 1 / `sonar:bank:savings:update` Tier 1 / `sonar:bank:balance:adminAudit` Tier 2 admin) → total events post-R1 v1.0.1: 51+3 = **54 events catalogados**.
+    - C-BE-02: callback side effects refactor (~15 callbacks listed) que emiten balance updates → migrate StateBag pattern → NetEvent + new callback C001b snapshot AUTH-OWNER.
+    - C-BE-04: reconciliation pipeline §7.1 step 5 emit refactor (`GlobalState['bank.balance.*']` → `publish_balance_update()`).
+- ✅ Bandwidth impact analysis: O(N²) read-fan eliminate → O(1) per balance change. Migration REDUCES bandwidth en N-player servers.
+
+#### README.md update post-decisions
+- ✅ §1.2 promotion M004 from ADVISORY to AMEND (DRAFT v0.2 founder APPROVED).
+- ✅ §1.3 advisory table reduced (M001/L001/L002 ratified).
+- ✅ §3 sign-off matrix update Founder APPROVED + Backend Standby ON post-push.
+- ✅ §4 advisories ratified rewrite (M001 LOCK-time obligation + M004 patch reference + L001/L002 deferred Phase B).
+- ✅ §5 Process rewrite Separation of Duties enforce (8-step sequence emit → re-audit → LOCK).
+- ✅ Header metadata updated contracts afectados (C-BE-02 + C-BE-03 + C-BE-04 + **C-BE-05 NEW**) + cross-cutting LOCK-time C-BE-01/02/04.
+
+### Deliverables BANK-BE.AMEND.1
+
+#### Files created
+- ✅ `docs/agents/teams/amendments/be_phase_a_r1/README.md` (~190 líneas).
+- ✅ `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-02-r1-v0.2.md` (307 líneas).
+- ✅ `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-03-r1-v0.2.md` (147 líneas).
+- ✅ `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-04-r1-v0.2.md` (555 líneas).
+- ✅ `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-05-r1-v0.2.md` (~340 líneas).
+
+#### Files modified
+- ✅ `progress/SESSION_LOG.md` — este entry BANK-BE.AMEND.1.
+
+#### Files NO touched (LOCKED preservation per founder Separation of Duties)
+- 🔒 `docs/technical/bank_phase_a/c_be_01_events_catalog_v1_3.md` v1.0 LOCKED (preserved).
+- 🔒 `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` v1.0 LOCKED (preserved).
+- 🔒 `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` v1.0 LOCKED (preserved).
+- 🔒 `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0 LOCKED (preserved).
+- 🔒 `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0 LOCKED (preserved).
+- 🔒 `docs/technical/02_events_catalog.md` v1.3 LOCKED (preserved).
+- 🔒 `docs/technical/04_api_contracts.md` v1.3 LOCKED (preserved).
+- 🔒 `docs/technical/05_state_machines.md` v1.3 LOCKED (preserved).
+- 🔒 `docs/technical/07_bridges_compatibility.md` v1.3 LOCKED (preserved).
+- 🔒 `docs/technical/08_audit_hooks.md` v0.1 DRAFT (Security Lead owner — Backend NO touch).
+
+### Sign-off ratificado BANK-BE.AMEND.1
+
+| Rol | Status |
+|---|---|
+| Founder yaboula | ✅ APPROVED DRAFT v0.2 + advisories decisions + branching policy 2026-05-06 |
+| Backend Lead (Cascade) | ✅ self-attested DRAFT v0.2 emit (5 AMEND files) — Standby ON post-push |
+| Security Lead (Cascade) | ⏳ PENDING re-audit BANK-SEC.1 (post-founder activation prompt) |
+| DB Lead | ⚠️ CONSULTATIVE no schema impact this round (Standby preserved) |
+| DevOps Lead | ⚠️ CONSULTATIVE H4 runbook 4 convars (M001 + M006 + M007 + H002 whitelist) — Standby preserved |
+| Frontend Lead | N/A round 1 (M004 consumer pattern captured for H4 future activation) |
+
+### Backend Lead Standby — re-engaged post-push
+
+Backend Lead transitiona de nuevo a **Standby** post-push. Reactivation triggers (preservados de BANK-BE.LOCK):
+
+1. **Security Lead BANK-SEC.1 re-audit findings** sobre AMEND files DRAFT v0.2 → si CRITICAL Round 2 trigger; si OK proceed LOCK.
+2. **Founder green-light LOCK v1.0.1 R1** → Backend reactivation BANK-BE.LOCK.R1 ceremony aplicar patches in-place atomic + cross-cutting LOCK-time edits + bumps versioning.
+3. Resto triggers preservados (Frontend/DevOps/Founder/DB consultative/cross-team conflict).
+
+### Próxima sesión sugerida
+
+**BANK-SEC.1 — Security Lead re-audit** (founder activation prompt):
+- Re-audit los 5 AMEND files DRAFT v0.2 + cross-cutting impacts §4 validation.
+- 6 HIGH closures verifiable per test scenarios T-AMEND-H00X.x.
+- 6 MEDIUM AMEND closures verifiable.
+- M004 architectural cross-cutting impacts review.
+- Update `08_audit_hooks.md` v0.2 con findings status `RESOLVED in DRAFT v0.2 PENDING-LOCK`.
+
+### Outcomes session BANK-BE.AMEND.1
+
+- ✅ Reactivación trigger #1 ejecutada en mismo día sin rasgar Standby DB Lead/Frontend.
+- ✅ 5 AMEND files surgical patches DRAFT v0.2 emitidos (1539+ líneas total).
+- ✅ 6 HIGH + 6 MEDIUM AMEND addressed (H001-H006 + M002-M008 + M004 architectural).
+- ✅ 3 advisories ratified founder + 1 architectural promoted to AMEND.
+- ✅ Cross-cutting LOCK-time impacts documentados (C-BE-01 + C-BE-02 + C-BE-04).
+- ✅ DB Lead consultative no schema impact verified (column `ttl_expires_at` reuse M005).
+- ✅ Branching policy Separation of Duties respected — NO in-place LOCK pre-Security re-audit.
+- ✅ Backend Lead Standby re-engaged post-push.
+
+### File touch state post BANK-BE.AMEND.1
+
+- 📝 `docs/agents/teams/amendments/be_phase_a_r1/README.md` v0.2 EMITTED.
+- 📝 `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-02-r1-v0.2.md` v0.2 EMITTED.
+- 📝 `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-03-r1-v0.2.md` v0.2 EMITTED.
+- 📝 `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-04-r1-v0.2.md` v0.2 EMITTED.
+- 📝 `docs/agents/teams/amendments/be_phase_a_r1/AMEND-C-BE-05-r1-v0.2.md` v0.2 EMITTED (M004 architectural founder APPROVED).
+- 📝 `progress/SESSION_LOG.md` (this entry).
+
+— **Backend Lead BANK-BE.AMEND.1 close 2026-05-06. DRAFT v0.2 amendment package EMITTED + pushed origin. Backend Lead Standby RE-ENGAGED. Awaiting Security Lead BANK-SEC.1 re-audit (founder activation prompt) per Separation of Duties policy.**
+
+---
+
 ### BANK-SEC.0 — Security, Compliance & Audit Lead — H2 audit execution + C-SEC-01/02/03 DRAFT v0.1
 
 - **Fecha:** 2026-05-06
