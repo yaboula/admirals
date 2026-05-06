@@ -216,6 +216,34 @@
 }
 
 /* ----------------------------------------------------------------------------
+   Brand-accent outline button — the ONLY way orange enters the UI by default:
+   strictly opt-in via :hover for primary actions like "Express Transfer".
+   ---------------------------------------------------------------------------- */
+
+.tactile-button-accent-outline {
+  background: transparent;
+  color: var(--color-brand-signal-orange-light);
+  border: 1px solid var(--color-border-brand-subtle);
+  transition:
+    background 200ms var(--ease-in-out-smooth),
+    border-color 200ms var(--ease-in-out-smooth),
+    color 160ms var(--ease-in-out-smooth),
+    box-shadow 160ms var(--ease-spring-premium);
+}
+
+.tactile-button-accent-outline:hover:not(:disabled) {
+  background: var(--gradient-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-brand-strong);
+  box-shadow: var(--shadow-tactile-button-primary);
+}
+
+.tactile-button-accent-outline:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-tactile-button-primary-pressed);
+}
+
+/* ----------------------------------------------------------------------------
    Input primitive — bevel inset (pressed-into-surface)
    ---------------------------------------------------------------------------- */
 
@@ -392,29 +420,31 @@
     tactile-aurora-hue 24s ease-in-out infinite;
 }
 
+/* Ambient aurora — restrained near-black with whisper-level chroma hints.
+   Orange is FORBIDDEN as ambient backdrop (accent-only doctrine). */
 .tactile-aurora-blob.--orange {
-  width: 60vw;
-  height: 60vw;
-  top: -20vh;
-  left: -10vw;
-  background: radial-gradient(circle, oklch(0.65 0.22 40 / 0.20), transparent 65%);
+  width: 70vw;
+  height: 70vw;
+  bottom: -35vh;
+  right: -20vw;
+  background: radial-gradient(circle, oklch(0.65 0.22 40 / 0.04), transparent 60%);
 }
 
 .tactile-aurora-blob.--magenta {
-  width: 50vw;
-  height: 50vw;
-  bottom: -25vh;
-  right: -15vw;
-  background: radial-gradient(circle, oklch(0.55 0.20 350 / 0.10), transparent 70%);
+  width: 60vw;
+  height: 60vw;
+  top: -30vh;
+  left: -25vw;
+  background: radial-gradient(circle, oklch(0.40 0.10 280 / 0.05), transparent 65%);
   animation-delay: -6s, -8s;
 }
 
 .tactile-aurora-blob.--cyan {
-  width: 40vw;
-  height: 40vw;
-  top: 40%;
-  right: 15%;
-  background: radial-gradient(circle, oklch(0.70 0.14 230 / 0.06), transparent 70%);
+  width: 50vw;
+  height: 50vw;
+  top: 30%;
+  right: 25%;
+  background: radial-gradient(circle, oklch(0.50 0.06 240 / 0.025), transparent 70%);
   animation-delay: -12s, -16s;
 }
 
@@ -422,7 +452,7 @@
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 1px 1px, oklch(1 0 0 / 0.02) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, oklch(1 0 0 / 0.012) 1px, transparent 0);
   background-size: 3px 3px;
   pointer-events: none;
   mix-blend-mode: overlay;

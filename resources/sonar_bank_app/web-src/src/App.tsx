@@ -8,8 +8,6 @@ import { useInvalidateBootstrap } from './data/queries'
 import type { NuiInboundMessage } from './data/contracts'
 
 export function App() {
-  const setStatus = useBankStatus((s) => s.setStatus)
-  const invalidateBootstrap = useInvalidateBootstrap()
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -26,6 +24,23 @@ export function App() {
         },
       }),
   )
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <NetEventBridge />
+      <Outlet />
+    </QueryClientProvider>
+  )
+}
+
+/**
+ * Lives INSIDE QueryClientProvider so useQueryClient() (called by
+ * useInvalidateBootstrap) resolves correctly. Mounting this above the
+ * provider would throw "No QueryClient set".
+ */
+function NetEventBridge() {
+  const setStatus = useBankStatus((s) => s.setStatus)
+  const invalidateBootstrap = useInvalidateBootstrap()
 
   useEffect(() => {
     const unsub = onNuiMessage((data: unknown) => {
@@ -54,10 +69,6 @@ export function App() {
     return unsub
   }, [setStatus, invalidateBootstrap])
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-    </QueryClientProvider>
-  )
+  return null
 }
 

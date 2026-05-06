@@ -1,19 +1,7 @@
 import { useState } from 'react'
-import { motion } from 'motion/react'
-import {
-  Eye,
-  EyeOff,
-  ArrowDownRight,
-  ArrowUpRight,
-  Sparkles,
-  Copy,
-  CheckCheck,
-} from 'lucide-react'
+import { Eye, EyeOff, Copy, CheckCheck, ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { Card } from '@/components/ui'
 import { AnimatedNumber } from '@/components/vanguard/AnimatedNumber'
-import { MagicSpotlight } from '@/components/vanguard/MagicSpotlight'
-import { TactileTilt } from '@/components/vanguard/TactileTilt'
-import { ConicEdge } from '@/components/vanguard/ConicEdge'
 import type { Account, Transaction } from '@/data/contracts'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
@@ -24,6 +12,11 @@ export interface HeroBalanceCardProps {
   loading?: boolean
 }
 
+/**
+ * BANK-FE.2.1 hero balance card — compact, monochrome surface, balance
+ * typography dominates (clamp 48-72px, tabular-nums). Orange forbidden
+ * in baseline — appears only as 1px accent rule below balance.
+ */
 export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceCardProps) {
   const [hidden, setHidden] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -31,18 +24,8 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
   const balanceMajor = account ? account.balance_minor / 100 : 0
   const savingsMajor = account ? account.savings_minor / 100 : 0
 
-  const monthIn = sumThisMonth(transactions, account?.iban, 'in')
-  const monthOut = sumThisMonth(transactions, account?.iban, 'out')
-  const delta = monthIn - monthOut
-  const positive = delta >= 0
-
-  const handleHideToggle = (): void => {
-    setHidden((h) => {
-      if (!h) sfx.layer_dive()
-      else sfx.signal_emerge()
-      return !h
-    })
-  }
+  const monthIn = sumThisMonth(transactions, account?.iban, 'in') / 100
+  const monthOut = sumThisMonth(transactions, account?.iban, 'out') / 100
 
   const handleCopyIban = async (): Promise<void> => {
     if (!account) return
@@ -52,174 +35,154 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
       sfx.coin_clink()
       window.setTimeout(() => setCopied(false), 1600)
     } catch {
-      /* clipboard denied — ignore */
+      /* clipboard denied */
     }
   }
 
   return (
-    <TactileTilt max={4} className="w-full">
-      <ConicEdge>
-        <MagicSpotlight intensity={1}>
-          <Card
-            variant="glass"
-            padding="none"
-            hero
-            className="relative overflow-hidden rounded-2xl"
+    <Card
+      variant="baseline"
+      padding="none"
+      className="relative overflow-hidden rounded-2xl flex flex-col"
+    >
+      {/* Top row — eyebrow + IBAN + reveal toggle */}
+      <div className="flex items-start justify-between px-5 pt-4 pb-2">
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="text-[9px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
+            Saldo disponible
+          </span>
+          <button
+            type="button"
+            onClick={handleCopyIban}
+            className="group inline-flex items-center gap-1.5 text-xs font-mono text-text-secondary hover:text-text-primary transition-colors w-fit"
+            aria-label="Copiar IBAN"
           >
-            {/* Hero background gradient — diffuse top glow */}
-            <div
-              aria-hidden
-              className="absolute inset-0 pointer-events-none opacity-90"
-              style={{
-                background:
-                  'radial-gradient(ellipse 90% 60% at 50% -10%, oklch(0.65 0.22 40 / 0.20), transparent 60%), radial-gradient(ellipse 60% 70% at 110% 110%, oklch(0.55 0.20 350 / 0.10), transparent 70%)',
-              }}
-            />
+            <span style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }}>
+              {account ? formatIbanMask(account.iban) : '—'}
+            </span>
+            {copied ? (
+              <CheckCheck size={11} className="text-semantic-success-deep" />
+            ) : (
+              <Copy size={11} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
+          </button>
+        </div>
 
-            <div className="relative p-7 lg:p-9 flex flex-col gap-7 min-h-[260px]">
-              {/* Header row */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-1.5 min-w-0">
-                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] font-medium text-text-tertiary">
-                    <Sparkles size={11} strokeWidth={2} className="text-brand-signal-orange-light" />
-                    Saldo disponible
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyIban}
-                    className={cn(
-                      'group inline-flex items-center gap-2 text-xs font-mono text-text-secondary',
-                      'hover:text-text-primary transition-colors w-fit',
-                    )}
-                    aria-label="Copiar IBAN"
-                  >
-                    <span className="tactile-tabular-nums tracking-tight">
-                      {account ? formatIbanMask(account.iban) : '—'}
-                    </span>
-                    {copied ? (
-                      <CheckCheck size={12} className="text-semantic-success-deep" />
-                    ) : (
-                      <Copy
-                        size={12}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      />
-                    )}
-                  </button>
-                </div>
+        <button
+          type="button"
+          aria-label={hidden ? 'Mostrar saldo' : 'Ocultar saldo'}
+          onClick={() => {
+            setHidden((h) => !h)
+            sfx.console_tap()
+          }}
+          className="tactile-button-ghost tactile-focus-ring inline-flex items-center justify-center h-8 w-8 rounded-lg shrink-0"
+        >
+          {hidden ? <Eye size={15} /> : <EyeOff size={15} />}
+        </button>
+      </div>
 
-                <button
-                  type="button"
-                  aria-label={hidden ? 'Mostrar saldo' : 'Ocultar saldo'}
-                  onClick={handleHideToggle}
-                  className={cn(
-                    'tactile-button-secondary tactile-focus-ring inline-flex items-center justify-center h-10 w-10 rounded-xl',
-                    'shrink-0',
-                  )}
-                >
-                  {hidden ? <Eye size={18} /> : <EyeOff size={18} />}
-                </button>
-              </div>
+      {/* Balance — dominant typography */}
+      <div className="px-5 pb-3 flex items-baseline gap-2">
+        <span
+          className="text-text-tertiary font-medium"
+          style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', lineHeight: 1 }}
+        >
+          €
+        </span>
+        {hidden ? (
+          <span
+            className="text-text-tertiary tracking-widest tactile-display-balance"
+            style={{ fontSize: 'clamp(2.75rem, 6vw, 4.25rem)' }}
+          >
+            ••••••
+          </span>
+        ) : loading ? (
+          <span
+            className="tactile-skeleton h-[1em] w-56"
+            style={{ height: 'clamp(2.75rem, 6vw, 4.25rem)' }}
+          />
+        ) : (
+          <AnimatedNumber
+            value={balanceMajor}
+            decimals={2}
+            className="tactile-display-balance text-text-primary"
+            stiffness={90}
+            damping={24}
+          />
+        )}
+      </div>
 
-              {/* Balance display */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-baseline gap-2 tactile-display-balance text-[clamp(2.5rem,6vw,4.5rem)]">
-                  <span className="text-text-tertiary text-[0.55em] font-medium">€</span>
-                  {hidden ? (
-                    <span className="text-text-tertiary tracking-widest">••••••</span>
-                  ) : loading ? (
-                    <span className="tactile-skeleton h-[1em] w-64" />
-                  ) : (
-                    <AnimatedNumber value={balanceMajor} decimals={2} className="text-text-primary" />
-                  )}
-                </div>
+      {/* Accent rule — single orange hairline (the only allowed orange touch) */}
+      <div className="mx-5 h-px" style={{ background: 'var(--gradient-primary)', opacity: 0.55 }} />
 
-                <div className="flex flex-wrap items-center gap-3 text-xs">
-                  <span className="text-text-tertiary uppercase tracking-wider font-medium">
-                    Cuenta principal
-                  </span>
-                  <span className="h-3 w-px bg-border-medium" />
-                  <span className="text-text-tertiary">
-                    Ahorro:{' '}
-                    <span className="text-text-secondary tactile-tabular-nums">
-                      {hidden ? '••••' : formatEur(savingsMajor)}
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Stats row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-auto">
-                <StatPill
-                  label="Ingresos del mes"
-                  value={monthIn / 100}
-                  icon={<ArrowDownRight size={14} strokeWidth={2.4} />}
-                  tone="success"
-                  hidden={hidden}
-                />
-                <StatPill
-                  label="Gastos del mes"
-                  value={monthOut / 100}
-                  icon={<ArrowUpRight size={14} strokeWidth={2.4} />}
-                  tone="danger"
-                  hidden={hidden}
-                />
-                <StatPill
-                  label="Balance neto"
-                  value={delta / 100}
-                  icon={
-                    <motion.span
-                      animate={{ rotate: positive ? 0 : 180 }}
-                      transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                      className="inline-flex"
-                    >
-                      <ArrowDownRight size={14} strokeWidth={2.4} />
-                    </motion.span>
-                  }
-                  tone={positive ? 'success' : 'danger'}
-                  hidden={hidden}
-                  highlighted
-                />
-              </div>
-            </div>
-          </Card>
-        </MagicSpotlight>
-      </ConicEdge>
-    </TactileTilt>
+      {/* Footer stats row — tight 3-column ghost pills */}
+      <div className="grid grid-cols-3 gap-px bg-border-subtle/30 mt-3">
+        <FooterStat
+          label="Ahorro"
+          value={savingsMajor}
+          hidden={hidden}
+          neutral
+        />
+        <FooterStat
+          label="Ingresos · mes"
+          value={monthIn}
+          icon={<ArrowDownRight size={11} strokeWidth={2.6} />}
+          tone="success"
+          hidden={hidden}
+        />
+        <FooterStat
+          label="Gastos · mes"
+          value={monthOut}
+          icon={<ArrowUpRight size={11} strokeWidth={2.6} />}
+          tone="danger"
+          hidden={hidden}
+        />
+      </div>
+    </Card>
   )
 }
 
-interface StatPillProps {
+interface FooterStatProps {
   label: string
   value: number
-  icon: React.ReactNode
-  tone: 'success' | 'danger'
+  icon?: React.ReactNode
+  tone?: 'success' | 'danger'
   hidden: boolean
-  highlighted?: boolean
+  neutral?: boolean
 }
 
-function StatPill({ label, value, icon, tone, hidden, highlighted }: StatPillProps) {
-  const color = tone === 'success' ? 'oklch(0.65 0.18 155)' : 'oklch(0.62 0.21 25)'
+function FooterStat({ label, value, icon, tone, hidden, neutral }: FooterStatProps) {
+  const color =
+    neutral
+      ? 'oklch(0.78 0.01 270)'
+      : tone === 'success'
+        ? 'oklch(0.70 0.16 155)'
+        : 'oklch(0.65 0.20 25)'
+  const sign = tone === 'success' ? '+' : tone === 'danger' ? '−' : ''
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-xl px-3.5 py-3',
-        'border border-border-subtle',
-        highlighted && 'tactile-card-elevated',
+        'flex items-center gap-2 px-4 py-2.5',
+        'bg-surface-card',
       )}
-      style={{
-        background: highlighted ? undefined : 'oklch(0 0 0 / 0.20)',
-      }}
     >
-      <span
-        className="inline-flex h-7 w-7 items-center justify-center rounded-lg shrink-0"
-        style={{ background: `${color} / 0.12`, color }}
-      >
-        {icon}
-      </span>
-      <div className="flex flex-col min-w-0 leading-tight">
-        <span className="text-[10px] uppercase tracking-wider text-text-tertiary truncate">{label}</span>
-        <span className="text-sm font-semibold text-text-primary tactile-tabular-nums">
-          {hidden ? '••••' : formatEurSigned(value, tone === 'success' ? '+' : tone === 'danger' ? '−' : '')}
+      {icon && (
+        <span
+          className="inline-flex h-5 w-5 items-center justify-center rounded shrink-0"
+          style={{ background: `${color.slice(0, -1)} / 0.08)`, color }}
+        >
+          {icon}
+        </span>
+      )}
+      <div className="flex flex-col leading-none gap-0.5 min-w-0">
+        <span className="text-[9px] uppercase tracking-wider text-text-tertiary truncate">
+          {label}
+        </span>
+        <span
+          className="text-xs font-semibold tactile-tabular-nums truncate"
+          style={{ color, fontVariantNumeric: 'tabular-nums' }}
+        >
+          {hidden ? '••••' : `${sign}€${formatEur(Math.abs(value))}`}
         </span>
       </div>
     </div>
@@ -231,11 +194,6 @@ function formatEur(major: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(major)
-}
-
-function formatEurSigned(major: number, sign: string): string {
-  const abs = Math.abs(major)
-  return `${sign}€${formatEur(abs)}`
 }
 
 function formatIbanMask(iban: string): string {
