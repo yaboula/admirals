@@ -350,3 +350,83 @@
 - Modelo sugerido: Sonnet 4.6 (continuidad DB Lead context) o Opus 4 (rigor analysis benchmarks).
 - Files in scope: `progress/BENCHMARK_BANK_DB_v1.md` (DRAFT v0.1 → v1.0) + `docs/technical/03_db_schema.md` (v1.5 DRAFT v0.3 → v1.0 LOCKED) + harness Lua opcional + handoff package H1.
 - Estimado: ~4-6h (benchmarks execution + analysis + sign-off ceremony).
+
+---
+
+### BANK-DB.4 — Benchmark structural analysis + Schema LOCKED PROVISIONAL + Handoff H1 package ready
+
+- **Fecha:** 2026-05-06 (~06:50 UTC+02)
+- **Duración:** ~40 min
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6 — DB Lead final session)
+- **Sprint / Phase:** Phase A — Database foundation (final consolidation + handoff prep)
+- **Perfil:** 🔬 STRUCTURAL ANALYSIS + 🔒 LOCKED PROVISIONAL + 🤝 HANDOFF PACKAGE
+- **Goal:** Founder green-light DRAFT v0.3 + autorización BANK-DB.4. Execute benchmark análisis estructural (NO real execution — harness Lua scope post-H1) + promote schema v1.5 → v2.0 LOCKED PROVISIONAL + crear handoff package H1.
+- **Status:** ✅ Done — pending founder review + sign-off triple para handoff completion.
+
+#### Acciones ejecutadas
+
+- ✅ **`progress/BENCHMARK_BANK_DB_v1.md` v0.1 → v0.5** — análisis estructural completo:
+  - **§1** Engine + hardware reference (MariaDB 12.2.2 + commodity SSD/NVMe + 8 cores/16GB + buffer_pool 8G + oxmysql 30 connections).
+  - **§2** Methodology + harness Lua deliverable (Backend Lead post-H1 scope).
+  - **§3** Targets canonical Q1-Q5 — estimaciones fundadas todos PASS expected con margins documented:
+    - Q1 reconciliation 200 concurrent ~150-350ms p99 vs target <500ms 🟢.
+    - Q2 audit insert 3000-8000/s vs target >1000/s 🟢 con margin 3-8x.
+    - Q3 Government Console "Todas" 5 años ~80-180ms vs target <200ms 🟡 borderline.
+    - Q4 transfer atomic ~5-15ms vs <30ms 🟢.
+    - Q5 status FSM read <0.5ms vs <1ms 🟢.
+  - **§4** Connection pool sizing recommendation 30 initial + verify post-execution upgrade 50.
+  - **§5** Partition pruning verification queries canonical (`EXPLAIN PARTITIONS` expected).
+  - **§6** Index effectiveness audit per query hot path (13 indexes verified estructural).
+  - **§7** Failure scenarios + mitigations (deadlocks + trigger SIGNAL + crypto BIGINT overflow + idempotency race + stocks staleness).
+  - **§8** Sign-off matrix LOCKED PROVISIONAL — condicional clauses 4 paths AMENDMENT v2.1.
+  - **§10** Honesty disclaimer — NO números medidos (anti-pattern hallucination evitado).
+- ✅ **`docs/technical/03_db_schema.md` v1.5 DRAFT v0.3 → v2.0 LOCKED PROVISIONAL**:
+  - Header banner LOCKED PROVISIONAL + condicional clauses reference §28 + BENCHMARK §8.
+  - Status v2.0 → DB Lead sign-off + provisional founder approval pending review BANK-DB.4 deliverables.
+  - Changelog entry v2.0 LOCKED PROVISIONAL completo.
+  - FIN bumped.
+- ✅ **`docs/agents/teams/handoffs/h1_db_to_backend/README.md`** NEW — handoff package H1:
+  - §1 Ceremony participants (Owner DB / Consumer Backend / Founder approval / Witness Security).
+  - §2 Deliverables (4 SSoT docs + 19 migrations + schema scope summary).
+  - §3 Backend Lead post-H1 mandatory actions (pre-implementation verification + 9 libs canonical + benchmarks execution + cross-team contract obligations CP1-CP8).
+  - §4 Conocimiento explícito Q-DB-A→J + riesgos identificados.
+  - §5 Sign-off matrix triple.
+  - §6 Conditional LOCKED clauses (4 paths AMENDMENT v2.1).
+- ✅ **`docs/agents/teams/handoffs/h1_db_to_backend/sign_off.md`** NEW — sign-off sheet 4 firmantes (DB Lead self-signed + Founder pending + Backend Lead pending + Security Lead witness pending).
+
+#### Files in scope respetados
+
+- ✅ NO toco: §1-§29 schema doc body (preservados intactos) + migrations 010-028 (preservadas) + blueprint v1.2 + `resources/sonar_tablet/web-src/**` + `resources/sonar_bank/**`.
+- ✅ Modificados/creados:
+  - `docs/technical/03_db_schema.md` (v1.5 → v2.0 LOCKED PROVISIONAL — header + status + changelog + FIN bumped).
+  - `progress/BENCHMARK_BANK_DB_v1.md` (v0.1 → v0.5 — análisis estructural completo).
+  - `docs/agents/teams/handoffs/h1_db_to_backend/README.md` NEW.
+  - `docs/agents/teams/handoffs/h1_db_to_backend/sign_off.md` NEW.
+
+#### Honesty statement crítica
+
+**No ejecuté benchmarks reales** — harness Lua + dev DB con seed sintético + Backend libs son scope post-H1. **Anti-pattern hallucination evitado** — todas las cifras "p99 estimado" están claramente marcadas como **estimaciones estructurales fundadas** (basadas en EXPLAIN expected + benchmarks públicos MariaDB 12.x + cálculo worst-case), NO measurements.
+
+**Real benchmark execution mandatory post-H1** — Backend Lead implementa harness + ejecuta + reporta → promotion v2.0 LOCKED MEASURED.
+
+#### Outcomes
+
+- **Schema DDL Phase A LOCKED PROVISIONAL** — design + indexes + queries + DDL aprobados estructuralmente. 30+ tablas + 19 migrations + 100% Q-DB-A→J coverage.
+- **Benchmark analysis v0.5** — análisis estructural Q1-Q5 + connection pool recommendation + verification queries + failure scenarios + mitigations + honesty disclaimer.
+- **Handoff package H1 ready** — README + sign-off sheet preparados. DB Lead self-signed. Founder + Backend Lead + Security Lead pending.
+- **Condicional clauses LOCKED PROVISIONAL** — 4 AMENDMENT v2.1 paths documented si benchmark real fail post-H1.
+
+#### Pendientes próximos
+
+1. **Founder review BANK-DB.4 deliverables** + sign-off ceremony H1 (founder signature).
+2. **Backend Lead activation** — onboarding canonical (workflow `/start-lead-session`) + read handoff package + sign-off Backend Lead row.
+3. **Backend Phase A coding** — implementar harness Lua + 9 libs canonical + ejecutar benchmarks reales + AMENDMENT trigger si needed.
+4. **DB Lead session close** — workflow `/close-lead-session` post handoff completion (founder signature recibida).
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-BE.0** — Backend Lead activation + onboarding (post-H1 sign-off completion).
+- Goal: Backend Lead onboarding canonical + handshake + cuestionamientos preliminares + apply migrations dev DB + harness Lua scaffolding.
+- Modelo sugerido: Sonnet 4.6 (continuidad context Phase A) o Opus 4 (Backend complex async + concurrency).
+- Files in scope: `docs/technical/04_interfaces.md` + Bank libs scope + harness Lua.
+- Estimado: ~4-6h.
