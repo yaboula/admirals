@@ -1,0 +1,350 @@
+/* ============================================================================
+   TACTILE UI PRIMITIVES — ADR-017 D2/D3/D4
+   Multi-layer box-shadow ladder + radial diffuse + premium glassmorphism.
+   Flat designs PROHIBIDOS (founder mandate).
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Card primitives
+   ---------------------------------------------------------------------------- */
+
+.tactile-card {
+  background: var(--color-surface-card);
+  box-shadow: var(--shadow-tactile-card);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-xl);
+  position: relative;
+  isolation: isolate;
+}
+
+.tactile-card-elevated {
+  background: var(--color-surface-card-elevated);
+  box-shadow: var(--shadow-tactile-card-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xl);
+  position: relative;
+  isolation: isolate;
+}
+
+.tactile-card-interactive {
+  cursor: pointer;
+  transition:
+    box-shadow 200ms var(--ease-in-out-smooth),
+    transform 200ms var(--ease-in-out-smooth),
+    border-color 200ms var(--ease-in-out-smooth);
+}
+
+.tactile-card-interactive:hover {
+  box-shadow: var(--shadow-tactile-card-elevated);
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
+}
+
+.tactile-card-interactive:active {
+  transform: translateY(0);
+}
+
+/* ----------------------------------------------------------------------------
+   Glass card (premium glassmorphism — frontal floating panel)
+   bg-black/40 + backdrop-blur 24px saturate 180% + edge highlight mask composite
+   ---------------------------------------------------------------------------- */
+
+.tactile-glass-card {
+  background: var(--color-surface-card-glass);
+  backdrop-filter: blur(var(--blur-glass-base)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-glass-base)) saturate(180%);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  box-shadow: var(--shadow-tactile-glass);
+  border-radius: var(--radius-2xl);
+  position: relative;
+  isolation: isolate;
+}
+
+.tactile-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--gradient-glass-edge);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ----------------------------------------------------------------------------
+   Card hero glow (radial top-glow inside card)
+   ---------------------------------------------------------------------------- */
+
+.tactile-card-hero-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.tactile-card-hero-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary-glow);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.tactile-card-hero-glow > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ----------------------------------------------------------------------------
+   Vista hero light backdrop (page-level radial diffuse light source)
+   ---------------------------------------------------------------------------- */
+
+.tactile-vista-hero-light {
+  position: relative;
+  isolation: isolate;
+}
+
+.tactile-vista-hero-light::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-vista-hero-light);
+  filter: blur(var(--blur-glass-deep));
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ----------------------------------------------------------------------------
+   Inner gradient lift (subtle card depth — bottom shadow + top highlight)
+   ---------------------------------------------------------------------------- */
+
+.tactile-inner-lift {
+  background:
+    linear-gradient(
+      180deg,
+      oklch(1 0 0 / 0.04) 0%,
+      transparent 30%,
+      transparent 70%,
+      oklch(0 0 0 / 0.12) 100%
+    ),
+    var(--color-surface-card);
+}
+
+/* ----------------------------------------------------------------------------
+   Button primitives
+   ---------------------------------------------------------------------------- */
+
+.tactile-button-primary {
+  background: var(--gradient-primary);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-tactile-button-primary);
+  border: 1px solid var(--color-border-brand-strong);
+  transition:
+    box-shadow 120ms var(--ease-spring-premium),
+    transform 120ms var(--ease-spring-premium),
+    background 200ms var(--ease-in-out-smooth);
+}
+
+.tactile-button-primary:hover:not(:disabled) {
+  background: var(--gradient-primary-hover);
+}
+
+.tactile-button-primary:active:not(:disabled) {
+  box-shadow: var(--shadow-tactile-button-primary-pressed);
+  transform: translateY(1px);
+}
+
+.tactile-button-secondary {
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-tactile-button-secondary);
+  border: 1px solid var(--color-border-medium);
+  transition:
+    box-shadow 120ms var(--ease-spring-premium),
+    transform 120ms var(--ease-spring-premium),
+    border-color 200ms var(--ease-in-out-smooth),
+    background 200ms var(--ease-in-out-smooth);
+}
+
+.tactile-button-secondary:hover:not(:disabled) {
+  background: var(--color-surface-card-elevated);
+  border-color: var(--color-border-strong);
+}
+
+.tactile-button-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tactile-button-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
+  transition:
+    background 160ms var(--ease-in-out-smooth),
+    color 160ms var(--ease-in-out-smooth);
+}
+
+.tactile-button-ghost:hover:not(:disabled) {
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+}
+
+.tactile-button-danger {
+  background: var(--color-semantic-danger-deep);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-semantic-danger-deep);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.18),
+    inset 0 -1px 0 oklch(0 0 0 / 0.32),
+    0 4px 12px -2px oklch(0.62 0.21 25 / 0.4);
+  transition:
+    box-shadow 120ms var(--ease-spring-premium),
+    transform 120ms var(--ease-spring-premium);
+}
+
+.tactile-button-danger:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ----------------------------------------------------------------------------
+   Input primitive — bevel inset (pressed-into-surface)
+   ---------------------------------------------------------------------------- */
+
+.tactile-input {
+  background: var(--color-surface-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-medium);
+  box-shadow: var(--shadow-tactile-input-inset);
+  border-radius: var(--radius-md);
+  transition:
+    box-shadow 200ms var(--ease-in-out-smooth),
+    border-color 200ms var(--ease-in-out-smooth),
+    background 200ms var(--ease-in-out-smooth);
+}
+
+.tactile-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.tactile-input:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-border-strong);
+}
+
+.tactile-input:focus {
+  outline: none;
+  background: var(--color-surface-input-focus);
+  border-color: var(--color-border-brand-strong);
+  box-shadow:
+    var(--shadow-tactile-input-inset),
+    0 0 0 3px oklch(0.65 0.22 40 / 0.18);
+}
+
+.tactile-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tactile-input[aria-invalid='true'] {
+  border-color: var(--color-semantic-danger-deep);
+  box-shadow:
+    var(--shadow-tactile-input-inset),
+    0 0 0 3px oklch(0.62 0.21 25 / 0.18);
+}
+
+/* ----------------------------------------------------------------------------
+   Badge primitive
+   ---------------------------------------------------------------------------- */
+
+.tactile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: 1px solid var(--color-border-medium);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    inset 0 -1px 0 oklch(0 0 0 / 0.2);
+}
+
+/* ----------------------------------------------------------------------------
+   Focus visible ring (composite outer ring 4px)
+   ---------------------------------------------------------------------------- */
+
+.tactile-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+/* ----------------------------------------------------------------------------
+   Skeleton shimmer
+   ---------------------------------------------------------------------------- */
+
+@keyframes tactile-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.tactile-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-card) 0%,
+    var(--color-surface-card-elevated) 50%,
+    var(--color-surface-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: tactile-shimmer 1.6s linear infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ----------------------------------------------------------------------------
+   Tabular figures (financial data rows)
+   ---------------------------------------------------------------------------- */
+
+.tactile-tabular-nums {
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ----------------------------------------------------------------------------
+   Reduced motion + reduced transparency fallbacks
+   ---------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .tactile-glass-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--color-surface-card);
+  }
+  .tactile-glass-card::before {
+    background: none;
+  }
+}

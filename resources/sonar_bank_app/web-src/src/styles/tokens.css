@@ -1,0 +1,190 @@
+@theme {
+  /* ===========================================================================
+     SURFACE LADDER (12 tiers — ADR-017 D1)
+  =========================================================================== */
+  --color-surface-abyss: oklch(0.04 0.005 270);
+  --color-surface-void: oklch(0.06 0.008 270);
+  --color-surface-card: oklch(0.10 0.010 270);
+  --color-surface-card-elevated: oklch(0.13 0.012 270);
+  --color-surface-card-glass: oklch(0.10 0.010 270 / 0.40);
+  --color-surface-modal-scrim: oklch(0.04 0.005 270 / 0.72);
+  --color-surface-modal: oklch(0.13 0.012 270);
+  --color-surface-input: oklch(0.08 0.008 270);
+  --color-surface-input-focus: oklch(0.13 0.014 270);
+  --color-surface-tooltip: oklch(0.18 0.014 270);
+  --color-surface-toast: oklch(0.13 0.012 270);
+  --color-surface-glow: oklch(0.65 0.22 40 / 0.06);
+
+  /* ===========================================================================
+     BRAND TOKENS (Signal Orange — ADR-016 D1 + ADR-017 D1)
+  =========================================================================== */
+  --color-brand-signal-orange: oklch(0.65 0.22 40);
+  --color-brand-signal-orange-light: oklch(0.78 0.18 55);
+  --color-brand-signal-orange-glow: oklch(0.65 0.22 40 / 0.18);
+  --color-brand-signal-orange-subtle: oklch(0.65 0.22 40 / 0.06);
+
+  /* ===========================================================================
+     SEMANTIC DEEP (financial state)
+  =========================================================================== */
+  --color-semantic-success-deep: oklch(0.65 0.18 155);
+  --color-semantic-success-glow: oklch(0.65 0.18 155 / 0.18);
+  --color-semantic-warning-deep: oklch(0.78 0.16 85);
+  --color-semantic-warning-glow: oklch(0.78 0.16 85 / 0.16);
+  --color-semantic-danger-deep: oklch(0.62 0.21 25);
+  --color-semantic-danger-glow: oklch(0.62 0.21 25 / 0.18);
+  --color-semantic-info-deep: oklch(0.70 0.14 230);
+  --color-semantic-info-glow: oklch(0.70 0.14 230 / 0.14);
+
+  /* ===========================================================================
+     TEXT SCALE
+  =========================================================================== */
+  --color-text-primary: oklch(0.98 0.005 270);
+  --color-text-secondary: oklch(0.98 0.005 270 / 0.72);
+  --color-text-tertiary: oklch(0.98 0.005 270 / 0.48);
+  --color-text-quaternary: oklch(0.98 0.005 270 / 0.24);
+
+  /* ===========================================================================
+     BORDER TOKENS
+  =========================================================================== */
+  --color-border-subtle: oklch(0.98 0.005 270 / 0.06);
+  --color-border-medium: oklch(0.98 0.005 270 / 0.12);
+  --color-border-strong: oklch(0.98 0.005 270 / 0.24);
+  --color-border-brand-subtle: oklch(0.65 0.22 40 / 0.16);
+  --color-border-brand-strong: oklch(0.65 0.22 40 / 0.48);
+
+  /* ===========================================================================
+     STATUS BADGE (CP8 bridges)
+  =========================================================================== */
+  --color-status-native-full: oklch(0.65 0.18 155);
+  --color-status-lite-mode-active: oklch(0.78 0.16 85);
+  --color-status-compromised: oklch(0.62 0.21 25);
+  --color-status-framework-missing: oklch(0.40 0.02 270);
+
+  /* ===========================================================================
+     RADIUS
+  =========================================================================== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===========================================================================
+     TYPOGRAPHY
+  =========================================================================== */
+  --font-sans: 'Inter Variable', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 48px;
+  --text-5xl: 64px;
+
+  /* ===========================================================================
+     SHADOWS — Tactile UI ladder (ADR-017 D2)
+  =========================================================================== */
+  --shadow-tactile-card:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    inset 0 -1px 0 oklch(0 0 0 / 0.6),
+    0 8px 24px -8px oklch(0 0 0 / 0.5),
+    0 24px 64px -16px oklch(0.65 0.22 40 / 0.12);
+
+  --shadow-tactile-card-elevated:
+    inset 0 1px 0 oklch(1 0 0 / 0.12),
+    inset 0 -1px 0 oklch(0 0 0 / 0.7),
+    0 12px 32px -8px oklch(0 0 0 / 0.6),
+    0 32px 80px -16px oklch(0.65 0.22 40 / 0.18);
+
+  --shadow-tactile-button-primary:
+    inset 0 1px 0 oklch(1 0 0 / 0.32),
+    inset 0 -1px 0 oklch(0 0 0 / 0.32),
+    0 4px 12px -2px oklch(0.65 0.22 40 / 0.40),
+    0 8px 24px -4px oklch(0 0 0 / 0.32);
+
+  --shadow-tactile-button-primary-pressed:
+    inset 0 1px 0 oklch(0 0 0 / 0.24),
+    inset 0 -1px 0 oklch(1 0 0 / 0.10),
+    inset 0 4px 8px -2px oklch(0 0 0 / 0.24),
+    0 2px 6px -1px oklch(0.65 0.22 40 / 0.32);
+
+  --shadow-tactile-button-secondary:
+    inset 0 1px 0 oklch(1 0 0 / 0.10),
+    inset 0 -1px 0 oklch(0 0 0 / 0.4),
+    0 2px 6px -1px oklch(0 0 0 / 0.4);
+
+  --shadow-tactile-glass:
+    inset 0 1px 0 oklch(1 0 0 / 0.12),
+    inset 0 0 0 1px oklch(1 0 0 / 0.04),
+    0 24px 48px -16px oklch(0 0 0 / 0.6),
+    0 48px 96px -32px oklch(0.65 0.22 40 / 0.10);
+
+  --shadow-tactile-input-inset:
+    inset 0 2px 4px oklch(0 0 0 / 0.4),
+    inset 0 1px 0 oklch(0 0 0 / 0.6);
+
+  --shadow-modal:
+    0 32px 64px -16px oklch(0 0 0 / 0.7),
+    0 64px 128px -32px oklch(0 0 0 / 0.5);
+
+  --shadow-tooltip:
+    0 4px 12px -2px oklch(0 0 0 / 0.5),
+    0 8px 24px -4px oklch(0 0 0 / 0.3);
+
+  --shadow-toast:
+    0 8px 24px -4px oklch(0 0 0 / 0.6),
+    0 16px 48px -8px oklch(0.65 0.22 40 / 0.16);
+
+  --shadow-focus-ring:
+    0 0 0 2px oklch(0.04 0.005 270),
+    0 0 0 4px oklch(0.65 0.22 40 / 0.6);
+
+  /* ===========================================================================
+     GRADIENTS
+  =========================================================================== */
+  --gradient-primary: linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.78 0.18 55));
+  --gradient-primary-hover: linear-gradient(135deg, oklch(0.70 0.22 40), oklch(0.82 0.18 55));
+  --gradient-primary-glow: radial-gradient(ellipse 60% 80% at 50% 0%, oklch(0.65 0.22 40 / 0.18), transparent 70%);
+  --gradient-vista-hero-light: radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.65 0.22 40 / 0.18), transparent 70%);
+  --gradient-orange-shimmer: linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.85 0.15 65), oklch(0.65 0.22 40));
+  --gradient-glass-edge: linear-gradient(135deg, oklch(1 0 0 / 0.12), oklch(1 0 0 / 0.02), oklch(1 0 0 / 0.08));
+
+  /* ===========================================================================
+     EASINGS + SPRINGS (Motion v12)
+  =========================================================================== */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring-premium: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ===========================================================================
+     Z-INDEX LADDER
+  =========================================================================== */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-sidebar: 30;
+  --z-header: 40;
+  --z-dropdown: 50;
+  --z-tooltip: 60;
+  --z-popover: 70;
+  --z-modal-scrim: 80;
+  --z-modal: 90;
+  --z-toast: 100;
+  --z-splash: 110;
+
+  /* ===========================================================================
+     BLUR (glassmorphism)
+  =========================================================================== */
+  --blur-glass-subtle: 12px;
+  --blur-glass-base: 24px;
+  --blur-glass-deep: 40px;
+}

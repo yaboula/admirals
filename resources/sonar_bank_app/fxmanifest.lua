@@ -117,3 +117,28 @@ server_scripts {
   'server/boot/cron.lua',               -- 46.
   'server/boot/init.lua',               -- 47. wires onResourceStart → Run()
 }
+
+-- =============================================================================
+-- BANK-FE.1 — NUI bundle (built from web-src/ → web/)
+-- =============================================================================
+-- Frontend pipeline:
+--   web-src/  (React 19 + Vite 6 + TS strict + Tailwind v4)
+--      ↓  npm run build  (Vite → web/)
+--   web/index.html  (NUI entry, hash-routed for FiveM compatibility)
+--
+-- Build commands (DevOps Phase E):
+--   cd resources/sonar_bank_app/web-src && npm install && npm run build
+-- =============================================================================
+
+ui_page 'web/index.html'
+
+files {
+  'web/index.html',
+  'web/assets/**/*.js',
+  'web/assets/**/*.css',
+  'web/assets/**/*.woff',
+  'web/assets/**/*.woff2',
+  'web/assets/**/*.svg',
+  'web/assets/**/*.png',
+  'web/assets/**/*.jpg',
+}
