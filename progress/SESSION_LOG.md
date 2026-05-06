@@ -260,3 +260,93 @@
 - Modelo sugerido: Sonnet 4.6 (continuidad DB Lead context).
 - Files in scope: `docs/technical/03_db_schema.md` (§25 + §26 + §27 NEW) + `migrations/018_*.sql` → `028_*.sql`.
 - Estimado: ~3-4h.
+
+---
+
+### BANK-DB.3 — DRAFT v0.3 Tier 4 + Empresas + Idempotency keys (Phase A schema DDL complete)
+
+- **Fecha:** 2026-05-06 (~06:35 UTC+02)
+- **Duración:** ~80 min
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6 — DB Lead)
+- **Sprint / Phase:** Phase A — Database foundation (DDL final iteration)
+- **Perfil:** ⚙️ DDL CRAFTING + 🏗️ HYBRID MODELS DESIGN
+- **Goal:** Founder green-light DRAFT v0.2 + autorización BANK-DB.3. Implementar §25 Tier 4 (15 tablas) + §26 Empresas (4 tablas + 1 ALTER) + §27 Idempotency keys (1 tabla). Schema DDL Phase A completo — only benchmarks ejecutados pending v0.4 LOCKED.
+- **Status:** ✅ Done DRAFT v0.3 — pending review founder.
+
+#### Acciones ejecutadas
+
+- ✅ `resources/sonar_core/migrations/018_bank_loans_credit_scores.sql` — Loans FSM 6-state (`requested`→`approved`→`disbursed`→`active`→`paid_off`/`defaulted`) + credit_scores rolling history (UNIQUE citizen_id+computed_at, score 0-1000).
+- ✅ `resources/sonar_core/migrations/019_bank_crypto_wallets.sql` — Q-DB-B BIGINT atomic policy: 3 tablas (assets reference data + seed BTC/ETH/USDT, wallets UNIQUE citizen+asset, transactions append-only). decimals stored per asset (BTC=8, ETH=18, USDT=6). Fiat snapshot exchange_rate_atomic centavos EUR.
+- ✅ `resources/sonar_core/migrations/020_bank_stocks_transactions_holdings.sql` — Q-DB-I híbrido event-sourced + materialized: 3 tablas (assets + transactions append-only + holdings materialized snapshot). qty DECIMAL(20,8) fractional shares + price DECIMAL(14,4) + last_recomputed_at staleness invalidation.
+- ✅ `resources/sonar_core/migrations/021_bank_recurring_payments.sql` — FSM 4-state recurring + cron index `(state, next_charge_at)` hot path Backend lib. interval_kind canonical + consecutive_failures auto-pause >3.
+- ✅ `resources/sonar_core/migrations/022_bank_atm_minigame_attempts.sql` — append-only fraud detection log + IP indexing pattern detection Security Lead post-H2.
+- ✅ `resources/sonar_core/migrations/023_bank_physical_cards.sql` — FSM 4-state cards + opaque card_token CHAR(64) + PIN hash SHA-256 + auto-freeze >3 attempts + daily_limit override.
+- ✅ `resources/sonar_core/migrations/024_bank_loyalty_points.sql` — balances 1:1 PK citizen_id + transactions append-only. tier ENUM bronze/silver/gold/platinum.
+- ✅ `resources/sonar_core/migrations/025_bank_round_ups.sql` — configs 1:1 PK + transactions append-only + multiplier 1x-10x boost + trigger_movement_id link.
+- ✅ `resources/sonar_core/migrations/026_bank_business_treasuries.sql` — multi-signer 3 tablas chained: treasuries config + signers + approvals FSM 5-state m-of-n. operation_payload JSON + approvals_json array. Cron expire pending Backend lib post-H1.
+- ✅ `resources/sonar_core/migrations/027_bank_escrow_releases.sql` — partial release log append-only + ALTER sonar_escrows ADD release_log_count denormalized counter (idempotent procedure).
+- ✅ `resources/sonar_core/migrations/028_bank_idempotency_keys.sql` — tabla central cross-domain Reconciliación Activa: idempotency_key UNIQUE + 14 domains canonical + state ENUM 3-state + JSON request/response + correlation-id link CP2 + TTL 7 days mandate founder + cron cleanup hint DevOps.
+- ✅ `docs/technical/03_db_schema.md` v1.4 DRAFT v0.2 → **v1.5 DRAFT v0.3**:
+  - Header changelog v1.4 → v1.5 + status update tablas Tier 4 + Empresas + Idempotency → ✅ DRAFT v0.3.
+  - **§25 NEW** — Tier 4 (8 sub-secciones 25.1-25.8) DDL summary + decisions + queries hot path.
+  - **§26 NEW** — Empresas extends (26.1 multi-signer + 26.2 escrow releases) DDL summary + decisions + queries.
+  - **§27 NEW** — Idempotency keys (27.1 estructura + decisions + queries hot path Backend lib lifecycle).
+  - **§28** — Performance benchmarks placeholder Pending v0.4 → LOCKED v1.0.
+  - Changelog entry v1.5 DRAFT v0.3 + FIN bumped.
+
+#### Files in scope respetados
+
+- ✅ NO toco: §1-§24 SSoT v1.2 LOCKED + DRAFTs v0.1+v0.2 + §29 deviations + migrations 001-017 + `resources/sonar_tablet/web-src/**` + `resources/sonar_bank/**` + blueprint v1.2.
+- ✅ Modificados/creados:
+  - `docs/technical/03_db_schema.md` (v1.4 → v1.5 DRAFT v0.3 — apendeo §25 + §26 + §27 + §28 placeholder + bump status tablas v0.3 + changelog).
+  - `resources/sonar_core/migrations/018_*.sql` → `028_*.sql` NEW (11 archivos).
+
+#### Coverage Q-DB-A → Q-DB-J final DRAFT v0.3
+
+| Q | DRAFT v0.1 | v0.2 | v0.3 |
+|---|---|---|---|
+| Q-DB-A MariaDB 12.x | ✅ | ✅ | ✅ extendido todas tablas Tier 4 + Empresas + Idempotency |
+| Q-DB-B DECIMAL fiat / BIGINT crypto | ✅ | ✅ | ✅ implementado migration 019 atomic units + decimals stored |
+| Q-DB-C Path migrations | ✅ | ✅ | ✅ |
+| Q-DB-D bank_accounts split | 📝 | ✅ | ✅ |
+| Q-DB-E sonar_companies opaque | ✅ | ✅ | ✅ extendido empresas + recurring + loans |
+| Q-DB-F audit ledger 3-tier | ✅ | ✅ | ✅ extendido todas append-only tables (crypto + stocks + atm + loyalty + round_ups + escrow_releases) |
+| Q-DB-G partitions Dec 2027 | ✅ | ✅ | ✅ |
+| Q-DB-H privacy dual-layer | 📝 | ✅ | ✅ |
+| Q-DB-I stocks híbrido event-sourced + materialized | 📝 | 📝 | ✅ implementado migration 020 |
+| Q-DB-J bank_status single-row | ✅ | ✅ | ✅ |
+
+**100% coverage Q-DB-A → Q-DB-J.**
+
+#### Schema scope final Phase A
+
+| Categoría | Count | Status |
+|---|---|---|
+| Tablas NEW Phase A | 30+ | ✅ DDL DRAFT v0.3 |
+| Tablas existing extends | 6 (bank_accounts split + last_reconciled_at + bank_movements ENUM + 2 partitions REORGANIZE + escrows release_log_count) | ✅ DRAFT v0.3 |
+| Migrations files | 19 (010-028) | ✅ DRAFT v0.3 |
+| Append-only tables (triggers SIGNAL Q-DB-F) | 12 | ✅ DRAFT v0.3 |
+| Partitioned tables | 4 (bank_movements + audit_ledger + subsidies + future-proof keys) | ✅ DRAFT v0.3 |
+| FSM tables | 7 (loans + recurring + cards + elections + business_approvals + escrows + bank_status) | ✅ DRAFT v0.3 |
+| Materialized snapshots | 3 (stocks_holdings + loyalty_balances + bank_status) | ✅ DRAFT v0.3 |
+
+#### Outcomes
+
+- **Schema DDL Phase A 100% complete** — todas las tablas + ALTER TABLES + indexes + FKs + CHECK + triggers + partitions + seeds canonical.
+- **Coverage Q-DB-A → Q-DB-J 100%** — todos 10 cuestionamientos founder LOCKED implementados.
+- **Mandatos founder cumplidos** — MariaDB 12.x estricto + FK ON DELETE/UPDATE estándar + Q-DB-B atomic crypto + Q-DB-I híbrido stocks + Q-DB-E opaque + Idempotency keys central + TTL 7 days.
+- **Ready para benchmarks** — BANK-DB.4 ejecuta `progress/BENCHMARK_BANK_DB_v1.md` targets canonical (200 concurrent reconciliation <500ms p99 + audit insert >1000/s + Government Console <200ms + others) → LOCKED v1.0 sign-off triple → handoff H1 ceremony Backend Lead.
+
+#### Pendientes próximos
+
+1. **Founder review DRAFT v0.3** + feedback antes de iterar v0.4.
+2. **BANK-DB.4** (próxima sesión): execute benchmarks (chaos test 200 concurrent + partition pruning verification + connection pool sizing + index effectiveness) + actualizar `progress/BENCHMARK_BANK_DB_v1.md` con resultados → LOCKED v1.0 sign-off triple.
+3. **Handoff H1 ceremony** — DB Lead → Backend Lead (workflow `/handoff-ceremony`) post-LOCKED.
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-DB.4** — Performance benchmarks execution + LOCKED v1.0 sign-off.
+- Goal: Execute targets canonical §3 BENCHMARK doc + actualizar resultados + LOCKED v1.0 promotion + sign-off triple founder + Backend consumer + Security consumer → handoff H1 ceremony Backend Lead.
+- Modelo sugerido: Sonnet 4.6 (continuidad DB Lead context) o Opus 4 (rigor analysis benchmarks).
+- Files in scope: `progress/BENCHMARK_BANK_DB_v1.md` (DRAFT v0.1 → v1.0) + `docs/technical/03_db_schema.md` (v1.5 DRAFT v0.3 → v1.0 LOCKED) + harness Lua opcional + handoff package H1.
+- Estimado: ~4-6h (benchmarks execution + analysis + sign-off ceremony).

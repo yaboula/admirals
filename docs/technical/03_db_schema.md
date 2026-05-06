@@ -1,12 +1,12 @@
 # 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `sonar_*` (pre-migration-009 legacy)
 
-> **Versión:** 1.4 DRAFT v0.2 (Bank Phase A extends — DB Lead authoring BANK-DB.2) post v1.2 LOCKED (S1.10.x Phase 8+9 namespace migration). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). v1.4 añade **Tax + Government tablas + ALTER bank_accounts owner_type split + ALTER bank_movements category extend** sobre v1.3 DRAFT v0.1 (audit ledger + compliance + status FSM + partitions extension).
+> **Versión:** 1.5 DRAFT v0.3 (Bank Phase A extends — DB Lead authoring BANK-DB.3) post v1.2 LOCKED (S1.10.x Phase 8+9 namespace migration). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). v1.5 añade **Tier 4 features + Empresas multi-signer + Idempotency keys** sobre v1.4 DRAFT v0.2 (tax + government). Phase A schema DDL completo — only benchmarks ejecutados pending v0.4 LOCKED.
 > **Engine canonical (Q-DB-A LOCKED 2026-05-06):** **MariaDB 12.x primary** + MySQL 8 best-effort compat. Adaptación features MariaDB-specific (CHECK constraint workarounds + INT UNSIGNED `ON UPDATE` MariaDB-illegal + system-versioned tables descartado audit ledger).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
 > **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
 > **ADRs relacionados:** ADR-010 (hybrid audit_log) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)** + **ADR-018 🟡 proposed (Bank Lite mode hybrid 3-layer + cut ESX legacy + 8 CP integrated)**.
-> **Estado v1.2:** firmado (S1.10.x). **Estado v1.3 DRAFT v0.1:** founder approved 2026-05-06 (BANK-DB.1 sign-off). **Estado v1.4 DRAFT v0.2:** 🟡 DB Lead authoring 2026-05-06 (BANK-DB.2 — tax + government). Sign-off triple pendiente.
+> **Estado v1.2:** firmado (S1.10.x). **Estado v1.3 DRAFT v0.1:** founder approved 2026-05-06 (BANK-DB.1 sign-off). **Estado v1.4 DRAFT v0.2:** founder approved 2026-05-06 (BANK-DB.2 sign-off). **Estado v1.5 DRAFT v0.3:** 🟡 DB Lead authoring 2026-05-06 (BANK-DB.3 — Tier 4 + Empresas + Idempotency). Sign-off triple pendiente para LOCKED v1.0 → H1 ceremony.
 
 > **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.6, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled), **`docs/agents/teams/01_SHARED_BRIEF.md`** v1.0 (Q1-Q16 + CP1-CP8 founder decisions), **`docs/agents/teams/slices/slice_database.md`** v1.0 (DB cherry-pick blueprint), **`docs/agents/teams/issues/issue_001_sonar_companies_pending.md`** (FK deferred Q-DB-E).
 
@@ -49,19 +49,26 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | §24 | `sonar_govt_election_candidates` | DB Lead | ✅ DRAFT v0.2 |
 | §24 | `sonar_govt_votes` (hashed) | DB Lead | ✅ DRAFT v0.2 |
 | §24 | `sonar_govt_votes_audit` (raw admin-only) | DB Lead | ✅ DRAFT v0.2 |
-| §25 | `sonar_bank_loans` | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_credit_scores` | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_crypto_wallets` (BIGINT atomic) | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_stocks_transactions` (event-sourced) | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_stocks_holdings` (materialized) | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_recurring_payments` | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_atm_minigame_attempts` | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_physical_cards` | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_loyalty_points` | DB Lead | 🟡 Pending v0.3 |
-| §25 | `sonar_bank_round_ups` | DB Lead | 🟡 Pending v0.3 |
-| §26 | `sonar_bank_business_treasuries` | DB Lead | 🟡 Pending v0.3 |
-| §26 | `sonar_bank_escrow_releases` (escrow partial release log) | DB Lead | 🟡 Pending v0.3 |
-| §27 | `sonar_bank_idempotency_keys` | DB Lead | 🟡 Pending v0.3 |
+| §25 | `sonar_bank_loans` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_credit_scores` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_crypto_assets` (reference data + seed) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_crypto_wallets` (BIGINT atomic) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_crypto_transactions` (append-only) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_stocks_assets` (reference data) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_stocks_transactions` (event-sourced) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_stocks_holdings` (materialized) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_recurring_payments` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_atm_minigame_attempts` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_physical_cards` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_loyalty_balances` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_loyalty_transactions` (append-only) | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_round_up_configs` | DB Lead | ✅ DRAFT v0.3 |
+| §25 | `sonar_bank_round_up_transactions` (append-only) | DB Lead | ✅ DRAFT v0.3 |
+| §26 | `sonar_bank_business_treasuries` (multi-signer policy) | DB Lead | ✅ DRAFT v0.3 |
+| §26 | `sonar_bank_business_treasury_signers` | DB Lead | ✅ DRAFT v0.3 |
+| §26 | `sonar_bank_business_treasury_approvals` (m-of-n FSM) | DB Lead | ✅ DRAFT v0.3 |
+| §26 | `sonar_bank_escrow_releases` (escrow partial release log) | DB Lead | ✅ DRAFT v0.3 |
+| §27 | `sonar_bank_idempotency_keys` (TTL 7d) | DB Lead | ✅ DRAFT v0.3 |
 
 ### Tablas existing extends Bank Phase A
 
@@ -72,7 +79,7 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | `sonar_bank_movements` | ALTER ENUM `category` add `'tax_subsidy'`, `'loan_disbursement'`, `'loan_repayment'`, `'crypto_buy'`, `'crypto_sell'`, `'stock_buy'`, `'stock_sell'`, `'recurring_charge'`, `'round_up'`, `'loyalty_redeem'`, `'compliance_freeze'` | 015 | ✅ DRAFT v0.2 |
 | `sonar_bank_movements` | REORGANIZE PARTITIONS extend Sep 2026 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
 | `sonar_bank_audit_ledger` | REORGANIZE PARTITIONS extend Jan 2027 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
-| `sonar_escrows` | ADD `release_log_count TINYINT UNSIGNED NOT NULL DEFAULT 0` (FSM 6-states extends Q12) | 0NN v0.3 | 🟡 Pending v0.3 |
+| `sonar_escrows` | ADD `release_log_count TINYINT UNSIGNED NOT NULL DEFAULT 0` (FSM 6-states extends Q12) | 027 | ✅ DRAFT v0.3 |
 
 ### Migrations files DRAFT v0.1 (BANK-DB.1)
 
@@ -86,17 +93,17 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | `015_bank_movements_category_extend.sql` | ALTER movements ENUM category add 11 nuevos valores aditivos | ✅ DRAFT v0.2 |
 | `016_tax_brackets_history_subsidies.sql` | Tax tablas (brackets editable + history append-only + subsidies PARTITIONED) | ✅ DRAFT v0.2 |
 | `017_govt_elections_candidates_votes.sql` | Government tablas (elections FSM + candidates + votes hashed + votes_audit raw — dual-layer Q-DB-H) | ✅ DRAFT v0.2 |
-| `018_bank_loans_credit_scores.sql` | Tier 4 — loans FSM + credit scores | 🟡 v0.3 |
-| `019_bank_crypto_wallets.sql` | Tier 4 — crypto wallets BIGINT atomic + decimals | 🟡 v0.3 |
-| `020_bank_stocks_holdings_transactions.sql` | Tier 4 — stocks event-sourced + materialized hybrid Q-DB-I | 🟡 v0.3 |
-| `021_bank_recurring_payments.sql` | Tier 4 — recurring/subscriptions | 🟡 v0.3 |
-| `022_bank_atm_minigame_attempts.sql` | Tier 4 — ATM minigame log | 🟡 v0.3 |
-| `023_bank_physical_cards.sql` | Tier 4 — physical card tokens | 🟡 v0.3 |
-| `024_bank_loyalty_points.sql` | Tier 4 — loyalty program | 🟡 v0.3 |
-| `025_bank_round_ups.sql` | Tier 4 — round-up savings | 🟡 v0.3 |
-| `026_bank_business_treasuries.sql` | Empresas extends — business treasuries multi-signer | 🟡 v0.3 |
-| `027_bank_escrow_releases.sql` | Escrow partial release log (FSM 6-states extends) | 🟡 v0.3 |
-| `028_bank_idempotency_keys.sql` | Idempotency keys table + TTL cron cleanup hint | 🟡 v0.3 |
+| `018_bank_loans_credit_scores.sql` | Tier 4 — loans FSM 6-state + credit scores rolling | ✅ DRAFT v0.3 |
+| `019_bank_crypto_wallets.sql` | Tier 4 — crypto assets seed + wallets BIGINT atomic + tx append-only | ✅ DRAFT v0.3 |
+| `020_bank_stocks_transactions_holdings.sql` | Tier 4 — stocks event-sourced + materialized hybrid Q-DB-I | ✅ DRAFT v0.3 |
+| `021_bank_recurring_payments.sql` | Tier 4 — recurring/subscriptions FSM 4-state + cron index | ✅ DRAFT v0.3 |
+| `022_bank_atm_minigame_attempts.sql` | Tier 4 — ATM minigame append-only log | ✅ DRAFT v0.3 |
+| `023_bank_physical_cards.sql` | Tier 4 — physical card tokens + PIN hash | ✅ DRAFT v0.3 |
+| `024_bank_loyalty_points.sql` | Tier 4 — loyalty balances + tx append-only | ✅ DRAFT v0.3 |
+| `025_bank_round_ups.sql` | Tier 4 — round-up configs + tx append-only | ✅ DRAFT v0.3 |
+| `026_bank_business_treasuries.sql` | Empresas extends — multi-signer policy + signers + approvals m-of-n | ✅ DRAFT v0.3 |
+| `027_bank_escrow_releases.sql` | Escrow partial release log + ALTER sonar_escrows ADD release_log_count | ✅ DRAFT v0.3 |
+| `028_bank_idempotency_keys.sql` | Idempotency keys table + TTL cron cleanup hint | ✅ DRAFT v0.3 |
 
 ### Drift corrections SSoT v1.1 → v1.2
 
@@ -3090,16 +3097,319 @@ ORDER BY cast_at DESC;
 
 ---
 
-## 25-28. Bank Phase A — Tier 4 + Empresas + Idempotency (Pending v0.3)
+## 25. Bank Phase A — Tier 4 features (NEW v1.5 DRAFT v0.3)
 
-> **Status:** 🟡 Pending DRAFT v0.3 (BANK-DB.3). Tablas + DDL + indexes + queries hot path documented per slice §3.4 + §3.5 + §4 + §5.
+> **Status:** ✅ DRAFT v0.3 — DB Lead authoring 2026-05-06 (BANK-DB.3).
+>
+> **Migrations:** `018_bank_loans_credit_scores.sql` + `019_bank_crypto_wallets.sql` + `020_bank_stocks_transactions_holdings.sql` + `021_bank_recurring_payments.sql` + `022_bank_atm_minigame_attempts.sql` + `023_bank_physical_cards.sql` + `024_bank_loyalty_points.sql` + `025_bank_round_ups.sql`.
+>
+> **Note:** DDL completo en migrations files (referenciados arriba). Esta sección documenta resumen + decisions + queries hot path. Migrations contienen decision logs D1-DN per archivo.
 
-**Roadmap próximas iteraciones:**
+### 25.1 Loans + Credit Scores (migration 018)
 
-- **§25 v0.3 (BANK-DB.3):** Tier 4 features (loans + credit_scores + crypto_wallets BIGINT atomic + stocks híbrido Q-DB-I + recurring + ATM + cards + loyalty + round_ups).
-- **§26 v0.3 (BANK-DB.3):** Empresas extends (`sonar_bank_business_treasuries` multi-signer + `sonar_bank_escrow_releases` partial release log).
-- **§27 v0.3 (BANK-DB.3):** `sonar_bank_idempotency_keys` (TTL 7 days + cron cleanup hint Backend Lead).
-- **§28 v0.4 (BANK-DB.4):** Performance benchmarks ejecutados — ver `progress/BENCHMARK_BANK_DB_v1.md`.
+**Tablas:**
+
+- `sonar_bank_loans` — préstamos FSM 6-state: `requested` → `approved` → `disbursed` → `active` → (`paid_off` | `defaulted`).
+- `sonar_bank_credit_scores` — rolling history per citizen (UNIQUE citizen_id+computed_at), score 0-1000 + rating ENUM.
+
+**Decisions:**
+
+- **D1.** Reverse FSM transitions PROHIBITED — Backend Lead post-H1 enforce app-layer.
+- **D2.** `interest_rate_pct DECIMAL(5,2)` anual %. Monthly payment computed app-layer al transition `disbursed`.
+- **D3.** Credit score components: payment_history_pct + active_loans_count + defaulted_count + total_outstanding. Computación cron Backend o manual override admin.
+- **D4.** FK borrower → sonar_accounts ON DELETE RESTRICT (audit retention legal). approved_by → SET NULL.
+- **D5.** `loan_kind` ENUM: 'personal','business','mortgage','microloan'. company_id opaque Q-DB-E.
+
+**Queries hot path:**
+
+```sql
+-- Q1: Loans activos citizen (Bank UI Loans tab).
+SELECT id, loan_kind, amount_outstanding, monthly_payment, next_payment_due_at
+FROM sonar_bank_loans
+WHERE borrower_account_id = ? AND state IN ('active','disbursed')
+ORDER BY next_payment_due_at ASC;
+-- Index: idx_sonar_bank_loans_borrower_state.
+
+-- Q2: Cron payments due (Backend lib hot path).
+SELECT id, borrower_account_id, monthly_payment
+FROM sonar_bank_loans
+WHERE state = 'active' AND next_payment_due_at <= UNIX_TIMESTAMP()
+ORDER BY next_payment_due_at ASC LIMIT 1000;
+-- Index: idx_sonar_bank_loans_state_due.
+
+-- Q3: Current credit score citizen (latest snapshot).
+SELECT score, rating, computed_at FROM sonar_bank_credit_scores
+WHERE citizen_id = ? ORDER BY computed_at DESC LIMIT 1;
+-- Index: idx_sonar_bank_credit_scores_citizen_score.
+```
+
+### 25.2 Crypto wallets (migration 019, Q-DB-B BIGINT atomic)
+
+**Tablas:**
+
+- `sonar_bank_crypto_assets` — reference data (BTC/ETH/USDT seeded). `decimals TINYINT UNSIGNED` per asset (BTC=8, ETH=18, USDT=6).
+- `sonar_bank_crypto_wallets` — UNIQUE(citizen_id, asset_id). `balance_atomic BIGINT UNSIGNED` (display = balance / 10^decimals app-layer).
+- `sonar_bank_crypto_transactions` — append-only triggers SIGNAL Q-DB-F. `amount_atomic BIGINT signed` (positive=in, negative=out). Fiat snapshot `exchange_rate_atomic BIGINT UNSIGNED` centavos EUR per atomic unit.
+
+**Decisions:**
+
+- **D1.** Política Q-DB-B atomic units split — crypto NO DECIMAL (rounding loss precision tras N operaciones). BIGINT atomic + decimals stored permite cualquier asset arbitrary precision.
+- **D2.** Fiat-side snapshot per tx — `fiat_amount DECIMAL(14,2)` + `exchange_rate_atomic` capturados at tx time (immutable historical price).
+- **D3.** UNIQUE(citizen_id, asset_id) — una wallet per citizen + asset (NO multi-wallet per asset Phase A).
+- **D4.** request_nonce CHAR(36) idempotency anti-replay (Backend Lead lib).
+- **D5.** Seed 3 assets canonical: BTC, ETH, USDT. Admins añaden más via Government Console post-launch.
+
+**Queries hot path:**
+
+```sql
+-- Q1: Portfolio citizen (UI Crypto tab).
+SELECT a.symbol, a.display_name, a.decimals, w.balance_atomic
+FROM sonar_bank_crypto_wallets w
+JOIN sonar_bank_crypto_assets a ON a.id = w.asset_id
+WHERE w.citizen_id = ? AND a.enabled = TRUE
+ORDER BY a.symbol;
+-- Index: uq_sonar_bank_crypto_wallets_citizen_asset.
+
+-- Q2: Tx history wallet (UI detail page).
+SELECT tx_kind, amount_atomic, balance_atomic_after, fiat_amount, occurred_at
+FROM sonar_bank_crypto_transactions
+WHERE wallet_id = ? ORDER BY occurred_at DESC LIMIT 50;
+-- Index: idx_sonar_bank_crypto_transactions_wallet.
+```
+
+### 25.3 Stocks (migration 020, Q-DB-I híbrido event-sourced + materialized)
+
+**Tablas:**
+
+- `sonar_bank_stocks_assets` — catálogo tickers + current_price cached + price_updated_at.
+- `sonar_bank_stocks_transactions` — APPEND-ONLY event log. `qty DECIMAL(20,8)` (fractional shares) + price_per_share + total_amount + fee. Triggers SIGNAL Q-DB-F.
+- `sonar_bank_stocks_holdings` — MATERIALIZED snapshot. `qty_total DECIMAL(20,8)` + avg_cost_basis + last_recomputed_at + last_tx_id.
+
+**Decisions Q-DB-I:**
+
+- **D1.** Modelo dual:
+  - transactions = source of truth (event-sourced, immutable).
+  - holdings = derived view rebuildable via SUM(qty) por asset.
+- **D2.** Backend Lead post-H1 lib `Stocks.RecomputeHoldings(citizen_id, asset_id)` recalcula holdings desde transactions. Trigger lazy on read si stale (last_recomputed_at > 5min) o eager on tx commit.
+- **D3.** `qty DECIMAL(20,8)` — fractional shares + 8 decimals safe vs floating-point loss.
+- **D4.** `price_per_share DECIMAL(14,4)` — 4 decimals precio (suficiente sims trading).
+- **D5.** Cron rebuild full snapshot opcional DevOps Lead post-H4 (audit reconciliation).
+
+**Queries hot path:**
+
+```sql
+-- Q1: Holdings citizen (UI Portfolio).
+SELECT a.ticker, a.display_name, h.qty_total, h.avg_cost_basis, a.current_price
+FROM sonar_bank_stocks_holdings h
+JOIN sonar_bank_stocks_assets a ON a.id = h.asset_id
+WHERE h.citizen_id = ? AND h.qty_total > 0;
+-- Index: uq_sonar_bank_stocks_holdings_citizen_asset.
+
+-- Q2: Tx history asset (UI detail).
+SELECT tx_kind, qty, price_per_share, total_amount, occurred_at
+FROM sonar_bank_stocks_transactions
+WHERE citizen_id = ? AND asset_id = ?
+ORDER BY occurred_at DESC LIMIT 100;
+-- Index: idx_sonar_bank_stocks_tx_citizen_asset.
+
+-- Q3: Recompute holdings (Backend Lead lib).
+SELECT SUM(qty) AS qty_total,
+       SUM(qty * price_per_share) / NULLIF(SUM(qty), 0) AS avg_cost_basis,
+       MAX(id) AS last_tx_id
+FROM sonar_bank_stocks_transactions
+WHERE citizen_id = ? AND asset_id = ?;
+```
+
+### 25.4 Recurring payments (migration 021)
+
+**Tabla `sonar_bank_recurring_payments`** — FSM 4-state: `active` → (`paused` | `cancelled` | `completed`).
+
+**Decisions:**
+
+- **D1.** `interval_kind` ENUM canonical (daily/weekly/monthly/yearly) + `interval_count` SMALLINT (e.g. monthly + count=3 = trimestral).
+- **D2.** `next_charge_at` cron hot path index `(state, next_charge_at)` — Backend lib query `WHERE state='active' AND next_charge_at <= UNIX_TIMESTAMP()`.
+- **D3.** `payee_kind` ENUM 'citizen'|'company'|'government'. `payee_iban` always set (destination canonical), payee_account_id + payee_company_id optional FK soft.
+- **D4.** `consecutive_failures` TINYINT auto-pause si > 3 (Backend lib transitions state='paused').
+- **D5.** `last_charge_status` ENUM tracking failure mode: success | insufficient_funds | frozen | error.
+
+**Query hot path:**
+
+```sql
+-- Cron Backend Lead hot path (run cada minuto).
+SELECT id, payer_account_id, payer_bank_account_id, payee_iban, amount, payment_kind
+FROM sonar_bank_recurring_payments
+WHERE state = 'active' AND next_charge_at <= UNIX_TIMESTAMP()
+ORDER BY next_charge_at ASC LIMIT 500;
+-- Index: idx_sonar_bank_recurring_state_next.
+```
+
+### 25.5 ATM minigame attempts (migration 022)
+
+**Tabla `sonar_bank_atm_minigame_attempts`** — append-only fraud detection log + analytics. Triggers SIGNAL Q-DB-F. Indexes citizen + IP + result para pattern detection.
+
+**Decisions:**
+
+- **D1.** Rate limiting app-layer Backend (e.g. max 3 fails / 10min lockout).
+- **D2.** `failure_reason` VARCHAR(64) detallado (wrong_pin, wrong_pattern, rate_limited, etc).
+- **D3.** `ip_address VARCHAR(45)` IPv4/IPv6 — Security Lead post-H2 fraud pattern queries por IP.
+
+### 25.6 Physical cards (migration 023)
+
+**Tabla `sonar_bank_physical_cards`** — FSM 4-state: `active` | `frozen` | `expired` | `lost`.
+
+**Decisions:**
+
+- **D1.** `card_token CHAR(64)` opaque Backend-generated. NO real PAN — display only `last_4_digits`.
+- **D2.** `pin_hash CHAR(64)` SHA-256(pin || card_token salt). Backend Lead lib enforce hash + verify. NO plain PIN en DB.
+- **D3.** `pin_attempts_failed` TINYINT auto-freeze si > 3.
+- **D4.** `daily_limit` overrides bank_account.daily_limit_out cuando card-based txn (NULL = inherit).
+- **D5.** UNIQUE(card_token) global. NO UNIQUE bank_account_id — citizen puede tener N cards mismo account (debit + credit + prepaid).
+
+### 25.7 Loyalty points (migration 024)
+
+**Tablas:**
+
+- `sonar_bank_loyalty_balances` — 1:1 citizen_id PK. `current_points` + `lifetime_earned/redeemed` + `tier` ENUM (bronze/silver/gold/platinum).
+- `sonar_bank_loyalty_transactions` — append-only earn/redeem log. Triggers SIGNAL Q-DB-F.
+
+**Decisions:**
+
+- **D1.** Points como INT UNSIGNED — 1 point = 0.01 EUR cashback.
+- **D2.** balance materialized — Backend lib increment/decrement on tx commit. Recompute lazy desde transactions (event-sourced fallback).
+- **D3.** tier ENUM based on lifetime_earned thresholds (Backend Lead config).
+
+### 25.8 Round-ups (migration 025)
+
+**Tablas:**
+
+- `sonar_bank_round_up_configs` — 1:1 citizen_id PK. `multiplier` 1x-10x boost + `round_up_to` DECIMAL(6,2) target multiple + source/destination accounts.
+- `sonar_bank_round_up_transactions` — append-only log. `trigger_movement_id` link al movement original que disparó round-up.
+
+**Decisions:**
+
+- **D1.** Backend Lead post-H1 lib `RoundUp.OnMovement(movement)` hook fires after every debit movement de cuenta source — calcula round_up_amount + transfer a destination + INSERT row.
+- **D2.** `multiplier_applied` cached en tx (config puede cambiar, history preserva).
+
+---
+
+## 26. Bank Phase A — Empresas extends (NEW v1.5 DRAFT v0.3)
+
+> **Status:** ✅ DRAFT v0.3 — DB Lead authoring 2026-05-06 (BANK-DB.3).
+>
+> **Migrations:** `026_bank_business_treasuries.sql` + `027_bank_escrow_releases.sql`.
+
+### 26.1 Business treasuries multi-signer (migration 026)
+
+**3 tablas chained:**
+
+- `sonar_bank_business_treasuries` — config policy per company (UNIQUE company_id + bank_account_id). `signing_threshold` m-of-n + `amount_threshold` (tx > umbral requiere multi-sign).
+- `sonar_bank_business_treasury_signers` — N firmantes per treasury. `signer_role` ENUM 'owner'|'manager'|'employee_authorized' + `active` BOOLEAN.
+- `sonar_bank_business_treasury_approvals` — pending approvals FSM 5-state: `pending` → (`approved` | `rejected` | `expired`) → `executed`. `operation_payload JSON` serialized op params + `approvals_json` array signers decisiones.
+
+**Decisions:**
+
+- **D1.** company_id opaque Q-DB-E NO FK — Issue #001.
+- **D2.** signers FK CASCADE treasury_id (delete treasury cascades signers).
+- **D3.** approvals expires_at TTL 24-72h configurable. Cron expire pending Backend Lead post-H1.
+- **D4.** Backend lib post-H1 enforce m-of-n: count `approvals_json` con `decision='approved'` >= `signers_required` antes execute operation.
+- **D5.** `operation_kind` ENUM canonical: 'transfer_out'|'escrow_create'|'recurring_setup'|'large_withdraw'|'custom'.
+
+**Queries hot path:**
+
+```sql
+-- Q1: Treasury config + signers (UI Business Treasury detail).
+SELECT t.id, t.signing_threshold, t.amount_threshold, s.signer_account_id, s.signer_role
+FROM sonar_bank_business_treasuries t
+LEFT JOIN sonar_bank_business_treasury_signers s ON s.treasury_id = t.id AND s.active = TRUE
+WHERE t.company_id = ?;
+
+-- Q2: Pending approvals signer (UI inbox).
+SELECT id, treasury_id, operation_kind, operation_amount, expires_at
+FROM sonar_bank_business_treasury_approvals
+WHERE state = 'pending' AND expires_at > UNIX_TIMESTAMP();
+-- Index: idx_sonar_bank_business_approvals_state_expires.
+```
+
+### 26.2 Escrow releases (migration 027)
+
+**Tabla `sonar_bank_escrow_releases`** — partial release log append-only. Triggers SIGNAL Q-DB-F.
+
+**ALTER `sonar_escrows`** — ADD `release_log_count TINYINT UNSIGNED NOT NULL DEFAULT 0` denormalized counter (avoid COUNT(*) hot path UI escrow detail).
+
+**Decisions:**
+
+- **D1.** `release_kind` ENUM 'milestone'|'partial'|'full'|'refund_partial'.
+- **D2.** NO FK escrow_id → sonar_escrows directo — escrow puede 'closed' permanente, releases sobreviven (audit retention legal).
+- **D3.** `request_nonce` idempotency anti-replay.
+- **D4.** Idempotent ALTER procedure check INFORMATION_SCHEMA antes apply.
+
+---
+
+## 27. Bank Phase A — Idempotency keys (NEW v1.5 DRAFT v0.3)
+
+> **Status:** ✅ DRAFT v0.3 — DB Lead authoring 2026-05-06 (BANK-DB.3).
+>
+> **Migration:** `028_bank_idempotency_keys.sql`.
+
+### 27.1 sonar_bank_idempotency_keys
+
+**Tabla central cross-domain** — vital para Reconciliación Activa Backend Lead post-H1.
+
+**Estructura key concepts:**
+
+- `idempotency_key CHAR(64)` UNIQUE — client-provided UUID/hash unique per logical op.
+- `domain` ENUM canonical 14 valores: transfer | recurring | crypto_buy/sell | stocks_buy/sell | escrow_create/release | loan_disbursement/repayment | business_approval | tax_payment | subsidy_issue | custom.
+- `state` ENUM 3-state: `pending` | `completed` | `failed`.
+- `request_payload JSON` params + `response_payload JSON` cached result (retry-safe).
+- `related_correlation_id` link CP2 Backend correlation-id.
+- `expires_at` TTL 7 days canonical (founder mandate).
+
+**Decisions:**
+
+- **D1.** Tabla central cross-domain — único punto verdad idempotency. Backend lib `IdempotencyKeys.Lock(key, domain, payload)` antes commit.
+- **D2.** UNIQUE(idempotency_key) — INSERT on duplicate → SELECT existing + check state:
+  - `state='completed'` → return cached `response_payload`.
+  - `state='pending'` AND created < 60s → wait/retry.
+  - `state='pending'` AND created > 60s → assume stuck, mark failed.
+- **D3.** TTL 7 days mandate founder. Cron daily DELETE WHERE expires_at < NOW() en batches LIMIT 10000.
+- **D4.** NO partitioning Phase A. Si > 500K rows post-launch → migration v0.4 partitioning RANGE(expires_at).
+
+**Queries hot path:**
+
+```sql
+-- Q1: Lock idempotency key (Backend lib hot path).
+INSERT INTO sonar_bank_idempotency_keys
+  (idempotency_key, domain, state, request_payload, expires_at, ...)
+VALUES (?, ?, 'pending', ?, UNIX_TIMESTAMP() + 604800, ...);
+-- ON DUPLICATE KEY → SELECT existing row + state check.
+
+-- Q2: Complete (post-success).
+UPDATE sonar_bank_idempotency_keys
+SET state = 'completed', response_payload = ?, completed_at = UNIX_TIMESTAMP(),
+    related_movement_id = ?
+WHERE idempotency_key = ? AND state = 'pending';
+
+-- Q3: Cron cleanup TTL (DevOps Lead).
+DELETE FROM sonar_bank_idempotency_keys
+WHERE expires_at < UNIX_TIMESTAMP() LIMIT 10000;
+-- Index: idx_sonar_bank_idempotency_keys_state_expires.
+```
+
+---
+
+## 28. Bank Phase A — Performance benchmarks (Pending v0.4)
+
+> **Status:** 🟡 Pending DRAFT v0.4 (BANK-DB.4) — execution mandatory para LOCKED v1.0.
+>
+> **Document:** `progress/BENCHMARK_BANK_DB_v1.md` skeleton DRAFT v0.1.
+
+**Targets canonical (sign-off mandatory):**
+
+- Reconciliation 200 concurrent <500ms p99 (Q16.5).
+- Audit ledger insert >1000/s sustained.
+- Government Console "Todas" scope <200ms (5 años data).
+- Money operations hot path <30ms p99 transfer + <40ms p99 escrow create.
+- Status FSM read PK fijo <1ms p99.
 
 ---
 
@@ -3255,8 +3565,9 @@ ORDER BY cast_at DESC;
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `sonar_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_sonar_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `sonar_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
 | 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
 | 1.3 DRAFT v0.1 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **✅ DRAFT v0.1 Bank Phase A extends — BANK-DB.1 (founder approved 2026-05-06).** Founder green-light Q-DB-A→J 2026-05-06 (sesión BANK-DB.0 onboarding + handshake + cuestionamientos). NEW §22 (audit ledger inmutable + compliance flags + queries hot path) + NEW §23 (status FSM single-row CP8) + §24-§28 roadmap pending v0.2-v0.3 (tax + government + Tier 4 + empresas + idempotency) + NEW §29 deviations from blueprint (10 Q-DB-* resolutions documented). Header v1.2→v1.3 + changelog table tablas NEW + tablas existing extends + drift corrections SSoT v1.1 vs realidad migrations. **Migrations files DRAFT v0.1:** `010_bank_audit_ledger.sql` + `011_bank_compliance_flags.sql` + `012_bank_status_fsm.sql` + `013_bank_movements_partitions_extend.sql`. **Issue #001** `sonar_companies` pending (Q-DB-E opaque company_id deferred). **NO touched:** §1-§20 SSoT v1.2 LOCKED foundational. Pending sign-off triple (founder + Backend consumer post-H1 + Security consumer post-H2). |
-| 1.4 DRAFT v0.2 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **🟡 DRAFT v0.2 Bank Phase A Tax + Government — BANK-DB.2.** Founder green-light BANK-DB.1 + autorización BANK-DB.2 2026-05-06. **§24 NEW** — Tax + Government (DDL completo 7 tablas: brackets editable + history append-only + subsidies PARTITIONED + elections FSM + candidates + votes hashed + votes_audit raw ACE-gated). **Q-DB-H dual-layer privacy** implementada (voter_hash SHA-256 con server_salt secret + audit raw admin-only). **ALTER TABLE** — bank_accounts split owner_type + account_class + last_reconciled_at + backfill (Q-DB-D); bank_movements ENUM category extend 11 nuevos valores aditivos. **Migrations files DRAFT v0.2:** `014_bank_accounts_owner_type_split.sql` + `015_bank_movements_category_extend.sql` + `016_tax_brackets_history_subsidies.sql` + `017_govt_elections_candidates_votes.sql`. **§25-§28** roadmap pending v0.3. **NO touched:** §1-§21 SSoT v1.2 LOCKED foundational + §22-§23 + §29 deviations DRAFT v0.1 (preservado intacto). |
+| 1.4 DRAFT v0.2 | 2026-05-06 | DB Lead | **✅ DRAFT v0.2 Tax + Government — BANK-DB.2 (founder approved).** §24 NEW (7 tablas: brackets + history append-only + subsidies PARTITIONED + elections FSM + candidates + votes hashed + votes_audit raw). Q-DB-H dual-layer privacy. ALTER bank_accounts split + bank_movements ENUM extend. Migrations 014-017. |
+| 1.5 DRAFT v0.3 | 2026-05-06 | DB Lead | **🟡 DRAFT v0.3 Tier 4 + Empresas + Idempotency — BANK-DB.3.** §25 NEW Tier 4 (loans FSM 6-state + credit scores + crypto BIGINT atomic 3 tablas + stocks Q-DB-I híbrido 3 tablas + recurring + ATM + cards + loyalty + round-ups). §26 NEW Empresas (business treasuries multi-signer 3 tablas m-of-n + escrow_releases + ALTER sonar_escrows). §27 NEW Idempotency keys TTL 7d + 14 domains canonical. §28 benchmarks pending v0.4. Migrations 018-028 (11 archivos). Q-DB-B + Q-DB-I + Q-DB-E coverage 100%. Schema DDL Phase A complete — only benchmarks ejecutados pending para LOCKED v1.0. NO touched §1-§24 + §29. **Migrations files DRAFT v0.3:** `018` → `028` (11 archivos). **Q-DB-B BIGINT atomic + Q-DB-I híbrido stocks + Q-DB-E opaque company_id 100% coverage.** **NO touched:** §1-§24 + §29 preservados intactos. Schema DDL Phase A complete — only benchmarks ejecutados pending para LOCKED v1.0. |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.4 DRAFT v0.2 (Bank Phase A — DB Lead authoring 2026-05-06 BANK-DB.2)**
+**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.5 DRAFT v0.3 (Bank Phase A — DB Lead authoring 2026-05-06 BANK-DB.3)**
