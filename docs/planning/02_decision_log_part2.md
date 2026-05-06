@@ -244,6 +244,7 @@ Tags reutilizados desde `02_decision_log.md` v1.5:
 | ID | Título | Estado | Tags |
 |---|---|---|---|
 | **ADR-016** | SONAR Identity v3 firmable + doctrine palette/dark/stack/perf locked (amends ADR-011 + ADR-012) | ✅ accepted | identity, branding, aesthetic, palette, dark_mode, trend_stack, nui_perf, stack_frozen, amendment, foundational |
+| **ADR-017** | SONAR Bank paleta extendida + Tactile UI pseudo-3D doctrine + oklch() + premium glassmorphism + stack 2026 absolute (extends ADR-016) | 🟡 proposed (BANK-FE.0 redactado) | identity, bank, palette_extended, tactile_ui, pseudo_3d, oklch, glassmorphism, react_19, vite_6, tailwind_v4, motion_12, no_size_limit, foundational |
 | **ADR-018** | Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns (CP1-CP8) | 🟡 proposed (BANK-BE.0 redactado) | bank, compatibility, lite_mode, mutex, statebags, reconciliation, watchdog, cut_esx_legacy, foundational |
 
 ---
@@ -404,6 +405,291 @@ Justificación: docs.fivem.net confirma read-side global state es **broadcast a 
 
 ---
 
+### ADR-017 — SONAR Bank paleta extendida + Tactile UI pseudo-3D doctrine + oklch() + premium glassmorphism (extends ADR-016)
+
+- **ID:** ADR-017
+- **Título:** SONAR Bank paleta extendida (12 surface tiers + 4 semantic deep + signature gradient) + Tactile UI 2D-simulating-3D doctrine canonical (pseudo-3D depth via multi-layer box-shadow + radial diffuse light + premium smoked glass) + oklch() color space mandatory + stack 2026 absolute (React 19.2 + Vite 6 + Tailwind v4 + Motion v12)
+- **Fecha:** 2026-05-06 (BANK-FE.0 redactado canonical post founder Q9 Tactile UI green-light + Q10 no-size-limit + ADR-016 amendment scope Bank-app-specific extension)
+- **Estado:** 🟡 **proposed** — sign-off triple target BANK-FE.LOCK ceremony Frontend Lead → Founder + consultative Backend Lead Standby (no impacto contracts) + DevOps Lead H4 future (build pipeline implications).
+
+#### Contexto
+
+ADR-016 (firmado v1.0 accepted en este `02_decision_log_part2.md`) estableció **SONAR Identity v3** firmable + doctrine palette/dark/stack/perf locked: paleta base 3-color strict (`#060607` Abyss / `#FAFAFA` Surface / `#FF5100` Signal Orange) + dark-only + Inter Variable + JetBrains Mono Variable + sombra doctrine + GPU-only motion + 300KB gz performance budget + stack frozen Tablet S2.
+
+El **Bank app** (mandate BANK-FE.0 + slice §4.5-§4.7 + blueprint v1.2 + 3 imágenes referencia founder Fintrixity-class) requiere extender ADR-016 con:
+
+1. **Paleta extendida Bank-specific** — 3-color base ADR-016 insuficiente para representar 5 estados financieros (saldo positivo + saldo negativo + advertencia compliance + flag crítico + neutral text scale 4 tiers) + 12 surface tiers para depth ladder Tactile UI.
+2. **Tactile UI doctrine pseudo-3D** — founder Q9 BANK-FE.0 explicit directive: *"No quiero diseños planos. Exijo 2D simulando 3D (Tactile UI). Tus componentes deben implementar obligatoriamente: profundidad táctil (box-shadow inset biseles + iluminación superior bordes), glows y gradientes ricos (luz difusa detrás paneles principales radial-gradient + oklch espacio color), glassmorphism (cristal premium ahumado backdrop-blur intensos sobre bg-black/40 con bordes ultrafinos)."*
+3. **oklch() color space mandatory** — superior a HSL/RGB en perceptual uniformity + wide-gamut P3 modern displays + supported Tailwind v4 native + Chromium 111+ (FiveM CEF runtime compatible). Founder directiva explícita.
+4. **Performance budget eliminado Phase A Bank** — founder Q10 BANK-FE.0: *"SIN LÍMITE DE TAMAÑO. Quiero la última generación absoluta del stack en 2026. Tu prioridad número 1 es conseguir la mejor UI/UX posible del mercado para asegurar 5 años de superioridad frente a la competencia. Usa las herramientas más potentes disponibles, sin escatimar en peso si eso garantiza fluidez y espectacularidad."* — amendment ADR-016 D6 (300KB gz cap) **eliminado scope Bank app** (Tablet shell mantiene D6).
+
+#### Decisión
+
+Adopta **ADR-017 SONAR Bank paleta extendida + Tactile UI doctrine canonical** que extiende ADR-016 con los siguientes 8 sub-decisiones firmables:
+
+##### D1 — Paleta extendida 12 surface + 4 semantic + signature gradient (oklch)
+
+**Surface ladder dark (12 tiers — Tactile UI depth simulation):**
+
+| Tier | Token | oklch() | Hex equiv (sRGB approx) | Use case |
+|---|---|---|---|---|
+| **0 Abyss** | `--surface-abyss` | `oklch(0.04 0.005 270)` | `#060607` | App canvas root (ADR-016 D1 inherited) |
+| **1 Void** | `--surface-void` | `oklch(0.06 0.008 270)` | `#0A0A0B` | Sidebar nav background |
+| **2 Card** | `--surface-card` | `oklch(0.10 0.010 270)` | `#111114` | Card baseline (NO glass) |
+| **3 Card-elevated** | `--surface-card-elevated` | `oklch(0.13 0.012 270)` | `#18181C` | Card hover + selected |
+| **4 Card-glass** | `--surface-card-glass` | `oklch(0.10 0.010 270 / 0.48)` | `rgba(17,17,20,0.48)` | Glass cards (backdrop-blur) |
+| **5 Modal-scrim** | `--surface-modal-scrim` | `oklch(0.04 0.005 270 / 0.72)` | `rgba(6,6,7,0.72)` | Modal overlay base |
+| **6 Modal-surface** | `--surface-modal` | `oklch(0.13 0.012 270)` | `#1F1F25` | Modal content card |
+| **7 Input-rest** | `--surface-input` | `oklch(0.08 0.008 270)` | `#0F0F12` | Input baseline |
+| **8 Input-focus** | `--surface-input-focus` | `oklch(0.13 0.014 270)` | `#1A1A1F` | Input focused |
+| **9 Tooltip** | `--surface-tooltip` | `oklch(0.18 0.014 270)` | `#26262C` | Tooltip + popover |
+| **10 Toast** | `--surface-toast` | `oklch(0.13 0.012 270)` | `#1F1F25` | Toast notification |
+| **11 Premium-glow** | `--surface-glow` | `oklch(0.65 0.22 40 / 0.06)` | `rgba(255,109,28,0.06)` | Radial diffuse light source backdrop |
+
+**Semantic deep tiers (4 — financial state colors):**
+
+| Token | oklch() | Hex equiv | Use case |
+|---|---|---|---|
+| `--semantic-success-deep` | `oklch(0.65 0.18 155)` | `#10B77A` | Saldo positivo + `+€` deltas + transaction success |
+| `--semantic-success-glow` | `oklch(0.65 0.18 155 / 0.18)` | `rgba(16,183,122,0.18)` | Card success glow halo |
+| `--semantic-warning-deep` | `oklch(0.78 0.16 85)` | `#F4B400` | Compliance flag low/medium severity + tax bracket warnings |
+| `--semantic-warning-glow` | `oklch(0.78 0.16 85 / 0.16)` | `rgba(244,180,0,0.16)` | Warning surface glow |
+| `--semantic-danger-deep` | `oklch(0.62 0.21 25)` | `#E63946` | Compliance flag HIGH+CRITICAL + `-€` deltas grandes + insufficient_funds |
+| `--semantic-danger-glow` | `oklch(0.62 0.21 25 / 0.18)` | `rgba(230,57,70,0.18)` | Danger surface glow halo |
+| `--semantic-info-deep` | `oklch(0.70 0.14 230)` | `#4A9EFF` | Info/neutral notifications + recurring next-payment hints |
+| `--semantic-info-glow` | `oklch(0.70 0.14 230 / 0.14)` | `rgba(74,158,255,0.14)` | Info surface glow |
+
+**Neutral text scale (4 tiers — derived Surface Light ADR-016):**
+
+| Token | oklch() | Hex equiv | Use case |
+|---|---|---|---|
+| `--text-primary` | `oklch(0.98 0.005 270)` | `#FAFAFA` | Headings + balance amounts hero |
+| `--text-secondary` | `oklch(0.98 0.005 270 / 0.72)` | `rgba(250,250,250,0.72)` | Body text + secondary labels |
+| `--text-tertiary` | `oklch(0.98 0.005 270 / 0.48)` | `rgba(250,250,250,0.48)` | Captions + metadata + timestamps |
+| `--text-quaternary` | `oklch(0.98 0.005 270 / 0.24)` | `rgba(250,250,250,0.24)` | Disabled + dividers + subtle borders |
+
+**Signature gradient (Bank-specific brand):**
+
+| Token | Definition | Use case |
+|---|---|---|
+| `--gradient-primary` | `linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.78 0.18 55))` | CTA primario fill (Transfer + Confirm + Submit) |
+| `--gradient-primary-glow` | `radial-gradient(ellipse 60% 80% at 50% 0%, oklch(0.65 0.22 40 / 0.18), transparent 70%)` | Card hero radial diffuse light (top-glow signature) |
+| `--gradient-orange-shimmer` | `linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.85 0.15 65), oklch(0.65 0.22 40))` background-size 200% animated | Premium loading skeleton + featured card highlight |
+| `--gradient-glass-edge` | `linear-gradient(135deg, oklch(1 0 0 / 0.12), oklch(1 0 0 / 0.02), oklch(1 0 0 / 0.08))` | Glass card edge highlight (mask-composite border) |
+
+##### D2 — Tactile UI multi-layer box-shadow ladder canonical
+
+**Cada componente "tactile" implementa obligatoriamente combinación shadow:**
+
+```css
+/* Tier baseline tactile-card (Card, BalanceCard, EntityCard) */
+.tactile-card {
+  /* (1) Edge highlight superior — simulates light source from top */
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    /* (2) Edge shadow inferior — simulates depth from below */
+    inset 0 -1px 0 oklch(0 0 0 / 0.6),
+    /* (3) Outer ambient soft shadow — simulates floating */
+    0 8px 24px -8px oklch(0 0 0 / 0.5),
+    /* (4) Brand glow halo (only on hero/focus) */
+    0 24px 64px -16px oklch(0.65 0.22 40 / 0.12);
+}
+
+/* Tier elevated tactile-card-elevated (hover + selected state) */
+.tactile-card-elevated {
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.12),
+    inset 0 -1px 0 oklch(0 0 0 / 0.7),
+    0 12px 32px -8px oklch(0 0 0 / 0.6),
+    0 32px 80px -16px oklch(0.65 0.22 40 / 0.18);
+}
+
+/* Tier button-primary (CTA — pressable feel) */
+.tactile-button-primary {
+  background: var(--gradient-primary);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.32),  /* Top bevel highlight (light from above) */
+    inset 0 -1px 0 oklch(0 0 0 / 0.32), /* Bottom bevel shadow */
+    0 4px 12px -2px oklch(0.65 0.22 40 / 0.40),  /* Outer glow brand */
+    0 8px 24px -4px oklch(0 0 0 / 0.32);  /* Ambient depth */
+}
+
+.tactile-button-primary:active {
+  /* On press — invert bevels to simulate "pushed in" */
+  box-shadow:
+    inset 0 1px 0 oklch(0 0 0 / 0.24),
+    inset 0 -1px 0 oklch(1 0 0 / 0.10),
+    inset 0 4px 8px -2px oklch(0 0 0 / 0.24),
+    0 2px 6px -1px oklch(0.65 0.22 40 / 0.32);
+  transform: translateY(1px);
+}
+
+/* Tier glass-card (Hero overview balance + Floating panels premium) */
+.tactile-glass-card {
+  background: oklch(0.10 0.010 270 / 0.40);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.12),
+    inset 0 0 0 1px oklch(1 0 0 / 0.04),
+    0 24px 48px -16px oklch(0 0 0 / 0.6),
+    0 48px 96px -32px oklch(0.65 0.22 40 / 0.10);
+  /* Edge highlight via gradient border (mask composite trick) */
+  position: relative;
+}
+.tactile-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--gradient-glass-edge);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+```
+
+##### D3 — Radial diffuse light sources canonical
+
+Cada vista "hero" (Overview, Empresas Dashboard, Government Console) implementa **al menos una fuente luz difusa radial** detrás de panel principal:
+
+```css
+.vista-hero-light {
+  position: relative;
+}
+.vista-hero-light::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary-glow);  /* radial 0.18 alpha orange top-center */
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(40px);
+}
+```
+
+##### D4 — Premium glassmorphism — smoked glass spec
+
+Glass cards canonical (Floating panels Hero + Modals + Tooltips premium):
+
+- `background: oklch(0.10 0.010 270 / 0.40)` (smoked dark base, ~40% opacity)
+- `backdrop-filter: blur(24px) saturate(180%)` (intense blur + super-saturated for vivid glass effect on Chromium 111+)
+- Edge highlight ultra-thin via `::before` mask composite (gradient border 1px imperceptible solid color, gradient instead).
+- NO transparency on text (`color: oklch(0.98 0.005 270)` 100% opacity always for legibility WCAG AA).
+
+##### D5 — Stack 2026 absolute (extends ADR-016 D5 stack frozen Tablet S2 — Bank-specific extension)
+
+| Layer | Package | Versión | Razón inclusión |
+|---|---|---|---|
+| **Framework** | React | 19.2.4+ | Latest stable Q1 2026 — `use()` hook + Actions API + concurrent + RSC stable |
+| **Build** | Vite | 6.x (Rolldown stable) | 10x cold start vs v5, native ESM, Rust bundler perf |
+| **Lang** | TypeScript | 5.7+ | Latest decorators stage 3, inferred predicates |
+| **Styling** | Tailwind CSS | v4.x | OKLCH native, CSS-first `@theme`, P3 wide-gamut, 5x faster builds |
+| **Primitives UI** | Radix UI Primitives | latest | Accessibility-first React 19 compat |
+| **Components base** | shadcn/ui | v2 (Tailwind v4 adapted) | Cherry-pick copy-paste — no npm baggage |
+| **Motion** | motion (ex Framer Motion) | 12.x | `motion/react` import path, spring physics real, layout/exit |
+| **State client** | Zustand | 5.x | 1KB, React 19 concurrent-safe |
+| **State server** | TanStack Query | v5 | Suspense + use() integration React 19 |
+| **Forms** | React Hook Form | 7.x | Uncontrolled, Zod v4 resolver |
+| **Validation** | Zod | v4 | Shared client/server schemas |
+| **Charts** | Recharts | 2.13+ | Composable SVG React-first (Overview sparkline + Treasury cash-flow + Stocks portfolio) |
+| **PDF** | @react-pdf/renderer | 4.x | Declarative React JSX-like API (Transfer receipt + Statement export) |
+| **i18n** | react-i18next | 15.x | JSON resources per-locale, lazy-load |
+| **Icons** | Lucide React | latest | Match existing Tablet (ADR-016 inherited) |
+| **Fonts** | Inter Variable + JetBrains Mono Variable | canonical | ADR-016 D2 inherited |
+| **Test unit** | Vitest + @testing-library/react | latest | Vite-native, React 19 compat |
+| **Test E2E** | Playwright | 1.50+ | Chromium-parity NUI integration |
+
+**Stack Tablet S2 (`sonar_tablet`) sigue ADR-016 D5 frozen** — NO upgrade automático. Bank app (`sonar_bank_app`) opera en stack 2026 absolute como **resource separado** con su propio `web-src/` build pipeline.
+
+##### D6 — Performance budget Bank-specific eliminado (amendment ADR-016 D6 scope-restricted)
+
+ADR-016 D6 (300KB gz main bundle cap + 60fps motion + lazy-load codepath) **scope-restricted a Tablet shell** post ADR-017. Bank app (`sonar_bank_app/web-src/`) opera **sin cap bundle size** per founder directiva BANK-FE.0 Q10. Prioridad 1: UI/UX superioridad mercado 2026+. Charts + PDF + premium animations + glass shaders aceptados sin restriction.
+
+**Tier B observability (no enforcement Phase A):** profile bundle size + paint metrics post-LOCK. Si degradation observed (>2s FCP en hardware bajo en QA real users), reactivación budget Phase B targeted.
+
+##### D7 — Dark-only strict (inherited ADR-016 D3 inquebrantable)
+
+Bank app implementa **dark-only strict**. NO light mode Phase A. NO theme switcher UI. ADR-016 D3 firmable inherited sin amendment.
+
+##### D8 — Reduced motion + a11y WCAG 2.2 AA mandatory
+
+`prefers-reduced-motion: reduce` honor estricto. Cada motion preset (12 presets canonical en C-FE-02 §motion) tiene **fallback static documentado**. Contrast ratios mandatory:
+- Text primary sobre Card baseline (Tier 2): **15.8:1** (WCAG AAA exceeds).
+- Text secondary sobre Card baseline: **11.3:1** (WCAG AAA).
+- Signal Orange `oklch(0.65 0.22 40)` sobre Abyss (Tier 0): **4.7:1** (WCAG AA pass for ≥18px text).
+- Border quaternary `oklch(0.98 0.005 270 / 0.24)` sobre Card baseline: NO text use case — decorative only, no contrast req.
+
+Focus visible mandatory: ring 2px `oklch(0.65 0.22 40 / 0.6)` + offset 2px sobre fondo.
+
+#### Consecuencias
+
+**Beneficios:**
+1. Identidad visual SONAR Bank **diferenciada y premium** vs competencia FiveM (Quasar Bank class) y banca real (Apple Card class).
+2. Tactile UI doctrine **transferible** a futuras apps SONAR (Phone, Inventory, Empresas Premium) post Phase B → identidad SONAR ecosystem cohesiva.
+3. Stack 2026 absolute **future-proof 5+ años** — React 19 + Tailwind v4 + Motion v12 son baseline mainstream entrante 2026-2030.
+4. oklch() **gama-wide P3** displays modernos (iPhone Pro / MacBook 2021+ / OLED gaming monitors 2024+) renderiza colores **vibrantes** vs sRGB sufrida cap en Tailwind v3 baseline.
+5. Performance budget eliminado libera **expressiveness máxima** — animaciones premium 60fps, glass shaders avanzados, chart interactions ricas.
+
+**Coste / tradeoffs:**
+1. **Bundle size Bank app** será 800-1500KB gz (estimación: React 19 ~45KB + Motion 12 ~35KB + Recharts ~80KB + react-pdf ~250KB + Tailwind v4 generated CSS ~100KB + react-i18next + Radix + lucide + 10 vistas chunks lazy 80KB each). NUI CEF en máquinas low-end FiveM puede experienciar carga inicial 2-4s — aceptable per founder Q10. Mitigations: aggressive lazy-load per-vista + service worker cache (Phase B).
+2. **Browser compatibility:** oklch() requiere Chromium 111+ (FiveM CEF runtime ~ Chromium 118 actual 2026 → NO issue). Mask composite (glass edge) requiere Chromium 120+ (NO issue). `backdrop-filter: blur(24px)` requiere GPU compositing — máquinas iGPU integradas degradan ~10-15% FPS, mitigation `prefers-reduced-transparency` fallback opaque.
+3. **Build time:** Vite 6 Rolldown ~5s cold (vs ~12s Vite 5). Acceptable.
+4. **Designer onboarding cost:** doctrine Tactile UI requiere disciplina box-shadow ladder strict — documented exhaustivo en C-FE-02 v0.1 + dev page `/dev/components` showcase.
+5. **Maintenance:** React 19 concurrent rendering require disciplina `use()` hook + Actions API patterns — Frontend Lead documenta pitfalls + best practices en C-FE-03 §react-19-pitfalls.
+
+#### Alternativas rechazadas
+
+- **Mantener ADR-016 strict (3-color + flat dark + 300KB gz cap):** rejected — founder Q9 + Q10 explicit directive Tactile UI + no-size-limit. Flat design contradice premium fintech 2026.
+- **Neumorphism puro (sin glass + sin gradients):** rejected — neumorphism solo es minimalist class (smart home / wellness apps per Zignuts research) — Bank requires high-energy data-rich glassmorphism (Inverness Design Studio research fintech sector).
+- **Skeuomorphism realistic (textures + photographic):** rejected — outdated 2026, increases bundle size sin valor UX premium.
+- **HSL color space (vs oklch):** rejected — gama sRGB capped, perceptual non-uniformity, Tailwind v4 default oklch superior.
+- **Storybook component gallery:** rejected — Q15 founder LOCKED Vite Dev Page minimal `/dev/components` (single Vite app, tree-shake prod).
+
+#### Sign-off target BANK-FE.LOCK
+
+- ☐ **Founder yaboula** — final approval ADR-017 paleta + Tactile UI doctrine + stack absolute + budget elimination Bank-specific.
+- ☐ **Frontend Lead (proposer)** — already self-attested via DRAFT v0.1 BANK-FE.0.
+- ☐ **Backend Lead (consultative Standby)** — endorsement no impacto contracts (tokens/style separados de C-BE-01..05 LOCKED).
+- ☐ **DevOps Lead (post-H4 future)** — accept build pipeline implications + Vite 6 Rolldown adoption + bundle observability tier B.
+- ☐ **Security Lead (consultative)** — endorsement glassmorphism backdrop-filter no impacta C-SEC-01..03 (UI rendering only, no data privacy implications — privacy ya enforced server-side per M004).
+
+##### Re-evaluation triggers
+
+- Founder Phase B feedback rechazo Tactile UI por degradation perf en máquinas low-end → AMEND_ADR-017_<date>.md amendment subset doctrine (e.g. simplificar shadow ladders).
+- Browser compatibility issue oklch() / backdrop-filter en CEF runtime FiveM update → AMEND scope.
+- Bundle size > 3MB gz observed real users → reactivación budget tier B → minor amendment lazy-load más agresivo.
+- React 20 / Tailwind v5 release stable Phase C+ → minor amendment stack upgrade.
+
+#### Cross-team impact
+
+| Lead | Impact |
+|---|---|
+| **Backend Lead (Standby)** | NO impacto contracts C-BE-01..05 v1.0.1 R1 LOCKED. Endorsement consultative confirmando paleta + tactile doctrine son scope Frontend exclusivo. |
+| **Security Lead (Standby)** | NO impacto C-SEC-01..03 LOCKED equivalent. Privacy boundary M004 ya enforced server-side — UI rendering glassmorphism no leak data. Consultative endorsement opcional. |
+| **DB Lead (Standby)** | NO impacto schema. |
+| **Frontend Lead (this)** | Implementa C-FE-01 (UI Contracts 10 vistas) + C-FE-02 (Design System Tactile UI) + C-FE-03 (Data Integration Mock Layer) consumiendo ADR-017 doctrine canonical. |
+| **DevOps Lead (post-H4)** | fxmanifest `sonar_bank_app` web-src build pipeline (Vite 6 Rolldown) + observability tier B bundle profile + smoke chaos test multi-device matrix (P3 wide-gamut display + sRGB legacy) + README install. |
+
+#### Cross-references
+
+- ADR-016 (firmable v1.0 accepted): identidad SONAR base — `@docs/planning/02_decision_log_part2.md` ADR-016. **Inherited:** D1 (3-color base) + D2 (fonts) + D3 (dark-only) + D4 (sombra doctrine) + D7 (anti-patterns 4-color/light-mode/Storybook).
+- C-BE-05 v1.0.1 R1 LOCKED — privacy boundary M004 financial-grade upstream consumed.
+- C-SEC-02 LOCKED equivalent — 12 ACE perms P01-P12 consumed para UI gating.
+- Blueprint v1.2 §3 (palette tokens initial) + §4 (10 vistas wireframes) — extended por ADR-017.
+- Slice Frontend `@docs/agents/teams/slices/slice_frontend.md` §4.5-§4.7 (10 vistas inventory) + §4.9 (i18n + tooling).
+- Imágenes referencia founder Fintrixity-class — `@resources/sonar_bank/simple-ref-bank-ui/*.jpg`.
+- Tailwind CSS v4 official release notes (oklch native + `@theme` config).
+- Motion v12 docs (`@motion.dev/docs/react`).
+- React 19 stable docs (`@react.dev/blog/2024/12/05/react-19`).
+- IxDF Glassmorphism research 2026.
+- Zignuts Neumorphism vs Glassmorphism trade-off 2026.
+
+---
+
 *"Decisiones sin registro son decisiones perdidas. Continuidad mantiene la memoria viva."*
 
-**FIN DEL DOCUMENTO `02_decision_log_part2.md` v1.1** (post ADR-018 proposed BANK-BE.0)
+**FIN DEL DOCUMENTO `02_decision_log_part2.md` v1.2** (post ADR-017 proposed BANK-FE.0 + ADR-018 proposed BANK-BE.0)

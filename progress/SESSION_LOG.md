@@ -1329,3 +1329,136 @@ Backend Lead transitiona de nuevo a **Standby** post-push. Reactivation triggers
 - Trigger: founder green-light required.
 
 — **Backend Lead BANK-BE.LOCK.R1 close 2026-05-06. Phase A R1 hardening CLOSED. 5 contratos C-BE-01..05 v1.0.1 R1 LOCKED. 4 SSoTs canonical v1.3.1 LOCKED. H2 sign_off ACCEPTED-WITH-AMENDMENTS-RESOLVED. Amendment package archived. Backend Lead Standby ACTIVE awaiting H3 trigger.**
+
+---
+
+## BANK-FE.0 — Frontend & UX Premium Lead onboarding + DRAFT v0.1 emission (bypass ejecutivo H3)
+
+### Identity
+- Session ID: **BANK-FE.0**
+- Tech Lead: Frontend & UX Premium Lead (Cascade activation via `/start-lead-session` rol Frontend).
+- Date: 2026-05-06.
+- Branch: `feature/bank-security-phase-a` (head BANK-BE.LOCK.R1 commit → BANK-FE.0 next commit).
+- Predecessors: H1 DB→BE (received) + H2 BE→SEC (CLOSED ACCEPTED-WITH-AMENDMENTS-RESOLVED) + BANK-BE.LOCK.R1 (Backend Standby) + BANK-SEC.1 PASS (Security Standby).
+- Activation trigger: founder yaboula bypass ejecutivo H3 directive 2026-05-06 — Contract-Driven Parallel Development autorizando Frontend Lead self-attest recepción contratos LOCKED equivalent + drafting DRAFT v0.1 inmediato sin esperar Security Lead counter-signature explícita.
+
+### Founder directives absorbidas (BANK-FE.0)
+
+- **Q1 + Q2 bypass ejecutivo H3:** Frontend Lead self-attest H3 package directamente. Security Lead counter-signature OPCIONAL post-facto.
+- **Q3 RECHAZADO:** Compliance Console = vista 5 independiente (NO subset Audit Explorer).
+- **Q4 MAX-PRIVACY:** Q4 financial-grade enforced — empleadores NUNCA balance personal empleados. Aggregate stats only.
+- **Q5 APPROVED:** Transfer Wizard Express mode 2-step cuando recipient ∈ recentRecipients ∧ count_30d ≥ 2. Backend backlog REQ-FE-002.
+- **Q6 APPROVED:** Bootstrap snapshot consolidado deseado. Backend backlog REQ-FE-001 Round 2 amendment target.
+- **Q8 RECHAZADO:** 4-step onboarding rechazado.
+- **Q9 APPROVED:** Onboarding 3-step skippable (skip per paso + skip-all global). Tactile UI pseudo-3D doctrine MANDATORY (depth bevels + radial diffuse + glassmorphism premium).
+- **Q10 APPROVED no-size-limit:** Performance budget 300KB gz (ADR-016 D6) ELIMINADO scope Bank app. Stack 2026 absolute (React 19.2 + Vite 6 Rolldown + Tailwind v4 oklch + Motion v12 + TanStack Query v5 + Zustand v5 + Recharts + react-pdf + react-i18next + Vitest). UI/UX superioridad mercado prioridad 1.
+- **Q11 APPROVED simple text:** CP8 status badge tooltip = texto simple ENUM (admin tooltip enriquecido Phase B opcional).
+- **Q13 LOCKED:** Audit Explorer scope strict 3 tabs (Mis cuentas / Mis empresas / Todas govt) — server-enforced + ACE-gated.
+- **Q15 LOCKED:** Component gallery `/dev/components` = Vite Dev Page minimal gated `import.meta.env.DEV` (NO Storybook).
+
+### Operations executed (BANK-FE.0 atomic)
+
+#### 1. Research time-box stack 2026 (45-60 min)
+
+Stack canonical lockeado en ADR-017 D5: React 19.2.4 + Vite 6.x (Rolldown stable) + TypeScript 5.7+ + Tailwind v4 (oklch native + `@theme`) + Radix UI Primitives + shadcn/ui v2 (Tailwind v4 adapted) + motion v12 (`motion/react`) + Zustand v5 + TanStack Query v5 (Suspense + use() integration) + React Hook Form 7 + Zod v4 + Recharts 2.13+ + @react-pdf/renderer 4 + react-i18next 15 + Lucide React + Inter Variable + JetBrains Mono Variable + Vitest + Playwright 1.50+.
+
+#### 2. H3 package self-attested emission (bypass ejecutivo)
+
+- 🟢 `docs/agents/teams/handoffs/h3_security_to_frontend/README.md` v1.0 EMITTED — 9 secciones canonical (participants + deliverables consumed + Frontend mandate scope + post-H3 actions + open questions + conditional clauses C-FE-1..C-FE-8 + cross-references + ceremony closure + sign-off pointer).
+- 🟢 `docs/agents/teams/handoffs/h3_security_to_frontend/sign_off.md` v1.0 EMITTED-SELF-ATTESTED — cuádruple sign-off matrix (Backend Lead inherited Standby + Security Lead inherited Standby + Founder bypass ejecutivo APPROVED + Frontend Lead ACCEPTED-SELF-ATTESTED).
+
+#### 3. ADR-017 emission (proposed)
+
+- 🟡 `docs/planning/02_decision_log_part2.md` v1.1 → v1.2 (post ADR-017 proposed BANK-FE.0 + ADR-018 proposed BANK-BE.0 inherited).
+- ADR-017 spec: 8 sub-decisiones D1-D8 (D1 paleta extendida 12 surface + 4 semantic deep + 4 text scale + signature gradient / D2 multi-layer box-shadow ladder canonical / D3 radial diffuse light / D4 premium glassmorphism / D5 stack 2026 absolute / D6 perf budget Bank-specific eliminado / D7 dark-only inherited / D8 reduced motion + WCAG 2.2 AA mandatory).
+- Sign-off triple target BANK-FE.LOCK ceremony.
+
+#### 4. Backlog peticiones Backend (FE_BACKEND_REQUESTS.md)
+
+- 🟢 `progress/FE_BACKEND_REQUESTS.md` v0.1 EMITTED — 5 items registrados:
+  - **REQ-FE-001 MEDIUM** — Bootstrap snapshot consolidado callback (Q6 APPROVED) Path A target Round 2.
+  - **REQ-FE-002 MEDIUM** — Recent recipients endpoint Transfer Express mode (Q5 APPROVED) Path A target Round 2.
+  - **REQ-FE-003 LOW** — Compliance flag user-acknowledge (workaround localStorage Phase A) Path B Phase B candidate.
+  - **REQ-FE-004 LOW** — Server message_key i18n catalog (workaround client-only Phase A) Path B Phase B candidate.
+  - **REQ-FE-005 LOW** — Status badge tooltip enriquecido admin (Phase B) Path C self-resolved no Backend amendment.
+
+#### 5. Design tokens canonical artifact
+
+- 🟢 `resources/sonar_bank_app/web-src/design-tokens.json` v0.1 EMITTED — 12 surface tiers + 8 semantic deep + 4 text scale + brand 4 vars + border 5 + status_badge 4 + 7 gradients + 8 shadows tactile + 4 blurs + 9 radius + 16 spacing + 12 z-index + typography (Inter Variable + JetBrains Mono Variable + 10 sizes + 8 weights + 5 lines + 5 letterspacings) + 6 motion durations + 5 ease + 4 spring presets + 7 SFX (5 Tablet inherited + 2 Bank-specific NEW `coin_clink` + `vault_close`) + 4 breakpoints + 48 icons Lucide canonical + 12 opacity tiers.
+
+#### 6. C-FE-01 UI Contracts DRAFT v0.1
+
+- 🟡 `docs/design/03_bank_app_ui_contracts.md` v0.1 DRAFT EMITTED — 11 secciones canonical:
+  - §1 Filosofía + scope (P1-P8 principles inquebrantables).
+  - §2 Component library 32 components (10 primitives + 12 composites + 10 vista shells).
+  - §3 10 vistas specs detallados (Overview / Accounts / Transfer Wizard 4-step + Express 2-step / Audit Explorer scope strict / Compliance Console / Empresas Dashboard / Government Console / Payroll Batch / Recurring / Onboarding 3-step skippable).
+  - §4 Reactividad contract canonical (snapshot + attach NetEvent/StateBag + watchdog 30s) + map 24 público + 9 admin events + 7 StateBag keys CP1-A + 9 NetEvent CP1-B owner-only domains.
+  - §5 ACE gating UI matrix (12 perms P01-P12 mapped a UI surfaces gated).
+  - §6 Privacy boundary M004 zero-tolerance (5 inquebrantables UI + display masking + pre-LOCK self-audit checklist).
+  - §7 Error states + empty states + loading skeletons (20 ENUM codes mapped + 7 vista empty states + shimmer canonical).
+  - §8 i18n strategy 4 locales (es-ES default + en-US + fr-FR + de-DE) + react-i18next + Intl.NumberFormat + Intl.DateTimeFormat + ICU pluralization.
+  - §9 Reduced motion + WCAG 2.2 AA (contrast ratios verified ADR-017 D8 + focus-visible mandatory + keyboard navigation + screen reader landmarks).
+  - §10 Open questions (testing strategy + dev page + charts library + PDF library + receipt scope + onboarding skip policy).
+  - §11 Cross-references.
+
+#### 7. C-FE-02 Design System DRAFT v0.1
+
+- 🟡 `docs/design/04_bank_app_design_system.md` v0.1 DRAFT EMITTED — 12 secciones canonical:
+  - §1 Filosofía D1-D7 principles.
+  - §2 Paleta extendida ADR-017 D1 implementation reference (surface + brand + semantic + text + border + status_badge tokens).
+  - §3 Tactile UI primitives canonical (multi-layer box-shadow ladder CSS specs + radial diffuse light + premium glassmorphism + inner gradient lift).
+  - §4 Motion 12 presets canonical (page-enter / page-exit / tab-switch / modal-open / modal-close / toast-enter / toast-exit / confirm-ripple / hover-lift / tap-press / skeleton-shimmer / wizard-step-slide) + reduced motion fallback wrapper + 4 spring presets canonical.
+  - §5 Typography canonical (Inter Variable + JetBrains Mono Variable + 10 size scale + 8 weights via Variable axis + line heights + letter spacings + tabular figures financial rows).
+  - §6 SFX mapping canonical (5 Tablet sine-class inherited + 2 Bank-specific NEW `coin_clink` + `vault_close` + concurrency cap 5 simultaneous + mute toggle + reduced-motion volume reduction).
+  - §7 Iconography Lucide subset 48 canonical + sizing scale.
+  - §8 Spacing 8px-base modular + radius scale per component canonical + z-index ladder 12 tiers.
+  - §9 Tailwind v4 config (oklch native + `@theme` CSS-first) + tokens.css full sketch + reduced-motion + reduced-transparency fallback.
+  - §10 Component implementation patterns (`<Button>` + `<BalanceCard>` examples canonical).
+  - §11 Dev page `/dev/components` Q15 LOCKED minimal Vite route gated DEV.
+  - §12 Cross-references.
+
+#### 8. C-FE-03 Data Integration DRAFT v0.1
+
+- 🟡 `docs/design/05_bank_app_data_integration.md` v0.1 DRAFT EMITTED — 13 secciones canonical:
+  - §1 Filosofía I1-I7 principles (snapshot-first + reactive + watchdog + idempotency + mock 1:1 + privacy + error handling).
+  - §2 Stack canonical data layer (TanStack Query v5 + Zustand v5 + Zod v4 + React Hook Form v7 + Web Crypto API + msw optional).
+  - §3 Wrappers TanStack Query (`useBankCallback` + `useBankMutation` patterns + map 40+1 callbacks → hooks canonical + composite hook `useBootstrapSnapshot` REQ-FE-001 mock placeholder).
+  - §4 Zustand stores canonical 5 (`useBankSession` + `useBankStatus` + `useToastQueue` + `useOnboarding` + `useTransferWizard`).
+  - §5 NetEvent subscription manager (`useBankNetEvent` + bridge FiveM NUI postMessage + mock dispatcher dev tool `__mockBankEvent`).
+  - §6 StateBag subscription manager (`useBankStateBag` + cache + initial fetch fallback).
+  - §7 Mock Data Layer v0.1 (Vite env `VITE_MOCK_MODE=true` + fixture 1:1 contract shapes + dispatcher with simulated latency 50-150ms + auto-side-effect events + StateBag hydration).
+  - §8 Idempotency strategy client (UUIDv4 per wizard mount + Zustand store + replay-safe + mutation hook example).
+  - §9 Error handling canonical (`BankError` class + 20 ENUM codes + global handler with localized i18n + React Error Boundary canonical).
+  - §10 Watchdog `useWatchdog` hook canonical + use cases mandatory.
+  - §11 React 19 patterns + pitfalls (use cases recomendados + `useTransition`/`useDeferredValue` + concurrent rendering safety).
+  - §12 Privacy boundary M004 client enforcement (inquebrantables data layer + no-leak validation pre-LOCK).
+  - §13 Cross-references.
+
+### File touch state post BANK-FE.0
+
+- 🟢 `docs/agents/teams/handoffs/h3_security_to_frontend/README.md` EMITTED.
+- 🟢 `docs/agents/teams/handoffs/h3_security_to_frontend/sign_off.md` EMITTED-SELF-ATTESTED.
+- 🟢 `progress/FE_BACKEND_REQUESTS.md` v0.1 EMITTED.
+- 🟡 `docs/planning/02_decision_log_part2.md` v1.2 (ADR-017 proposed appended + index table updated).
+- 🟢 `resources/sonar_bank_app/web-src/design-tokens.json` v0.1 EMITTED.
+- 🟡 `docs/design/03_bank_app_ui_contracts.md` v0.1 DRAFT EMITTED.
+- 🟡 `docs/design/04_bank_app_design_system.md` v0.1 DRAFT EMITTED.
+- 🟡 `docs/design/05_bank_app_data_integration.md` v0.1 DRAFT EMITTED.
+
+### Standby status post BANK-FE.0
+
+- 🟢 **Frontend & UX Premium Lead ACTIVE** — DRAFT v0.1 emitted. Awaiting founder review cycle + optional consultative Backend Lead Standby reactivation (si gaps surgen) → DRAFT v0.2 iteration → BANK-FE.LOCK promotion ceremony.
+- 🟡 **Backend Lead Standby** — reactivation triggers preserved (Round 2 amendment cycle si REQ-FE-001 + REQ-FE-002 founder approve Path A + post-LOCK joint sign-off C-FE-03 consultative endorsement).
+- 🟡 **Security Lead Standby** — counter-signature opcional H3 sign-off post-facto (no bloquea drafting per bypass ejecutivo).
+- 🟡 **DevOps Lead Standby** — H4 emission post BANK-FE.LOCK (build pipeline Vite 6 Rolldown + observability tier B bundle profile + smoke chaos test multi-device matrix + ADR-017 D6 perf budget tier B observability).
+- 🟡 **DB Lead Standby** — no impacto schema (NO reactivation needed Phase A).
+
+### Próxima sesión sugerida
+
+- Session ID candidate: **BANK-FE.1** (Frontend Lead DRAFT v0.1 → DRAFT v0.2 review cycle iteration) o **BANK-FE.LOCK** (sign-off triple promotion v1.0).
+- Goal: review founder feedback DRAFT v0.1 → iterate amendments → LOCK promotion ceremony triple sign-off (founder + Frontend Lead + consultative Backend/Security endorsement) → H4 emission Frontend → DevOps.
+- Modelo sugerido: Cascade (continuity).
+- Files in scope: `docs/design/03..05_*.md` (DRAFT iteration) + `progress/FE_BACKEND_REQUESTS.md` (gaps update) + `docs/planning/02_decision_log_part2.md` ADR-017 status proposed → accepted post sign-off.
+- Trigger: founder review feedback + green-light promotion path A vs B vs C decisions.
+
+— **Frontend & UX Premium Lead BANK-FE.0 close 2026-05-06. Phase A drafting CLOSED. 3 contratos C-FE-01/02/03 DRAFT v0.1 EMITTED + ADR-017 proposed + design-tokens.json + FE_BACKEND_REQUESTS.md backlog 5 items + H3 package self-attested. Frontend Lead ACTIVE awaiting founder review cycle.**

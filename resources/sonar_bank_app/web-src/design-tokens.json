@@ -1,0 +1,316 @@
+{
+  "$schema": "https://design-tokens.org/schemas/draft-01",
+  "$meta": {
+    "name": "SONAR Bank Design Tokens",
+    "version": "0.1.0",
+    "status": "DRAFT v0.1",
+    "owner": "Frontend & UX Premium Lead",
+    "session": "BANK-FE.0",
+    "date": "2026-05-06",
+    "adr_anchor": "ADR-017 (proposed) + ADR-016 (accepted) inherited",
+    "doctrine": "Tactile UI pseudo-3D + oklch() + premium glassmorphism + dark-only strict",
+    "consumed_by": [
+      "resources/sonar_bank_app/web-src/tailwind.config.ts (Tailwind v4 @theme)",
+      "resources/sonar_bank_app/web-src/src/styles/tokens.css (CSS custom properties)",
+      "docs/design/04_bank_app_design_system.md v0.1 (C-FE-02 spec source)"
+    ],
+    "notes": [
+      "All colors defined in oklch() — Tailwind v4 native + Chromium 111+ + P3 wide-gamut.",
+      "sRGB hex equivalents are approximations only — use oklch() in CSS.",
+      "Inherits ADR-016 D1 base 3-color (Abyss / Surface Light / Signal Orange).",
+      "Extends per ADR-017 D1 to 12 surface tiers + 4 semantic deep + signature gradients."
+    ]
+  },
+
+  "color": {
+    "$type": "color",
+    "surface": {
+      "abyss":               { "$value": "oklch(0.04 0.005 270)",        "$description": "Tier 0 — App canvas root (ADR-016 D1 inherited)" },
+      "void":                { "$value": "oklch(0.06 0.008 270)",        "$description": "Tier 1 — Sidebar nav background" },
+      "card":                { "$value": "oklch(0.10 0.010 270)",        "$description": "Tier 2 — Card baseline (NO glass)" },
+      "card_elevated":       { "$value": "oklch(0.13 0.012 270)",        "$description": "Tier 3 — Card hover + selected" },
+      "card_glass":          { "$value": "oklch(0.10 0.010 270 / 0.40)", "$description": "Tier 4 — Glass cards (with backdrop-blur)" },
+      "modal_scrim":         { "$value": "oklch(0.04 0.005 270 / 0.72)", "$description": "Tier 5 — Modal overlay base" },
+      "modal":               { "$value": "oklch(0.13 0.012 270)",        "$description": "Tier 6 — Modal content card" },
+      "input":               { "$value": "oklch(0.08 0.008 270)",        "$description": "Tier 7 — Input baseline" },
+      "input_focus":         { "$value": "oklch(0.13 0.014 270)",        "$description": "Tier 8 — Input focused" },
+      "tooltip":             { "$value": "oklch(0.18 0.014 270)",        "$description": "Tier 9 — Tooltip + popover" },
+      "toast":               { "$value": "oklch(0.13 0.012 270)",        "$description": "Tier 10 — Toast notification" },
+      "premium_glow":        { "$value": "oklch(0.65 0.22 40 / 0.06)",   "$description": "Tier 11 — Radial diffuse light source backdrop" }
+    },
+    "brand": {
+      "signal_orange":       { "$value": "oklch(0.65 0.22 40)",          "$description": "Primary brand (ADR-016 D1) — CTAs + active highlights" },
+      "signal_orange_light": { "$value": "oklch(0.78 0.18 55)",          "$description": "Gradient secondary stop" },
+      "signal_orange_glow":  { "$value": "oklch(0.65 0.22 40 / 0.18)",   "$description": "Card glow halo brand" },
+      "signal_orange_subtle":{ "$value": "oklch(0.65 0.22 40 / 0.06)",   "$description": "Subtle brand wash" }
+    },
+    "text": {
+      "primary":             { "$value": "oklch(0.98 0.005 270)",        "$description": "Headings + balance amounts hero (15.8:1 over Card baseline — WCAG AAA)" },
+      "secondary":           { "$value": "oklch(0.98 0.005 270 / 0.72)", "$description": "Body + secondary labels (11.3:1 over Card — WCAG AAA)" },
+      "tertiary":            { "$value": "oklch(0.98 0.005 270 / 0.48)", "$description": "Captions + metadata + timestamps" },
+      "quaternary":          { "$value": "oklch(0.98 0.005 270 / 0.24)", "$description": "Disabled + dividers + subtle borders" },
+      "on_brand":            { "$value": "oklch(0.98 0.005 270)",        "$description": "Text on Signal Orange (CTAs)" }
+    },
+    "semantic": {
+      "success_deep":        { "$value": "oklch(0.65 0.18 155)",         "$description": "Saldo positivo + +€ deltas + transaction success" },
+      "success_glow":        { "$value": "oklch(0.65 0.18 155 / 0.18)",  "$description": "Card success glow halo" },
+      "warning_deep":        { "$value": "oklch(0.78 0.16 85)",          "$description": "Compliance flag low/medium severity + tax warnings" },
+      "warning_glow":        { "$value": "oklch(0.78 0.16 85 / 0.16)",   "$description": "Warning surface glow" },
+      "danger_deep":         { "$value": "oklch(0.62 0.21 25)",          "$description": "Compliance flag HIGH+CRITICAL + -€ deltas grandes + insufficient_funds" },
+      "danger_glow":         { "$value": "oklch(0.62 0.21 25 / 0.18)",   "$description": "Danger surface glow halo" },
+      "info_deep":           { "$value": "oklch(0.70 0.14 230)",         "$description": "Info/neutral notifications + recurring next-payment hints" },
+      "info_glow":           { "$value": "oklch(0.70 0.14 230 / 0.14)",  "$description": "Info surface glow" }
+    },
+    "border": {
+      "subtle":              { "$value": "oklch(0.98 0.005 270 / 0.06)", "$description": "Card hairline divider" },
+      "medium":              { "$value": "oklch(0.98 0.005 270 / 0.12)", "$description": "Card baseline border" },
+      "strong":              { "$value": "oklch(0.98 0.005 270 / 0.24)", "$description": "Active/focused border" },
+      "brand_subtle":        { "$value": "oklch(0.65 0.22 40 / 0.16)",   "$description": "Brand-tinted hairline" },
+      "brand_strong":        { "$value": "oklch(0.65 0.22 40 / 0.48)",   "$description": "Brand-tinted active border" }
+    },
+    "status_badge": {
+      "native_full":         { "$value": "oklch(0.65 0.18 155)",         "$description": "CP8 native_full bridges (success_deep)" },
+      "lite_mode_active":    { "$value": "oklch(0.78 0.16 85)",          "$description": "CP8 lite_mode_active (warning_deep)" },
+      "compromised":         { "$value": "oklch(0.62 0.21 25)",          "$description": "CP8 compromised_load_order (danger_deep)" },
+      "framework_missing":   { "$value": "oklch(0.40 0.02 270)",         "$description": "CP8 framework_missing — neutral grey-dark indicating BANK_DISABLED" }
+    }
+  },
+
+  "gradient": {
+    "$type": "string",
+    "primary":               { "$value": "linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.78 0.18 55))", "$description": "CTA primario fill (Transfer + Confirm + Submit)" },
+    "primary_glow":          { "$value": "radial-gradient(ellipse 60% 80% at 50% 0%, oklch(0.65 0.22 40 / 0.18), transparent 70%)", "$description": "Card hero radial diffuse light (top-glow signature)" },
+    "orange_shimmer":        { "$value": "linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.85 0.15 65), oklch(0.65 0.22 40))", "$description": "Premium loading skeleton + featured card highlight (animated background-position 200%)" },
+    "glass_edge":            { "$value": "linear-gradient(135deg, oklch(1 0 0 / 0.12), oklch(1 0 0 / 0.02), oklch(1 0 0 / 0.08))", "$description": "Glass card edge highlight (mask-composite border)" },
+    "vista_hero_orange":     { "$value": "radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.65 0.22 40 / 0.18), transparent 70%)", "$description": "Vista hero light source — Overview + Empresas + Government" },
+    "vista_hero_success":    { "$value": "radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.65 0.18 155 / 0.14), transparent 70%)", "$description": "Vista hero light source — Onboarding success step" },
+    "card_inner_lift":       { "$value": "linear-gradient(180deg, oklch(1 0 0 / 0.04) 0%, transparent 30%, transparent 70%, oklch(0 0 0 / 0.12) 100%)", "$description": "Card inner gradient simulating top light + bottom shadow" }
+  },
+
+  "shadow": {
+    "$type": "shadow",
+    "tactile_card": {
+      "$value": "inset 0 1px 0 oklch(1 0 0 / 0.08), inset 0 -1px 0 oklch(0 0 0 / 0.6), 0 8px 24px -8px oklch(0 0 0 / 0.5), 0 24px 64px -16px oklch(0.65 0.22 40 / 0.12)",
+      "$description": "Baseline tactile-card — top bevel + bottom bevel + ambient soft + brand glow halo"
+    },
+    "tactile_card_elevated": {
+      "$value": "inset 0 1px 0 oklch(1 0 0 / 0.12), inset 0 -1px 0 oklch(0 0 0 / 0.7), 0 12px 32px -8px oklch(0 0 0 / 0.6), 0 32px 80px -16px oklch(0.65 0.22 40 / 0.18)",
+      "$description": "Elevated state (hover + selected) — intensified bevels + glow"
+    },
+    "tactile_button_primary": {
+      "$value": "inset 0 1px 0 oklch(1 0 0 / 0.32), inset 0 -1px 0 oklch(0 0 0 / 0.32), 0 4px 12px -2px oklch(0.65 0.22 40 / 0.40), 0 8px 24px -4px oklch(0 0 0 / 0.32)",
+      "$description": "CTA primary button rest — pressable feel"
+    },
+    "tactile_button_primary_pressed": {
+      "$value": "inset 0 1px 0 oklch(0 0 0 / 0.24), inset 0 -1px 0 oklch(1 0 0 / 0.10), inset 0 4px 8px -2px oklch(0 0 0 / 0.24), 0 2px 6px -1px oklch(0.65 0.22 40 / 0.32)",
+      "$description": "CTA primary button :active — inverted bevels (pushed-in)"
+    },
+    "tactile_glass": {
+      "$value": "inset 0 1px 0 oklch(1 0 0 / 0.12), inset 0 0 0 1px oklch(1 0 0 / 0.04), 0 24px 48px -16px oklch(0 0 0 / 0.6), 0 48px 96px -32px oklch(0.65 0.22 40 / 0.10)",
+      "$description": "Glass card — inset highlight + ambient depth + brand halo"
+    },
+    "modal": {
+      "$value": "0 32px 64px -16px oklch(0 0 0 / 0.7), 0 64px 128px -32px oklch(0 0 0 / 0.5)",
+      "$description": "Modal floating shadow"
+    },
+    "tooltip": {
+      "$value": "0 4px 12px -2px oklch(0 0 0 / 0.5), 0 8px 24px -4px oklch(0 0 0 / 0.3)",
+      "$description": "Tooltip + popover"
+    },
+    "toast": {
+      "$value": "0 8px 24px -4px oklch(0 0 0 / 0.6), 0 16px 48px -8px oklch(0.65 0.22 40 / 0.16)",
+      "$description": "Toast notification (stacked from bottom-right)"
+    },
+    "focus_ring": {
+      "$value": "0 0 0 2px oklch(0.04 0.005 270), 0 0 0 4px oklch(0.65 0.22 40 / 0.6)",
+      "$description": "Keyboard focus ring — 2px gap (canvas) + 2px brand ring (WCAG focus visible)"
+    }
+  },
+
+  "blur": {
+    "$type": "string",
+    "glass":                 { "$value": "blur(24px) saturate(180%)", "$description": "Premium smoked glass — backdrop-filter" },
+    "glass_subtle":          { "$value": "blur(12px) saturate(150%)", "$description": "Subtle glass overlay (toast, popover)" },
+    "glass_intense":         { "$value": "blur(48px) saturate(200%)", "$description": "Intense glass (modal scrim, splash)" },
+    "vista_hero_glow":       { "$value": "blur(40px)",                "$description": "Diffuse light source filter" }
+  },
+
+  "radius": {
+    "$type": "dimension",
+    "none":                  { "$value": "0px" },
+    "xs":                    { "$value": "4px" },
+    "sm":                    { "$value": "6px" },
+    "md":                    { "$value": "8px" },
+    "lg":                    { "$value": "12px" },
+    "xl":                    { "$value": "16px" },
+    "2xl":                   { "$value": "20px" },
+    "3xl":                   { "$value": "24px" },
+    "full":                  { "$value": "9999px" }
+  },
+
+  "spacing": {
+    "$type": "dimension",
+    "$description": "8px-base modular scale (4px micro-step for fine-grained adjustments)",
+    "0":                     { "$value": "0px" },
+    "0.5":                   { "$value": "2px" },
+    "1":                     { "$value": "4px" },
+    "1.5":                   { "$value": "6px" },
+    "2":                     { "$value": "8px" },
+    "3":                     { "$value": "12px" },
+    "4":                     { "$value": "16px" },
+    "5":                     { "$value": "20px" },
+    "6":                     { "$value": "24px" },
+    "8":                     { "$value": "32px" },
+    "10":                    { "$value": "40px" },
+    "12":                    { "$value": "48px" },
+    "16":                    { "$value": "64px" },
+    "20":                    { "$value": "80px" },
+    "24":                    { "$value": "96px" },
+    "32":                    { "$value": "128px" }
+  },
+
+  "z_index": {
+    "$type": "number",
+    "base":                  { "$value": 0 },
+    "raised":                { "$value": 10 },
+    "sticky":                { "$value": 20 },
+    "sidebar":               { "$value": 30 },
+    "header":                { "$value": 40 },
+    "dropdown":              { "$value": 50 },
+    "tooltip":               { "$value": 60 },
+    "popover":               { "$value": 70 },
+    "modal_scrim":           { "$value": 80 },
+    "modal":                 { "$value": 90 },
+    "toast":                 { "$value": 100 },
+    "splash":                { "$value": 110 }
+  },
+
+  "typography": {
+    "$type": "typography",
+    "font_family": {
+      "sans":                { "$value": "'Inter Variable', system-ui, -apple-system, sans-serif", "$description": "Inter Variable — UI text (ADR-016 D2 inherited)" },
+      "mono":                { "$value": "'JetBrains Mono Variable', 'SF Mono', Menlo, monospace",  "$description": "JetBrains Mono Variable — financial data rows + tabular figures" }
+    },
+    "font_size": {
+      "xs":                  { "$value": "11px",  "$description": "Captions + audit row metadata" },
+      "sm":                  { "$value": "13px",  "$description": "Secondary text + helper text + labels" },
+      "base":                { "$value": "14px",  "$description": "Body text + button text" },
+      "md":                  { "$value": "16px",  "$description": "Subheadings + balance secondary" },
+      "lg":                  { "$value": "18px",  "$description": "Card titles" },
+      "xl":                  { "$value": "22px",  "$description": "Vista section titles" },
+      "2xl":                 { "$value": "28px",  "$description": "Vista hero titles" },
+      "3xl":                 { "$value": "36px",  "$description": "Balance hero amount" },
+      "4xl":                 { "$value": "48px",  "$description": "Onboarding splash" },
+      "5xl":                 { "$value": "64px",  "$description": "Onboarding completion celebration" }
+    },
+    "font_weight": {
+      "thin":                { "$value": 100 },
+      "extralight":          { "$value": 200 },
+      "light":               { "$value": 300 },
+      "regular":             { "$value": 400 },
+      "medium":              { "$value": 500 },
+      "semibold":            { "$value": 600 },
+      "bold":                { "$value": 700 },
+      "extrabold":           { "$value": 800 }
+    },
+    "line_height": {
+      "tight":               { "$value": 1.1 },
+      "snug":                { "$value": 1.25 },
+      "normal":              { "$value": 1.5 },
+      "relaxed":             { "$value": 1.625 },
+      "loose":               { "$value": 1.875 }
+    },
+    "letter_spacing": {
+      "tight":               { "$value": "-0.02em" },
+      "normal":              { "$value": "0em" },
+      "wide":                { "$value": "0.02em" },
+      "wider":               { "$value": "0.06em" },
+      "widest":              { "$value": "0.12em",  "$description": "Eyebrow labels (uppercase metadata 'SONAR · BANCA')" }
+    }
+  },
+
+  "motion": {
+    "$type": "duration",
+    "duration": {
+      "instant":             { "$value": "0ms",    "$description": "Reduced motion fallback" },
+      "fast":                { "$value": "120ms",  "$description": "Hover + tap micro-interactions" },
+      "base":                { "$value": "200ms",  "$description": "Toggle + dropdown + tab switch" },
+      "moderate":            { "$value": "320ms",  "$description": "Modal open + page transition" },
+      "slow":                { "$value": "480ms",  "$description": "Wizard step slide + onboarding step transition" },
+      "deliberate":          { "$value": "640ms",  "$description": "Hero reveal + balance count-up + chart entrance" }
+    },
+    "ease": {
+      "$type": "string",
+      "out_quart":           { "$value": "cubic-bezier(0.25, 1, 0.5, 1)",  "$description": "Page exit + modal close + dismissals" },
+      "out_expo":            { "$value": "cubic-bezier(0.16, 1, 0.3, 1)",  "$description": "Page enter + modal open + reveals" },
+      "in_out_smooth":       { "$value": "cubic-bezier(0.65, 0, 0.35, 1)", "$description": "Tab switch + tooltip" },
+      "spring_premium":      { "$value": "cubic-bezier(0.34, 1.56, 0.64, 1)", "$description": "Button press + tap + confirm ripple" },
+      "linear":              { "$value": "linear", "$description": "Loading skeletons + shimmer" }
+    },
+    "spring": {
+      "$type": "string",
+      "$description": "Motion v12 spring presets — prop type Spring config",
+      "soft":                { "$value": "{ stiffness: 180, damping: 24, mass: 1 }",        "$description": "Hover + tab switch" },
+      "snappy":              { "$value": "{ stiffness: 380, damping: 30, mass: 1 }",        "$description": "Modal open + dropdown + page enter" },
+      "premium":             { "$value": "{ stiffness: 220, damping: 18, mass: 0.9, restSpeed: 0.5 }", "$description": "Hero reveal + balance count-up — luxurious" },
+      "tactile":             { "$value": "{ stiffness: 600, damping: 25, mass: 0.6 }",      "$description": "Button press + tap response — instant feedback" }
+    }
+  },
+
+  "sfx": {
+    "$type": "string",
+    "$description": "5 canonical Tablet sine-class SFX (sonar_tablet/web-src/src/lib/sfx.ts) reused 1:1 + 2 NEW Bank-specific (Phase A — sketched in C-FE-02 §sfx).",
+    "console_tap":           { "$value": "console_tap",   "$description": "Apple UIKeyClick class — single sine 1400Hz, 55ms — generic taps (button click, list row, tab open)" },
+    "layer_dive":            { "$value": "layer_dive",    "$description": "Apple page-flip class — 1000→660Hz glide, 90ms — vista switch + wizard step" },
+    "depth_press":           { "$value": "depth_press",   "$description": "Tesla confirm class — 1200+600Hz, 120ms — primary CTA confirm + transfer success" },
+    "signal_emerge":         { "$value": "signal_emerge", "$description": "Apple Mail-send class — 880+1320Hz double-chirp, 160ms — Bank app mount + onboarding step complete" },
+    "panel_open":            { "$value": "panel_open",    "$description": "Apple Notification reveal — 600→900Hz swell, 360ms — modal open + popover reveal" },
+    "coin_clink":            { "$value": "coin_clink",    "$description": "NEW Bank-specific (Phase A spec) — short two-tone metallic sine 2000+2400Hz, 75ms — transfer confirm finalize moment" },
+    "vault_close":           { "$value": "vault_close",   "$description": "NEW Bank-specific (Phase A spec) — descending sine 800→400Hz, 200ms with low sub 200Hz — transaction settle + audit ledger commit visual" }
+  },
+
+  "breakpoint": {
+    "$type": "dimension",
+    "$description": "Tablet/desktop primary form-factor — NUI runs in 1920x1080 baseline + 2560x1440 high-end. NO mobile portrait — PC-only.",
+    "compact":               { "$value": "1280px", "$description": "Min compact tablet/laptop FiveM clients" },
+    "standard":              { "$value": "1600px", "$description": "Most FiveM clients — design baseline" },
+    "wide":                  { "$value": "1920px", "$description": "1080p displays" },
+    "ultrawide":             { "$value": "2560px", "$description": "1440p+ premium displays — adopt P3 wide-gamut full" }
+  },
+
+  "icon": {
+    "$type": "string",
+    "$description": "Lucide React canonical subset (48 icons) — match existing Tablet ADR-016 D5 inheritance.",
+    "library":               { "$value": "lucide-react" },
+    "default_size":          { "$value": "16px" },
+    "default_stroke":        { "$value": "1.5px" },
+    "canonical_subset_48": [
+      "Wallet", "ArrowRightLeft", "ArrowLeft", "ArrowRight", "ArrowUpRight", "ArrowDownLeft",
+      "History", "Receipt", "FileText", "Download", "Upload",
+      "Building2", "Briefcase", "Users", "User", "UserCheck",
+      "Landmark", "Crown", "Scale", "Gavel", "ShieldAlert",
+      "TrendingUp", "TrendingDown", "BarChart3", "PieChart", "LineChart",
+      "Calendar", "Clock", "RefreshCw", "Filter", "Search",
+      "AlertTriangle", "AlertCircle", "Info", "CheckCircle2", "XCircle",
+      "Lock", "Unlock", "KeyRound", "Eye", "EyeOff",
+      "Settings", "MoreHorizontal", "ChevronDown", "ChevronRight",
+      "Plus", "Minus", "X", "Check"
+    ]
+  },
+
+  "opacity": {
+    "$type": "number",
+    "0":                     { "$value": 0 },
+    "5":                     { "$value": 0.05 },
+    "10":                    { "$value": 0.10 },
+    "20":                    { "$value": 0.20 },
+    "30":                    { "$value": 0.30 },
+    "40":                    { "$value": 0.40 },
+    "50":                    { "$value": 0.50 },
+    "60":                    { "$value": 0.60 },
+    "70":                    { "$value": 0.70 },
+    "80":                    { "$value": 0.80 },
+    "90":                    { "$value": 0.90 },
+    "100":                   { "$value": 1.00 }
+  }
+}
