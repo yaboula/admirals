@@ -1,12 +1,12 @@
 # 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `sonar_*` (pre-migration-009 legacy)
 
-> **Versión:** 1.3 DRAFT v0.1 (Bank Phase A extends — DB Lead authoring) post v1.2 LOCKED (S1.10.x Phase 8+9 namespace migration). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). v1.3 añade **Bank-domain Phase A extends** (audit ledger inmutable + compliance flags + status FSM + tax + government elections + Tier 4 features + empresas extends + idempotency keys + benchmarks).
+> **Versión:** 1.4 DRAFT v0.2 (Bank Phase A extends — DB Lead authoring BANK-DB.2) post v1.2 LOCKED (S1.10.x Phase 8+9 namespace migration). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario sin cambios foundational (pivot-agnostic). v1.4 añade **Tax + Government tablas + ALTER bank_accounts owner_type split + ALTER bank_movements category extend** sobre v1.3 DRAFT v0.1 (audit ledger + compliance + status FSM + partitions extension).
 > **Engine canonical (Q-DB-A LOCKED 2026-05-06):** **MariaDB 12.x primary** + MySQL 8 best-effort compat. Adaptación features MariaDB-specific (CHECK constraint workarounds + INT UNSIGNED `ON UPDATE` MariaDB-illegal + system-versioned tables descartado audit ledger).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
 > **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
 > **ADRs relacionados:** ADR-010 (hybrid audit_log) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)** + **ADR-018 🟡 proposed (Bank Lite mode hybrid 3-layer + cut ESX legacy + 8 CP integrated)**.
-> **Estado v1.2:** firmado (S1.10.x). **Estado v1.3:** 🟡 DRAFT v0.1 — DB Lead authoring post founder Q-DB-A→J green-light 2026-05-06. Sign-off triple pendiente (founder + DB Lead + Backend Lead consumer + Security Lead consumer).
+> **Estado v1.2:** firmado (S1.10.x). **Estado v1.3 DRAFT v0.1:** founder approved 2026-05-06 (BANK-DB.1 sign-off). **Estado v1.4 DRAFT v0.2:** 🟡 DB Lead authoring 2026-05-06 (BANK-DB.2 — tax + government). Sign-off triple pendiente.
 
 > **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.6, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled), **`docs/agents/teams/01_SHARED_BRIEF.md`** v1.0 (Q1-Q16 + CP1-CP8 founder decisions), **`docs/agents/teams/slices/slice_database.md`** v1.0 (DB cherry-pick blueprint), **`docs/agents/teams/issues/issue_001_sonar_companies_pending.md`** (FK deferred Q-DB-E).
 
@@ -42,13 +42,13 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | §22 | `sonar_bank_audit_ledger` (PARTITIONED RANGE month) | DB Lead | ✅ DRAFT v0.1 |
 | §22 | `sonar_bank_compliance_flags` | DB Lead | ✅ DRAFT v0.1 |
 | §23 | `sonar_bank_status` | DB Lead | ✅ DRAFT v0.1 |
-| §24 | `sonar_bank_tax_brackets` | DB Lead | 🟡 Pending v0.2 |
-| §24 | `sonar_bank_tax_history` | DB Lead | 🟡 Pending v0.2 |
-| §24 | `sonar_bank_subsidies` | DB Lead | 🟡 Pending v0.2 |
-| §24 | `sonar_govt_elections` | DB Lead | 🟡 Pending v0.2 |
-| §24 | `sonar_govt_election_candidates` | DB Lead | 🟡 Pending v0.2 |
-| §24 | `sonar_govt_votes` (hashed) | DB Lead | 🟡 Pending v0.2 |
-| §24 | `sonar_govt_votes_audit` (raw admin-only) | DB Lead | 🟡 Pending v0.2 |
+| §24 | `sonar_bank_tax_brackets` | DB Lead | ✅ DRAFT v0.2 |
+| §24 | `sonar_bank_tax_history` | DB Lead | ✅ DRAFT v0.2 |
+| §24 | `sonar_bank_subsidies` (PARTITIONED RANGE month) | DB Lead | ✅ DRAFT v0.2 |
+| §24 | `sonar_govt_elections` | DB Lead | ✅ DRAFT v0.2 |
+| §24 | `sonar_govt_election_candidates` | DB Lead | ✅ DRAFT v0.2 |
+| §24 | `sonar_govt_votes` (hashed) | DB Lead | ✅ DRAFT v0.2 |
+| §24 | `sonar_govt_votes_audit` (raw admin-only) | DB Lead | ✅ DRAFT v0.2 |
 | §25 | `sonar_bank_loans` | DB Lead | 🟡 Pending v0.3 |
 | §25 | `sonar_bank_credit_scores` | DB Lead | 🟡 Pending v0.3 |
 | §25 | `sonar_bank_crypto_wallets` (BIGINT atomic) | DB Lead | 🟡 Pending v0.3 |
@@ -67,9 +67,9 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 
 | Tabla existing | Cambio | Migration | Status DRAFT v0.1 |
 |---|---|---|---|
-| `sonar_bank_accounts` | ALTER ENUM `type` → split `owner_type` + `account_class` (Q-DB-D) | 014 v0.2 | 🟡 Pending v0.2 |
-| `sonar_bank_accounts` | ADD `last_reconciled_at INT UNSIGNED NULL` (CP3 trust window) | 014 v0.2 | 🟡 Pending v0.2 |
-| `sonar_bank_movements` | ALTER ENUM `category` add `'tax_subsidy'`, `'loan_disbursement'`, `'loan_repayment'`, `'crypto_buy'`, `'crypto_sell'`, `'stock_buy'`, `'stock_sell'`, `'recurring_charge'`, `'round_up'`, `'loyalty_redeem'`, `'compliance_freeze'` | 015 v0.2 | 🟡 Pending v0.2 |
+| `sonar_bank_accounts` | ALTER ENUM `type` → split `owner_type` + `account_class` (Q-DB-D) | 014 | ✅ DRAFT v0.2 |
+| `sonar_bank_accounts` | ADD `last_reconciled_at INT UNSIGNED NULL` (CP3 trust window) | 014 | ✅ DRAFT v0.2 |
+| `sonar_bank_movements` | ALTER ENUM `category` add `'tax_subsidy'`, `'loan_disbursement'`, `'loan_repayment'`, `'crypto_buy'`, `'crypto_sell'`, `'stock_buy'`, `'stock_sell'`, `'recurring_charge'`, `'round_up'`, `'loyalty_redeem'`, `'compliance_freeze'` | 015 | ✅ DRAFT v0.2 |
 | `sonar_bank_movements` | REORGANIZE PARTITIONS extend Sep 2026 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
 | `sonar_bank_audit_ledger` | REORGANIZE PARTITIONS extend Jan 2027 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
 | `sonar_escrows` | ADD `release_log_count TINYINT UNSIGNED NOT NULL DEFAULT 0` (FSM 6-states extends Q12) | 0NN v0.3 | 🟡 Pending v0.3 |
@@ -82,10 +82,10 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | `011_bank_compliance_flags.sql` | Tabla compliance flags + 5 patterns autoraise canonical Q10 | ✅ DRAFT v0.1 |
 | `012_bank_status_fsm.sql` | Tabla status FSM single-row global + trigger single-row + seed inicial | ✅ DRAFT v0.1 |
 | `013_bank_movements_partitions_extend.sql` | REORGANIZE partitions movements + audit_ledger hasta Dec 2027 (Q-DB-G) | ✅ DRAFT v0.1 |
-| `014_bank_accounts_owner_type_split.sql` | ALTER bank_accounts split owner_type + account_class (Q-DB-D) | 🟡 v0.2 |
-| `015_bank_movements_category_extend.sql` | ALTER movements ENUM category add 11 nuevos valores | 🟡 v0.2 |
-| `016_tax_brackets_history_subsidies.sql` | Tax tablas (brackets editable + history + subsidies) | 🟡 v0.2 |
-| `017_govt_elections_candidates_votes.sql` | Government tablas (elections FSM + candidates + votes hashed + votes_audit raw) | 🟡 v0.2 |
+| `014_bank_accounts_owner_type_split.sql` | ALTER bank_accounts split owner_type + account_class + last_reconciled_at + backfill (Q-DB-D) | ✅ DRAFT v0.2 |
+| `015_bank_movements_category_extend.sql` | ALTER movements ENUM category add 11 nuevos valores aditivos | ✅ DRAFT v0.2 |
+| `016_tax_brackets_history_subsidies.sql` | Tax tablas (brackets editable + history append-only + subsidies PARTITIONED) | ✅ DRAFT v0.2 |
+| `017_govt_elections_candidates_votes.sql` | Government tablas (elections FSM + candidates + votes hashed + votes_audit raw — dual-layer Q-DB-H) | ✅ DRAFT v0.2 |
 | `018_bank_loans_credit_scores.sql` | Tier 4 — loans FSM + credit scores | 🟡 v0.3 |
 | `019_bank_crypto_wallets.sql` | Tier 4 — crypto wallets BIGINT atomic + decimals | 🟡 v0.3 |
 | `020_bank_stocks_holdings_transactions.sql` | Tier 4 — stocks event-sourced + materialized hybrid Q-DB-I | 🟡 v0.3 |
@@ -2727,13 +2727,375 @@ FROM sonar_bank_status WHERE id = 1;
 
 ---
 
-## 24-28. Bank Phase A — Tax + Government + Tier 4 + Empresas + Idempotency (Pending v0.2-v0.3)
+## 24. Bank Phase A — Tax + Government (NEW v1.4 DRAFT v0.2)
 
-> **Status:** 🟡 Pending DRAFT v0.2 + v0.3. Tablas + DDL + indexes + queries hot path documented per slice §3.4 + §3.5 + §3.6 + §4 + §5.
+> **Status:** ✅ DRAFT v0.2 — DB Lead authoring 2026-05-06 (BANK-DB.2).
+>
+> **Migrations:** `016_tax_brackets_history_subsidies.sql` + `017_govt_elections_candidates_votes.sql` + `014_bank_accounts_owner_type_split.sql` + `015_bank_movements_category_extend.sql`.
+
+### 24.1 sonar_bank_tax_brackets — current brackets editable
+
+> **Brackets editables por Government Console** (ACE `sonar.bank.govt.tax.edit`). Cada row = un bracket. Trigger AFTER + Backend Lead lib audit a `sonar_bank_tax_history` (no DB triggers — captura snapshots before/after via app-layer per Q-DB-A simplicidad CHECK).
+
+```sql
+CREATE TABLE sonar_bank_tax_brackets (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+  bracket_name          VARCHAR(64)     NOT NULL,
+  bracket_kind          ENUM('income_personal','income_business','wealth','transaction') NOT NULL DEFAULT 'income_personal',
+
+  income_min            DECIMAL(14,2)   NOT NULL DEFAULT 0,
+  income_max            DECIMAL(14,2)   NULL COMMENT 'NULL = sin límite superior',
+  rate_pct              DECIMAL(5,2)    NOT NULL,
+
+  effective_from        INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  effective_until       INT UNSIGNED    NULL COMMENT 'NULL = bracket activo',
+
+  created_by_account_id CHAR(36)        NULL,
+  updated_by_account_id CHAR(36)        NULL,
+
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sonar_bank_tax_brackets_name_active (bracket_name, effective_until),
+  KEY idx_sonar_bank_tax_brackets_kind_active (bracket_kind, effective_from, effective_until),
+
+  CONSTRAINT fk_sonar_bank_tax_brackets_created_by
+    FOREIGN KEY (created_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_bank_tax_brackets_updated_by
+    FOREIGN KEY (updated_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+  CONSTRAINT chk_sonar_bank_tax_brackets_income_range CHECK (income_max IS NULL OR income_min < income_max),
+  CONSTRAINT chk_sonar_bank_tax_brackets_rate_pct CHECK (rate_pct >= 0 AND rate_pct <= 100),
+  CONSTRAINT chk_sonar_bank_tax_brackets_income_min CHECK (income_min >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Notas:**
+
+- `bracket_kind` ENUM 4 valores — soporta tax progresivo personal/business + wealth tax + transaction tax future-proof.
+- `effective_until = NULL` = bracket activo. Cuando se reemplaza, set `effective_until = UNIX_TIMESTAMP()` + INSERT new row con `effective_from = same` = "soft retire + new active".
+- `UNIQUE (bracket_name, effective_until)` — permite N rows con mismo `bracket_name` pero solo UNO con `effective_until = NULL` (active).
+
+### 24.2 sonar_bank_tax_history — append-only audit todo cambio
+
+```sql
+CREATE TABLE sonar_bank_tax_history (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  bracket_id            BIGINT UNSIGNED NOT NULL,
+
+  change_type           ENUM('create','update','delete') NOT NULL,
+  actor_account_id      CHAR(36)        NULL,
+  actor_role            ENUM('admin','government','system') NOT NULL DEFAULT 'admin',
+
+  before_bracket_name   VARCHAR(64)     NULL,
+  before_bracket_kind   ENUM('income_personal','income_business','wealth','transaction') NULL,
+  before_income_min     DECIMAL(14,2)   NULL,
+  before_income_max     DECIMAL(14,2)   NULL,
+  before_rate_pct       DECIMAL(5,2)    NULL,
+
+  after_bracket_name    VARCHAR(64)     NULL,
+  after_bracket_kind    ENUM('income_personal','income_business','wealth','transaction') NULL,
+  after_income_min      DECIMAL(14,2)   NULL,
+  after_income_max      DECIMAL(14,2)   NULL,
+  after_rate_pct        DECIMAL(5,2)    NULL,
+
+  reason_note           TEXT            NULL,
+
+  changed_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  KEY idx_sonar_bank_tax_history_bracket (bracket_id, changed_at DESC),
+  KEY idx_sonar_bank_tax_history_actor (actor_account_id, changed_at DESC),
+  KEY idx_sonar_bank_tax_history_change_type (change_type, changed_at DESC),
+
+  CONSTRAINT fk_sonar_bank_tax_history_actor
+    FOREIGN KEY (actor_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Triggers SIGNAL append-only (Q-DB-F tier 1).
+CREATE TRIGGER trg_sonar_bank_tax_history_no_update BEFORE UPDATE ON sonar_bank_tax_history FOR EACH ROW
+BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_bank_tax_history is append-only — UPDATE rejected'; END;
+
+CREATE TRIGGER trg_sonar_bank_tax_history_no_delete BEFORE DELETE ON sonar_bank_tax_history FOR EACH ROW
+BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_bank_tax_history is append-only — DELETE rejected'; END;
+```
+
+**Notas:**
+
+- `bracket_id` FK lógico (NO enforced FK) — bracket puede borrarse pero history sobrevive (audit retention legal).
+- Snapshot before/after permite reconstruir cualquier estado pasado del tax system + investigaciones impugnación.
+
+### 24.3 sonar_bank_subsidies (PARTITIONED RANGE month) — UBI + targeted aid
+
+```sql
+CREATE TABLE sonar_bank_subsidies (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+  subsidy_kind          ENUM('ubi_monthly','unemployment','targeted_aid','cooperative_grant') NOT NULL,
+
+  beneficiary_account_id CHAR(36)       NOT NULL,
+  bank_account_id       CHAR(36)        NOT NULL,
+  company_id            CHAR(36)        NULL COMMENT 'cooperative_grant — opaque Q-DB-E',
+
+  amount                DECIMAL(14,2)   NOT NULL,
+  currency              CHAR(3)         NOT NULL DEFAULT 'EUR',
+
+  issued_by_account_id  CHAR(36)        NULL,
+  issued_by_role        ENUM('government','admin','system') NOT NULL DEFAULT 'system',
+
+  related_movement_id   BIGINT UNSIGNED NULL,
+  related_audit_id      BIGINT UNSIGNED NULL,
+
+  reason_note           VARCHAR(255)    NULL,
+  reference_period      VARCHAR(32)     NULL COMMENT 'p.e. "2026-05" UBI',
+
+  issued_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id, issued_at),
+  KEY idx_sonar_bank_subsidies_beneficiary_issued (beneficiary_account_id, issued_at DESC),
+  KEY idx_sonar_bank_subsidies_kind_issued (subsidy_kind, issued_at DESC),
+  KEY idx_sonar_bank_subsidies_period (subsidy_kind, reference_period),
+  KEY idx_sonar_bank_subsidies_company (company_id),
+  KEY idx_sonar_bank_subsidies_issued_by (issued_by_account_id, issued_at DESC),
+
+  CONSTRAINT fk_sonar_bank_subsidies_beneficiary
+    FOREIGN KEY (beneficiary_account_id) REFERENCES sonar_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_bank_subsidies_bank_account
+    FOREIGN KEY (bank_account_id) REFERENCES sonar_bank_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_bank_subsidies_issued_by
+    FOREIGN KEY (issued_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+  CONSTRAINT chk_sonar_bank_subsidies_amount_positive CHECK (amount > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  PARTITION BY RANGE (issued_at) (
+    PARTITION p_2026_05 VALUES LESS THAN (1748736000),
+    -- ... May-Dec 2026 + p_future. Cron rolling forward DevOps Lead post-H4.
+    PARTITION p_future  VALUES LESS THAN MAXVALUE
+  );
+```
+
+**Notas:**
+
+- Particionado mensual — UBI mensual a citizens activos genera volumen alto. Cron rolling forward DevOps Lead post-H4.
+- `reference_period VARCHAR(32)` — formato canonical `YYYY-MM` para UBI, libre para otros tipos.
+- `unemployment` activable cuando citizen FSM `employment_state = 'unemployed'` (Backend Lead post-H1 + Sonar Core integration).
+
+### 24.4 sonar_govt_elections — elecciones FSM 4-state
+
+```sql
+CREATE TABLE sonar_govt_elections (
+  id                    CHAR(36)        NOT NULL,
+
+  election_kind         ENUM('mayor','cooperative_board','referendum') NOT NULL,
+  title                 VARCHAR(192)    NOT NULL,
+  description           TEXT            NULL,
+
+  state                 ENUM('draft','open','closed','finalized') NOT NULL DEFAULT 'draft',
+
+  scope_company_id      CHAR(36)        NULL COMMENT 'cooperative_board — opaque Q-DB-E',
+
+  opens_at              INT UNSIGNED    NULL,
+  closes_at             INT UNSIGNED    NULL,
+  finalized_at          INT UNSIGNED    NULL,
+
+  winner_candidate_id   CHAR(36)        NULL,
+  total_votes_count     INT UNSIGNED    NOT NULL DEFAULT 0,
+
+  created_by_account_id CHAR(36)        NULL,
+  created_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  updated_at            INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  KEY idx_sonar_govt_elections_state_kind (state, election_kind),
+  KEY idx_sonar_govt_elections_scope_company (scope_company_id),
+  KEY idx_sonar_govt_elections_opens (opens_at),
+  KEY idx_sonar_govt_elections_closes (closes_at),
+
+  CONSTRAINT fk_sonar_govt_elections_created_by
+    FOREIGN KEY (created_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+  CONSTRAINT chk_sonar_govt_elections_window CHECK (opens_at IS NULL OR closes_at IS NULL OR opens_at < closes_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**FSM transitions canonical:**
+
+```
+draft  ─→  open      (admin gov sets opens_at + closes_at + ACE check)
+open   ─→  closed    (auto cron when closes_at passed, or admin force-close)
+closed ─→  finalized (admin gov sets winner_candidate_id + total_votes_count + finalized_at)
+```
+
+**Reverse transitions PROHIBITED** — Backend Lead post-H1 enforce app-layer (audit integrity).
+
+### 24.5 sonar_govt_election_candidates
+
+```sql
+CREATE TABLE sonar_govt_election_candidates (
+  id                    CHAR(36)        NOT NULL,
+  election_id           CHAR(36)        NOT NULL,
+
+  candidate_account_id  CHAR(36)        NULL COMMENT 'NULL si referendum yes/no',
+  display_label         VARCHAR(128)    NOT NULL,
+  manifesto             TEXT            NULL,
+
+  display_order         INT UNSIGNED    NOT NULL DEFAULT 0,
+  votes_count           INT UNSIGNED    NOT NULL DEFAULT 0 COMMENT 'cached — refresh on-finalize',
+
+  registered_at         INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sonar_govt_election_candidates_election_account (election_id, candidate_account_id),
+  KEY idx_sonar_govt_election_candidates_election_order (election_id, display_order),
+
+  CONSTRAINT fk_sonar_govt_election_candidates_election
+    FOREIGN KEY (election_id) REFERENCES sonar_govt_elections(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_govt_election_candidates_account
+    FOREIGN KEY (candidate_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+  CONSTRAINT chk_sonar_govt_election_candidates_order_nonneg CHECK (display_order >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### 24.6 sonar_govt_votes — votos PÚBLICOS hasheados (Q-DB-H dual-layer privacy)
+
+```sql
+CREATE TABLE sonar_govt_votes (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  election_id           CHAR(36)        NOT NULL,
+  candidate_id          CHAR(36)        NOT NULL,
+
+  voter_hash            CHAR(64)        NOT NULL COMMENT 'SHA-256(citizen_id || election_id || server_salt)',
+
+  cast_at               INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sonar_govt_votes_voter_election (voter_hash, election_id),
+  KEY idx_sonar_govt_votes_election_candidate (election_id, candidate_id),
+  KEY idx_sonar_govt_votes_election_cast (election_id, cast_at DESC),
+
+  CONSTRAINT fk_sonar_govt_votes_election
+    FOREIGN KEY (election_id) REFERENCES sonar_govt_elections(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_govt_votes_candidate
+    FOREIGN KEY (candidate_id) REFERENCES sonar_govt_election_candidates(id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Triggers SIGNAL append-only.
+CREATE TRIGGER trg_sonar_govt_votes_no_update BEFORE UPDATE ON sonar_govt_votes FOR EACH ROW
+BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_govt_votes is append-only — UPDATE rejected'; END;
+
+CREATE TRIGGER trg_sonar_govt_votes_no_delete BEFORE DELETE ON sonar_govt_votes FOR EACH ROW
+BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_govt_votes is append-only — DELETE rejected'; END;
+```
+
+### 24.7 sonar_govt_votes_audit — votos RAW admin-only (ACE-gated)
+
+```sql
+CREATE TABLE sonar_govt_votes_audit (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  election_id           CHAR(36)        NOT NULL,
+  candidate_id          CHAR(36)        NOT NULL,
+
+  citizen_id            CHAR(36)        NOT NULL COMMENT 'voter REAL — admin-only',
+
+  cast_at               INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+  ip_address            VARCHAR(45)     NULL,
+  actor_role            ENUM('citizen','admin','system') NOT NULL DEFAULT 'citizen',
+
+  related_public_vote_id BIGINT UNSIGNED NULL,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sonar_govt_votes_audit_citizen_election (citizen_id, election_id),
+  KEY idx_sonar_govt_votes_audit_election_cast (election_id, cast_at DESC),
+  KEY idx_sonar_govt_votes_audit_election_candidate (election_id, candidate_id),
+  KEY idx_sonar_govt_votes_audit_ip (ip_address, cast_at DESC),
+  KEY idx_sonar_govt_votes_audit_related (related_public_vote_id),
+
+  CONSTRAINT fk_sonar_govt_votes_audit_citizen
+    FOREIGN KEY (citizen_id) REFERENCES sonar_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_govt_votes_audit_election
+    FOREIGN KEY (election_id) REFERENCES sonar_govt_elections(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_govt_votes_audit_candidate
+    FOREIGN KEY (candidate_id) REFERENCES sonar_govt_election_candidates(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_sonar_govt_votes_audit_public_vote
+    FOREIGN KEY (related_public_vote_id) REFERENCES sonar_govt_votes(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Triggers SIGNAL append-only.
+CREATE TRIGGER trg_sonar_govt_votes_audit_no_update BEFORE UPDATE ON sonar_govt_votes_audit FOR EACH ROW
+BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_govt_votes_audit is append-only — UPDATE rejected'; END;
+
+CREATE TRIGGER trg_sonar_govt_votes_audit_no_delete BEFORE DELETE ON sonar_govt_votes_audit FOR EACH ROW
+BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'sonar_govt_votes_audit is append-only — DELETE rejected'; END;
+```
+
+**Notas críticas Q-DB-H dual-layer privacy:**
+
+- **`server_salt`** — 64-char random secreto (DevOps Lead post-H4 genera + persiste en `setr sonar_bank_govt_vote_salt "..."`). NO almacenar en DB.
+- **Stable across restarts** — rotation invalidaría todos hashes existing. Si rotation requerida → migration aditiva con dual-hash window.
+- **Dual-atomic INSERT** — Backend Lead `Vote.Cast(election_id, candidate_id, citizen_id)` lib inserta en AMBAS tablas single transaction. Rollback si fail.
+- **ACE check** — `sonar.bank.govt.audit.full` enforced app-layer Backend post-H1 + auditado por Security Lead post-H2 (audit_ledger event `audit_read_scope_full`).
+
+### 24.8 Queries hot path §24
+
+```sql
+-- Q1: Brackets activos hoy (citizen Tax Calculator UI).
+SELECT id, bracket_name, income_min, income_max, rate_pct
+FROM sonar_bank_tax_brackets
+WHERE bracket_kind = 'income_personal'
+  AND effective_until IS NULL
+  AND effective_from <= UNIX_TIMESTAMP()
+ORDER BY income_min ASC;
+-- Index: idx_sonar_bank_tax_brackets_kind_active.
+
+-- Q2: UBI mensual histórico citizen (Tax Explorer Mi cuenta).
+SELECT id, amount, reference_period, issued_at
+FROM sonar_bank_subsidies
+WHERE beneficiary_account_id = ?
+  AND subsidy_kind = 'ubi_monthly'
+ORDER BY issued_at DESC LIMIT 24;
+-- Index: idx_sonar_bank_subsidies_beneficiary_issued. Partition pruning últimos meses.
+
+-- Q3: Elecciones activas (citizen UI Government Console).
+SELECT id, election_kind, title, opens_at, closes_at, total_votes_count
+FROM sonar_govt_elections
+WHERE state = 'open'
+ORDER BY closes_at ASC;
+-- Index: idx_sonar_govt_elections_state_kind.
+
+-- Q4: Cast vote — verify citizen no votó previamente.
+-- Compute voter_hash = SHA256(citizen_id || election_id || server_salt) en Backend lib.
+SELECT 1 FROM sonar_govt_votes
+WHERE voter_hash = ? AND election_id = ?
+LIMIT 1;
+-- Index: uq_sonar_govt_votes_voter_election. <1ms.
+
+-- Q5: Count votos por candidato (publish results).
+SELECT candidate_id, COUNT(*) AS votes_count
+FROM sonar_govt_votes
+WHERE election_id = ?
+GROUP BY candidate_id;
+-- Index: idx_sonar_govt_votes_election_candidate.
+
+-- Q6: Audit investigation admin (ACE-gated app-layer).
+-- ACE check: sonar.bank.govt.audit.full
+SELECT citizen_id, candidate_id, cast_at, ip_address
+FROM sonar_govt_votes_audit
+WHERE election_id = ?
+ORDER BY cast_at DESC;
+-- Index: idx_sonar_govt_votes_audit_election_cast.
+```
+
+---
+
+## 25-28. Bank Phase A — Tier 4 + Empresas + Idempotency (Pending v0.3)
+
+> **Status:** 🟡 Pending DRAFT v0.3 (BANK-DB.3). Tablas + DDL + indexes + queries hot path documented per slice §3.4 + §3.5 + §4 + §5.
 
 **Roadmap próximas iteraciones:**
 
-- **§24 v0.2 (BANK-DB.2):** `sonar_bank_tax_brackets` + `sonar_bank_tax_history` + `sonar_bank_subsidies` + `sonar_govt_elections` + `sonar_govt_election_candidates` + `sonar_govt_votes` + `sonar_govt_votes_audit` (dual-layer privacy Q-DB-H).
 - **§25 v0.3 (BANK-DB.3):** Tier 4 features (loans + credit_scores + crypto_wallets BIGINT atomic + stocks híbrido Q-DB-I + recurring + ATM + cards + loyalty + round_ups).
 - **§26 v0.3 (BANK-DB.3):** Empresas extends (`sonar_bank_business_treasuries` multi-signer + `sonar_bank_escrow_releases` partial release log).
 - **§27 v0.3 (BANK-DB.3):** `sonar_bank_idempotency_keys` (TTL 7 days + cron cleanup hint Backend Lead).
@@ -2892,8 +3254,9 @@ FROM sonar_bank_status WHERE id = 1;
 | 1.0 | 2026 (Oleada 0 firma) | Founder + Cascade | Primera redacción completa 4 partes, 20 secciones, ~2335 líneas, 28 tablas DDL completo + ~60 índices justificados + queries hot path + migrations strategy + particionado + backup + diccionario datos. **Firmable Oleada 0.** |
 | 1.1 | 2026-05-04 | Founder + Cascade (S1.9 EXTENDED) | **Light refresh post-pivot SONAR** (ADR-011 + ADR-012 + ADR-013). Title rebrand Admirals → SONAR + dual prefix reference (`sonar_*` post-migration-009 / `sonar_*` pre-migration-009 legacy). NOTICE r1 top-level (~110 líneas) establece: naming canonical tables (mapping 1:1 todas 28 tablas listadas + índices + FKs + constraint names 1:1) + migration 009 `009_rename_sonar_to_sonar.sql` SQL target (UP + DOWN rollback) per ADR-013 scheduled + ERD/FKs/cardinality invariantes + ADR-010 hybrid audit/event log semantics preserved + reference data seeds preserved (system treasury `AD-SYS0-0000-0001` IBAN unchanged) + reading guide §1-§20 legacy vs canonical. §0 resumen + §cierre rebrand + §Architecture P3 dual prefix + §Decisiones clave prefijo dual + hermanos refs bumped + ADRs 010/011/012/013 linked. **NO touched:** §1-§20 filosofía + ERD + 28 tablas DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario datos + 20.1 resumen counts (pivot-agnostic foundational schema). Table prefix `sonar_*` + índices + FKs + constraints preservados legacy inline hasta Phase 9 migration 009 execution per ADR-011 §5.5.8 excepciones. Próxima v1.2 post-migration-009: 28 tablas rename 1:1 inline body. |
 | 1.2 | 2026-05-04 | Founder + Cascade (S1.10.x) | **v1.2 — Phase 8+9 namespace migration ejecutada + NOTICE r1 obsoleto removido + prose Admirals→SONAR canonical.** S1.10 Phase 8+9 ejecutada (`admirals_*` → `sonar_*` code + DB tables + events + exports + server.cfg.example + 004 seed alias). S1.10.2 docs auto-rewrite Phase 1 (1075 identifiers code blocks). S1.10.3 docs Phase 2 surgical (NOTICE r1 block removed; prose "Admirals" → "SONAR" en §1-§N preservando refs históricos en este changelog; "Versión" + "FIN" bumped). Smoke harness inline admin commands cumulative S0+S1.1+S1.2+S1.3 = 10/10 PASS. **NO touched:** architecture + interfaces + contratos + tier + anti-patterns (pivot-agnostic). |
-| 1.3 DRAFT v0.1 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **🟡 DRAFT v0.1 Bank Phase A extends — BANK-DB.1.** Founder green-light Q-DB-A→J 2026-05-06 (sesión BANK-DB.0 onboarding + handshake + cuestionamientos). NEW §22 (audit ledger inmutable + compliance flags + queries hot path) + NEW §23 (status FSM single-row CP8) + §24-§28 roadmap pending v0.2-v0.3 (tax + government + Tier 4 + empresas + idempotency) + NEW §29 deviations from blueprint (10 Q-DB-* resolutions documented). Header v1.2→v1.3 + changelog table tablas NEW + tablas existing extends + drift corrections SSoT v1.1 vs realidad migrations. **Migrations files DRAFT v0.1:** `010_bank_audit_ledger.sql` + `011_bank_compliance_flags.sql` + `012_bank_status_fsm.sql` + `013_bank_movements_partitions_extend.sql`. **Issue #001** `sonar_companies` pending (Q-DB-E opaque company_id deferred). **NO touched:** §1-§20 SSoT v1.2 LOCKED foundational. Pending sign-off triple (founder + Backend consumer post-H1 + Security consumer post-H2). |
+| 1.3 DRAFT v0.1 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **✅ DRAFT v0.1 Bank Phase A extends — BANK-DB.1 (founder approved 2026-05-06).** Founder green-light Q-DB-A→J 2026-05-06 (sesión BANK-DB.0 onboarding + handshake + cuestionamientos). NEW §22 (audit ledger inmutable + compliance flags + queries hot path) + NEW §23 (status FSM single-row CP8) + §24-§28 roadmap pending v0.2-v0.3 (tax + government + Tier 4 + empresas + idempotency) + NEW §29 deviations from blueprint (10 Q-DB-* resolutions documented). Header v1.2→v1.3 + changelog table tablas NEW + tablas existing extends + drift corrections SSoT v1.1 vs realidad migrations. **Migrations files DRAFT v0.1:** `010_bank_audit_ledger.sql` + `011_bank_compliance_flags.sql` + `012_bank_status_fsm.sql` + `013_bank_movements_partitions_extend.sql`. **Issue #001** `sonar_companies` pending (Q-DB-E opaque company_id deferred). **NO touched:** §1-§20 SSoT v1.2 LOCKED foundational. Pending sign-off triple (founder + Backend consumer post-H1 + Security consumer post-H2). |
+| 1.4 DRAFT v0.2 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **🟡 DRAFT v0.2 Bank Phase A Tax + Government — BANK-DB.2.** Founder green-light BANK-DB.1 + autorización BANK-DB.2 2026-05-06. **§24 NEW** — Tax + Government (DDL completo 7 tablas: brackets editable + history append-only + subsidies PARTITIONED + elections FSM + candidates + votes hashed + votes_audit raw ACE-gated). **Q-DB-H dual-layer privacy** implementada (voter_hash SHA-256 con server_salt secret + audit raw admin-only). **ALTER TABLE** — bank_accounts split owner_type + account_class + last_reconciled_at + backfill (Q-DB-D); bank_movements ENUM category extend 11 nuevos valores aditivos. **Migrations files DRAFT v0.2:** `014_bank_accounts_owner_type_split.sql` + `015_bank_movements_category_extend.sql` + `016_tax_brackets_history_subsidies.sql` + `017_govt_elections_candidates_votes.sql`. **§25-§28** roadmap pending v0.3. **NO touched:** §1-§21 SSoT v1.2 LOCKED foundational + §22-§23 + §29 deviations DRAFT v0.1 (preservado intacto). |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.3 DRAFT v0.1 (Bank Phase A — DB Lead authoring 2026-05-06)**
+**FIN DEL DOCUMENTO `technical/03_db_schema.md` v1.4 DRAFT v0.2 (Bank Phase A — DB Lead authoring 2026-05-06 BANK-DB.2)**

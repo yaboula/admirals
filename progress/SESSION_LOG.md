@@ -195,3 +195,68 @@
 - Modelo sugerido: Sonnet 4.6 (continuidad DB Lead context).
 - Files in scope: `docs/technical/03_db_schema.md` (§24 NEW) + `migrations/014_*.sql` → `017_*.sql`.
 - Estimado: ~2-3h.
+
+---
+
+### BANK-DB.2 — DRAFT v0.2 Tax + Government schema + ALTER TABLES críticos
+
+- **Fecha:** 2026-05-06 (~06:10 UTC+02)
+- **Duración:** ~50 min
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.6 — DB Lead)
+- **Sprint / Phase:** Phase A — Database foundation
+- **Perfil:** ⚙️ DDL CRAFTING + 🛡️ DUAL-LAYER PRIVACY DESIGN
+- **Goal:** Founder green-light DRAFT v0.1 + autorización BANK-DB.2. Implementar §24 Tax + Government (7 tablas) + ALTER TABLES críticos (bank_accounts split + bank_movements category extend). Push branch a origin (founder mandate).
+- **Status:** ✅ Done DRAFT v0.2 — pending review founder.
+
+#### Acciones ejecutadas
+
+- ✅ `git push -u origin feature/bank-db-phase-a` — branch protegida en remoto post BANK-DB.1 (founder mandate "push al final de cada sesión").
+- ✅ `resources/sonar_core/migrations/014_bank_accounts_owner_type_split.sql` — Q-DB-D ALTER bank_accounts split en 2 columns (`owner_type` + `account_class`) + ADD `last_reconciled_at` (CP3) + backfill data existing + override SYS treasury seed (AD-SYS0-0000-0001 → government + govt_treasury) + DROP column `type` legacy. Idempotency check via INFORMATION_SCHEMA.COLUMNS. Decision log D1-D8.
+- ✅ `resources/sonar_core/migrations/015_bank_movements_category_extend.sql` — ALTER MODIFY ENUM aditiva 11 nuevos valores AL FINAL preservando 13 originales (NO rebuild físico). Idempotency check `tax_subsidy IN ENUM`. Decision log D1-D5.
+- ✅ `resources/sonar_core/migrations/016_tax_brackets_history_subsidies.sql` — 3 tablas Tax: brackets editable + history append-only (triggers SIGNAL Q-DB-F tier 1) + subsidies PARTITIONED RANGE month (UBI volume). FK ON DELETE RESTRICT/SET NULL canonical. CHECK simples (Q-DB-A). Decision log D1-D8.
+- ✅ `resources/sonar_core/migrations/017_govt_elections_candidates_votes.sql` — 4 tablas Government: elections FSM 4-state + candidates (FK CASCADE election_id) + votes hashed (UNIQUE voter_hash + election_id) + votes_audit raw ACE-gated. Triggers SIGNAL append-only en votes + votes_audit. Q-DB-H dual-layer privacy implementada. Decision log D1-D9 (server_salt management + dual-atomic INSERT + ACE check enforcement).
+- ✅ `docs/technical/03_db_schema.md` v1.3 DRAFT v0.1 → **v1.4 DRAFT v0.2**:
+  - Header changelog v1.3 → v1.4 + status update tablas tax/govt → ✅ DRAFT v0.2 + tablas existing → ✅ DRAFT v0.2.
+  - **§24 NEW** — Tax + Government DDL completo (7 sub-secciones 24.1-24.8) + queries hot path Q1-Q6.
+  - §25-§28 roadmap pending v0.3 actualizado.
+  - Changelog entry v1.4 DRAFT v0.2 + FIN bumped.
+
+#### Q-DB-H dual-layer privacy implementation
+
+| Layer | Tabla | Acceso | Hash citizen_id |
+|---|---|---|---|
+| Public | `sonar_govt_votes` | Cualquier citizen UI Government Console | SHA-256 con `server_salt` secret |
+| Admin-only | `sonar_govt_votes_audit` | ACE `sonar.bank.govt.audit.full` | RAW citizen_id |
+
+**Properties:**
+- Misma persona votando 2 veces → mismo hash → UNIQUE constraint rechaza.
+- Dump DB sin `server_salt` → hash NO reversible (bcrypt-like).
+- Dual-atomic INSERT Backend Lead `Vote.Cast()` lib en single transaction.
+- Audit investigations admin (impugnación + fraude detection IP).
+
+#### Files in scope respetados
+
+- ✅ NO toco: §1-§21 SSoT v1.2 LOCKED foundational + §22-§23 DRAFT v0.1 + §29 deviations + migrations 001-013 (preservadas) + `resources/sonar_tablet/web-src/**` + `resources/sonar_bank/**` + blueprint v1.2.
+- ✅ Modificados/creados:
+  - `docs/technical/03_db_schema.md` (v1.3 → v1.4 DRAFT v0.2 — apendeo §24 + bump status tablas v0.2 + changelog).
+  - `resources/sonar_core/migrations/014_*.sql` + `015_*.sql` + `016_*.sql` + `017_*.sql` NEW.
+
+#### Outcomes
+
+- **DRAFT v0.2 entrega completa Tax + Government** — 7 tablas NEW + 2 ALTER TABLE críticos + Q-DB-H dual-layer privacy implementada + queries hot path documented.
+- **Branch protegida en origin** — push final BANK-DB.1 + commit BANK-DB.2 listo para push tras este SESSION_LOG.
+- **Coverage Q-DB-D + Q-DB-H + Q-DB-A 100%** — Tax + Government completo per founder LOCKED decisions.
+
+#### Pendientes próximos
+
+1. **Founder review DRAFT v0.2** + feedback antes de iterar v0.3.
+2. **BANK-DB.3** (próxima sesión): §25 Tier 4 features (loans + credit_scores + crypto + stocks híbrido + recurring + ATM + cards + loyalty + round_ups) + §26 Empresas extends (business_treasuries + escrow_releases) + §27 Idempotency keys.
+3. **BANK-DB.4:** Benchmarks ejecutados + LOCKED v1.0 sign-off triple → handoff H1 ceremony Backend Lead.
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-DB.3** — Tier 4 features + Empresas extends + Idempotency keys.
+- Goal: §25 9 tablas Tier 4 + §26 2 tablas empresas + §27 1 tabla idempotency. Migrations 018-028 (~11 archivos).
+- Modelo sugerido: Sonnet 4.6 (continuidad DB Lead context).
+- Files in scope: `docs/technical/03_db_schema.md` (§25 + §26 + §27 NEW) + `migrations/018_*.sql` → `028_*.sql`.
+- Estimado: ~3-4h.
