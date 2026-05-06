@@ -1,9 +1,9 @@
 # Backend Phase A — DRAFT v0.1 deliverables index
 
-> **Owner:** Backend Money & Compatibility Lead (Cascade Sonnet 4.6 — sesión BANK-BE.0).
-> **Status:** 🟡 **DRAFT v0.1 — review window open.** Sin LOCKED hasta sign-off triple founder + Backend + consumers (Security + Frontend + DevOps consultative).
-> **Fecha:** 2026-05-06 (BANK-BE.0).
-> **Branch:** `feature/bank-backend-phase-a`.
+> **Owner:** Backend Money & Compatibility Lead (Cascade Sonnet 4.6 — sesiones BANK-BE.0 + BANK-BE.1).
+> **Status:** 🟡 **DRAFT v0.1 — review window open. 5/5 contratos entregados + ADR-018 redactado proposed.** Sin LOCKED hasta sign-off triple founder + Backend + consumers (Security + Frontend + DevOps consultative).
+> **Fecha:** 2026-05-06 (BANK-BE.0 ± BANK-BE.1).
+> **Branch:** `feature/bank-backend-phase-a` (commits `bf01667` BANK-BE.0 + commit BANK-BE.1 pending).
 > **Handoff target:** H2 Backend → Security (post LOCKED v1.0 todos los 5 contratos).
 
 ---
@@ -38,16 +38,16 @@ Aplicar pattern in-line a 4 archivos durante DRAFT v0.x review window genera:
 
 | ID | Contrato | Path DRAFT v0.x | Path canonical post-promotion | Status BANK-BE.0 |
 |---|---|---|---|---|
-| **C-BE-01** | Events Catalog v1.3 | `c_be_01_events_catalog_v1_3.md` | `docs/technical/02_events_catalog.md` v1.3 (extends §X NEW Bank Phase A) | 🔴 **DEFERRED BANK-BE.1** |
-| **C-BE-02** | API Contracts v1.3 (~40 callbacks) | `c_be_02_api_contracts_v1_3.md` | `docs/technical/04_api_contracts.md` v1.3 (extends §X NEW Bank Phase A) | 🔴 **DEFERRED BANK-BE.1** |
+| **C-BE-01** | Events Catalog v1.3 (51 events catalogados) | `c_be_01_events_catalog_v1_3.md` | `docs/technical/02_events_catalog.md` v1.3 (extends §X NEW Bank Phase A) | � **DRAFT v0.1 BANK-BE.1** |
+| **C-BE-02** | API Contracts v1.3 (40 callbacks completos) | `c_be_02_api_contracts_v1_3.md` | `docs/technical/04_api_contracts.md` v1.3 (extends §X NEW Bank Phase A) | � **DRAFT v0.1 BANK-BE.1** |
 | **C-BE-03** | State Machines v1.1 (8 FSMs joint DB) | `c_be_03_state_machines_v1_1.md` | `docs/technical/05_state_machines.md` v1.1 (extends §X NEW Bank Phase A FSMs) | 🟡 **DRAFT v0.1 BANK-BE.0** |
 | **C-BE-04** | Bridges Compatibility v1.1 | `c_be_04_bridges_v1_1.md` | `docs/technical/07_bridges_compatibility.md` v1.1 (extends §X NEW Bank Phase A) | 🟡 **DRAFT v0.1 BANK-BE.0** |
 | **C-BE-05** | StateBags Global Publishers Spec | `c_be_05_statebags_global_publishers.md` | `docs/technical/02_events_catalog.md` §statebags-global-publishers (sub-section dentro v1.3) | 🟡 **DRAFT v0.1 BANK-BE.0** |
 | **ADR-018** | Bank Lite mode 3-layer + 8 mitigation patterns | append a `docs/planning/02_decision_log_part2.md` | (mismo path — ADR registry canonical) | 🟡 **Proposed BANK-BE.0** |
 
 **Razón orden:**
-- C-BE-04 (Bridges) + C-BE-05 (StateBags) + C-BE-03 (FSMs) son **architectural foundation** — establecen patterns + privacy contract + state lifecycle. C-BE-01 events depende del shape final C-BE-05 (NetEvents + StateBag refs). C-BE-02 API contracts depende C-BE-03 FSMs (callbacks reference state transitions).
-- C-BE-01 + C-BE-02 son los más volumétricos (~40 callbacks documentados con auth + rate-limit + idempotency + side effects + error codes + perf targets + test scenarios). Realistic scope BANK-BE.1 con foundation BANK-BE.0 estable.
+- C-BE-04 (Bridges) + C-BE-05 (StateBags) + C-BE-03 (FSMs) son **architectural foundation** entregados BANK-BE.0 — establecen patterns + privacy contract + state lifecycle. C-BE-01 events depende del shape final C-BE-05 (NetEvents + StateBag refs). C-BE-02 API contracts depende C-BE-03 FSMs (callbacks reference state transitions).
+- C-BE-01 + C-BE-02 entregados BANK-BE.1 con foundation BANK-BE.0 estable. C-BE-02 contiene 40/40 callbacks documentados con estructura formal §9.x.1-§9.x.10 (auth server-side + rate-limit explícito + idempotency keys + side effects audit ledger triggers per directriz founder).
 
 ---
 
@@ -122,6 +122,7 @@ Cuando los 5 contratos pasen LOCKED v1.0:
 
 | Version | Fecha | Cambios |
 |---|---|---|
-| **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT v0.1 inicial 3/5 contratos (C-BE-03 + C-BE-04 + C-BE-05) + ADR-018 redactado. C-BE-01 + C-BE-02 deferred BANK-BE.1. |
+| **v0.1 DRAFT BANK-BE.0** | 2026-05-06 (~07:55 UTC+02) | DRAFT v0.1 inicial 3/5 contratos (C-BE-03 + C-BE-04 + C-BE-05) + ADR-018 redactado proposed. C-BE-01 + C-BE-02 deferred BANK-BE.1. Commit `bf01667` push origin. |
+| **v0.1 DRAFT BANK-BE.1** | 2026-05-06 (~07:50 UTC+02) | DRAFT v0.1 completion 5/5 contratos. C-BE-01 Events Catalog v1.3 entregado (51 events catalogados — 22 server→client público + 8 server→admin ACE-checked + 12 resource-internal + 9 StateBag keys). C-BE-02 API Contracts v1.3 entregado (40/40 callbacks completos C001-C040 con estructura formal §9.x.1-§9.x.10). |
 
-— **Backend Phase A DRAFT v0.1 abierto** review window 24h post BANK-BE.0 close.
+— **Backend Phase A DRAFT v0.1 completo** — 5/5 contratos + ADR-018. Review window abierto. Sign-off triple cycle pending.

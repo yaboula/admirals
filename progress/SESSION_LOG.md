@@ -666,3 +666,164 @@ Razón sequencing: C-BE-01 events depende del shape final C-BE-05 (NetEvents fir
 - 🔒 `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL (DB Lead deliverable, no Backend touch).
 
 — **Backend Lead BANK-BE.0 close 2026-05-06 ~07:55 UTC+02. DRAFT v0.1 review window opens. BANK-BE.1 pending founder green-light.**
+
+---
+
+### BANK-BE.1 — DRAFT v0.1 completion C-BE-01 Events Catalog + C-BE-02 API Contracts (40/40 callbacks)
+
+- **Fecha:** 2026-05-06 (~08:00 → ~09:00 UTC+02)
+- **Founder + Agent:** yaboula + Cascade Sonnet 4.6 (Backend Money & Compatibility Lead)
+- **Sprint / Phase:** Phase A — Backend Bank-domain Lua server + Bridges + APIs.
+- **Status:** ✅ **5/5 contratos DRAFT v0.1 entregados. BANK-BE.0 commit pushed origin (`bf01667`). C-BE-01 + C-BE-02 ratificados completos this sesión.**
+
+#### Founder green-light recibido
+
+- ✅ Git ops aprobado: commit `BANK-BE.0 backend draft v0.1 - 3/5 contracts + ADR-018 proposed + research notes` + `git push -u origin feature/bank-backend-phase-a`.
+- ✅ BANK-BE.1 iniciar inmediatamente con foco C-BE-01 + C-BE-02.
+- ✅ Punto atención founder C-BE-02: cumplimiento estricto formato 40 callbacks → auth server-side validation + rate-limit cuotas explícitas + idempotency keys + side effects (audit ledger triggers Security Lead).
+
+#### Acciones ejecutadas
+
+##### 1. Git ops BANK-BE.0 push (commit + remote sync)
+
+- ✅ `git add docs/agents/teams/drafts/be_phase_a/ docs/planning/02_decision_log_part2.md progress/SESSION_LOG.md` (warnings LF → CRLF inocuos en Windows).
+- ✅ `git commit -m "BANK-BE.0 backend draft v0.1 - 3/5 contracts + ADR-018 proposed + research notes"` → commit `bf01667` (7 archivos changed, 2054 insertions).
+- ✅ `git push -u origin feature/bank-backend-phase-a` → branch creada en remote, tracking establecido. PR URL emitida `https://github.com/yaboula/admirals/pull/new/feature/bank-backend-phase-a`.
+
+##### 2. C-BE-01 Events Catalog v1.3 DRAFT v0.1 entregado
+
+Archivo creado: `docs/agents/teams/drafts/be_phase_a/c_be_01_events_catalog_v1_3.md`.
+
+**Contenido principal:**
+
+- **§1 Filosofía** — inherited E1-E10 (per `02_events_catalog.md` v1.2) + NEW principles E11-E15 Bank Phase A (CP1-A/B privacy boundary + correlation_id propagation + FSM transition metadata + NO broadcast -1).
+- **§2 Categorías** — 5 categorías canonical (server→client público + server→admin ACE-checked + client→server callbacks + AddEventHandler resource-internal + StateBag change handlers).
+- **§3 NetEvents server→client público** — 22 events catalogados con tabla canonical (Tier + payload shape + cross-ref). Privacy classification CP1-A/B per Q-BE-pre-02/03 LOCKED.
+- **§4 NetEvents server→admin ACE-checked** — 8 events restringidos (`compliance:detail`, `audit:queryResult`, `elections:votesRaw`, `reconciliation:flagRaised`, `status:transition`, `tax:bracketsUpdated`, `subsidy:granted`, `cron:tickReport`). Boilerplate ACE check fire pattern.
+- **§5 Client→server callbacks** — 40 callbacks naming canonical referenciados sumariamente (detalle full en C-BE-02).
+- **§6 AddEventHandler resource-internal** — 12 events (`movementRecorded`, `fsmTransition`, `bankStatusChanged`, `reconciliationApplied`, `reconciliationFlagged`, `complianceFlagRaised`, `idempotencyKeyCommitted`, `cronTickCompleted`, `roundUpAccrued`, `auditLedgerAppended`, `bridgesEchoDropped`, `bridgesEchoOrphaned`).
+- **§7 StateBag change handlers** — 9 keys consumed via `AddStateBagChangeHandler('global', 'bank.<key>', handler)` pattern Frontend Lead.
+- **§8 Tier classification testing matrix** — 7 Tier 1 critical / 12 Tier 2 important / 5 Tier 3 informational / 4 Tier 4 ornament.
+- **§9 Naming convention** — `sonar:<domain>:<entity>:<verb_or_state>` formal pattern + 6 anti-patterns prohibidos.
+- **§10 Schema versioning + governance** — base payload mandatory fields (correlation_id + occurred_at + schema_version) + RFC governance trigger Tier 1-2 changes.
+- **§11 Cross-references** + **§12 Open questions OQ-CBE01-01..04** + **§13 Sign-off matrix LOCKED target** + **§14 Versioning v0.1**.
+
+**Total events catalogados:** **51 events** (22 server→client público + 8 server→admin + 12 resource-internal + 9 StateBag keys consumed).
+
+##### 3. C-BE-02 API Contracts v1.3 DRAFT v0.1 entregado (40/40 callbacks)
+
+Archivo creado: `docs/agents/teams/drafts/be_phase_a/c_be_02_api_contracts_v1_3.md` (1581 líneas).
+
+**Framework §1-§7:**
+
+- **§1 Filosofía** — inherited A1-A8 + NEW principles A9-A17 Bank Phase A (granular ~40 mantenido + DB persistent idempotency + auth server-side mandatory + rate-limit explícito + idempotency mandatory mutations + side effects documentados explícitamente + error codes registry centralizado + early return BANK_DISABLED + perf p99 documentado).
+- **§2 Auth + ACE matrix** — 5 auth tiers (AUTH-PUBLIC + AUTH-OWNER + AUTH-OWNER_OR_PARTICIPANT + AUTH-ROLE + AUTH-ROLE_OR_OWNER) + ACE permissions matrix canonical (11 perms — `sonar.bank.audit.self`, `sonar.bank.empresas.<id>`, `sonar.bank.govt.audit.full`, `sonar.bank.govt.tax.write`, `sonar.bank.govt.subsidy.write`, `sonar.bank.govt.elections.admin`, `sonar.bank.govt.escrow.admin`, `sonar.bank.govt.loan.admin`, `sonar.bank.govt.compliance.admin`, `sonar.bank.govt.physical_card.admin`, `sonar.devops.bank.diagnostics`) + boilerplate first-line check pattern.
+- **§3 Error codes registry canonical** — 20 códigos ENUM canonical (`OK`, `BANK_DISABLED`, `AUTH_REQUIRED`, `AUTH_FORBIDDEN`, `AUTH_ACE_DENIED`, `RATE_LIMIT_EXCEEDED`, `IDEMPOTENCY_INFLIGHT`, `VALIDATION_FAIL`, `INSUFFICIENT_FUNDS`, `INSUFFICIENT_QUORUM`, `INVALID_TRANSITION`, `INVALID_ACCOUNT_CLASS`, `RESOURCE_NOT_FOUND`, `RESOURCE_LOCKED`, `LIMIT_EXCEEDED_DAILY`, `LIMIT_EXCEEDED_MONTHLY`, `COMPLIANCE_FLAG_BLOCK`, `EXTERNAL_DEPENDENCY_FAIL`, `INTERNAL_SERVER_ERROR`, `UNSUPPORTED_PHASE_A`) + response shape canonical (success + error variants TypeScript-style).
+- **§4 Rate-limit framework** — `sonar_bridges/lib/rate_limiter.lua` token bucket pattern + 5 budget tiers (HIGH 30/5sec, NORMAL 10/1sec, LOW 3/0.2sec, ADMIN 5/0.5sec, CRITICAL 2/0.1sec) + convars override + per-citizen_id NOT per-source.
+- **§5 Idempotency framework** — DB persistent `sonar_bank_idempotency_keys` (migration 028) + library interface (`Lock` + `Complete` + `Fail`) + replay logic 3 estados (`locked` 1s wait, `completed` cached return, `failed` no retry) + cron TTL purge daily + mandatory vs optional rules.
+- **§6 Side effects taxonomy** — 8 categorías (DB writes + StateBag emits + NetEvents fired + audit ledger entries + cron triggers + cross-resource events + compliance autoraise + idempotency state transitions) + audit ledger event_type ENUM canonical (~30 entries).
+- **§7 Performance budgets** — 5 tiers (FAST <50ms + STANDARD <200ms + MEDIUM <500ms + SLOW <1500ms + BACKGROUND <5000ms) + verification path DevOps C-DO-01 smoke test.
+
+**Catálogo callbacks §8 — tabla canonical 40 callbacks** con ID + auth tier + rate-limit budget + idempotency mandatory? + perf tier + FSM ref.
+
+**Spec full §9.1-§9.40 — 40 callbacks documentados con estructura formal §9.x.1-§9.x.10:**
+
+| Bloque | Callbacks | Dominio |
+|---|---|---|
+| **Transfers + accounts** | C001-C006 | transfer + savings deposit/withdraw + account getInfo/list/close |
+| **Escrow** | C007-C012 | create + getDetail + fund + release + dispute + refund (admin) |
+| **Tax + subsidy** | C013-C018 | getBrackets + calculate + setBrackets (admin) + grant/list/claim subsidy |
+| **Loans** | C019-C021 | apply + decide (admin) + repay |
+| **Stocks** | C022-C026 | list + buy + sell + getPortfolio + recomputeHoldings |
+| **Recurring** | C027-C028 | create + cancel |
+| **Crypto** | C029-C030 | list + swap |
+| **ATM** | C031 | getMinigameSession |
+| **Cards** | C032-C034 | requestPhysical + setPin + verifyPin |
+| **Audit + compliance** | C035-C038 | audit:query + listFlags + queryDetail (admin) + resolveFlag (admin) |
+| **Business** | C039-C040 | treasuryGet + approvalCreate |
+
+Estructura formal cada callback (cumplimiento estricto directriz founder BANK-BE.1):
+
+1. Identifier (event name + auth tier + FSM ref).
+2. Request schema (TypeScript-style payload shape).
+3. Response schema (success + error variants).
+4. Auth check details (server-side validation specifics).
+5. Rate-limit budget (tier per §4.2 + override convars).
+6. Idempotency (key generation + replay behavior).
+7. Side effects (DB + StateBag + NetEvent + audit + compliance + cron + idempotency).
+8. Error codes possible (subset registry §3.1).
+9. Performance target (perf tier per §7.1).
+10. Test scenarios (happy + auth fail + rate limit + idempotency replay + concurrent + edge cases).
+
+**Punto atención founder cumplido en cada callback C001-C040:**
+- ✅ **Validación Auth Server-side** — boilerplate en §2.3 + per-callback en §9.x.4. Tier formal declarado.
+- ✅ **Rate-limit cuotas explícitas** — tier asignado por callback con budget per §4.2 (HIGH/NORMAL/LOW/ADMIN/CRITICAL).
+- ✅ **Idempotency keys** — mandatory mutations (auto-generated server-side si client omite) + DB persistent storage `sonar_bank_idempotency_keys` migration 028 + replay logic 3 estados.
+- ✅ **Side effects (audit ledger triggers Security Lead)** — §9.x.7 cada callback documenta entries `sonar_bank_audit_ledger` con event_type ENUM canonical (referenciado §6.2 — feed directo C-SEC-01 audit hooks integration).
+
+**§10-§13 footer:**
+
+- **§10 Cross-references contratos** (C-BE-01..05 + C-SEC-01 + C-FE-01).
+- **§11 Open questions OQ-CBE02-01..05** (daily transfer limit + loan max active + recurring max active + subsidy claim window + stock buy/sell quantity vs amount).
+- **§12 Sign-off matrix LOCKED target** (founder + Backend self-signed BANK-BE.1 + Frontend post-H3 + Security post-H2).
+- **§13 Versioning v0.1 DRAFT** entry consolidated post-completion.
+
+##### 4. README index actualizado
+
+`docs/agents/teams/drafts/be_phase_a/README.md`:
+- Status header → **5/5 contratos entregados + ADR-018 redactado proposed**.
+- Tabla §2 deliverables — C-BE-01 + C-BE-02 marcados 🟡 DRAFT v0.1 BANK-BE.1.
+- Razón orden §2 actualizada con detalle BANK-BE.1 entrega.
+- §7 versioning — entry BANK-BE.0 + entry BANK-BE.1 separadas con commit refs.
+
+##### 5. Footer C-BE-02 ratificado post-completion
+
+Multi-edit aplicado: §11 título sin "(preliminary — refresh post §9 batch 2)" + §12 sign-off matrix sin "(pending §9 batch 2 completion)" + §13 versioning consolidada en entry single v0.1 DRAFT (vs entries separadas batch 1 / batch 2 pending).
+
+#### Outcomes
+
+- **5/5 contratos DRAFT v0.1 entregados** (C-BE-01 + C-BE-02 + C-BE-03 + C-BE-04 + C-BE-05) + **ADR-018 redactado proposed** en `02_decision_log_part2.md`.
+- **C-BE-01:** 51 events catalogados con privacy classification CP1-A/B + Tier classification testing matrix + naming convention canonical + RFC governance.
+- **C-BE-02:** 40/40 callbacks completos con cumplimiento estricto founder directriz formato (auth server-side + rate-limit explícito + idempotency keys + side effects audit ledger triggers Security Lead).
+- **Framework reusable** — auth tiers + ACE matrix + error codes registry + rate-limit framework + idempotency framework + side effects taxonomy + perf budgets centralizados §1-§7 (referencia compartida 40 callbacks).
+- **BANK-BE.0 commit pushed origin** (`bf01667`) — progreso asegurado en remote per workspace rule "NUNCA push código que rompe boot del server" + green-light explícito founder BANK-BE.1.
+- **Foundation BANK-BE.0 estable** preserved — C-BE-03/04/05 sin cambios (ratificados estructuralmente per founder directriz).
+
+#### Pendientes próximos
+
+1. **Founder review BANK-BE.1 deliverables** (C-BE-01 + C-BE-02) + green-light commit + push.
+2. **Founder ratify ADR-018** (proposed → accepted target H2; pre-H2 sign optional vía founder explicit approval).
+3. **Review consultative consumer Leads** post-activation (DB Lead joint sign-off C-BE-03 — Standby reactivation needed; Security Lead post-H2 activation — review crítico C-BE-02 §2 ACE matrix + §3 error codes + §5 idempotency framework + §6 audit ledger ENUM; Frontend Lead post-H3 — review request/response schemas + error codes + rate-limit budgets para UX; DevOps Lead post-H4 — review §7 perf budgets + cron TTL purge + observability events).
+4. **BANK-BE.2 iterations** (potential): refinements DRAFT v0.2 sobre feedback founder + consumer Leads. C040b approval sign + C040c approval cancel sub-callbacks.
+5. **Commit BANK-BE.1** — pending founder explicit approval push to origin.
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-BE.2** o **BANK-BE.LOCK** según feedback founder.
+  - **BANK-BE.2**: refinements DRAFT v0.2 sobre 5 contratos según feedback iterativo.
+  - **BANK-BE.LOCK**: ceremony sign-off triple (founder + Backend + DB joint FSMs) → LOCKED v1.0 + atomic promotion canonical paths + handoff H2 ceremony Backend → Security.
+- Pre-requisite: founder review BANK-BE.1 deliverables + decisión iteration vs lock.
+- Goal: completar review window + sign-off triple cycle + handoff H2 ceremony.
+- Estimado: 2-4h iteration o 4-6h lock + handoff H2 package full.
+
+#### Files modificados / creados sesión BANK-BE.1
+
+##### NEW (DRAFT v0.1 BANK-BE.1)
+
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_01_events_catalog_v1_3.md` (NEW — C-BE-01 v0.1 51 events catalogados).
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_02_api_contracts_v1_3.md` (NEW — C-BE-02 v0.1 1581 líneas, 40/40 callbacks completos).
+
+##### MODIFIED
+
+- ✅ `docs/agents/teams/drafts/be_phase_a/README.md` — index actualizado 3/5 → 5/5 contratos + entry versioning BANK-BE.1.
+- ✅ `progress/SESSION_LOG.md` — entry BANK-BE.1 (esta append).
+
+##### NO TOUCHED (preserved BANK-BE.0)
+
+- 🔒 `docs/agents/teams/drafts/be_phase_a/c_be_03_state_machines_v1_1.md` (BANK-BE.0 preserved).
+- 🔒 `docs/agents/teams/drafts/be_phase_a/c_be_04_bridges_v1_1.md` (BANK-BE.0 preserved).
+- 🔒 `docs/agents/teams/drafts/be_phase_a/c_be_05_statebags_global_publishers.md` (BANK-BE.0 preserved).
+- 🔒 `docs/agents/teams/drafts/be_phase_a/research_notes.md` (BANK-BE.0 preserved).
+- 🔒 `docs/planning/02_decision_log_part2.md` v1.1 ADR-018 (BANK-BE.0 preserved — no further edits this session).
+
+— **Backend Lead BANK-BE.1 close 2026-05-06 ~09:00 UTC+02. DRAFT v0.1 5/5 contratos COMPLETOS. Review window opens. BANK-BE.LOCK pending founder green-light.**
