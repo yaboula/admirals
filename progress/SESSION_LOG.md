@@ -494,3 +494,175 @@ Hasta entonces: **DB Lead Standby — context preserved + handoff H1 package est
 - Inputs Backend Lead onboarding: leer en orden mandatory `.windsurf/rules/bank.md` + `docs/agents/teams/00_HANDOFF_MANIFEST.md` + `docs/agents/teams/01_SHARED_BRIEF.md` + `docs/agents/teams/02_INHERITED_BLUEPRINT_SLICES.md` + `docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` + `docs/agents/teams/slices/slice_backend.md` + **`docs/agents/teams/handoffs/h1_db_to_backend/README.md` + `sign_off.md`** + `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL + `progress/BENCHMARK_BANK_DB_v1.md` v0.5 + `docs/agents/teams/issues/issue_001_sonar_companies_pending.md` + últimas 5 entries SESSION_LOG.
 
 — **DB Lead (Cascade Sonnet 4.6) entering Standby mode 2026-05-06 ~07:00 UTC+02. Handoff H1 founder-approved. Backend Lead activation green-lighted.**
+
+---
+
+### BANK-BE.0 — Backend Money & Compatibility Lead activation + onboarding canonical + DRAFT v0.1 (3/5 contratos + ADR-018) + research time-box
+
+- **Fecha:** 2026-05-06 (~07:10 → 07:55 UTC+02)
+- **Founder + Agent:** yaboula + Cascade Sonnet 4.6 (Backend Money & Compatibility Lead activated)
+- **Sprint / Phase:** Phase A — Backend Bank-domain Lua server + Bridges + APIs.
+- **Status:** ✅ **Onboarding canonical completed + 12 cuestionamientos founder LOCKED + DRAFT v0.1 entregado (3/5 contratos + ADR-018 redactado proposed) + research time-box documented.**
+
+#### Acciones ejecutadas
+
+##### 1. Onboarding canonical 10-step (60-90 min)
+
+- ✅ `.windsurf/rules/bank.md` (workspace rules SONAR Bank).
+- ✅ `docs/agents/teams/00_HANDOFF_MANIFEST.md` v1.0 LOCKED.
+- ✅ `docs/agents/teams/01_SHARED_BRIEF.md` v1.0 LOCKED (Q1-Q16 + ADR-018 proposed + 8 CP).
+- ✅ `docs/agents/teams/02_INHERITED_BLUEPRINT_SLICES.md` v1.0 LOCKED.
+- ✅ `docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` v1.0 LOCKED.
+- ✅ `docs/agents/teams/slices/slice_backend.md` v1.0 LOCKED.
+- ✅ `docs/agents/teams/prompts/02_backend_money_compatibility_lead.md` activación prompt.
+- ✅ `progress/SESSION_LOG.md` últimas 5 entries (BANK-DB.3 → BANK-DB.4 → BANK-DB.CLOSE H1 founder APPROVED 2026-05-06).
+- ✅ Workspace memories MEMORY[bank.md] + DB Lead Standby memories.
+
+##### 2. Handoff H1 package + upstream LOCKED contracts
+
+- ✅ `docs/agents/teams/handoffs/h1_db_to_backend/README.md` (package completo).
+- ✅ `docs/agents/teams/handoffs/h1_db_to_backend/sign_off.md` (DB Lead ✅ + Founder APPROVED ✅).
+- ✅ `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL (3574 líneas — §22-§29 Bank Phase A scope).
+- ✅ `progress/BENCHMARK_BANK_DB_v1.md` v0.5 (analysis estructural + condicional clauses).
+- ✅ `docs/agents/teams/issues/issue_001_sonar_companies_pending.md` (opaque company_id Q-DB-E).
+- ✅ Migrations 010-028 inventario.
+- ✅ Existing resources `resources/sonar_bridges/` + `resources/sonar_bank/` + SSoTs canonical pre-extends.
+
+##### 3. Cuestionamientos preliminares al blueprint — 12 Q-BE-pre founder LOCKED 2026-05-06
+
+| Q | Decisión founder |
+|---|---|
+| Q-BE-pre-01 FSMs | **8 FSMs LOCKED**. credit_score_recompute + audit_archive **DEFERRED Phase B**. |
+| Q-BE-pre-02 compliance StateBag privacy | **Reduced public bag** + admin NetEvents detail. |
+| Q-BE-pre-03 escrow StateBag privacy | **NO StateBag global**. Discrete NetEvents directos. |
+| Q-BE-pre-04 callback granularity | **Granular (~40)** mantenido. |
+| Q-BE-pre-05 watchdog approach | **B + C combinados** (Sentinel Attribute + Métrica Indirecta). |
+| Q-BE-pre-06 idempotency storage | **DB persistent + result_payload JSON cached**. |
+| Q-BE-pre-07 sonar_companies workaround | **passthrough + warn log Phase A**. |
+| Q-BE-pre-08 benchmark execution | **Opción C** — standalone Lua + mock + estimación fundada flagged. |
+| Q-BE-pre-09 ADR-018 sign-off | Compilar canonical BANK-BE.0 + firmar H2. |
+| Q-BE-pre-10 git branch | `feature/bank-backend-phase-a` + stash frontend WIP. |
+| Q-BE-pre-11 Bridges API extends | Extender existing API sin breaking. |
+| Q-BE-pre-12 resource scope split | Callbacks NEW → `sonar_bank_app/server/`. Libs core → `sonar_bridges/`. |
+
+##### 4. Git ops
+
+- ✅ `git stash push -u -m "tablet WIP pre BANK-BE.0 (frontend domain — eslint+favicon+nui)"` recoverable `stash@{0}` (6 archivos: eslint.config.js + favicon.svg + BankOverview.tsx + button.tsx + TabletRouter.tsx + nui.ts).
+- ✅ `git checkout -b feature/bank-backend-phase-a` (branched off `feature/bank-db-phase-a` commit `d8e71c4`).
+- ✅ Working tree limpio en branch nuevo (untracked `cache/` + `simple-ref-bank-ui/` ignored — pre-existing artifacts no scope).
+
+##### 5. Research time-box (60-90 min) — primitivas modernas FiveM
+
+- ✅ Consultadas docs.fivem.net oficial + cookbook + natives.
+- ✅ Findings consolidados en `docs/agents/teams/drafts/be_phase_a/research_notes.md`:
+  - State bags policy confirmation: write-side server-only, **read-side broadcast all clients sin filter** → privacy boundary CP1-A/B refinement.
+  - `sv_experimentalStateBagsHandler` (v8510+, default TRUE).
+  - `sv_experimentalNetGameEventHandler` (v9149+, default TRUE desde Jul 2025, auto-opts in others).
+  - `sv_enableNetworkedScriptEntityStates` (v8540+, default TRUE).
+  - Routing buckets — defer Phase D (no scope Phase A).
+  - ResourceKvp persistence — usado para `sonar_bank_disabled` flag CP4 + watchdog cached state.
+  - `Citizen.SetTimeout` vs `CreateThread` — watchdog progressive dual-tier 30s + 5min + 30min.
+  - onResourceStart + dependency declarations boot ordering.
+  - NetEvents `RegisterServerEvent` / `RegisterNetEvent` / `AddEventHandler` / `TriggerLatentClientEvent` use cases.
+  - Lazy resource start patterns (defensive boot).
+  - Net event reassembly + payload size budgets per callback.
+  - UUID v4 spec — lib propia `sonar_bridges/lib/uuid.lua`.
+
+##### 6. DRAFT v0.1 deliverables (3/5 contratos + ADR-018)
+
+**Strategy decision (🟡 deviation profesional respecto a DB Lead pattern):** DRAFTs viven en `docs/agents/teams/drafts/be_phase_a/` aislados durante review window. Promotion atómica a paths canonical post-LOCKED H2 ceremony. Razón: Backend extiende 4 archivos canonical distintos (vs DB Lead 1 archivo) — DRAFT directory dedicado evita pollution canonical pre-LOCKED + diff-friendly review + reversibilidad cero coste.
+
+Archivos creados:
+
+- ✅ `docs/agents/teams/drafts/be_phase_a/README.md` — index + sign-off matrix targets + deviation rationale + cuestionamientos resueltos.
+- ✅ `docs/agents/teams/drafts/be_phase_a/research_notes.md` — research time-box findings consolidados.
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_05_statebags_global_publishers.md` — **C-BE-05 DRAFT v0.1**:
+  - CP1 redefinido sub-tracks A/B per privacy boundary.
+  - 7 public bags (CP1-A) — balance + savings + business_treasury + compliance reduced + tax_brackets + bridges_status + elections + recurring summary.
+  - 7 restricted NetEvent domains (CP1-B) con ACE check server-side.
+  - Naming convention `bank.<domain>.<id>[.<sub>]`.
+  - Lifecycle bags (boot init + update on mutation + cleanup + hot-reload).
+  - Performance budget (<10/sec sustained, <100/sec burst).
+  - Security threats + mitigations.
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_03_state_machines_v1_1.md` — **C-BE-03 DRAFT v0.1** (joint Backend + DB Lead):
+  - **8 FSMs LOCKED** (Q-BE-pre-01 founder approved) — escrow_lifecycle (6 states) + loan_lifecycle (7 states) + recurring_lifecycle (5 states) + physical_card_lifecycle (5 states) + election_lifecycle (6 states Q1) + business_treasury_approval_lifecycle (5 states) + sonar_bank_status (CP8 4 states) + idempotency_key_lifecycle (3 states).
+  - **Deferred Phase B:** credit_score_recompute + audit_archive + contract_lifecycle separate + dispute_lifecycle separate.
+  - Transitions tables + invariants + side effects + persistence column refs (DB migrations 010-028).
+  - Cross-FSM cascade rules (`sonar_bank_status` global → all FSMs paused on disabled).
+  - Lib runtime spec pattern.
+  - Anti-patterns prohibidos.
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_04_bridges_v1_1.md` — **C-BE-04 DRAFT v0.1** (architectural foundation):
+  - **9 NEW principles B8-B16** integrating 8 CP + Q-BE-pre LOCKED.
+  - Resource topology canonical: sonar_bridges (libs core) + sonar_bank (existing extends) + sonar_bank_app (NEW Q-BE-pre-12).
+  - Boot sequence 9 steps (oxmysql → ox_lib → sonar_core → sonar_bridges defensive boot CP4 → sonar_bank → sonar_bank_app).
+  - Bridges API canonical extends (NEW `opts` parameter + `Bridges.BankStatus.*` + `Bridges.UUID.v4`) — Q-BE-pre-11 backwards compatibility.
+  - Core Override module spec (QBox/QBCore monkey-patch metatable proxy + sentinel attribute B).
+  - Lite Mode module spec ESX 1.10+ Triple Capa (Event Hooking + Mutex Echo + Reconciliation Async).
+  - Correlation-ID Mutex lib spec (CP2 path #1 only — UUID v4 metadata, NO TTL, NO hash-fallback).
+  - Reconciliation Pipeline lib spec (CP3 + CP5 + CP6 — async queue + batch SQL + cache LRU + trust window 5min + threshold €1000 + scope main only).
+  - Defensive Boot module (CP4) — 3-method framework detect + KVP graceful disable + watchdog progressive (B+C).
+  - Cut ESX legacy <1.10 oficial — defensive abort + KVP + console banner.
+- ✅ `docs/planning/02_decision_log_part2.md` v1.0 → **v1.1** — **ADR-018 redactado canonical Proposed**:
+  - 4 decisiones architectural (A: Core Override / B: Lite Mode Triple Capa / C: Cut ESX legacy / D: 8 CP integrated / E: Privacy refinement Q-BE-pre-02/03).
+  - 5 alternativas consideradas + rechazadas (hash mutex / TTL mutex / monolithic sin Bridges / TriggerClientEvent manual / unbounded reconciliation).
+  - Consecuencias positivas + negativas + re-evaluation triggers.
+  - Impact downstream cada Lead.
+  - Sign-off target H2 ceremony.
+  - Cross-references blueprint + brief + drafts + schema.
+
+##### 7. Deferred a BANK-BE.1 next session (scope realista per token budget)
+
+- 🔴 **C-BE-01 Events Catalog v1.3 DRAFT v0.1** — NetEvents Bank Phase A + cross-ref C-BE-05 statebags-global-publishers sub-section.
+- 🔴 **C-BE-02 API Contracts v1.3 DRAFT v0.1** — ~40 callbacks documentados (auth + rate-limit + idempotency + side effects + error codes + perf targets + test scenarios).
+
+Razón sequencing: C-BE-01 events depende del shape final C-BE-05 (NetEvents fire patterns). C-BE-02 API callbacks ref FSM states (C-BE-03) + StateBag emit patterns (C-BE-05) + Bridges API (C-BE-04). Foundation BANK-BE.0 estable → BANK-BE.1 produce events + API con coherencia cross-doc.
+
+#### Outcomes
+
+- **Backend Lead activado + ownership formal H1 issue #001 + 9 libs canonical commitments + condicional clauses LOCKED PROVISIONAL benchmark scope.**
+- **Branch `feature/bank-backend-phase-a` creado + stash frontend recoverable + working tree limpio.**
+- **Research time-box documented** — primitivas FiveM modernas validadas (privacy boundary StateBags + convars defaults + watchdog primitives + lib structure).
+- **3/5 contratos DRAFT v0.1 entregados** (C-BE-04 architectural + C-BE-05 statebags privacy + C-BE-03 fsms joint).
+- **ADR-018 redactado canonical Proposed** — sign-off target H2 ceremony Backend Lead → Security Lead.
+- **Strategy DRAFT directory aislado** documentada en `drafts/be_phase_a/README.md` con deviation rationale (atomicity LOCKED + diff-friendly review + reversibilidad cero coste vs DB Lead inline pattern).
+
+#### Pendientes próximos
+
+1. **Founder review BANK-BE.0 deliverables** + green-light continuation BANK-BE.1.
+2. **Founder ratify ADR-018** (proposed → accepted target H2; pre-H2 sign optional vía founder explicit approval).
+3. **Review consultative consumer Leads** (DB Lead joint sign-off C-BE-03 — Standby reactivation needed; Security Lead consultative pending H2 activation; Frontend Lead consultative pending H3 activation; DevOps Lead consultative pending H4 activation).
+4. **BANK-BE.1 deliverables:** C-BE-01 + C-BE-02 + (potencialmente) DRAFT v0.2 iterations sobre C-BE-03/04/05 según feedback founder + DB Lead.
+5. **Commit BANK-A.5 backend draft v0.1** — pending founder explicit approval push to origin (per workspace rule "NUNCA push código que rompe boot del server" + "comandos destructivos sin aprobación founder").
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-BE.1** — DRAFT v0.1 Events Catalog + API Contracts (40 callbacks).
+- Pre-requisite: founder review BANK-BE.0 deliverables + (opcional) sign-off pre-H2 sobre C-BE-03/04/05 + ADR-018.
+- Inputs Backend Lead BANK-BE.1: leer en orden mandatory `.windsurf/rules/bank.md` (workspace rules already memoryfied) + `docs/agents/teams/drafts/be_phase_a/README.md` v0.1 + `docs/agents/teams/drafts/be_phase_a/c_be_03/04/05_*.md` (foundation drafts) + `docs/planning/02_decision_log_part2.md` ADR-018 + handoff H1 cross-ref schema v2.0 LOCKED PROVISIONAL §22-§29.
+- Goal: completar 5/5 contratos DRAFT v0.1 ready for review window + sign-off triple cycle.
+- Estimado: ~6-8h (C-BE-02 40 callbacks documentados es el chunk grande).
+
+#### Files modificados / creados sesión BANK-BE.0
+
+##### NEW (DRAFT v0.1)
+
+- ✅ `docs/agents/teams/drafts/be_phase_a/README.md` (NEW — index DRAFT + deviation rationale).
+- ✅ `docs/agents/teams/drafts/be_phase_a/research_notes.md` (NEW — research time-box findings).
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_05_statebags_global_publishers.md` (NEW — C-BE-05 v0.1).
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_03_state_machines_v1_1.md` (NEW — C-BE-03 v0.1 joint).
+- ✅ `docs/agents/teams/drafts/be_phase_a/c_be_04_bridges_v1_1.md` (NEW — C-BE-04 v0.1).
+
+##### MODIFIED
+
+- ✅ `docs/planning/02_decision_log_part2.md` v1.0 → **v1.1** — ADR-018 redactado proposed (TL;DR table extends + ADR detail § ~150 líneas + FIN bumped).
+- ✅ `progress/SESSION_LOG.md` — entry BANK-BE.0 (esta append).
+
+##### NO TOUCHED (preserved canonical pre-LOCKED)
+
+- 🔒 `docs/technical/02_events_catalog.md` v1.2 (canonical preserved hasta promotion H2).
+- 🔒 `docs/technical/04_api_contracts.md` v1.2 (canonical preserved).
+- 🔒 `docs/technical/05_state_machines.md` v1.2 (canonical preserved — DRAFT v0.1 vive en drafts/).
+- 🔒 `docs/technical/07_bridges_compatibility.md` v1.2 (canonical preserved).
+- 🔒 `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL (DB Lead deliverable, no Backend touch).
+
+— **Backend Lead BANK-BE.0 close 2026-05-06 ~07:55 UTC+02. DRAFT v0.1 review window opens. BANK-BE.1 pending founder green-light.**

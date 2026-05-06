@@ -244,9 +244,166 @@ Tags reutilizados desde `02_decision_log.md` v1.5:
 | ID | Título | Estado | Tags |
 |---|---|---|---|
 | **ADR-016** | SONAR Identity v3 firmable + doctrine palette/dark/stack/perf locked (amends ADR-011 + ADR-012) | ✅ accepted | identity, branding, aesthetic, palette, dark_mode, trend_stack, nui_perf, stack_frozen, amendment, foundational |
+| **ADR-018** | Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns (CP1-CP8) | 🟡 proposed (BANK-BE.0 redactado) | bank, compatibility, lite_mode, mutex, statebags, reconciliation, watchdog, cut_esx_legacy, foundational |
+
+---
+
+### ADR-018 — Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns
+
+- **ID:** ADR-018
+- **Título:** Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns (CP1-CP8)
+- **Fecha:** 2026-05-06 (BANK-BE.0 redactado canonical post Q-BE-pre-09 founder green-light)
+- **Estado:** 🟡 **proposed** — sign-off triple target H2 ceremony Backend Lead → Security Lead.
+- **Tags:** bank, compatibility, lite_mode, mutex, statebags, reconciliation, watchdog, cut_esx_legacy, foundational, amendment_anti_techdebt
+- **Author:** Backend Money & Compatibility Lead (Cascade Sonnet 4.6 — sesión BANK-BE.0).
+
+#### Contexto
+
+El blueprint Bank app v1.2 (`@docs/design/proposals/03_bank_app_blueprint_v1.md`) §11 documentó audit Q16 sobre estrategia de compatibilidad multi-framework FiveM (QBox / QBCore / ESX) para SONAR Bank. Founder yaboula ratificó decisiones canonical 2026-05-06 (Q16 LOCKED + 8 Counter-Proposals CP1-CP8 accepted).
+
+El handoff H1 (DB Lead → Backend Lead 2026-05-06 founder APPROVED) entregó schema v2.0 LOCKED PROVISIONAL incorporando 8 CP a nivel DDL (audit ledger inmutable + compliance flags + status FSM + idempotency keys + reconciliation index). Backend Lead sesión BANK-BE.0 compila este ADR-018 redactado canonical para registrar **decisión arquitectónica formal** sobre el approach Lite Mode + correlation-id mutex + cut ESX legacy + 8 CP, con sign-off target en handoff H2 Backend → Security.
+
+#### Decisión
+
+SONAR Bank Phase A adopta como arquitectura compatibility **definitiva**:
+
+##### A. Frameworks Modernos (QBox / QBCore) → "Core Override"
+
+Estrategia **runtime monkey-patch** RAM de las funciones nativas de dinero del framework (`Player.Functions.AddMoney/RemoveMoney/GetMoney/SetMoney`). Implementación vía **metatable proxy** + **sentinel attribute** (`QBCore.__sonar_patched = { applied_at, version, sentinel_signature }`) detectable por watchdog para integrity verification post-boot.
+
+Resultado:
+- SONAR es motor nativo del dinero bancario.
+- Performance perfecto (zero overhead vs framework directo).
+- Dominio total de la base de datos (DB authoritative source).
+- Re-direction transparente para consumer code que use API native framework.
+
+##### B. Framework Clásico (ESX 1.10+ ONLY) → "Modo Lite Triple Capa"
+
+**Capa A — Event Hooking + Correlation-ID Mutex (path #1 ONLY):**
+- Listener `esx:setAccountMoney` server-side.
+- Inyección UUID v4 en metadata `reason` field cada mutación SONAR-initiated (`reason|sonar_correlation:<uuid>`).
+- Listener detecta echo propio vía `MutexEcho.is_pending_echo(correlation_id)` + drop sin reconciliation.
+- **NO TTL-based mutex.** **NO hash-fallback.**
+
+**Capa B — Mapeo Híbrido Estricto:**
+- `account_class = 'main'` → ESX `users.accounts` (anchor) + SONAR `sonar_bank_accounts` espejo.
+- `account_class ∈ {'savings', 'escrow', 'business_treasury', 'crypto_wallet'}` → SONAR-only (premium tiers exclusivos `sonar_bank_accounts`).
+
+**Capa C — Reconciliación Activa Async:**
+- Queue async + batch SQL multi-row + cache LRU + trust window 5min.
+- Performance target 200 concurrent <500ms p99 (Q16.5 + CP3).
+- Threshold auto-apply €1000 (CP5). Sobre threshold → admin flag queue (`sonar_bank_compliance_flags`).
+- Scope `account_class = 'main'` only (CP6) — premium tiers excluidos.
+
+##### C. Cut ESX Legacy <1.10 OFICIAL
+
+Defensive boot abort si detected. KVP `sonar_bank_disabled = 'unsupported_esx_legacy'` set + console banner crítico. Fundamento técnico: ESX <1.10 no soporta metadata en transferencias (forzaría hash-based mutex + código espagueti). Fundamento negocio: ~5% mercado mercado obsoleto pre-2019, reducción tickets soporte + cero bugs fantasma + código limpio premium.
+
+##### D. 8 Counter-Proposals integradas (CP1-CP8)
+
+| CP | Mecanismo | Owner |
+|---|---|---|
+| **CP1** State Bags global | Bank state mutations emit `GlobalState[bank.<domain>.<id>] = value` (CP1-A público) o discrete NetEvent ACE-checked (CP1-B admin/participant only — privacy refinement Q-BE-pre-02/03). | Backend Lead |
+| **CP2** Correlation-ID Mutex | Path #1 only — UUID v4 metadata. NO hash-fallback. NO TTL. | Backend Lead |
+| **CP3** Reconciliation Async Pipeline | Queue + batch SQL + cache LRU + trust window 5min. <500ms p99 200 concurrent. | Backend Lead + DB Lead joint |
+| **CP4** Defensive Boot + Watchdog | 3-method framework detect + watchdog progressive (B+C combined: sentinel attribute + métrica indirecta) + KVP graceful disable + console banner crítico. | Backend Lead + DevOps Lead |
+| **CP5** Reconciliation Threshold | €1000 default auto-apply. Sobre threshold → admin flag queue. | Backend Lead |
+| **CP6** Reconciliation Scope | Solo `account_class = 'main'`. Premium tiers SONAR-only. | Backend Lead |
+| **CP7** README + convars | `sv_experimentalStateBagsHandler` + `sv_experimentalNetGameEventHandler` + `sv_enableNetEventReassembly` defaults TRUE. | DevOps Lead |
+| **CP8** Lite mode FSM + UI badge | FSM `sonar_bank_status` 4 states (`native_full` / `lite_mode_active` / `compromised_load_order` / `framework_missing`) + UI badge always visible Bank app sidebar footer. | Backend Lead (FSM) + Frontend Lead (UI) |
+
+##### E. Privacy refinement (Q-BE-pre-02/03 founder LOCKED 2026-05-06)
+
+CP1 redefinido sub-tracks A/B per privacy boundary:
+- **CP1-A público:** balance + counts + status flags-bool → GlobalState aceptable (read-side broadcast all clients OK).
+- **CP1-B admin/participant only:** detalle compliance flags + escrow state + audit ledger raw queries → discrete NetEvents `TriggerLatentClientEvent(target_source, payload)` + ACE check server-side ANTES de fire.
+
+Justificación: docs.fivem.net confirma read-side global state es **broadcast a todos los clients sin filtrado nativo**. Datos sensibles en GlobalState = leak. Spec C-BE-05 implementa contract.
+
+#### Alternativas consideradas + rechazadas
+
+##### Alt 1 — Hash-based mutex code path (CP2 path #2)
+
+- **Por qué se consideró:** ESX legacy <1.10 no soporta metadata → mutex via hash signature `sha256(player_id + amount + timestamp_floor_to_1s)` para detectar echo events.
+- **Por qué rechazado:** code path complex + tech debt + brittle (1s timestamp floor genera false positives). Cut ESX legacy elimina necesidad. Q16 LOCKED founder approved cut.
+
+##### Alt 2 — TTL-based mutex (5s window)
+
+- **Por qué se consideró:** simpler semantic — block events 5s post mutación.
+- **Por qué rechazado:** false positives en bursts payroll (50 employees simultaneous) + falla durante lag spikes. Correlation-id metadata es deterministic + zero false positives.
+
+##### Alt 3 — Single resource monolithic (sin Bridges Layer)
+
+- **Por qué se consideró:** simpler boot.
+- **Por qué rechazado:** rompe ADR-009 Bridges Layer foundational principle. Acopla SONAR a 1 framework. Refactor cost masivo Phase B+. Inviable comercialmente (multi-framework support es selling point premium).
+
+##### Alt 4 — TriggerClientEvent manual publishers Bank state (pre-CP1 approach)
+
+- **Por qué se consideró:** familiar pattern.
+- **Por qué rechazado:** CP1 mandatory — StateBags global native superior (engine-managed serialization + native auth + lower bandwidth + reactive client side). Q16 LOCKED.
+
+##### Alt 5 — Reconciliation auto-apply unbounded
+
+- **Por qué se consideró:** "trust the framework".
+- **Por qué rechazado:** silent evaporation risk if external resource bug emit large erroneous mutation. CP5 threshold €1000 + admin flag queue protege player money + audit trail trust.
+
+#### Consecuencias
+
+##### Positivas
+
+- **Performance perfecto QBox/QBCore** via Core Override (zero overhead vs native framework).
+- **Compatibilidad ESX 1.10+** sin sacrificar features Bank premium (savings + escrow + business + crypto).
+- **Eliminación tech debt** — sin code paths legacy ESX <1.10 + sin hash mutex + sin TTL mutex.
+- **Privacy by design** — CP1-A/B split protege detalle compliance + escrow shared state.
+- **Defense in depth** — 4 layers (defensive boot + correlation-id mutex + reconciliation pipeline + watchdog progressive) anti silent corruption.
+- **Transparencia UX** — UI badge `sonar_bank_status` always visible + admin flag queue visible compliance flags page.
+- **CDD compliance** — 18 contratos LOCKED firma garantiza interfaces estables.
+
+##### Negativas
+
+- **~5% mercado pérdida** (servidores ESX <1.10 obsoleto pre-2019). Founder accept Q16.1.
+- **Boot complexity** — 3-method framework detect + watchdog progressive + KVP graceful disable add code surface (mitigated por testing matrix C-DO-01 DevOps).
+- **Backend code surface** — 4 NEW libs canonical (`sonar_bridges/lib/` mutex_echo + reconciliation + idempotency_keys + audit_ledger) + 4 module servers (core_override + lite_mode + watchdog + bank_status_publisher). Risk under-test or boot failure (mitigated CP4 defensive + smoke chaos test C-DO-01).
+- **DB pressure** — reconciliation queue + audit ledger append-only + idempotency keys table grow. Mitigations: partitioning (DB Lead Q-DB-G partitions Dec 2027) + cron TTL purge idempotency 7d (DevOps).
+
+##### Re-evaluation triggers
+
+- Backend Lead post-H1 reporta benchmark fail Q-BE-pre-08 Opción C — AMENDMENT v2.1 schema (DB Lead Standby reactivation per condicional clauses).
+- Security Lead H2 audit detecta vulnerability watchdog logic — propose AMD_ADR-018_<date>.md.
+- Founder Phase B requires re-enable ESX <1.10 (improbable) — major amendment con full impact analysis.
+- New FiveM primitive published que mejora correlation-id mechanism (e.g. native event metadata standardization) — minor amendment.
+
+#### Impact downstream
+
+| Lead | Impact |
+|---|---|
+| **DB Lead (Standby)** | Schema v2.0 LOCKED PROVISIONAL ya entregado supports ADR-018 (audit ledger + compliance flags + status FSM + idempotency keys + reconciliation indexes). Reactivation triggers per H1 §6 condicional clauses. |
+| **Backend Lead (this)** | Implementa C-BE-04 Bridges spec + C-BE-05 StateBags + C-BE-03 FSMs + libs canonical + boot sequence. |
+| **Security Lead (post-H2)** | Audit watchdog logic + ACE matrix Core Override compromise scenarios + autoraise rules canonical (5 patrones Q10) + audit hooks integration. |
+| **Frontend Lead (post-H3)** | Consume `bank.bridges.status` StateBag + UI badge always visible CP8 + Q16.3 + ADR-017 paleta extendida. |
+| **DevOps Lead (post-H4)** | fxmanifest dependencies + load order + smoke chaos test multi-framework matrix (QBox + QBCore + ESX 1.10+ + ESX legacy intentional FAIL boot expected) + README install convars + sub-tag `bank-phase-a`. |
+
+#### Sign-off target H2
+
+- ☐ **Founder yaboula** — final approval ADR-018 + ratify Q-BE-pre-* decisions LOCKED.
+- ☐ **Backend Lead (proposer)** — already self-attested via DRAFT v0.1 BANK-BE.0.
+- ☐ **Security Lead** — accept watchdog logic + ACE checks + threat model.
+- ☐ **DevOps Lead** — accept fxmanifest + load order + boot sequence + convars CP7.
+
+#### Cross-references
+
+- Blueprint v1.2 Q16 audit completo: `@docs/design/proposals/03_bank_app_blueprint_v1.md:2496-2942`.
+- Brief §3.2-3.4: `@docs/agents/teams/01_SHARED_BRIEF.md` (decisiones Q16 + sub-questions Q16.1-Q16.6 + 8 CP table).
+- C-BE-04 Bridges Compatibility v1.1 DRAFT: `@docs/agents/teams/drafts/be_phase_a/c_be_04_bridges_v1_1.md`.
+- C-BE-05 StateBags Global Publishers DRAFT: `@docs/agents/teams/drafts/be_phase_a/c_be_05_statebags_global_publishers.md`.
+- C-BE-03 State Machines v1.1 DRAFT (CP8 FSM): `@docs/agents/teams/drafts/be_phase_a/c_be_03_state_machines_v1_1.md`.
+- Research notes FiveM primitives: `@docs/agents/teams/drafts/be_phase_a/research_notes.md`.
+- Schema DB v2.0 LOCKED PROVISIONAL `@docs/technical/03_db_schema.md` §22-§29 (CP support DDL).
+- ADR-009 (Bridges Layer foundational): `@docs/planning/02_decision_log.md` ADR-009.
+- ADR-013 (namespace migration `sonar_*`): `@docs/planning/02_decision_log.md` ADR-013.
 
 ---
 
 *"Decisiones sin registro son decisiones perdidas. Continuidad mantiene la memoria viva."*
 
-**FIN DEL DOCUMENTO `02_decision_log_part2.md` v1.0**
+**FIN DEL DOCUMENTO `02_decision_log_part2.md` v1.1** (post ADR-018 proposed BANK-BE.0)
