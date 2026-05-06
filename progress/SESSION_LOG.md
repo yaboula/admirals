@@ -963,3 +963,70 @@ Backend Lead transitiona a **Standby** post-BANK-BE.LOCK. Reactivation triggers 
 - ðŸ”’ `docs/agents/teams/handoffs/h2_backend_to_security/sign_off.md` Backend self-attested + Founder APPROVED.
 
 — **Backend Lead BANK-BE.LOCK close 2026-05-06. Phase A CLOSED. 5 contratos C-BE-01..05 v1.0 LOCKED. 4 SSoTs canonical v1.3 LOCKED. Handoff H2 EMITTED to Security Lead. Backend Lead Standby ACTIVE.**
+
+---
+
+### BANK-SEC.0 — Security, Compliance & Audit Lead — H2 audit execution + C-SEC-01/02/03 DRAFT v0.1
+
+- **Fecha:** 2026-05-06
+- **Duración:** ~2.5h
+- **Founder + Agent:** yaboula + Cascade
+- **Sprint / Phase:** Phase A / BANK-SEC.0
+- **Perfil:** SEC (Security, Compliance & Audit Lead)
+- **Goal:** Onboarding 10 SSoTs + deep adversarial audit 5 contratos Backend Lead + deliver C-SEC-01 Audit Hooks Catalog + C-SEC-02 ACE Permissions Matrix + C-SEC-03 Autoraise Rules + findings + exploit prevention checklist + watchdog spec.
+- **Status:** ✅ Done
+
+#### Outcomes
+
+- ✅ Research FiveM attack vectors completado (`06_fivem_standards.md` T1-T15 threat model mapped).
+- ✅ Auditoría crítica profunda C-BE-02 (6 hallazgos: H001 auth nil bypass, H006 audit double-entry incompleta, M001 RAM-only rate-limit, M002 UUID entropía, M003 recursive audit DDoS, M006 ATM HMAC secret).
+- ✅ Auditoría crítica profunda C-BE-04 (4 hallazgos: H002 BankStatus.Transition sin auth, H003 sentinel mutable, H004 SQL injection reconciliation, M007 watchdog metrica C no aborta, M008 MutexEcho delimiter collision).
+- ✅ Auditoría C-BE-01 (2 hallazgos: L001 schema_version enforcement ausente, L002 event loss admin disconnect).
+- ✅ Auditoría C-BE-03 (2 hallazgos: H005 escrow zero-amount release, M005 idempotency locked orphan keys).
+- ✅ Auditoría C-BE-05 (1 hallazgo: M004 StateBag balance expuesto globalmente).
+- ✅ DRAFT v0.1 `docs/technical/08_audit_hooks.md` creado (343 líneas): C-SEC-01 (12 hooks) + C-SEC-02 (12 ACE perms mapeados a C001-C040) + C-SEC-03 (5 autoraise patterns) + §4 (16 findings: 6 HIGH + 8 MEDIUM + 2 LOW) + §5 exploit prevention checklist + §6 watchdog spec dual-tier.
+
+#### Done criteria
+
+- [x] Onboarding 10 SSoTs obligatorios ✅ evidencia en lectura completa handoff H2 + contratos C-BE-01..05 + 06_fivem_standards.md.
+- [x] Deep audit 5 contratos con severidad CRITICAL/HIGH/MEDIUM/LOW ✅ evidencia §4 08_audit_hooks.md.
+- [x] Entrega C-SEC-01/02/03 DRAFT v0.1 ✅ evidencia `docs/technical/08_audit_hooks.md`.
+- [x] Watchdog Core Override Compromise Detection Spec ✅ evidencia §6 08_audit_hooks.md.
+
+#### Anti-tech-debt verification
+
+- [x] All commitments respected.
+- [x] NO ESX legacy <1.10 fallback (audit only, no code).
+- [x] NO multidivisa Phase A.
+- [x] NO TriggerClientEvent manual Bank state (en spec prohibido §5).
+- [x] NO hash-mutex code path (CP2 path #1 only documentado).
+- [x] NO reconciliation sync inline (CP3 async confirmed).
+- [x] NO server boot sin defensive check (CP4 watchdog spec §6).
+- [x] Idiomas docs ES + code EN estricto.
+- [x] Cross-references blueprint citadas con `@path:LINE`.
+- [x] Sin scope creep cross-team.
+
+#### Files in scope respetados
+
+- ✅ NO toco: contratos LOCKED upstream C-BE-01..05, schema DB v2.0, SSoTs canonical padre.
+- ✅ Modificados: `docs/technical/08_audit_hooks.md` (nuevo, 343 líneas).
+
+#### Open questions / deferred
+
+- OQ-SEC-01: M004 StateBag `bank.balance.<cid>` exposición global — requiere founder decisión arquitectónica (CP1-B vs CP1-A privacy trade-off). Deferred a Amendment Round 1 o H3.
+- OQ-SEC-02: Rate-limit buckets RAM-only (M001) — ADVISORY, no bloquea H3. Persistencia KVP/DB considerar Phase B.
+- OQ-SEC-03: Admin event loss sin queue (L002) — ADVISORY. Queue persistente Phase B.
+- OQ-SEC-04: ATM HMAC secret rotation procedimiento — necesita runbook DevOps H4. Deferred.
+
+#### Pendientes próximos
+
+1. **Backend Lead Amendment Round 1** (trigger #1/#2 activado por founder): parchear C-BE-02 §2.3 (H001), §9.31 (M006), §9.35.7 (M003), §5.2 (M002), §6.1/§9.38 (H006); C-BE-03 §2.2 (H005), §9.2 (M005); C-BE-04 §5.1 (H002), §4.2/§4.3 (H003), §7.1 (H004), §8.3 (M007), §6.1 (M008).
+2. Security Lead re-evaluación post-amendment (BANK-SEC.1) para ratificar C-SEC-01/02/03 -> SIGNOFF -> LOCKED.
+3. H3 emission Security -> Frontend Lead post-audit completion + C-SEC LOCKED.
+
+#### Próxima sesión sugerida
+
+- Session ID: BANK-SEC.1
+- Goal: Re-evaluación post-Amendment Round 1 Backend Lead. Verificar parches H001-H006 + M001-M008 aplicados. Ratificar C-SEC-01/02/03 -> SIGNOFF -> LOCKED v1.0.
+- Modelo sugerido: Cascade (continuity)
+- Files in scope: `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` (amended), `docs/technical/bank_phase_a/c_be_03_state_machines_v1_1.md` (amended), `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` (amended), `docs/technical/08_audit_hooks.md` (SEC contracts ratification).
