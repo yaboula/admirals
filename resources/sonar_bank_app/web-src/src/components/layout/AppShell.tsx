@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { RouteTransition } from './RouteTransition'
 import { ToastContainer } from './ToastContainer'
+import { OnboardingOverlay } from '@/components/onboarding/OnboardingOverlay'
 import { AuroraBackground } from '@/components/vanguard/AuroraBackground'
 import { useBootstrap } from '@/data/queries'
 import { useBankSession } from '@/stores/session'
@@ -24,7 +25,7 @@ import { isMockMode } from '@/lib/env'
  * overflow declare inner scroll containers explicitly.
  */
 export function AppShell() {
-  const { isError, error, refetch } = useBootstrap()
+  const { data, isError, error, refetch } = useBootstrap()
   const citizenId = useBankSession((s) => s.citizenId)
 
   useEffect(() => {
@@ -86,6 +87,7 @@ export function AppShell() {
       </div>
 
       <ToastContainer />
+      <OnboardingOverlay primaryIban={data?.accounts[0]?.iban} />
     </div>
   )
 }
