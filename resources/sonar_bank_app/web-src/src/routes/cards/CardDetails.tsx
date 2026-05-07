@@ -100,114 +100,150 @@ export function CardDetails({ card, className }: CardDetailsProps) {
     : 0
 
   return (
-    <Card variant="glass" padding="md" className={cn('border-white/10 flex flex-col gap-3 2xl:gap-4', className)}>
-      {/* Header — design name + tier + status pill */}
-      <motion.div
-        key={card.card_id}
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22 }}
-        className="flex items-start justify-between gap-3"
-      >
-        <div className="flex flex-col leading-tight min-w-0">
-          <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-            Diseño
-          </span>
-          <span className="text-sm font-semibold text-text-primary tactile-wght-breathing tracking-tight truncate">
-            {design.name}
-          </span>
-        </div>
-        <StatusPill status={card.status} />
-      </motion.div>
+    <Card
+      variant="glass"
+      padding="none"
+      className={cn('relative overflow-hidden border-white/10 rounded-[1.75rem] flex flex-col', className)}
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 82% 0%, color-mix(in oklch, ${design.accent} 20%, transparent), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 56%)`,
+        }}
+      />
+      <div className="relative flex h-full min-h-0 flex-col gap-3 p-4 2xl:gap-4 2xl:p-5">
+        <motion.div
+          key={card.card_id}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="rounded-[1.35rem] border p-3.5 2xl:p-4"
+          style={{
+            background: 'oklch(1 0 0 / 0.035)',
+            borderColor: 'oklch(1 0 0 / 0.08)',
+            boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.06)',
+          }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-2">
+              <div className="inline-flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    background: design.accent,
+                    boxShadow: `0 0 14px -2px ${design.accent}`,
+                  }}
+                />
+                <span className="text-[10px] uppercase tracking-[0.2em] text-text-tertiary font-semibold">
+                  Diseño activo
+                </span>
+              </div>
+              <div className="flex min-w-0 flex-col gap-1">
+                <span className="text-2xl 2xl:text-3xl font-light tracking-[-0.055em] text-text-primary truncate">
+                  {design.name}
+                </span>
+                <span className="text-[11px] text-text-tertiary truncate">
+                  {design.tagline} · ···· {card.pan_last_four}
+                </span>
+              </div>
+            </div>
+            <StatusPill status={card.status} />
+          </div>
+        </motion.div>
 
       {/* Meta grid — holder · expiry · linked iban · type */}
-      <dl className="grid grid-cols-2 gap-x-3 gap-y-2.5">
-        <MetaItem icon={User2} label="Titular" value={card.holder_name} />
-        <MetaItem icon={CalendarDays} label="Caduca" value={expiryStr} mono />
-        <MetaItem icon={Wallet} label="Vinculada" value={maskIbanShort(card.iban)} mono />
-        <MetaItem
-          icon={Sparkles}
-          label="Tipo"
-          value={typeLabel(card.card_type)}
-        />
-      </dl>
+        <dl className="grid grid-cols-2 gap-2.5">
+          <MetaItem icon={User2} label="Titular" value={card.holder_name} accent={design.accent} />
+          <MetaItem icon={CalendarDays} label="Caduca" value={expiryStr} accent={design.accent} mono />
+          <MetaItem icon={Wallet} label="Vinculada" value={maskIbanShort(card.iban)} accent={design.accent} mono />
+          <MetaItem
+            icon={Sparkles}
+            label="Tipo"
+            value={typeLabel(card.card_type)}
+            accent={design.accent}
+          />
+        </dl>
 
       {/* Limits preview — soft meters; full controls land in 4.3 */}
-      <div
-        className="rounded-xl p-3 flex flex-col gap-2.5"
-        style={{
-          background: 'oklch(1 0 0 / 0.025)',
-          border: '1px solid oklch(1 0 0 / 0.07)',
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-semibold">
-            Límites
-          </span>
-          <span className="text-[10px] text-text-tertiary opacity-70">
-            vista segura
-          </span>
-        </div>
+        <div
+          className="rounded-[1.35rem] p-3.5 flex flex-col gap-3 2xl:p-4"
+          style={{
+            background: 'oklch(1 0 0 / 0.035)',
+            border: '1px solid oklch(1 0 0 / 0.08)',
+            boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05)',
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-semibold">
+              Límites
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-text-tertiary">
+              vista segura
+            </span>
+          </div>
 
-        <Meter
-          label="Hoy"
-          spent={card.daily_spent_minor}
-          limit={card.daily_limit_minor}
-          pct={dailyPct}
-          accent={design.accent}
-        />
-        <Meter
-          label="Este mes"
-          spent={card.monthly_spent_minor}
-          limit={card.monthly_limit_minor}
-          pct={monthlyPct}
-          accent={design.accent}
-        />
-      </div>
+          <Meter
+            label="Hoy"
+            spent={card.daily_spent_minor}
+            limit={card.daily_limit_minor}
+            pct={dailyPct}
+            accent={design.accent}
+          />
+          <Meter
+            label="Este mes"
+            spent={card.monthly_spent_minor}
+            limit={card.monthly_limit_minor}
+            pct={monthlyPct}
+            accent={design.accent}
+          />
+        </div>
 
       {/* Benefits — tier-driven perks bring brand storytelling into the panel
           and naturally absorb any leftover vertical real-estate. */}
-      <BenefitsPanel tier={design.tier} accent={design.accent} className="flex-1 min-h-0" />
+        <BenefitsPanel tier={design.tier} accent={design.accent} />
 
       {/* Action row — Phase 4.3: all four actions are now LIVE.
           Reveal toggles a 30s window with countdown surfaced inline.
           Freeze/Unfreeze fires the optimistic mutation + toast feedback.
           Límites + Diseño open dialogs (LimitsModal / DesignPickerDialog). */}
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-2">
-          <ActionButton
-            icon={Eye}
-            label={
-              revealed
-                ? `Ocultar número · ${String(remainingSec).padStart(2, '0')}s`
-                : 'Ver número'
-            }
-            onClick={handleToggleReveal}
-            active={revealed}
-          />
-          <ActionButton
-            icon={RotateCw}
-            label={flipped ? 'Ver frente' : 'Ver reverso'}
-            onClick={() => toggleFlip(card.card_id)}
-            active={flipped}
-          />
-          <ActionButton
-            icon={freezePending ? Loader2 : Snowflake}
-            iconClassName={freezePending ? 'animate-spin' : undefined}
-            label={isLocked ? 'Descongelar' : 'Congelar'}
-            onClick={handleToggleFreeze}
-            disabled={isExpired || freezePending}
-            active={isLocked}
-          />
-          <ActionButton
-            icon={Settings2}
-            label="Límites"
-            onClick={() => {
-              sfx.panel_open()
-              openDialog('limits', card.card_id)
-            }}
-            disabled={isExpired}
-          />
+        <div className="mt-auto flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <ActionButton
+              icon={Eye}
+              label={
+                revealed
+                  ? `Ocultar número · ${String(remainingSec).padStart(2, '0')}s`
+                  : 'Ver número'
+              }
+              onClick={handleToggleReveal}
+              active={revealed}
+            />
+            <ActionButton
+              icon={RotateCw}
+              label={flipped ? 'Ver frente' : 'Ver reverso'}
+              onClick={() => toggleFlip(card.card_id)}
+              active={flipped}
+            />
+            <ActionButton
+              icon={freezePending ? Loader2 : Snowflake}
+              iconClassName={freezePending ? 'animate-spin' : undefined}
+              label={isLocked ? 'Descongelar' : 'Congelar'}
+              onClick={handleToggleFreeze}
+              disabled={isExpired || freezePending}
+              active={isLocked}
+            />
+            <ActionButton
+              icon={Settings2}
+              label="Límites"
+              onClick={() => {
+                sfx.panel_open()
+                openDialog('limits', card.card_id)
+              }}
+              disabled={isExpired}
+            />
+          </div>
         </div>
       </div>
     </Card>
@@ -257,12 +293,13 @@ function BenefitsPanel({
   return (
     <div
       className={cn(
-        'rounded-xl p-3 flex flex-col gap-2 overflow-hidden',
+        'rounded-[1.35rem] p-3.5 flex flex-col gap-3 overflow-hidden 2xl:p-4',
         className,
       )}
       style={{
-        background: 'oklch(1 0 0 / 0.025)',
-        border: '1px solid oklch(1 0 0 / 0.07)',
+        background: 'oklch(1 0 0 / 0.035)',
+        border: '1px solid oklch(1 0 0 / 0.08)',
+        boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05)',
       }}
     >
       <div className="flex items-center justify-between shrink-0">
@@ -271,11 +308,11 @@ function BenefitsPanel({
         </span>
         <TierBadge tier={tier} />
       </div>
-      <ul className="flex flex-col gap-1.5 min-h-0 overflow-y-auto" role="list">
+      <ul className="grid gap-1.5 min-h-0 overflow-y-auto" role="list">
         {items.map((label) => (
           <li
             key={label}
-            className="flex items-start gap-2 text-[11px] leading-snug text-text-secondary"
+            className="flex items-start gap-2 rounded-xl border border-white/[0.055] bg-white/[0.025] px-2.5 py-2 text-[11px] leading-snug text-text-secondary"
           >
             <Check
               size={11}
@@ -340,17 +377,25 @@ function MetaItem({
   icon: Icon,
   label,
   value,
+  accent,
   mono = false,
 }: {
   icon: typeof User2
   label: string
   value: string
+  accent: string
   mono?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-0.5 min-w-0">
+    <div
+      className="flex min-w-0 flex-col gap-1.5 rounded-[1.1rem] border p-3"
+      style={{
+        background: 'oklch(1 0 0 / 0.028)',
+        borderColor: 'oklch(1 0 0 / 0.07)',
+      }}
+    >
       <div className="inline-flex items-center gap-1.5">
-        <Icon size={10} strokeWidth={1.8} className="text-text-tertiary opacity-70" />
+        <Icon size={10} strokeWidth={1.8} style={{ color: accent, opacity: 0.75 }} />
         <span className="text-[9px] uppercase tracking-[0.16em] text-text-tertiary font-semibold">
           {label}
         </span>
@@ -387,7 +432,7 @@ function Meter({
   // alarm state adds an accent halo + brighter mix instead of swapping hue.
   const softStop = `color-mix(in oklch, ${accent} 55%, transparent)`
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2 rounded-xl border border-white/[0.055] bg-black/[0.10] px-2.5 py-2">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-medium">
           {label}
@@ -400,7 +445,7 @@ function Meter({
         </span>
       </div>
       <div
-        className="h-1 w-full rounded-full overflow-hidden"
+        className="h-1.5 w-full rounded-full overflow-hidden"
         style={{ background: 'oklch(1 0 0 / 0.06)' }}
       >
         <motion.div
@@ -443,8 +488,8 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center gap-2 rounded-lg px-2.5 py-2',
-        'text-xs font-medium transition-colors duration-180',
+        'inline-flex h-9 items-center gap-2 rounded-xl px-3',
+        'text-xs font-semibold transition-all duration-180',
         fullWidth ? 'w-full justify-center' : '',
         disabled
           ? 'cursor-not-allowed opacity-40'
