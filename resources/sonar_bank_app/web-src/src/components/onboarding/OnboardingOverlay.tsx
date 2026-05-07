@@ -151,12 +151,12 @@ export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
                       {step === 1 ? 'Saltar todo' : 'Saltar este paso'}
                     </button>
                     <Button
-                      variant="primary"
+                      variant="secondary"
                       size="md"
                       rightIcon={step < 3 ? <ArrowRight size={15} /> : <Check size={15} />}
                       onClick={handlePrimary}
                     >
-                      {step < 3 ? 'Continuar' : 'Comenzar'}
+                      {step === 1 ? 'Ver mi IBAN' : step === 2 ? 'Explorar opciones' : 'Entrar'}
                     </Button>
                   </div>
                 </div>
@@ -192,12 +192,24 @@ function OnboardingVisual({ step, displayIban, onCopyIban }: { step: OnboardingS
             type="button"
             onClick={onCopyIban}
             aria-label={safeAriaLabel(`Copiar IBAN ${displayIban}`)}
-            className="w-full rounded-[1.35rem] border border-white/12 bg-white/[0.055] px-4 py-5 text-left hover:bg-white/[0.075] transition-colors tactile-focus-ring"
+            className="group relative w-full overflow-hidden rounded-[1.45rem] border border-white/12 bg-white/[0.045] px-[1.125rem] py-5 text-left hover:bg-white/[0.07] transition-colors tactile-focus-ring"
           >
-            <span className="block text-[10px] uppercase tracking-[0.16em] text-text-tertiary">Tu IBAN</span>
-            <span className="mt-2 block font-mono text-lg font-semibold text-text-primary tracking-wider tactile-tabular-nums break-all">{displayIban}</span>
-            <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary">
-              <Copy size={13} /> Copiar para recibir pagos
+            <span
+              aria-hidden
+              className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/24 to-transparent opacity-70"
+            />
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-[10px] uppercase tracking-[0.16em] text-text-tertiary">Tu IBAN</span>
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/[0.045] text-text-tertiary group-hover:text-text-primary">
+                <Copy size={12} />
+              </span>
+            </span>
+            <span className="mt-3 block font-mono text-[15px] 2xl:text-base font-semibold text-text-primary tracking-[0.11em] tactile-tabular-nums whitespace-normal leading-relaxed">
+              {displayIban}
+            </span>
+            <span className="mt-4 block h-px bg-white/[0.07]" />
+            <span className="mt-3 block text-xs font-semibold text-text-secondary">
+              Toca para copiar y recibir pagos
             </span>
           </button>
         ) : (
@@ -226,17 +238,17 @@ function OnboardingCopy({ step }: { step: OnboardingStep }) {
     1: {
       eyebrow: 'Bienvenido',
       title: 'SONAR Bank está listo',
-      description: 'Tu banca para roleplay diario: saldo claro, transferencias rápidas, tarjetas y movimientos sin salir del tablet.',
+      description: 'Tu banca diaria: saldo claro, transferencias rápidas, tarjetas y movimientos siempre a mano.',
     },
     2: {
       eyebrow: 'Recibir dinero',
       title: 'Este es tu IBAN',
-      description: 'Compártelo para alquileres, trabajos, negocios o reembolsos. En Streamer Mode lo mantenemos oculto en pantalla.',
+      description: 'Compártelo para alquileres, trabajos, negocios o reembolsos. Con privacidad activa lo mantenemos oculto en pantalla.',
     },
     3: {
       eyebrow: 'Primeros pasos',
       title: 'Tres cosas útiles',
-      description: 'Envía dinero, revisa movimientos y separa ahorro. Todo queda preparado para el flujo real de FiveM.',
+      description: 'Envía dinero, revisa movimientos y separa ahorro. Todo queda listo para tu día a día financiero.',
     },
   }[step]
 

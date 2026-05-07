@@ -127,7 +127,7 @@ function AccountsHero({ accounts, totals, streamerMode }: { accounts: Account[];
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">Tu dinero, ordenado</h1>
             <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
-              Controla saldo, ahorro e IBANs desde una vista clara para juego diario.
+              Controla saldo, ahorro e IBANs desde una vista clara para tu día a día.
             </p>
           </div>
         </div>

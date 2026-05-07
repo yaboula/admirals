@@ -358,7 +358,7 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_280px] gap-4 2xl:gap-5 pb-1">
       <div className="flex flex-col gap-4 2xl:gap-5">
-        <StepHeader icon={<CircleDollarSign size={18} />} title="Elige el importe" description="Te mostramos el saldo final antes de continuar." />
+        <StepHeader icon={<CircleDollarSign size={18} />} title="Elige el importe" description="Te mostramos el saldo final antes de revisar el envío." />
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <Input
             label="Importe"
@@ -396,8 +396,8 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
           />
         </div>
         <div className="flex items-center justify-end gap-2 pb-1">
-          <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={submit}>
-            Continuar
+          <Button variant="secondary" rightIcon={<ArrowRight size={16} />} onClick={submit}>
+            Revisar destino
           </Button>
         </div>
       </div>
