@@ -6,7 +6,6 @@ import { Card } from '@/components/ui'
 import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
-import { RequestCardBanner } from './cards/RequestCardBanner'
 import { LimitsModal } from './cards/LimitsModal'
 import { DesignPickerDialog } from './cards/DesignPickerDialog'
 
@@ -88,27 +87,13 @@ export function Cards() {
           <Card
             variant="glass"
             padding="md"
-            className="min-h-0 border-white/10 flex flex-col gap-3 2xl:gap-4 overflow-hidden"
+            className="min-h-0 border-white/10 flex flex-col overflow-hidden"
           >
-            {/* Stage — fills remaining height, carousel centred both axes. */}
             <div className="flex-1 min-h-0 flex items-center justify-center">
               <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto">
                 <CardCarousel cards={cards} />
               </div>
             </div>
-
-            {/* Hairline divider — visual seam between carousel and banner. */}
-            <div
-              aria-hidden
-              className="h-px"
-              style={{
-                background:
-                  'linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.10) 50%, transparent 100%)',
-              }}
-            />
-
-            {/* Bottom banner — discoverability for the design picker (Phase 4.4). */}
-            <RequestCardBanner />
           </Card>
         </section>
 
@@ -135,8 +120,7 @@ export function Cards() {
 
 /**
  * Convenience export: opens the design picker for the currently focused card.
- * Used by the RequestCardBanner CTA so the banner can stay decoupled from
- * the route's local state.
+ * Used by external card CTAs so they can stay decoupled from route-local state.
  */
 export function useOpenDesignPicker(): () => void {
   const openDialog = useCardsUi((s) => s.openDialog)

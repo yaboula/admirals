@@ -82,7 +82,7 @@ export function CompactQuickTransfer() {
         />
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1 space-y-1.5 scrollbar-thin">
-          {data.recipients.slice(0, 5).map((r, i) => (
+          {data.recipients.slice(0, 4).map((r, i) => (
             <CompactRow
               key={r.counterpart_iban}
               recipient={r}
