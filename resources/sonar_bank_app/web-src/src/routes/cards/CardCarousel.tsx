@@ -42,10 +42,12 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
   const reduced = useReducedMotion()
   const selectedCardId = useCardsUi((s) => s.selectedCardId)
   const flippedIds = useCardsUi((s) => s.flippedCardIds)
-  const revealedIds = useCardsUi((s) => s.revealedCardIds)
+  const revealedUntil = useCardsUi((s) => s.revealedUntil)
   const setSelected = useCardsUi((s) => s.setSelected)
   const toggleFlip = useCardsUi((s) => s.toggleFlip)
-  const toggleReveal = useCardsUi((s) => s.toggleReveal)
+  const revealCard = useCardsUi((s) => s.revealCard)
+  const hideReveal = useCardsUi((s) => s.hideReveal)
+  const now = Date.now()
 
   // Resolve the focused card index. Default = 0 (first active card per
   // useCards sort). Falls back gracefully when selectedCardId points to a
@@ -156,8 +158,12 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
                     card={card}
                     flipped={flippedIds.includes(card.card_id)}
                     onFlip={() => toggleFlip(card.card_id)}
-                    revealed={revealedIds.includes(card.card_id)}
-                    onToggleReveal={() => toggleReveal(card.card_id)}
+                    revealed={(revealedUntil[card.card_id] ?? 0) > now}
+                    onToggleReveal={() => {
+                      const expiry = revealedUntil[card.card_id] ?? 0
+                      if (expiry > now) hideReveal(card.card_id)
+                      else revealCard(card.card_id)
+                    }}
                     interactive={isFocused}
                     className={cn(!isFocused && 'cursor-pointer')}
                   />

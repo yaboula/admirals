@@ -76,3 +76,96 @@ select {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-strong);
 }
+
+/* ============================================================================
+   SONAR SLIDER — accent-aware range input used by /tarjetas LimitsModal.
+   The component sets --slider-fill (% of track filled) and --slider-accent
+   (CSS color string) inline; this stylesheet paints both states.
+   ============================================================================ */
+
+.sonar-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.sonar-slider:focus-visible {
+  outline: 2px solid var(--slider-accent, var(--color-brand-signal-orange));
+  outline-offset: 6px;
+  border-radius: 9999px;
+}
+
+/* WebKit / Chromium track */
+.sonar-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--slider-accent, oklch(0.72 0.22 40)) 0 var(--slider-fill, 0%),
+    oklch(1 0 0 / 0.08) var(--slider-fill, 0%) 100%
+  );
+  border: 1px solid oklch(1 0 0 / 0.06);
+}
+
+.sonar-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--slider-accent, oklch(0.72 0.22 40));
+  border: 2px solid oklch(0.04 0.006 270);
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.10),
+    0 4px 10px -2px oklch(0 0 0 / 0.55),
+    0 0 14px -4px var(--slider-accent, oklch(0.72 0.22 40));
+  transition: transform 140ms ease, box-shadow 180ms ease;
+}
+
+.sonar-slider:hover::-webkit-slider-thumb,
+.sonar-slider:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.1);
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.18),
+    0 6px 14px -2px oklch(0 0 0 / 0.6),
+    0 0 22px -2px var(--slider-accent, oklch(0.72 0.22 40));
+}
+
+/* Firefox track */
+.sonar-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: oklch(1 0 0 / 0.08);
+  border: 1px solid oklch(1 0 0 / 0.06);
+}
+
+.sonar-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--slider-accent, oklch(0.72 0.22 40));
+}
+
+.sonar-slider::-moz-range-thumb {
+  height: 14px;
+  width: 14px;
+  border-radius: 50%;
+  background: var(--slider-accent, oklch(0.72 0.22 40));
+  border: 2px solid oklch(0.04 0.006 270);
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.10),
+    0 4px 10px -2px oklch(0 0 0 / 0.55);
+  cursor: pointer;
+}
+
+.sonar-slider:hover::-moz-range-thumb,
+.sonar-slider:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.18),
+    0 6px 14px -2px oklch(0 0 0 / 0.6),
+    0 0 22px -2px var(--slider-accent, oklch(0.72 0.22 40));
+}

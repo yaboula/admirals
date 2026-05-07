@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { Eye, EyeOff, Wifi, Lock, Clock3 } from 'lucide-react'
 import type { BankCard, BankCardMock } from '@/data/contracts'
 import { cn } from '@/lib/utils'
@@ -223,36 +223,178 @@ export function CardVisual({
         </div>
       </div>
 
-      {/* Frozen / expired overlay — dims the card and surfaces the reason */}
-      {locked && (
-        <div
-          aria-hidden
-          className="absolute inset-0 flex items-center justify-center backdrop-blur-[2px]"
-          style={{ background: 'oklch(0 0 0 / 0.45)' }}
-        >
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.16em]"
-            style={{
-              background: 'oklch(0 0 0 / 0.6)',
-              border: '1px solid oklch(1 0 0 / 0.12)',
-              color: design.textPrimary,
-            }}
-          >
-            {card.status === 'expired' ? (
-              <>
-                <Clock3 size={12} strokeWidth={2.4} />
-                Caducada
-              </>
-            ) : (
-              <>
-                <Lock size={12} strokeWidth={2.4} />
-                Congelada
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Frozen / expired overlay — premium icy effect (motion-presence) */}
+      <AnimatePresence>
+        {locked && (
+          <FrostOverlay
+            key={card.status}
+            status={card.status === 'expired' ? 'expired' : 'locked'}
+            textPrimary={design.textPrimary}
+            reduced={!!reduced}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
+  )
+}
+
+/* --------------------------------------------------------------------------
+   FrostOverlay — premium frozen-card effect.
+
+   Layers (back → front):
+     1. Icy gradient (cool teal-blue tint @ 40-55% opacity)
+     2. SVG snowflake crystals (8 randomly-rotated marks scattered across)
+     3. Frosted glass blur (backdrop-blur)
+     4. Pulsing Lock badge centered with subtle ring halo
+
+   Animation: 360ms ease-out spread from centre on enter; 240ms fade on exit.
+   Reduced motion → instant cross-fade with no scale/blur sweep.
+
+   The expired variant uses the same scaffolding but with a Clock icon and
+   warmer dim-grey tint instead of icy blue.
+   -------------------------------------------------------------------------- */
+function FrostOverlay({
+  status,
+  textPrimary,
+  reduced,
+}: {
+  status: 'locked' | 'expired'
+  textPrimary: string
+  reduced: boolean
+}) {
+  const isFrozen = status === 'locked'
+  return (
+    <motion.div
+      aria-hidden
+      initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 1.04 }}
+      animate={reduced ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+      exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 1.02 }}
+      transition={
+        reduced
+          ? { duration: 0.18 }
+          : { duration: 0.36, ease: [0.16, 1, 0.3, 1] }
+      }
+      className="absolute inset-0 flex items-center justify-center"
+      style={{
+        background: isFrozen
+          ? 'radial-gradient(circle at 50% 50%, oklch(0.62 0.08 220 / 0.42) 0%, oklch(0.18 0.04 230 / 0.62) 80%)'
+          : 'oklch(0 0 0 / 0.55)',
+        backdropFilter: 'blur(3px) saturate(0.7)',
+        WebkitBackdropFilter: 'blur(3px) saturate(0.7)',
+      }}
+    >
+      {/* Crystal field — 8 ice marks scattered across the surface */}
+      {isFrozen && <CrystalField reduced={reduced} />}
+
+      {/* Centre badge — pulsing ring around a Lock / Clock glyph */}
+      <div className="relative flex items-center justify-center">
+        {isFrozen && !reduced && (
+          <motion.span
+            aria-hidden
+            className="absolute rounded-full"
+            initial={{ scale: 0.8, opacity: 0.6 }}
+            animate={{ scale: [0.9, 1.25, 0.9], opacity: [0.55, 0.0, 0.55] }}
+            transition={{ duration: 2.4, ease: 'easeInOut', repeat: Infinity }}
+            style={{
+              width: 64,
+              height: 64,
+              border: '1px solid oklch(0.92 0.06 220 / 0.55)',
+            }}
+          />
+        )}
+        <motion.div
+          initial={reduced ? false : { y: 4, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.12, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.18em]"
+          style={{
+            background: isFrozen
+              ? 'oklch(0.18 0.04 230 / 0.85)'
+              : 'oklch(0 0 0 / 0.7)',
+            border: isFrozen
+              ? '1px solid oklch(0.86 0.08 220 / 0.45)'
+              : '1px solid oklch(1 0 0 / 0.12)',
+            color: textPrimary,
+            boxShadow: isFrozen
+              ? '0 0 24px -4px oklch(0.70 0.10 220 / 0.55), inset 0 1px 0 oklch(1 0 0 / 0.10)'
+              : 'inset 0 1px 0 oklch(1 0 0 / 0.06)',
+          }}
+        >
+          {isFrozen ? (
+            <>
+              <Lock size={12} strokeWidth={2.6} />
+              Congelada
+            </>
+          ) : (
+            <>
+              <Clock3 size={12} strokeWidth={2.4} />
+              Caducada
+            </>
+          )}
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+/**
+ * CrystalField — 8 hand-positioned snowflake glyphs scattered across the
+ * card with staggered fade-in. Positions are deterministic so the field
+ * looks the same on every render (no jitter on re-mount).
+ */
+const CRYSTAL_POSITIONS = [
+  { x: '12%', y: '18%', size: 14, rot: 12, opacity: 0.55 },
+  { x: '78%', y: '22%', size: 10, rot: -22, opacity: 0.5 },
+  { x: '32%', y: '70%', size: 12, rot: 38, opacity: 0.45 },
+  { x: '88%', y: '64%', size: 11, rot: 6, opacity: 0.55 },
+  { x: '54%', y: '14%', size: 8, rot: -14, opacity: 0.4 },
+  { x: '20%', y: '50%', size: 9, rot: 24, opacity: 0.4 },
+  { x: '66%', y: '46%', size: 13, rot: -32, opacity: 0.5 },
+  { x: '46%', y: '82%', size: 10, rot: 18, opacity: 0.45 },
+] as const
+
+function CrystalField({ reduced }: { reduced: boolean }) {
+  return (
+    <>
+      {CRYSTAL_POSITIONS.map((c, i) => (
+        <motion.svg
+          key={i}
+          aria-hidden
+          width={c.size}
+          height={c.size}
+          viewBox="0 0 24 24"
+          className="absolute pointer-events-none"
+          style={{
+            left: c.x,
+            top: c.y,
+            color: 'oklch(0.96 0.02 220)',
+            opacity: c.opacity,
+            transform: `translate(-50%, -50%) rotate(${c.rot}deg)`,
+          }}
+          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
+          animate={{ opacity: c.opacity, scale: 1 }}
+          transition={
+            reduced
+              ? { duration: 0.18, delay: i * 0.02 }
+              : { duration: 0.42, ease: [0.16, 1, 0.3, 1], delay: 0.08 + i * 0.04 }
+          }
+        >
+          {/* Six-pointed snowflake — three crossed lines with little branches */}
+          <g
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          >
+            <line x1="12" y1="2" x2="12" y2="22" />
+            <line x1="3.34" y1="7" x2="20.66" y2="17" />
+            <line x1="3.34" y1="17" x2="20.66" y2="7" />
+            <path d="M9 4 L12 6 L15 4" />
+            <path d="M9 20 L12 18 L15 20" />
+          </g>
+        </motion.svg>
+      ))}
+    </>
   )
 }
 

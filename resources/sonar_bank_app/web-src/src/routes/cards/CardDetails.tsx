@@ -1,10 +1,13 @@
 import { motion } from 'motion/react'
-import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check } from 'lucide-react'
+import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check, Palette, Loader2 } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { sfx } from '@/lib/sfx'
+import { toast } from '@/stores/toast'
 import { resolveCardDesign } from './cardDesigns'
-import { useCardsUi } from '@/stores/cardsUi'
+import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
+import { useFreezeCard } from '@/data/mutations'
 
 /**
  * BANK-FE.4.2 — CardDetails
@@ -41,12 +44,50 @@ export function CardDetails({ card, className }: CardDetailsProps) {
 
   const design = resolveCardDesign(card.design_id)
   const flippedIds = useCardsUi((s) => s.flippedCardIds)
-  const revealedIds = useCardsUi((s) => s.revealedCardIds)
   const toggleFlip = useCardsUi((s) => s.toggleFlip)
-  const toggleReveal = useCardsUi((s) => s.toggleReveal)
+  const openDialog = useCardsUi((s) => s.openDialog)
+
+  const { revealed, remainingMs, reveal, hide } = useCardReveal(card.card_id)
+  const remainingSec = Math.ceil(remainingMs / 1000)
+
+  const freezeMutation = useFreezeCard()
+  const isLocked = card.status === 'locked'
+  const isExpired = card.status === 'expired'
+  const freezePending = freezeMutation.isPending
 
   const flipped = flippedIds.includes(card.card_id)
-  const revealed = revealedIds.includes(card.card_id)
+
+  const handleToggleReveal = () => {
+    if (revealed) {
+      hide()
+      sfx.console_tap()
+    } else {
+      reveal()
+      sfx.panel_open()
+    }
+  }
+
+  const handleToggleFreeze = () => {
+    if (isExpired) return
+    const freeze = !isLocked
+    sfx.console_tap()
+    freezeMutation.mutate(
+      { cardId: card.card_id, freeze },
+      {
+        onSuccess: () => {
+          toast.success(
+            freeze ? 'Tarjeta congelada' : 'Tarjeta reactivada',
+            freeze
+              ? 'Hemos bloqueado todos los pagos. Puedes descongelarla cuando quieras.'
+              : 'Tu tarjeta vuelve a estar operativa.',
+          )
+        },
+        onError: (err) => {
+          toast.danger('No se pudo cambiar el estado', err.message)
+        },
+      },
+    )
+  }
 
   const expiry = new Date(card.expiry_ms)
   const expiryStr = `${String(expiry.getMonth() + 1).padStart(2, '0')}/${expiry.getFullYear()}`
@@ -113,12 +154,14 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           spent={card.daily_spent_minor}
           limit={card.daily_limit_minor}
           pct={dailyPct}
+          accent={design.accent}
         />
         <Meter
           label="Este mes"
           spent={card.monthly_spent_minor}
           limit={card.monthly_limit_minor}
           pct={monthlyPct}
+          accent={design.accent}
         />
       </div>
 
@@ -126,26 +169,56 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           and naturally absorb any leftover vertical real-estate. */}
       <BenefitsPanel tier={design.tier} accent={design.accent} className="flex-1 min-h-0" />
 
-      {/* Action row — interactive: Reveal + Flip; placeholder: Freeze + Limits */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* Action row — Phase 4.3: all four actions are now LIVE.
+          Reveal toggles a 30s window with countdown surfaced inline.
+          Freeze/Unfreeze fires the optimistic mutation + toast feedback.
+          Límites + Diseño open dialogs (LimitsModal / DesignPickerDialog). */}
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          <ActionButton
+            icon={Eye}
+            label={
+              revealed
+                ? `Ocultar PAN · ${String(remainingSec).padStart(2, '0')}s`
+                : 'Revelar PAN'
+            }
+            onClick={handleToggleReveal}
+            active={revealed}
+          />
+          <ActionButton
+            icon={RotateCw}
+            label={flipped ? 'Ver frente' : 'Ver reverso'}
+            onClick={() => toggleFlip(card.card_id)}
+            active={flipped}
+          />
+          <ActionButton
+            icon={freezePending ? Loader2 : Snowflake}
+            iconClassName={freezePending ? 'animate-spin' : undefined}
+            label={isLocked ? 'Descongelar' : 'Congelar'}
+            onClick={handleToggleFreeze}
+            disabled={isExpired || freezePending}
+            active={isLocked}
+          />
+          <ActionButton
+            icon={Settings2}
+            label="Límites"
+            onClick={() => {
+              sfx.panel_open()
+              openDialog('limits', card.card_id)
+            }}
+            disabled={isExpired}
+          />
+        </div>
         <ActionButton
-          icon={Eye}
-          label={revealed ? 'Ocultar PAN' : 'Revelar PAN'}
-          onClick={() => toggleReveal(card.card_id)}
-          active={revealed}
+          icon={Palette}
+          label="Cambiar diseño"
+          onClick={() => {
+            sfx.panel_open()
+            openDialog('design', card.card_id)
+          }}
+          disabled={isExpired}
+          fullWidth
         />
-        <ActionButton
-          icon={RotateCw}
-          label={flipped ? 'Ver frente' : 'Ver reverso'}
-          onClick={() => toggleFlip(card.card_id)}
-          active={flipped}
-        />
-        <ActionButton
-          icon={Snowflake}
-          label={card.status === 'locked' ? 'Descongelar' : 'Congelar'}
-          disabled
-        />
-        <ActionButton icon={Settings2} label="Límites" disabled />
       </div>
     </Card>
   )
@@ -310,12 +383,19 @@ function Meter({
   spent,
   limit,
   pct,
+  accent,
 }: {
   label: string
   spent: number
   limit: number
   pct: number
+  accent: string
 }) {
+  const isAlarm = pct > 80
+  // Use color-mix to derive a softer entry stop in the same hue family. The
+  // bar therefore always speaks the focused card's chromatic language; the
+  // alarm state adds an accent halo + brighter mix instead of swapping hue.
+  const softStop = `color-mix(in oklch, ${accent} 55%, transparent)`
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between gap-2">
@@ -339,9 +419,10 @@ function Meter({
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="h-full rounded-full"
           style={{
-            background: pct > 80
-              ? 'var(--gradient-primary)'
-              : 'linear-gradient(90deg, oklch(0.72 0.06 220), oklch(0.85 0.04 220))',
+            background: `linear-gradient(90deg, ${softStop} 0%, ${accent} 100%)`,
+            boxShadow: isAlarm
+              ? `0 0 8px ${accent}, 0 0 2px ${accent}`
+              : 'none',
           }}
         />
       </div>
@@ -351,16 +432,20 @@ function Meter({
 
 function ActionButton({
   icon: Icon,
+  iconClassName,
   label,
   onClick,
   disabled = false,
   active = false,
+  fullWidth = false,
 }: {
   icon: typeof Eye
+  iconClassName?: string
   label: string
   onClick?: () => void
   disabled?: boolean
   active?: boolean
+  fullWidth?: boolean
 }) {
   return (
     <button
@@ -370,6 +455,7 @@ function ActionButton({
       className={cn(
         'inline-flex items-center gap-2 rounded-lg px-2.5 py-2',
         'text-xs font-medium transition-colors duration-180',
+        fullWidth ? 'w-full justify-center' : '',
         disabled
           ? 'cursor-not-allowed opacity-40'
           : 'hover:bg-surface-card-elevated active:scale-[0.98]',
@@ -380,9 +466,9 @@ function ActionButton({
         border: `1px solid ${active ? 'oklch(1 0 0 / 0.16)' : 'oklch(1 0 0 / 0.07)'}`,
         color: active ? 'oklch(0.96 0 0)' : 'oklch(0.78 0.012 270)',
       }}
-      title={disabled ? 'Disponible próximamente' : undefined}
+      title={disabled && !onClick ? 'Disponible próximamente' : undefined}
     >
-      <Icon size={12} strokeWidth={1.8} className="shrink-0" />
+      <Icon size={12} strokeWidth={1.8} className={cn('shrink-0', iconClassName)} />
       <span className="truncate">{label}</span>
     </button>
   )

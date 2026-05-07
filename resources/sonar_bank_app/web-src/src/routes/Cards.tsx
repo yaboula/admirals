@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
-import { useCards } from '@/data/queries'
+import { useCards, useCardById } from '@/data/queries'
 import { useCardsUi } from '@/stores/cardsUi'
 import { Card } from '@/components/ui'
 import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
 import { RequestCardBanner } from './cards/RequestCardBanner'
+import { LimitsModal } from './cards/LimitsModal'
+import { DesignPickerDialog } from './cards/DesignPickerDialog'
 
 /**
  * BANK-FE.4.2 — Vista Tarjetas (route /tarjetas).
@@ -34,6 +36,9 @@ export function Cards() {
   const { cards } = useCards()
   const selectedCardId = useCardsUi((s) => s.selectedCardId)
   const setSelected = useCardsUi((s) => s.setSelected)
+  const dialog = useCardsUi((s) => s.dialog)
+  const dialogCardId = useCardsUi((s) => s.dialogCardId)
+  const closeDialog = useCardsUi((s) => s.closeDialog)
 
   // Bind the store to the resolved focused card, gracefully handling the
   // empty list and a stale id that no longer exists in the resolved set.
@@ -49,12 +54,18 @@ export function Cards() {
     cards.find((c) => c.card_id === selectedCardId) ?? cards[0] ?? null
   const activeCount = cards.filter((c) => c.status === 'active').length
 
+  // Resolve the dialog target via the cache so the modals stay in sync if
+  // the cards list reorders mid-edit (e.g. status flip moves a card to the
+  // front of the list while LimitsModal is open).
+  const dialogCard = useCardById(dialogCardId)
+  const focusedForDialog = dialogCard ?? focused
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-      className="h-full w-full"
+      className="relative h-full w-full overflow-hidden"
     >
       <div
         className="h-full w-full mx-auto max-w-[1500px] gap-3 2xl:gap-5"
@@ -106,6 +117,31 @@ export function Cards() {
           <CardDetails card={focused} className="flex-1 min-h-0" />
         </aside>
       </div>
+
+      {/* ── OVERLAYS ───────────────────────────────────────── */}
+      <LimitsModal
+        card={focusedForDialog}
+        open={dialog === 'limits'}
+        onClose={closeDialog}
+      />
+      <DesignPickerDialog
+        card={focusedForDialog}
+        open={dialog === 'design'}
+        onClose={closeDialog}
+      />
     </motion.div>
   )
+}
+
+/**
+ * Convenience export: opens the design picker for the currently focused card.
+ * Used by the RequestCardBanner CTA so the banner can stay decoupled from
+ * the route's local state.
+ */
+export function useOpenDesignPicker(): () => void {
+  const openDialog = useCardsUi((s) => s.openDialog)
+  const selectedCardId = useCardsUi((s) => s.selectedCardId)
+  return () => {
+    if (selectedCardId) openDialog('design', selectedCardId)
+  }
 }

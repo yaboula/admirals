@@ -2,6 +2,8 @@ import { motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { CARD_DESIGNS } from './cardDesigns'
 import { cn } from '@/lib/utils'
+import { sfx } from '@/lib/sfx'
+import { useCardsUi } from '@/stores/cardsUi'
 
 /**
  * BANK-FE.4.2 — RequestCardBanner
@@ -22,6 +24,15 @@ export interface RequestCardBannerProps {
 
 export function RequestCardBanner({ className }: RequestCardBannerProps) {
   const reduced = useReducedMotion()
+  const selectedCardId = useCardsUi((s) => s.selectedCardId)
+  const openDialog = useCardsUi((s) => s.openDialog)
+  const ctaDisabled = !selectedCardId
+
+  const handleStart = () => {
+    if (!selectedCardId) return
+    sfx.panel_open()
+    openDialog('design', selectedCardId)
+  }
 
   return (
     <motion.div
@@ -61,20 +72,33 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
         </p>
       </div>
 
-      {/* ── CTA — disabled placeholder for Phase 4.4 ── */}
+      {/* ── CTA — live in Phase 4.4 ── */}
       <button
         type="button"
-        disabled
-        title="Disponible próximamente"
+        onClick={handleStart}
+        disabled={ctaDisabled}
+        title={ctaDisabled ? 'Selecciona una tarjeta primero' : undefined}
+        aria-label="Abrir selector de diseño"
         className={cn(
           'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg shrink-0',
-          'text-xs font-semibold cursor-not-allowed opacity-60',
-          'transition-colors duration-180',
+          'text-xs font-semibold transition-all duration-180',
+          ctaDisabled
+            ? 'cursor-not-allowed opacity-50'
+            : 'enabled:hover:-translate-y-0.5 enabled:active:scale-[0.98]',
         )}
         style={{
-          background: 'oklch(1 0 0 / 0.05)',
-          border: '1px solid oklch(1 0 0 / 0.10)',
-          color: 'oklch(0.85 0.012 270)',
+          background: ctaDisabled
+            ? 'oklch(1 0 0 / 0.05)'
+            : 'oklch(1 0 0 / 0.06)',
+          border: `1px solid ${
+            ctaDisabled
+              ? 'oklch(1 0 0 / 0.10)'
+              : 'var(--color-brand-signal-orange-glow, oklch(0.72 0.22 40 / 0.5))'
+          }`,
+          color: ctaDisabled ? 'oklch(0.85 0.012 270)' : 'oklch(0.96 0 0)',
+          boxShadow: ctaDisabled
+            ? 'none'
+            : '0 0 14px -4px oklch(0.72 0.22 40 / 0.55)',
         }}
       >
         <span>Empezar</span>

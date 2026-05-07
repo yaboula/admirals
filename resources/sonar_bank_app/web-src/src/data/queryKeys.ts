@@ -21,4 +21,9 @@ export const queryKeys = {
     all: () => [...queryKeys.all, 'accounts'] as const,
     balance: (iban: string) => [...queryKeys.account.all(), 'balance', iban] as const,
   },
+
+  cards: {
+    all: () => [...queryKeys.all, 'cards'] as const,
+    detail: (cardId: string) => [...queryKeys.cards.all(), 'detail', cardId] as const,
+  },
 } as const
