@@ -850,7 +850,7 @@ function TransferRail({
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'linear-gradient(180deg, oklch(0.70 0.22 40 / 0.38), oklch(0.12 0.035 35 / 0.72) 34%, oklch(0.035 0.009 35 / 0.88))',
+              'radial-gradient(circle at 84% 0%, oklch(1 0 0 / 0.08), transparent 34%), linear-gradient(180deg, oklch(0.085 0.014 40 / 0.86), oklch(0.035 0.008 35 / 0.92))',
           }}
         />
         <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
@@ -864,14 +864,14 @@ function TransferRail({
             </span>
           </div>
 
-          <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-black/20 px-4 py-4">
+          <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-white/[0.045] px-4 py-4">
             <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">Importe</span>
             <span className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums text-white">
               {amount ? formatCurrency(amount / 100) : '—'}
             </span>
           </div>
 
-          <div className="mt-4 rounded-[1.55rem] border border-white/10 bg-black/18 p-3.5">
+          <div className="mt-4 rounded-[1.55rem] border border-white/10 bg-white/[0.035] p-3.5">
             <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 mb-3">Destino</span>
             <div className="flex items-center gap-3">
               <BankAvatar name={destinationLabel} size="lg" />
