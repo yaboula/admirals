@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   CircleDollarSign,
   Clock3,
+  Download,
   LockKeyhole,
   ReceiptText,
   Search,
@@ -662,6 +663,31 @@ function ConfirmStep({
   onDone: () => void
   onNew: () => void
 }) {
+  const [pdfPending, setPdfPending] = useState(false)
+
+  const handleDownloadReceiptPdf = async (): Promise<void> => {
+    if (!receipt || pdfPending) return
+
+    setPdfPending(true)
+    try {
+      const { downloadTransferReceiptPdf } = await import('./transfer/receipt-pdf')
+      downloadTransferReceiptPdf({
+        receipt,
+        recipientLabel: recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : formatIbanShort(receipt.to_iban)),
+        amountLabel: formatCurrency((amount ?? receipt.amount_minor) / 100),
+        fromIbanMasked: formatIbanMasked(receipt.from_iban),
+        toIbanMasked: formatIbanMasked(receipt.to_iban),
+        timestampLabel: formatReceiptTime(receipt.committed_at_ms),
+      })
+      sfx.coin_clink()
+      toast.success('Recibo PDF generado', receipt.transaction_id)
+    } catch {
+      toast.warning('No se pudo generar el PDF', 'Inténtalo de nuevo en unos segundos.')
+    } finally {
+      setPdfPending(false)
+    }
+  }
+
   if (pending) {
     return (
       <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title="Enviando transferencia" description="Aplicando operación optimista y esperando confirmación mock." />
@@ -703,6 +729,14 @@ function ConfirmStep({
         <ReviewRow label="Estado" value="Committed" />
       </div>
       <div className="flex justify-center gap-2">
+        <Button
+          variant="secondary"
+          leftIcon={pdfPending ? <Spinner size="sm" /> : <Download size={16} />}
+          disabled={pdfPending}
+          onClick={handleDownloadReceiptPdf}
+        >
+          {pdfPending ? 'Generando PDF' : 'Descargar PDF'}
+        </Button>
         <Button variant="secondary" onClick={onNew}>Nueva transferencia</Button>
         <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={onDone}>Volver a inicio</Button>
       </div>
