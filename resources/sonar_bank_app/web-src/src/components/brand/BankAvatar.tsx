@@ -29,7 +29,7 @@ export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarPro
   const index = Math.abs(seed ?? hashString(label)) % AVATAR_GRADIENTS.length
   const avatarUrl = useMemo(
     () =>
-      `https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(label)}&backgroundType=gradientLinear&radius=50`,
+      `https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(label)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c7f9cc&radius=50&scale=92`,
     [label],
   )
 
@@ -57,7 +57,7 @@ export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarPro
         <img
           src={avatarUrl}
           alt=""
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover scale-110"
           loading="lazy"
           referrerPolicy="no-referrer"
           onError={() => setImageFailed(true)}
