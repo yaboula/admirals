@@ -36,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
 ]
 
 const FOOTER_ITEMS: NavItem[] = [
-  { to: '/ajustes', label: 'Ajustes', icon: Settings, disabled: true },
+  { to: '/ajustes', label: 'Ajustes', icon: Settings, requiredPerm: ACE_PERMS.P01.perm },
 ]
 
 export interface SidebarProps {

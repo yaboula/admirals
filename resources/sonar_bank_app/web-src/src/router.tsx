@@ -7,6 +7,7 @@ import { Transactions } from './routes/Transactions'
 import { Cards } from './routes/Cards'
 import { Transfer } from './routes/Transfer'
 import { RecurringPayments } from './routes/Recurring'
+import { Settings } from './routes/Settings'
 import { DevShowcase } from './routes/dev/Showcase'
 import { NotFound } from './routes/NotFound'
 import { isInsideFiveMNui } from './lib/env'
@@ -26,6 +27,7 @@ const routes = [
           { path: 'tarjetas', element: <Cards /> },
           { path: 'transferir', element: <Transfer /> },
           { path: 'recurrentes', element: <RecurringPayments /> },
+          { path: 'ajustes', element: <Settings /> },
           { path: 'dev/showcase', element: <DevShowcase /> },
         ],
       },
