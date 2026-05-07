@@ -16,8 +16,9 @@ import type { Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { getMockAliasForIban, getMockInitialsForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
-import { maskIbanDisplay, maskOperationCode, safeAriaLabel } from '@/lib/privacy'
+import { maskIbanDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode, safeAriaLabel } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
+import { usePrivacyMode } from '@/stores/privacy'
 
 /**
  * BANK-FE.3 — Transaction detail drawer.
@@ -124,6 +125,7 @@ function DrawerBody({
   const sign = isOutgoing ? '−' : '+'
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   const handleCopyIban = async (): Promise<void> => {
     try {
@@ -250,7 +252,7 @@ function DrawerBody({
             aria-label={safeAriaLabel(`Copiar IBAN ${counterpartIban}`)}
           >
             <span className="text-sm font-mono font-medium text-text-primary tracking-wider tactile-tabular-nums">
-              {maskIbanDisplay(counterpartIban)}
+              {streamerMode ? maskIbanDisplay(counterpartIban) : revealIbanDisplay(counterpartIban)}
             </span>
             <Copy
               size={12}
@@ -271,7 +273,7 @@ function DrawerBody({
           })} · ${formatRelativeTime(tx.timestamp_ms)}`}
         />
 
-        <DetailRow label="ID transacción" mono value={maskOperationCode(tx.txn_id)} />
+        <DetailRow label="ID transacción" mono value={streamerMode ? maskOperationCode(tx.txn_id) : revealOperationCode(tx.txn_id)} />
 
         {/* Status timeline */}
         <div className="flex flex-col gap-2">

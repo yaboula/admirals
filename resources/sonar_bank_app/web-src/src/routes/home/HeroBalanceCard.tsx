@@ -5,7 +5,8 @@ import { Card } from '@/components/ui'
 import type { Account, Transaction } from '@/data/contracts'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
-import { maskIbanPanel } from '@/lib/privacy'
+import { maskIbanPanel, revealIbanDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 
 export interface HeroBalanceCardProps {
   account: Account | undefined
@@ -26,6 +27,7 @@ export interface HeroBalanceCardProps {
 export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceCardProps) {
   const [hidden, setHidden] = useState(false)
   const [copied, setCopied] = useState(false)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   const balanceMajor = account ? account.balance_minor / 100 : 0
   const savingsMajor = account ? account.savings_minor / 100 : 0
@@ -63,7 +65,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
             aria-label="Copiar IBAN"
           >
             <span style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }}>
-              {account ? maskIbanPanel(account.iban) : '—'}
+              {account ? streamerMode ? maskIbanPanel(account.iban) : revealIbanDisplay(account.iban) : '—'}
             </span>
             {copied ? (
               <CheckCheck size={11} className="text-semantic-success-deep" />

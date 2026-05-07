@@ -1,2 +1,3 @@
-export { AceGate, AceLockedState, useAceGate } from './AceGate'
+export * from './AceGate'
+export * from './StreamerModeToggle'
 export type { AceGateProps, AceLockedStateProps, UseAceGateArgs } from './AceGate'

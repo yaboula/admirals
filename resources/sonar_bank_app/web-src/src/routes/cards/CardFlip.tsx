@@ -74,7 +74,7 @@ export function CardFlip({
         style={{ cursor: interactive ? 'pointer' : 'default' }}
       >
         {flipped ? (
-          <CardBack card={card} design={design} compact={compact} />
+          <CardBack card={card} design={design} revealed={revealed} compact={compact} />
         ) : (
           <CardVisual
             card={card}
@@ -134,7 +134,7 @@ export function CardFlip({
             transform: 'rotateY(180deg)',
           }}
         >
-          <CardBack card={card} design={design} compact={compact} />
+          <CardBack card={card} design={design} revealed={revealed} compact={compact} />
         </div>
       </motion.div>
     </div>

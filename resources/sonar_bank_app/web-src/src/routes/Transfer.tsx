@@ -27,9 +27,10 @@ import type { Account, RecentRecipient } from '@/data/contracts'
 import { getUserMessage, handleBankError } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
 import { cn, formatCurrency } from '@/lib/utils'
-import { maskIbanCompact, maskIbanDisplay, maskOperationCode } from '@/lib/privacy'
+import { maskIbanCompact, maskIbanDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 import { useTransferWizard, type TransferWizardStep } from '@/stores/transferWizard'
+import { usePrivacyMode } from '@/stores/privacy'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 
 const STEPS: Array<{ id: TransferWizardStep; label: string; helper: string }> = [
@@ -66,6 +67,7 @@ export function Transfer() {
   const setStep = useTransferWizard((s) => s.setStep)
   const clearOperationIds = useTransferWizard((s) => s.clearOperationIds)
   const reset = useTransferWizard((s) => s.reset)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   useEffect(() => {
     if (step !== 'confirm' && (!idempotencyKey || !correlationId)) init(false)
@@ -112,7 +114,7 @@ export function Transfer() {
       setReceipt(nextReceipt)
       clearOperationIds()
       sfx.vault_close()
-      toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? maskIbanCompact(recipientIban)}`)
+      toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? (streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban))}`)
 
       if (fallbackRefetchTimerRef.current) {
         window.clearTimeout(fallbackRefetchTimerRef.current)
@@ -224,6 +226,11 @@ function TransferHero({
   recipientAlias: string | null
   recipientIban: string | null
 }) {
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const destination = recipientIban
+    ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
+    : 'Pendiente'
+
   return (
     <Card variant="glass" padding="none" className="relative overflow-hidden border-white/10 shrink-0 rounded-[1.75rem]">
       <div
@@ -252,7 +259,7 @@ function TransferHero({
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[430px]">
           <HeroMetric label="Disponible" value={account ? formatCurrency(account.balance_minor / 100) : '—'} />
           <HeroMetric label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} />
-          <HeroMetric label="Destino" value={recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : 'Pendiente')} />
+          <HeroMetric label="Destino" value={recipientAlias ?? destination} />
         </div>
       </div>
     </Card>
@@ -540,7 +547,9 @@ function RecipientStep({ account }: { account: Account | null }) {
 }
 
 function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipient; active: boolean; onClick: () => void }) {
-  const label = recipient.alias ?? maskIbanCompact(recipient.counterpart_iban)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const ibanLabel = streamerMode ? maskIbanCompact(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)
+  const label = recipient.alias ?? ibanLabel
   return (
     <button
       type="button"
@@ -555,7 +564,7 @@ function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipi
       <BankAvatar name={label} size="md" />
       <span className="min-w-0 flex-1 flex flex-col gap-0.5">
         <span className="text-sm font-semibold text-text-primary truncate">{label}</span>
-        <span className="text-[11px] text-text-tertiary truncate">{maskIbanDisplay(recipient.counterpart_iban)}</span>
+        <span className="text-[11px] text-text-tertiary truncate">{streamerMode ? maskIbanDisplay(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)}</span>
       </span>
       <span className="text-[11px] font-semibold text-text-secondary tactile-tabular-nums">×{recipient.transfer_count}</span>
     </button>
@@ -570,7 +579,11 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
   const expressMode = useTransferWizard((s) => s.expressMode)
   const correlationId = useTransferWizard((s) => s.correlationId)
   const setStep = useTransferWizard((s) => s.setStep)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const large = Boolean(amount && isLargeTransfer(amount))
+  const fromIban = account ? streamerMode ? maskIbanDisplay(account.iban) : revealIbanDisplay(account.iban) : '—'
+  const toIban = recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : undefined
+  const recipientLabel = recipientAlias ?? (recipientIban ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban) : '—')
 
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 2xl:gap-5 pb-1">
@@ -579,10 +592,10 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
             <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">Código de seguridad</span>
-            <span className="text-xs font-mono text-text-tertiary text-right">{maskOperationCode(correlationId)}</span>
+            <span className="text-xs font-mono text-text-tertiary text-right">{streamerMode ? maskOperationCode(correlationId) : revealOperationCode(correlationId)}</span>
           </div>
-          <ReviewRow label="Desde" value={account ? maskIbanDisplay(account.iban) : '—'} />
-          <ReviewRow label="Para" value={recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : '—')} helper={recipientIban ? maskIbanDisplay(recipientIban) : undefined} />
+          <ReviewRow label="Desde" value={fromIban} />
+          <ReviewRow label="Para" value={recipientLabel} helper={toIban} />
           <ReviewRow label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} strong />
           <ReviewRow label="Concepto" value={memo.trim() || 'Sin concepto'} />
         </div>
@@ -718,6 +731,7 @@ function ConfirmStep({
   onNew: () => void
 }) {
   const [pdfPending, setPdfPending] = useState(false)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   const handleDownloadReceiptPdf = async (): Promise<void> => {
     if (!receipt || pdfPending) return
@@ -727,14 +741,17 @@ function ConfirmStep({
       const { downloadTransferReceiptPdf } = await import('./transfer/receipt-pdf')
       await downloadTransferReceiptPdf({
         receipt,
-        recipientLabel: recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : maskIbanCompact(receipt.to_iban)),
+        recipientLabel: recipientAlias ?? (recipientIban
+          ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
+          : streamerMode ? maskIbanCompact(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)),
         amountLabel: formatCurrency((amount ?? receipt.amount_minor) / 100),
-        fromIbanMasked: maskIbanDisplay(receipt.from_iban),
-        toIbanMasked: maskIbanDisplay(receipt.to_iban),
+        fromIbanMasked: streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban),
+        toIbanMasked: streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban),
         timestampLabel: formatReceiptTime(receipt.committed_at_ms),
+        streamerMode,
       })
       sfx.coin_clink()
-      toast.success('Recibo PDF generado', maskOperationCode(receipt.transaction_id))
+      toast.success('Recibo PDF generado', streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id))
     } catch {
       toast.warning('No se pudo generar el PDF', 'Inténtalo de nuevo en unos segundos.')
     } finally {
@@ -770,13 +787,13 @@ function ConfirmStep({
       tone="success"
       icon={<CheckCircle2 size={38} strokeWidth={1.8} />}
       title="Transferencia completada"
-      description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : 'destinatario')}.`}
+      description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban) : 'destinatario')}.`}
     >
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-3.5 text-left">
-        <ReceiptRow label="Recibo" value={maskOperationCode(receipt.transaction_id)} mono />
-        <ReceiptRow label="Código de seguridad" value={maskOperationCode(receipt.correlation_id)} mono />
-        <ReceiptRow label="Origen" value={maskIbanDisplay(receipt.from_iban)} />
-        <ReceiptRow label="Destino" value={maskIbanDisplay(receipt.to_iban)} helper={recipientAlias ?? undefined} />
+        <ReceiptRow label="Recibo" value={streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id)} mono />
+        <ReceiptRow label="Código de seguridad" value={streamerMode ? maskOperationCode(receipt.correlation_id) : revealOperationCode(receipt.correlation_id)} mono />
+        <ReceiptRow label="Origen" value={streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban)} />
+        <ReceiptRow label="Destino" value={streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)} helper={recipientAlias ?? undefined} />
         <ReceiptRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
         <ReceiptRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
         <ReceiptRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
@@ -840,7 +857,8 @@ function TransferRail({
   recipientAlias: string | null
   recipientIban: string | null
 }) {
-  const destinationLabel = recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : 'Selecciona destino')
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const destinationLabel = recipientAlias ?? (recipientIban ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban) : 'Selecciona destino')
   const hasDestination = Boolean(recipientAlias || recipientIban)
   const hasAmount = Boolean(amount)
   return (
@@ -878,7 +896,7 @@ function TransferRail({
               <BankAvatar name={destinationLabel} size="lg" />
               <span className="min-w-0 flex flex-col">
                 <span className="text-sm font-semibold text-white truncate">{destinationLabel}</span>
-                <span className="text-[11px] text-white/46 truncate">{recipientIban ? maskIbanDisplay(recipientIban) : 'Pendiente de seleccionar'}</span>
+                <span className="text-[11px] text-white/46 truncate">{recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : 'Pendiente de seleccionar'}</span>
               </span>
             </div>
           </div>
@@ -890,7 +908,7 @@ function TransferRail({
           </div>
 
           <div className="mt-auto pt-4 space-y-2">
-            <Metric label="Origen" value={account ? maskIbanCompact(account.iban) : '—'} />
+            <Metric label="Origen" value={account ? streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban) : '—'} />
             {memo.trim() ? <Metric label="Concepto" value={memo.trim()} /> : null}
           </div>
         </div>

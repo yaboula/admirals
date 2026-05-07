@@ -5,6 +5,7 @@ import type { BankCardMock } from '@/data/contracts'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { useCardsUi } from '@/stores/cardsUi'
+import { usePrivacyMode } from '@/stores/privacy'
 import { CardFlip } from './CardFlip'
 
 /**
@@ -47,6 +48,8 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
   const toggleFlip = useCardsUi((s) => s.toggleFlip)
   const revealCard = useCardsUi((s) => s.revealCard)
   const hideReveal = useCardsUi((s) => s.hideReveal)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const setStreamerMode = usePrivacyMode((s) => s.setStreamerMode)
   const now = Date.now()
 
   // Resolve the focused card index. Default = 0 (first active card per
@@ -158,11 +161,15 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
                     card={card}
                     flipped={flippedIds.includes(card.card_id)}
                     onFlip={() => toggleFlip(card.card_id)}
-                    revealed={(revealedUntil[card.card_id] ?? 0) > now}
+                    revealed={!streamerMode && (revealedUntil[card.card_id] ?? 0) > now}
                     onToggleReveal={() => {
                       const expiry = revealedUntil[card.card_id] ?? 0
-                      if (expiry > now) hideReveal(card.card_id)
-                      else revealCard(card.card_id)
+                      if (!streamerMode && expiry > now) {
+                        hideReveal(card.card_id)
+                      } else {
+                        if (streamerMode) setStreamerMode(false)
+                        revealCard(card.card_id)
+                      }
                     }}
                     interactive={isFocused}
                     className={cn(!isFocused && 'cursor-pointer')}

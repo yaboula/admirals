@@ -1,4 +1,5 @@
 import type { BankCardMock } from '@/data/contracts'
+import { maskCvvDisplay, revealCvvDisplay } from '@/lib/privacy'
 import { cn } from '@/lib/utils'
 import { resolveCardDesign, type CardDesign } from './cardDesigns'
 
@@ -19,11 +20,12 @@ import { resolveCardDesign, type CardDesign } from './cardDesigns'
 export interface CardBackProps {
   card: BankCardMock
   design?: CardDesign
+  revealed?: boolean
   compact?: boolean
   className?: string
 }
 
-export function CardBack({ card, design: designOverride, compact = false, className }: CardBackProps) {
+export function CardBack({ card, design: designOverride, revealed = false, compact = false, className }: CardBackProps) {
   const design = designOverride ?? resolveCardDesign(card.design_id)
 
   return (
@@ -75,7 +77,7 @@ export function CardBack({ card, design: designOverride, compact = false, classN
         {/* Signature panel + CVV row */}
         <div className="flex items-stretch gap-2 mb-2.5">
           <SignaturePanel holder={card.holder_name} compact={compact} />
-          <CvvBox compact={compact} />
+          <CvvBox cvv={revealed ? revealCvvDisplay(card.cvv) : maskCvvDisplay()} compact={compact} />
         </div>
 
         {/* Footer row: disclaimer + last4 echo */}
@@ -167,7 +169,7 @@ function SignaturePanel({ holder, compact }: { holder: string; compact: boolean 
 }
 
 /** White inline box showing CVV2 with a "CVV" caption above it. */
-function CvvBox({ compact }: { compact: boolean }) {
+function CvvBox({ cvv, compact }: { cvv: string; compact: boolean }) {
   return (
     <div
       className={cn(
@@ -190,7 +192,7 @@ function CvvBox({ compact }: { compact: boolean }) {
           letterSpacing: '0.08em',
         }}
       >
-        •••
+        {cvv}
       </span>
     </div>
   )

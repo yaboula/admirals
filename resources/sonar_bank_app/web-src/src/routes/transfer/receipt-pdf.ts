@@ -1,5 +1,5 @@
 ﻿import type { TransferReceipt } from '@/data/mutations'
-import { maskOperationCode } from '@/lib/privacy'
+import { maskOperationCode, revealOperationCode } from '@/lib/privacy'
 
 export interface TransferReceiptPdfInput {
   receipt: TransferReceipt
@@ -8,6 +8,7 @@ export interface TransferReceiptPdfInput {
   fromIbanMasked: string
   toIbanMasked: string
   timestampLabel: string
+  streamerMode: boolean
 }
 
 interface CanvasTextOptions {
@@ -133,14 +134,14 @@ function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptP
   line(ctx, x, y, x + w, y, COLORS.brand, 1.4)
 
   const rows: Array<[string, string]> = [
-    ['Nº de recibo', maskOperationCode(input.receipt.transaction_id)],
-    ['Código de seguridad', maskOperationCode(input.receipt.correlation_id)],
+    ['Nº de recibo', input.streamerMode ? maskOperationCode(input.receipt.transaction_id) : revealOperationCode(input.receipt.transaction_id)],
+    ['Código de seguridad', input.streamerMode ? maskOperationCode(input.receipt.correlation_id) : revealOperationCode(input.receipt.correlation_id)],
     ['Origen', input.fromIbanMasked],
     ['Destino', input.toIbanMasked],
     ['Concepto', input.receipt.reason?.trim() || 'Sin concepto'],
     ['Fecha', input.timestampLabel],
     ['Balance disponible', formatMinorCurrency(input.receipt.available_balance_minor)],
-    ['Referencia bancaria', maskOperationCode(input.receipt.idempotency_key)],
+    ['Referencia bancaria', input.streamerMode ? maskOperationCode(input.receipt.idempotency_key) : revealOperationCode(input.receipt.idempotency_key)],
   ]
 
   let rowY = y + 58

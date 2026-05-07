@@ -8,7 +8,8 @@ import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
 import { formatCurrency } from '@/lib/utils'
-import { maskIbanPanel, maskOperationCode } from '@/lib/privacy'
+import { maskIbanPanel, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import { TransactionsHero } from './transactions/TransactionsHero'
@@ -141,6 +142,8 @@ function TransactionInsightPanel({
   selected: boolean
   onClose: () => void
 }) {
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+
   if (!tx) {
     return (
       <Card variant="glass" padding="none" className="relative min-h-0 overflow-hidden rounded-[1.75rem] border-white/10">
@@ -235,8 +238,8 @@ function TransactionInsightPanel({
         <div className="mt-4 space-y-2">
           <PanelRow label="Estado" value={STATUS_PANEL[tx.status].label} icon={<StatusIcon size={14} strokeWidth={2.3} />} />
           <PanelRow label="Hora" value={formatPanelTime(tx.timestamp_ms)} />
-          <PanelRow label="IBAN" value={maskIbanPanel(meta.counterpartIban)} mono action={<button type="button" onClick={copyIban} className="text-white/44 hover:text-white"><Copy size={13} /></button>} />
-          <PanelRow label="Recibo" value={maskOperationCode(tx.txn_id)} mono />
+          <PanelRow label="IBAN" value={streamerMode ? maskIbanPanel(meta.counterpartIban) : revealIbanDisplay(meta.counterpartIban)} mono action={<button type="button" onClick={copyIban} className="text-white/44 hover:text-white"><Copy size={13} /></button>} />
+          <PanelRow label="Recibo" value={streamerMode ? maskOperationCode(tx.txn_id) : revealOperationCode(tx.txn_id)} mono />
         </div>
       </div>
     </Card>

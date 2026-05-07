@@ -8,7 +8,8 @@ import { sfx } from '@/lib/sfx'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { toast } from '@/stores/toast'
 import { cn, formatRelativeTime } from '@/lib/utils'
-import { maskIbanCompact } from '@/lib/privacy'
+import { maskIbanCompact, revealIbanDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 import { getMockInitialsForIban } from '@/data/mock/seed'
 
 /**
@@ -23,6 +24,7 @@ export function CompactQuickTransfer() {
   const initWizard = useTransferWizard((s) => s.init)
   const setRecipient = useTransferWizard((s) => s.setRecipient)
   const setAmount = useTransferWizard((s) => s.setAmount)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   const handleQuickSend = (r: RecentRecipient, amount: number): void => {
     initWizard(true)
@@ -31,7 +33,7 @@ export function CompactQuickTransfer() {
     sfx.coin_clink()
     toast.info(
       'Transferencia iniciada',
-      `${formatEur(amount / 100)} → ${r.alias ?? maskIbanCompact(r.counterpart_iban)}`,
+      `${formatEur(amount / 100)} → ${r.alias ?? (streamerMode ? maskIbanCompact(r.counterpart_iban) : revealIbanDisplay(r.counterpart_iban))}`,
     )
     navigate('/transferir')
   }
@@ -106,6 +108,7 @@ function CompactRow({
   onQuickSend: (r: RecentRecipient, amount: number) => void
   index: number
 }) {
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const initials =
     recipient.alias
       ?.split(' ')
@@ -157,7 +160,7 @@ function CompactRow({
 
       <div className="flex-1 flex flex-col min-w-0 leading-tight">
         <span className="text-xs font-medium text-text-primary tactile-wght-breathing truncate">
-          {recipient.alias ?? maskIbanCompact(recipient.counterpart_iban)}
+          {recipient.alias ?? (streamerMode ? maskIbanCompact(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban))}
         </span>
         <span className="text-[10px] text-text-tertiary tactile-tabular-nums truncate">
           {formatRelativeTime(recipient.last_transfer_ms)} · ×{recipient.transfer_count}

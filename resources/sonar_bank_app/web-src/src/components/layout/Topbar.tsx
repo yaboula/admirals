@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { toast } from '@/stores/toast'
 import { BankAvatar } from '@/components/brand/BankAvatar'
+import { StreamerModeToggle } from '@/components/security'
 
 export interface TopbarProps {
   greeting?: string
@@ -89,6 +90,7 @@ export function Topbar({
       </div>
 
       <div className="relative z-10 ml-auto flex items-center gap-2">
+        <StreamerModeToggle />
         <IconButton
           icon={<RotateCcw size={16} strokeWidth={1.9} />}
           aria-label="Actualizar"

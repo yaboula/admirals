@@ -6,7 +6,8 @@ import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
 import { handleBankError } from '@/lib/bankError'
-import { maskIbanCompact } from '@/lib/privacy'
+import { maskIbanCompact, revealIbanDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 import { resolveCardDesign } from './cardDesigns'
 import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
 import { useFreezeCard } from '@/data/mutations'
@@ -32,6 +33,15 @@ export interface CardDetailsProps {
 }
 
 export function CardDetails({ card, className }: CardDetailsProps) {
+  const flippedIds = useCardsUi((s) => s.flippedCardIds)
+  const toggleFlip = useCardsUi((s) => s.toggleFlip)
+  const openDialog = useCardsUi((s) => s.openDialog)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const setStreamerMode = usePrivacyMode((s) => s.setStreamerMode)
+  const cardId = card?.card_id ?? '__none__'
+  const { revealed, remainingMs, reveal, hide } = useCardReveal(cardId)
+  const freezeMutation = useFreezeCard()
+
   if (!card) {
     return (
       <Card variant="glass" padding="md" className={cn('border-white/10 flex flex-col items-center justify-center text-center', className)}>
@@ -45,25 +55,24 @@ export function CardDetails({ card, className }: CardDetailsProps) {
   }
 
   const design = resolveCardDesign(card.design_id)
-  const flippedIds = useCardsUi((s) => s.flippedCardIds)
-  const toggleFlip = useCardsUi((s) => s.toggleFlip)
-  const openDialog = useCardsUi((s) => s.openDialog)
-
-  const { revealed, remainingMs, reveal, hide } = useCardReveal(card.card_id)
   const remainingSec = Math.ceil(remainingMs / 1000)
 
-  const freezeMutation = useFreezeCard()
   const isLocked = card.status === 'locked'
   const isExpired = card.status === 'expired'
   const freezePending = freezeMutation.isPending
 
   const flipped = flippedIds.includes(card.card_id)
+  const effectiveRevealed = !streamerMode && revealed
 
   const handleToggleReveal = () => {
-    if (revealed) {
+    if (effectiveRevealed) {
       hide()
       sfx.console_tap()
     } else {
+      if (streamerMode) {
+        setStreamerMode(false)
+        toast.warning('Streamer Mode pausado', 'Número de tarjeta visible durante unos segundos.')
+      }
       reveal()
       sfx.panel_open()
     }
@@ -159,7 +168,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         <dl className="grid grid-cols-2 gap-2.5">
           <MetaItem icon={User2} label="Titular" value={card.holder_name} accent={design.accent} />
           <MetaItem icon={CalendarDays} label="Caduca" value={expiryStr} accent={design.accent} mono />
-          <MetaItem icon={Wallet} label="Vinculada" value={maskIbanCompact(card.iban)} accent={design.accent} mono />
+          <MetaItem icon={Wallet} label="Vinculada" value={streamerMode ? maskIbanCompact(card.iban) : revealIbanDisplay(card.iban)} accent={design.accent} mono />
           <MetaItem
             icon={Sparkles}
             label="Tipo"
@@ -215,12 +224,12 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             <ActionButton
               icon={Eye}
               label={
-                revealed
+                effectiveRevealed
                   ? `Ocultar número · ${String(remainingSec).padStart(2, '0')}s`
-                  : 'Ver número'
+                  : streamerMode ? 'Pausar Streamer' : 'Ver número'
               }
               onClick={handleToggleReveal}
-              active={revealed}
+              active={effectiveRevealed}
             />
             <ActionButton
               icon={RotateCw}
