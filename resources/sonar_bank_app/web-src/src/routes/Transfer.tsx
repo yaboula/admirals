@@ -38,6 +38,7 @@ const STEPS: Array<{ id: TransferWizardStep; label: string; helper: string }> = 
 ]
 
 const EXPRESS_STEPS: TransferWizardStep[] = ['review', 'confirm']
+const HOLD_TO_CONFIRM_MS = 1500
 
 export function Transfer() {
   const navigate = useNavigate()
@@ -70,6 +71,7 @@ export function Transfer() {
   }, [amount, expressMode, recipientIban, setStep, step])
 
   const visibleSteps = expressMode ? STEPS.filter((s) => EXPRESS_STEPS.includes(s.id)) : STEPS
+  const isReviewStep = step === 'review'
 
   const canExecute = Boolean(primaryAccount && amount && recipientIban && idempotencyKey && correlationId)
 
@@ -119,7 +121,14 @@ export function Transfer() {
       transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
       className="h-full w-full"
     >
-      <div className="h-full w-full mx-auto max-w-[1400px] grid grid-cols-[minmax(0,1fr)_320px] gap-4 2xl:gap-5 min-h-0">
+      <div
+        className={cn(
+          'h-full w-full mx-auto grid min-h-0',
+          isReviewStep
+            ? 'max-w-[1080px] grid-cols-1'
+            : 'max-w-[1400px] grid-cols-[minmax(0,1fr)_320px] gap-4 2xl:gap-5',
+        )}
+      >
         <section className="min-h-0 flex flex-col gap-4">
           <TransferHero expressMode={expressMode} account={primaryAccount} />
           <Card variant="glass" padding="lg" className="min-h-0 flex-1 border-white/10 overflow-hidden">
@@ -156,14 +165,16 @@ export function Transfer() {
             </div>
           </Card>
         </section>
-        <TransferRail
-          account={primaryAccount}
-          amount={amount}
-          memo={memo}
-          recipientAlias={recipientAlias}
-          recipientIban={recipientIban}
-          expressMode={expressMode}
-        />
+        {!isReviewStep ? (
+          <TransferRail
+            account={primaryAccount}
+            amount={amount}
+            memo={memo}
+            recipientAlias={recipientAlias}
+            recipientIban={recipientIban}
+            expressMode={expressMode}
+          />
+        ) : null}
       </div>
     </motion.div>
   )
@@ -481,6 +492,7 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
   const recipientIban = useTransferWizard((s) => s.recipientIban)
   const recipientAlias = useTransferWizard((s) => s.recipientAlias)
   const expressMode = useTransferWizard((s) => s.expressMode)
+  const correlationId = useTransferWizard((s) => s.correlationId)
   const setStep = useTransferWizard((s) => s.setStep)
   const large = Boolean(amount && isLargeTransfer(amount))
 
@@ -489,7 +501,11 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
       <div className="flex flex-col gap-5">
         <StepHeader icon={<ReceiptText size={18} />} title="Revisa y firma" description="Comprueba cada dato antes de mantener pulsado para enviar." />
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-5 flex flex-col gap-4">
-          <ReviewRow label="Desde" value={account ? formatIban(account.iban) : '—'} />
+          <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
+            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">Metadatos</span>
+            <span className="text-xs font-mono text-text-tertiary text-right break-all">correlation_id · {correlationId ?? '—'}</span>
+          </div>
+          <ReviewRow label="Desde" value={account ? formatIbanMasked(account.iban) : '—'} />
           <ReviewRow label="Para" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : '—')} helper={recipientIban ? formatIban(recipientIban) : undefined} />
           <ReviewRow label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} strong />
           <ReviewRow label="Concepto" value={memo.trim() || 'Sin concepto'} />
@@ -569,12 +585,12 @@ function HoldToConfirmButton({ disabled, onConfirm }: { disabled: boolean; onCon
     startRef.current = performance.now()
     setHolding(true)
     intervalRef.current = window.setInterval(() => {
-      setProgress(Math.min(1, (performance.now() - startRef.current) / 900))
+      setProgress(Math.min(1, (performance.now() - startRef.current) / HOLD_TO_CONFIRM_MS))
     }, 16)
     timerRef.current = window.setTimeout(() => {
       clear()
       onConfirm()
-    }, 900)
+    }, HOLD_TO_CONFIRM_MS)
   }
 
   useEffect(() => clear, [])
@@ -776,6 +792,12 @@ function parseAmountMinor(value: string): number | null {
 
 function formatMajorInput(amountMinor: number): string {
   return (amountMinor / 100).toFixed(2)
+}
+
+function formatIbanMasked(iban: string): string {
+  const compact = normalizeIban(iban)
+  if (compact.length < 8) return formatIbanShort(iban)
+  return `${compact.slice(0, 4)} **** **** ${compact.slice(-4)}`
 }
 
 function formatIbanShort(iban: string): string {
