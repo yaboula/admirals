@@ -6,6 +6,7 @@ import { Card } from '@/components/ui'
 import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
+import { RequestCardBanner } from './cards/RequestCardBanner'
 import { LimitsModal } from './cards/LimitsModal'
 import { DesignPickerDialog } from './cards/DesignPickerDialog'
 
@@ -87,13 +88,14 @@ export function Cards() {
           <Card
             variant="glass"
             padding="md"
-            className="min-h-0 border-white/10 flex flex-col overflow-hidden"
+            className="min-h-0 border-white/10 flex flex-col gap-3 2xl:gap-4 overflow-hidden"
           >
             <div className="flex-1 min-h-0 flex items-center justify-center">
               <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto">
                 <CardCarousel cards={cards} />
               </div>
             </div>
+            <RequestCardBanner />
           </Card>
         </section>
 

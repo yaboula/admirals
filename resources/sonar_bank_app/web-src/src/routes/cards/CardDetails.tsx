@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check, Palette, Loader2 } from 'lucide-react'
+import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check, Loader2 } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -209,16 +209,6 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             disabled={isExpired}
           />
         </div>
-        <ActionButton
-          icon={Palette}
-          label="Personalizar diseño"
-          onClick={() => {
-            sfx.panel_open()
-            openDialog('design', card.card_id)
-          }}
-          disabled={isExpired}
-          fullWidth
-        />
       </div>
     </Card>
   )

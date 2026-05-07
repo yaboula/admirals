@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
@@ -6,12 +5,11 @@ import {
   ArrowLeftRight,
   CreditCard,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Receipt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
+import sonarMonogramUrl from '@/assets/branding/monogram_s.svg'
 
 interface NavItem {
   to: string
@@ -42,114 +40,60 @@ export interface SidebarProps {
  * Manual toggle wins: once the user clicks the chevron, we stop syncing with
  * the media query so we don't bounce their preference back.
  */
-const COLLAPSE_BREAKPOINT = 1280
-
-export function Sidebar({ defaultCollapsed }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof defaultCollapsed === 'boolean') return defaultCollapsed
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < COLLAPSE_BREAKPOINT
-  })
-  const [userOverride, setUserOverride] = useState(false)
-
-  useEffect(() => {
-    if (userOverride) return
-    if (typeof window === 'undefined') return
-    const mq = window.matchMedia(`(max-width: ${COLLAPSE_BREAKPOINT - 1}px)`)
-    const apply = () => setCollapsed(mq.matches)
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [userOverride])
-
+export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 76 : 248 }}
+      animate={{ width: 88 }}
       transition={{ type: 'spring', stiffness: 260, damping: 30 }}
       className={cn(
-        'relative h-full flex-shrink-0',
-        'flex flex-col',
-        'border-r border-border-subtle',
-        'bg-surface-void/60',
-        'backdrop-blur-md',
+        'relative h-full flex-shrink-0 p-3',
+        'flex flex-col items-center',
         'z-[var(--z-sidebar)]',
       )}
     >
-      {/* Brand */}
-      <div className={cn('flex items-center gap-3 px-5 py-6', collapsed && 'justify-center px-0')}>
+      <div
+        className="h-full w-full rounded-[2rem] flex flex-col items-center overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, oklch(0.08 0.018 45 / 0.86), oklch(0.045 0.010 40 / 0.78))',
+          border: '1px solid oklch(1 0 0 / 0.07)',
+          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.06), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
+          backdropFilter: 'blur(24px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+        }}
+      >
+      <div className="flex items-center justify-center pt-5 pb-4">
         <div
-          className="relative flex h-9 w-9 items-center justify-center rounded-xl"
+          className="relative flex h-10 w-10 items-center justify-center rounded-2xl"
           style={{
-            background: 'var(--gradient-primary)',
-            boxShadow: 'var(--shadow-tactile-button-primary)',
+            background: 'oklch(0.035 0.01 30 / 0.72)',
+            border: '1px solid oklch(1 0 0 / 0.08)',
+            boxShadow: '0 0 28px -8px oklch(0.72 0.22 40 / 0.68), inset 0 1px 0 oklch(1 0 0 / 0.05)',
           }}
           aria-hidden
         >
-          <span className="absolute inset-0 rounded-xl tactile-conic-edge pointer-events-none" />
-          <span className="font-bold text-text-primary tracking-tight text-lg">S</span>
+          <img src={sonarMonogramUrl} alt="" className="h-7 w-7 object-contain" />
         </div>
-        {!collapsed && (
-          <motion.div
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.08 }}
-            className="flex flex-col"
-          >
-            <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">SONAR</span>
-            <span className="text-base font-semibold tracking-tight text-text-primary">Bank</span>
-          </motion.div>
-        )}
       </div>
 
       <div
         aria-hidden
-        className="mx-3 h-px"
-        style={{ background: 'oklch(1 0 0 / 0.04)' }}
+        className="w-8 h-px"
+        style={{ background: 'oklch(1 0 0 / 0.08)' }}
       />
 
-      {/* Nav primary */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
+      <nav className="flex-1 py-4 flex flex-col items-center gap-2.5">
         {NAV_ITEMS.map((item) => (
-          <SidebarItem key={item.to} item={item} collapsed={collapsed} />
+          <SidebarItem key={item.to} item={item} />
         ))}
       </nav>
 
-      {/* Subtle separator before footer block */}
-      <div
-        aria-hidden
-        className="mx-4 h-px"
-        style={{
-          background:
-            'linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.06) 50%, transparent 100%)',
-        }}
-      />
-
-      <div className="px-3 py-3 flex flex-col gap-0.5">
+      <div className="pb-5 flex flex-col items-center gap-2.5">
         {FOOTER_ITEMS.map((item) => (
-          <SidebarItem key={item.to} item={item} collapsed={collapsed} />
+          <SidebarItem key={item.to} item={item} />
         ))}
       </div>
-
-      {/* Collapse toggle */}
-      <button
-        type="button"
-        aria-label={collapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
-        onClick={() => {
-          setCollapsed((c) => !c)
-          setUserOverride(true)
-          sfx.layer_dive()
-        }}
-        className={cn(
-          'absolute top-7 -right-3 z-10 inline-flex items-center justify-center',
-          'h-6 w-6 rounded-full',
-          'border border-border-medium bg-surface-card-elevated text-text-tertiary',
-          'hover:text-text-primary hover:border-border-strong transition-colors',
-        )}
-        style={{ boxShadow: 'var(--shadow-tactile-button-secondary)' }}
-      >
-        {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
+      </div>
     </motion.aside>
   )
 }
@@ -162,28 +106,19 @@ export function Sidebar({ defaultCollapsed }: SidebarProps) {
  *
  * Icons: unified outline style (lucide-react), strokeWidth 1.7 across all states.
  */
-function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+function SidebarItem({ item }: { item: NavItem }) {
   const Icon = item.icon
   if (item.disabled) {
     return (
       <div
         className={cn(
-          'group relative flex items-center gap-3 rounded-md px-3 py-2',
+          'group relative flex h-11 w-11 items-center justify-center rounded-2xl',
           'cursor-not-allowed opacity-50 select-none',
-          collapsed && 'justify-center px-0',
         )}
         title={`${item.label} (próximamente)`}
         style={{ color: 'oklch(0.55 0.01 270 / 0.6)' }}
       >
-        <Icon size={17} strokeWidth={1.7} className="shrink-0" />
-        {!collapsed && (
-          <span className="text-sm font-medium flex-1 truncate">{item.label}</span>
-        )}
-        {!collapsed && item.badge && (
-          <span className="text-[9px] uppercase tracking-wider text-text-tertiary border border-border-subtle rounded px-1 py-0.5">
-            {item.badge}
-          </span>
-        )}
+        <Icon size={18} strokeWidth={1.8} className="shrink-0" />
       </div>
     )
   }
@@ -194,50 +129,21 @@ function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean })
       onClick={() => sfx.console_tap()}
       className={({ isActive }) =>
         cn(
-          'sidebar-item group relative flex items-center gap-3 rounded-md px-3 py-2',
-          'transition-[background-color,color] duration-180',
-          collapsed && 'justify-center px-0',
+          'group relative flex h-11 w-11 items-center justify-center rounded-2xl',
+          'transition-[background-color,color,box-shadow,transform] duration-180',
           isActive && 'sidebar-item--active',
         )
       }
     >
       {({ isActive }) => (
         <>
-          {isActive && !collapsed && (
-            <span
-              aria-hidden
-              className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
-              style={{ background: 'var(--gradient-primary)' }}
-            />
-          )}
+          {isActive && <span aria-hidden className="absolute inset-0 rounded-2xl tactile-conic-edge pointer-events-none" />}
           <Icon
-            size={17}
-            strokeWidth={1.7}
+            size={18}
+            strokeWidth={1.8}
             className="shrink-0"
             style={{ color: 'currentColor' }}
           />
-          {!collapsed && (
-            <span className="text-sm font-medium flex-1 truncate tactile-wght-breathing">
-              {item.label}
-            </span>
-          )}
-          {!collapsed && item.badge && (
-            <span
-              className="text-[9px] uppercase tracking-wider rounded px-1 py-0.5"
-              style={{
-                color: isActive
-                  ? 'var(--color-brand-signal-orange-light)'
-                  : 'oklch(0.55 0.012 270)',
-                border: `1px solid ${
-                  isActive
-                    ? 'var(--color-border-brand-subtle)'
-                    : 'var(--color-border-subtle)'
-                }`,
-              }}
-            >
-              {item.badge}
-            </span>
-          )}
         </>
       )}
     </NavLink>

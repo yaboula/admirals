@@ -1,18 +1,20 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Search, Volume2, VolumeX, User } from 'lucide-react'
-import { Input, IconButton } from '@/components/ui'
-import { StatusBadge } from './StatusBadge'
+import { Bell, ChevronDown, Moon, RotateCcw, Search } from 'lucide-react'
+import { IconButton } from '@/components/ui'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
 import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { toast } from '@/stores/toast'
+import { BankAvatar } from '@/components/brand/BankAvatar'
 
 export interface TopbarProps {
   greeting?: string
   subtitle?: string
   /** Citizen / user identifier rendered in the profile chip. */
   userInitials?: string
+  profileName?: string
+  profileHandle?: string
 }
 
 /**
@@ -23,6 +25,8 @@ export function Topbar({
   greeting = 'Buenos días',
   subtitle = 'SONAR Bank',
   userInitials,
+  profileName,
+  profileHandle,
 }: TopbarProps) {
   const [muted, setMuted] = useState(sfx.getMuted())
   const [query, setQuery] = useState('')
@@ -46,41 +50,60 @@ export function Topbar({
   }
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 px-5 lg:px-7 h-14',
-        'border-b border-border-subtle',
-      )}
-      style={{
-        background: 'oklch(0.04 0.005 270 / 0.6)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      }}
-    >
-      <div className="flex flex-col leading-tight min-w-0 max-w-[180px]">
-        <span className="text-[9px] uppercase tracking-[0.20em] text-text-tertiary font-medium truncate">
-          {subtitle}
-        </span>
-        <span className="text-sm font-semibold text-text-primary tactile-wght-breathing truncate">
-          {greeting}
-        </span>
-      </div>
+    <div className="relative h-16 px-4 lg:px-6 flex items-center">
+      <div
+        aria-hidden
+        className="absolute inset-x-4 top-0 h-16 rounded-b-[1.75rem] pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(180deg, oklch(0.10 0.018 45 / 0.56), oklch(0.055 0.010 35 / 0.18))',
+          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05)',
+          backdropFilter: 'blur(18px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(150%)',
+        }}
+      />
 
-      <form onSubmit={submitSearch} className="flex-1 flex justify-center max-w-md mx-auto w-full">
-        <Input
-          type="search"
-          inputSize="sm"
-          placeholder="Buscar movimientos, IBAN o beneficiario…"
-          leftAdornment={<Search size={14} strokeWidth={2} />}
-          aria-label="Buscar movimientos"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          fullWidth
-        />
+      <form onSubmit={submitSearch} className="relative z-10 w-[280px]">
+        <div
+          className="h-10 rounded-full flex items-center gap-2.5 px-3.5"
+          style={{
+            background: 'oklch(0.02 0.006 40 / 0.34)',
+            border: '1px solid oklch(1 0 0 / 0.06)',
+          }}
+        >
+          <Search size={15} strokeWidth={2} className="text-text-tertiary shrink-0" />
+          <input
+            type="search"
+            placeholder="Search"
+            aria-label="Buscar movimientos"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
+          />
+        </div>
       </form>
 
-      <div className="flex items-center gap-1.5">
-        <StatusBadge />
+      <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+        <div
+          className="h-10 px-5 rounded-full inline-flex items-center justify-center text-xs font-semibold text-text-primary"
+          style={{
+            background: 'oklch(1 0 0 / 0.06)',
+            border: '1px solid oklch(1 0 0 / 0.09)',
+            boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.08)',
+          }}
+        >
+          ⌘ + Space
+        </div>
+      </div>
+
+      <div className="relative z-10 ml-auto flex items-center gap-2">
+        <IconButton
+          icon={<RotateCcw size={16} strokeWidth={1.9} />}
+          aria-label="Actualizar"
+          variant="ghost"
+          size="sm"
+          onClick={() => toast.info('Vista actualizada', 'Tus datos están sincronizados.')}
+        />
         <IconButton
           icon={<Bell size={16} strokeWidth={1.9} />}
           aria-label="Notificaciones"
@@ -89,43 +112,50 @@ export function Topbar({
           onClick={() => toast.info('Sin avisos pendientes', 'Tu cuenta está al día.')}
         />
         <IconButton
-          icon={muted ? <VolumeX size={16} strokeWidth={1.9} /> : <Volume2 size={16} strokeWidth={1.9} />}
+          icon={<Moon size={16} strokeWidth={1.9} />}
           aria-label={muted ? 'Activar sonido' : 'Silenciar sonido'}
           variant="ghost"
           size="sm"
           onClick={toggleMute}
         />
-        <ProfileAvatar initials={userInitials} />
+        <ProfileChip
+          initials={userInitials}
+          name={profileName ?? greeting}
+          handle={profileHandle ?? subtitle}
+        />
       </div>
     </div>
   )
 }
 
-function ProfileAvatar({ initials }: { initials: string | undefined }) {
+function ProfileChip({
+  initials,
+  name,
+  handle,
+}: {
+  initials: string | undefined
+  name: string
+  handle: string
+}) {
   return (
     <button
       type="button"
       aria-label="Perfil"
       className={cn(
-        'tactile-focus-ring shrink-0 inline-flex items-center justify-center',
-        'h-8 w-8 rounded-full ml-1',
-        'border border-border-medium hover:border-border-strong transition-colors',
+        'tactile-focus-ring shrink-0 inline-flex items-center gap-2',
+        'h-11 rounded-full pl-1.5 pr-2.5 ml-1',
+        'border border-white/10 hover:border-white/18 transition-colors',
       )}
       style={{
-        background:
-          'linear-gradient(135deg, oklch(0.16 0.012 270), oklch(0.10 0.010 270))',
+        background: 'oklch(0.02 0.006 40 / 0.34)',
       }}
     >
-      {initials ? (
-        <span
-          className="text-[10px] font-semibold text-text-primary tactile-wght-breathing"
-          style={{ letterSpacing: '0.02em' }}
-        >
-          {initials.slice(0, 2).toUpperCase()}
-        </span>
-      ) : (
-        <User size={14} strokeWidth={1.9} className="text-text-secondary" />
-      )}
+      <BankAvatar name={initials ?? name} size="sm" />
+      <span className="hidden xl:flex flex-col items-start leading-tight min-w-0 max-w-[130px]">
+        <span className="text-xs font-semibold text-text-primary truncate max-w-full">{name}</span>
+        <span className="text-[10px] text-text-tertiary truncate max-w-full">{handle}</span>
+      </span>
+      <ChevronDown size={13} strokeWidth={2} className="text-text-tertiary" />
     </button>
   )
 }

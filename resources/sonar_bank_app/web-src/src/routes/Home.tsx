@@ -1,14 +1,10 @@
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useBootstrap } from '@/data/queries'
-import { getMockDisplayName } from '@/data/mock/seed'
-import { HeroBalanceCard } from './home/HeroBalanceCard'
-import { CreditCardVisual } from './home/CreditCardVisual'
-import { ActionStack } from './home/ActionStack'
-import { CompactQuickTransfer } from './home/CompactQuickTransfer'
-import { ActivityPreview } from './home/ActivityPreview'
-import { Card } from '@/components/ui'
-import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart'
+import { HomeBalanceGraph } from './home/HomeBalanceGraph'
+import { HomePromoCarousel } from './home/HomePromoCarousel'
+import { HomeMoneyActions } from './home/HomeMoneyActions'
+import { HomeCardsRail } from './home/HomeCardsRail'
 import { toast } from '@/stores/toast'
 
 /**
@@ -38,8 +34,7 @@ export function Home() {
 
   const primaryAccount = data?.accounts[0]
   const transactions = data?.recent_transactions ?? []
-  // Phase A mock: display name comes from seed; H3+ session.displayName.
-  const holderDisplayName = data ? getMockDisplayName().toUpperCase() : 'CITIZEN'
+  const cards = data?.cards ?? []
 
   return (
     <motion.div
@@ -49,58 +44,35 @@ export function Home() {
       className="h-full w-full"
     >
       <div
-        className="h-full w-full mx-auto max-w-[1500px] gap-3 2xl:gap-5"
+        className="h-full w-full mx-auto max-w-[1500px] gap-4 2xl:gap-5"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.7fr) minmax(260px, 0.85fr)',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 0.46fr)',
           gridTemplateRows: '1fr',
         }}
       >
-        {/* ── DATA COLUMN ─────────────────────────────────────────────── */}
         <section
-          className="h-full min-h-0 gap-3 2xl:gap-4"
+          className="h-full min-h-0 gap-4 2xl:gap-5"
           style={{
             display: 'grid',
-            gridTemplateRows: 'auto 1fr auto',
+            gridTemplateRows: 'minmax(0, 1fr) minmax(190px, 0.52fr)',
           }}
         >
-          <HeroBalanceCard
-            account={primaryAccount}
-            transactions={transactions}
-          />
-
-          <Card variant="glass" padding="md" className="min-h-0 flex border-white/10">
-            <IncomeExpenseChart
-              transactions={transactions}
-              ownIban={primaryAccount?.iban}
-              windowDays={30}
-              className="h-full"
-            />
-          </Card>
-
-          <ActivityPreview
-            transactions={transactions}
-            account={primaryAccount}
-            compact
-          />
+          <HomeBalanceGraph account={primaryAccount} transactions={transactions} />
+          <div
+            className="min-h-0 gap-4 2xl:gap-5"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1.2fr) minmax(220px, 0.8fr)',
+            }}
+          >
+            <HomePromoCarousel />
+            <HomeMoneyActions />
+          </div>
         </section>
 
-        {/* ── ACTION COLUMN ────────────────────────────── */}
-        <aside
-          className="h-full min-h-0 gap-3 2xl:gap-4"
-          style={{
-            display: 'grid',
-            gridTemplateRows: 'auto auto 1fr',
-          }}
-        >
-          <div className="tactile-halo-orange">
-            <CreditCardVisual
-              account={primaryAccount}
-              holderName={holderDisplayName}
-            />
-          </div>
-          <ActionStack />
-          <CompactQuickTransfer />
+        <aside className="h-full min-h-0">
+          <HomeCardsRail account={primaryAccount} cards={cards} transactions={transactions} />
         </aside>
       </div>
     </motion.div>

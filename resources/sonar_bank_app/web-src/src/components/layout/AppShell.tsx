@@ -7,7 +7,7 @@ import { ToastContainer } from './ToastContainer'
 import { AuroraBackground } from '@/components/vanguard/AuroraBackground'
 import { useBootstrap } from '@/data/queries'
 import { useBankSession } from '@/stores/session'
-import { getMockGivenName, getMockInitialsFromName } from '@/data/mock/seed'
+import { getMockDisplayName, getMockGivenName, getMockInitialsFromName } from '@/data/mock/seed'
 import { isMockMode } from '@/lib/env'
 
 /**
@@ -38,6 +38,7 @@ export function AppShell() {
   // Production (H3+): read session.displayName populated by bootstrap NetEvent.
   // citizenId is kept in session for audit / permission wiring — never displayed.
   const playerGivenName = isMockMode() || citizenId ? getMockGivenName() : null
+  const playerDisplayName = isMockMode() || citizenId ? getMockDisplayName() : null
   const playerInitials = isMockMode() || citizenId ? getMockInitialsFromName() : undefined
 
   return (
@@ -65,8 +66,10 @@ export function AppShell() {
           greeting={playerGivenName ? `${greetingPrefix}, ${playerGivenName}` : greetingPrefix}
           subtitle="SONAR Bank"
           userInitials={playerInitials}
+          profileName={playerDisplayName ?? undefined}
+          profileHandle={playerDisplayName ? `@${playerDisplayName.toLowerCase().replace(/\s+/g, '_')}` : undefined}
         />
-        <main className="relative min-h-0 overflow-hidden px-3 sm:px-4 2xl:px-7 pb-4 2xl:pb-7 pt-2 2xl:pt-3">
+        <main className="relative min-h-0 overflow-hidden px-2 sm:px-3 2xl:px-6 pb-4 2xl:pb-6 pt-1 2xl:pt-2">
           <RouteTransition>
             <Outlet />
           </RouteTransition>
