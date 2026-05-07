@@ -16,7 +16,7 @@ import type { Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { getMockAliasForIban, getMockInitialsForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
-import { maskIbanDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode, safeAriaLabel } from '@/lib/privacy'
+import { maskIbanDisplay, maskMoneyDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode, safeAriaLabel } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 import { usePrivacyMode } from '@/stores/privacy'
 
@@ -126,6 +126,8 @@ function DrawerBody({
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const displayName = streamerMode ? 'Movimiento oculto' : counterpartName
+  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (isOutgoing ? 'Transferencia' : 'Pago recibido')
 
   const handleCopyIban = async (): Promise<void> => {
     try {
@@ -166,7 +168,7 @@ function DrawerBody({
               {isOutgoing ? 'Enviado a' : 'Recibido de'}
             </span>
             <span className="text-base font-semibold text-text-primary truncate tactile-wght-breathing">
-              {counterpartName}
+              {displayName}
             </span>
           </div>
         </div>
@@ -216,7 +218,7 @@ function DrawerBody({
                 className="text-3xl font-semibold tracking-tight tactile-display-balance"
                 style={{ color: amountColor }}
               >
-                {sign}€{formatEur(tx.amount_minor / 100)}
+                {streamerMode ? maskMoneyDisplay() : `${sign}€${formatEur(tx.amount_minor / 100)}`}
               </span>
             </div>
             <span
@@ -238,7 +240,7 @@ function DrawerBody({
       <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 flex flex-col gap-4 2xl:px-6 2xl:pb-6 2xl:gap-5">
         <DetailRow
           label="Concepto"
-          value={tx.reason ?? (isOutgoing ? 'Transferencia' : 'Pago recibido')}
+          value={displayReason}
         />
 
         <div className="flex flex-col gap-1.5">

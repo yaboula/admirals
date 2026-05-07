@@ -3,6 +3,8 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import type { Account, Transaction } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils'
+import { maskMoneyDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 
 interface GraphPoint {
   label: string
@@ -27,6 +29,7 @@ type PeriodKey = (typeof PERIODS)[number]['key']
 
 export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProps) {
   const [period, setPeriod] = useState<PeriodKey>('6m')
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const activePeriod = PERIODS.find((item) => item.key === period) ?? PERIODS[1]
   const data = useMemo(
     () => buildGraph(account, transactions, activePeriod.days),
@@ -52,13 +55,13 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
             <span className="text-sm text-text-secondary font-medium">Total Balance</span>
             <div className="flex items-baseline gap-2.5">
               <span className="text-3xl 2xl:text-4xl font-light tracking-[-0.04em] tactile-tabular-nums text-text-primary">
-                {formatCurrency(balance)}
+                {streamerMode ? maskMoneyDisplay() : formatCurrency(balance)}
               </span>
               <span
                 className="text-xs font-semibold tactile-tabular-nums"
                 style={{ color: deltaPct >= 0 ? 'oklch(0.78 0.16 150)' : 'oklch(0.72 0.18 25)' }}
               >
-                {deltaPct >= 0 ? '↑' : '↓'} {Math.abs(deltaPct).toLocaleString('es-ES', { maximumFractionDigits: 2 })}%
+                {streamerMode ? '•••%' : `${deltaPct >= 0 ? '↑' : '↓'} ${Math.abs(deltaPct).toLocaleString('es-ES', { maximumFractionDigits: 2 })}%`}
               </span>
             </div>
           </div>
@@ -116,9 +119,9 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
                 axisLine={false}
                 width={44}
                 orientation="right"
-                tickFormatter={(value: number) => `${Math.round(value / 1000)}k`}
+                tickFormatter={(value: number) => streamerMode ? '•••' : `${Math.round(value / 1000)}k`}
               />
-              <Tooltip content={<BalanceTooltip />} cursor={{ stroke: 'oklch(1 0 0 / 0.16)', strokeDasharray: '3 4' }} />
+              <Tooltip content={<BalanceTooltip hidden={streamerMode} />} cursor={{ stroke: 'oklch(1 0 0 / 0.16)', strokeDasharray: '3 4' }} />
               <Area
                 type="monotone"
                 dataKey="balance"
@@ -129,13 +132,14 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
                 dot={false}
                 filter="url(#home-balance-glow)"
                 animationDuration={720}
+                hide={streamerMode}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="shrink-0 flex items-center justify-between gap-4 pt-2 text-[11px] text-text-tertiary">
-          <span>Average annual rate · {formatCurrency(Math.max(balance * 0.12, 840))}</span>
+          <span>Average annual rate · {streamerMode ? maskMoneyDisplay() : formatCurrency(Math.max(balance * 0.12, 840))}</span>
           <span className="inline-flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-white" />Actual balance</span>
             <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm" style={{ background: ORANGE }} />Projected flow</span>
@@ -146,13 +150,13 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
   )
 }
 
-function BalanceTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function BalanceTooltip({ active, payload, label, hidden }: TooltipProps<number, string> & { hidden: boolean }) {
   if (!active || !payload?.length) return null
   const value = payload[0]?.value ?? 0
   return (
     <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'oklch(0.98 0 0)', color: 'oklch(0.08 0.01 270)', boxShadow: '0 18px 34px -20px oklch(0 0 0 / 0.8)' }}>
       <div className="text-xs font-semibold">{label}</div>
-      <div className="text-sm font-bold tactile-tabular-nums">{formatCurrency(Number(value))}</div>
+      <div className="text-sm font-bold tactile-tabular-nums">{hidden ? maskMoneyDisplay() : formatCurrency(Number(value))}</div>
     </div>
   )
 }

@@ -60,6 +60,14 @@ export function maskOperationCode(value: string | null | undefined): string {
   return `${compact.slice(0, 4)}…${compact.slice(-4)}`
 }
 
+export function maskMoneyDisplay(): string {
+  return '€••••'
+}
+
+export function maskSignedMoneyDisplay(): string {
+  return '••••'
+}
+
 export function revealOperationCode(value: string | null | undefined): string {
   return value ?? '—'
 }

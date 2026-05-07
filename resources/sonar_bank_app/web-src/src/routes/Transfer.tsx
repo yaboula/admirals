@@ -27,7 +27,7 @@ import type { Account, RecentRecipient } from '@/data/contracts'
 import { getUserMessage, handleBankError } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
 import { cn, formatCurrency } from '@/lib/utils'
-import { maskIbanCompact, maskIbanDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
+import { maskIbanCompact, maskIbanDisplay, maskMoneyDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 import { useTransferWizard, type TransferWizardStep } from '@/stores/transferWizard'
 import { usePrivacyMode } from '@/stores/privacy'
@@ -114,7 +114,7 @@ export function Transfer() {
       setReceipt(nextReceipt)
       clearOperationIds()
       sfx.vault_close()
-      toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? (streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban))}`)
+      toast.success('Transferencia enviada', `${streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100)} → ${streamerMode ? 'destinatario oculto' : recipientAlias ?? revealIbanDisplay(recipientIban)}`)
 
       if (fallbackRefetchTimerRef.current) {
         window.clearTimeout(fallbackRefetchTimerRef.current)
@@ -230,6 +230,8 @@ function TransferHero({
   const destination = recipientIban
     ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
     : 'Pendiente'
+  const availableLabel = account ? streamerMode ? maskMoneyDisplay() : formatCurrency(account.balance_minor / 100) : '—'
+  const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100) : '—'
 
   return (
     <Card variant="glass" padding="none" className="relative overflow-hidden border-white/10 shrink-0 rounded-[1.75rem]">
@@ -257,9 +259,9 @@ function TransferHero({
           </div>
         </div>
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[430px]">
-          <HeroMetric label="Disponible" value={account ? formatCurrency(account.balance_minor / 100) : '—'} />
-          <HeroMetric label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} />
-          <HeroMetric label="Destino" value={recipientAlias ?? destination} />
+          <HeroMetric label="Disponible" value={availableLabel} />
+          <HeroMetric label="Importe" value={amountLabel} />
+          <HeroMetric label="Destino" value={streamerMode ? 'Oculto' : recipientAlias ?? destination} />
         </div>
       </div>
     </Card>
@@ -325,6 +327,7 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   const storeMemo = useTransferWizard((s) => s.memo)
   const setAmount = useTransferWizard((s) => s.setAmount)
   const setStep = useTransferWizard((s) => s.setStep)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const recipientIban = useTransferWizard((s) => s.recipientIban)
   const [amountText, setAmountText] = useState(() => storeAmount ? formatMajorInput(storeAmount) : '')
   const [memoText, setMemoText] = useState(storeMemo)
@@ -379,7 +382,7 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
                 }}
                 className="rounded-xl border border-border-subtle bg-white/[0.035] px-3 py-2 text-sm font-semibold tactile-tabular-nums text-text-secondary hover:bg-white/[0.075] hover:text-text-primary transition-colors tactile-focus-ring"
               >
-                {formatCurrency(preset / 100)}
+                {streamerMode ? maskMoneyDisplay() : formatCurrency(preset / 100)}
               </button>
             ))}
           </div>
@@ -404,6 +407,7 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
 }
 
 function AmountInsight({ account, amountMinor }: { account: Account | null; amountMinor: number | null }) {
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const remaining = account && amountMinor ? account.balance_minor - amountMinor : account?.balance_minor ?? 0
   const risk = amountMinor ? Math.min(1, amountMinor / Math.max(account?.balance_minor ?? 1, 1)) : 0
 
@@ -414,8 +418,8 @@ function AmountInsight({ account, amountMinor }: { account: Account | null; amou
         <span className="text-sm font-semibold">Vista segura</span>
       </div>
       <div className="space-y-3">
-        <Metric label="Disponible" value={account ? formatCurrency(account.balance_minor / 100) : '—'} />
-        <Metric label="Después del envío" value={account ? formatCurrency(Math.max(0, remaining) / 100) : '—'} />
+        <Metric label="Disponible" value={account ? streamerMode ? maskMoneyDisplay() : formatCurrency(account.balance_minor / 100) : '—'} />
+        <Metric label="Después del envío" value={account ? streamerMode ? maskMoneyDisplay() : formatCurrency(Math.max(0, remaining) / 100) : '—'} />
       </div>
       <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
         <div className="h-full rounded-full bg-white/35" style={{ width: `${Math.round(risk * 100)}%` }} />
@@ -549,7 +553,7 @@ function RecipientStep({ account }: { account: Account | null }) {
 function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipient; active: boolean; onClick: () => void }) {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const ibanLabel = streamerMode ? maskIbanCompact(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)
-  const label = recipient.alias ?? ibanLabel
+  const label = streamerMode ? 'Destinatario oculto' : recipient.alias ?? ibanLabel
   return (
     <button
       type="button"
@@ -583,7 +587,8 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
   const large = Boolean(amount && isLargeTransfer(amount))
   const fromIban = account ? streamerMode ? maskIbanDisplay(account.iban) : revealIbanDisplay(account.iban) : '—'
   const toIban = recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : undefined
-  const recipientLabel = recipientAlias ?? (recipientIban ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban) : '—')
+  const recipientLabel = streamerMode ? 'Destinatario oculto' : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : '—')
+  const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100) : '—'
 
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 2xl:gap-5 pb-1">
@@ -596,8 +601,8 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
           </div>
           <ReviewRow label="Desde" value={fromIban} />
           <ReviewRow label="Para" value={recipientLabel} helper={toIban} />
-          <ReviewRow label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} strong />
-          <ReviewRow label="Concepto" value={memo.trim() || 'Sin concepto'} />
+          <ReviewRow label="Importe" value={amountLabel} strong />
+          <ReviewRow label="Concepto" value={streamerMode ? 'Oculto' : memo.trim() || 'Sin concepto'} />
         </div>
         <div className="flex items-center justify-between gap-2 pb-1">
           <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep(expressMode ? 'recipient' : 'recipient')}>
@@ -623,6 +628,7 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
 }
 
 function LargeTransferWarning({ amount }: { amount: number }) {
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   return (
     <Card variant="elevated" padding="md" className="border-amber-300/20 bg-amber-300/[0.06]">
       <CardContent className="gap-3">
@@ -631,7 +637,7 @@ function LargeTransferWarning({ amount }: { amount: number }) {
           <span className="text-sm font-semibold">Confirmación reforzada</span>
         </div>
         <p className="text-xs text-amber-100/80 leading-relaxed">
-          Vas a enviar {formatCurrency(amount / 100)}. Revisa el destino con calma antes de firmar.
+          Vas a enviar {streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100)}. Revisa el destino con calma antes de firmar.
         </p>
       </CardContent>
     </Card>
@@ -741,10 +747,10 @@ function ConfirmStep({
       const { downloadTransferReceiptPdf } = await import('./transfer/receipt-pdf')
       await downloadTransferReceiptPdf({
         receipt,
-        recipientLabel: recipientAlias ?? (recipientIban
+        recipientLabel: streamerMode ? 'Destinatario oculto' : recipientAlias ?? (recipientIban
           ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
           : streamerMode ? maskIbanCompact(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)),
-        amountLabel: formatCurrency((amount ?? receipt.amount_minor) / 100),
+        amountLabel: streamerMode ? maskMoneyDisplay() : formatCurrency((amount ?? receipt.amount_minor) / 100),
         fromIbanMasked: streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban),
         toIbanMasked: streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban),
         timestampLabel: formatReceiptTime(receipt.committed_at_ms),
@@ -787,16 +793,16 @@ function ConfirmStep({
       tone="success"
       icon={<CheckCircle2 size={38} strokeWidth={1.8} />}
       title="Transferencia completada"
-      description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban) : 'destinatario')}.`}
+      description={`${streamerMode ? maskMoneyDisplay() : formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${streamerMode ? 'destinatario oculto' : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : 'destinatario')}.`}
     >
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-3.5 text-left">
         <ReceiptRow label="Recibo" value={streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id)} mono />
         <ReceiptRow label="Código de seguridad" value={streamerMode ? maskOperationCode(receipt.correlation_id) : revealOperationCode(receipt.correlation_id)} mono />
         <ReceiptRow label="Origen" value={streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban)} />
-        <ReceiptRow label="Destino" value={streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)} helper={recipientAlias ?? undefined} />
-        <ReceiptRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
+        <ReceiptRow label="Destino" value={streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)} helper={streamerMode ? undefined : recipientAlias ?? undefined} />
+        <ReceiptRow label="Concepto" value={streamerMode ? 'Oculto' : receipt.reason?.trim() || 'Sin concepto'} />
         <ReceiptRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
-        <ReceiptRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
+        <ReceiptRow label="Balance disponible" value={streamerMode ? maskMoneyDisplay() : formatCurrency(receipt.available_balance_minor / 100)} />
         <ReceiptRow label="Estado" value="Confirmada" />
       </div>
       <div className="flex flex-wrap justify-center gap-2">
@@ -858,7 +864,7 @@ function TransferRail({
   recipientIban: string | null
 }) {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const destinationLabel = recipientAlias ?? (recipientIban ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban) : 'Selecciona destino')
+  const destinationLabel = streamerMode ? 'Destinatario oculto' : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : 'Selecciona destino')
   const hasDestination = Boolean(recipientAlias || recipientIban)
   const hasAmount = Boolean(amount)
   return (
@@ -886,7 +892,7 @@ function TransferRail({
           <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-white/[0.045] px-4 py-4">
             <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">Importe</span>
             <span className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums text-white">
-              {amount ? formatCurrency(amount / 100) : '—'}
+              {amount ? streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100) : '—'}
             </span>
           </div>
 
@@ -909,7 +915,7 @@ function TransferRail({
 
           <div className="mt-auto pt-4 space-y-2">
             <Metric label="Origen" value={account ? streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban) : '—'} />
-            {memo.trim() ? <Metric label="Concepto" value={memo.trim()} /> : null}
+            {memo.trim() ? <Metric label="Concepto" value={streamerMode ? 'Oculto' : memo.trim()} /> : null}
           </div>
         </div>
       </Card>

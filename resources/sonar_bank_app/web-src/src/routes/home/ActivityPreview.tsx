@@ -13,8 +13,10 @@ import type { Account, Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
 import { useTransferWizard } from '@/stores/transferWizard'
+import { usePrivacyMode } from '@/stores/privacy'
 import { sfx } from '@/lib/sfx'
 import { getMockAliasForIban } from '@/data/mock/seed'
+import { maskSignedMoneyDisplay } from '@/lib/privacy'
 
 export interface ActivityPreviewProps {
   transactions: Transaction[]
@@ -157,6 +159,9 @@ function Row({
   const counterpartName = resolveCounterpartName(counterpartIban, isOutgoing)
   const sign = isOutgoing ? '−' : '+'
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.72 0.16 155)'
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const displayName = streamerMode ? 'Movimiento oculto' : counterpartName
+  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (isOutgoing ? 'Transferencia' : 'Recibida')
 
   const StatusIcon = STATUS_META[tx.status].icon
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
@@ -195,7 +200,7 @@ function Row({
               compact ? 'text-xs' : 'text-sm',
             )}
           >
-            {counterpartName}
+            {displayName}
           </span>
           {tx.status !== 'committed' && (
             <span
@@ -217,7 +222,7 @@ function Row({
           )}
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {tx.reason ?? (isOutgoing ? 'Transferencia' : 'Recibida')} ·{' '}
+          {displayReason} ·{' '}
           {formatRelativeTime(tx.timestamp_ms)}
         </span>
       </div>
@@ -226,7 +231,7 @@ function Row({
         className={cn('font-semibold shrink-0', compact ? 'text-xs' : 'text-sm')}
         style={{ color: amountColor, fontVariantNumeric: 'tabular-nums lining-nums' }}
       >
-        {sign}€{formatEur(tx.amount_minor / 100)}
+        {streamerMode ? maskSignedMoneyDisplay() : `${sign}€${formatEur(tx.amount_minor / 100)}`}
       </div>
     </motion.div>
   )

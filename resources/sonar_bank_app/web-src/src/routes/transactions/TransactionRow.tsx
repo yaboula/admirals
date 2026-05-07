@@ -4,6 +4,8 @@ import type { Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { BankAvatar } from '@/components/brand/BankAvatar'
+import { maskSignedMoneyDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 
 /**
  * BANK-FE.3 — Single transaction row.
@@ -38,6 +40,10 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
   const StatusIcon = STATUS_META[tx.status].icon
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const amountLabel = streamerMode ? maskSignedMoneyDisplay() : `${sign}€${formatEur(tx.amount_minor / 100)}`
+  const displayName = streamerMode ? 'Movimiento oculto' : counterpartName
+  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (isOutgoing ? 'Transferencia' : 'Recibida')
 
   return (
     <motion.button
@@ -47,7 +53,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 12) * 0.018, duration: 0.26 }}
       aria-pressed={selected}
-      aria-label={`${counterpartName} · ${sign}€${formatEur(tx.amount_minor / 100)} · ${formatRelativeTime(tx.timestamp_ms)}`}
+      aria-label={`${displayName} · ${streamerMode ? 'importe oculto' : amountLabel} · ${formatRelativeTime(tx.timestamp_ms)}`}
       className={cn(
         'group w-full flex items-center gap-2.5 px-2.5 py-2 2xl:gap-3 2xl:px-3 2xl:py-2.5 rounded-xl text-left',
         'transition-[box-shadow,background,border-color] duration-180',
@@ -74,7 +80,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       }}
     >
       <span className="relative shrink-0" aria-hidden>
-        <BankAvatar name={counterpartName} size="md" />
+        <BankAvatar name={displayName} size="md" />
         <span
           className="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center h-4 w-4 rounded-full"
           style={{
@@ -91,7 +97,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       <div className="flex-1 flex flex-col min-w-0 leading-tight">
         <div className="flex items-center gap-2 min-w-0">
           <span className="truncate font-medium text-sm text-text-primary tactile-wght-breathing">
-            {counterpartName}
+            {displayName}
           </span>
           {tx.status !== 'committed' && (
             <span
@@ -111,7 +117,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
         <span
           className="truncate text-[11px] text-text-tertiary tactile-tabular-nums"
         >
-          {tx.reason ?? (isOutgoing ? 'Transferencia' : 'Recibida')} · {formatRelativeTime(tx.timestamp_ms)}
+          {displayReason} · {formatRelativeTime(tx.timestamp_ms)}
         </span>
       </div>
 
@@ -121,7 +127,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
           className="text-sm font-semibold tactile-tabular-nums"
           style={{ color: amountColor, fontVariantNumeric: 'tabular-nums lining-nums' }}
         >
-          {sign}€{formatEur(tx.amount_minor / 100)}
+          {amountLabel}
         </span>
         <span className="text-[9px] uppercase tracking-wider text-text-tertiary tactile-tabular-nums">
           {formatTime(tx.timestamp_ms)}

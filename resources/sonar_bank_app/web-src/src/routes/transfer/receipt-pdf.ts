@@ -1,5 +1,5 @@
 ﻿import type { TransferReceipt } from '@/data/mutations'
-import { maskOperationCode, revealOperationCode } from '@/lib/privacy'
+import { maskMoneyDisplay, maskOperationCode, revealOperationCode } from '@/lib/privacy'
 
 export interface TransferReceiptPdfInput {
   receipt: TransferReceipt
@@ -138,9 +138,9 @@ function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptP
     ['Código de seguridad', input.streamerMode ? maskOperationCode(input.receipt.correlation_id) : revealOperationCode(input.receipt.correlation_id)],
     ['Origen', input.fromIbanMasked],
     ['Destino', input.toIbanMasked],
-    ['Concepto', input.receipt.reason?.trim() || 'Sin concepto'],
+    ['Concepto', input.streamerMode ? 'Oculto' : input.receipt.reason?.trim() || 'Sin concepto'],
     ['Fecha', input.timestampLabel],
-    ['Balance disponible', formatMinorCurrency(input.receipt.available_balance_minor)],
+    ['Balance disponible', input.streamerMode ? maskMoneyDisplay() : formatMinorCurrency(input.receipt.available_balance_minor)],
     ['Referencia bancaria', input.streamerMode ? maskOperationCode(input.receipt.idempotency_key) : revealOperationCode(input.receipt.idempotency_key)],
   ]
 

@@ -8,7 +8,7 @@ import { sfx } from '@/lib/sfx'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { toast } from '@/stores/toast'
 import { cn, formatRelativeTime } from '@/lib/utils'
-import { maskIbanCompact, revealIbanDisplay } from '@/lib/privacy'
+import { maskMoneyDisplay, revealIbanDisplay } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 import { getMockInitialsForIban } from '@/data/mock/seed'
 
@@ -33,7 +33,7 @@ export function CompactQuickTransfer() {
     sfx.coin_clink()
     toast.info(
       'Transferencia iniciada',
-      `${formatEur(amount / 100)} → ${r.alias ?? (streamerMode ? maskIbanCompact(r.counterpart_iban) : revealIbanDisplay(r.counterpart_iban))}`,
+      `${streamerMode ? maskMoneyDisplay() : formatEur(amount / 100)} → ${streamerMode ? 'destinatario oculto' : r.alias ?? revealIbanDisplay(r.counterpart_iban)}`,
     )
     navigate('/transferir')
   }
@@ -109,6 +109,9 @@ function CompactRow({
   index: number
 }) {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const displayLabel = streamerMode
+    ? 'Destinatario oculto'
+    : recipient.alias ?? revealIbanDisplay(recipient.counterpart_iban)
   const initials =
     recipient.alias
       ?.split(' ')
@@ -160,7 +163,7 @@ function CompactRow({
 
       <div className="flex-1 flex flex-col min-w-0 leading-tight">
         <span className="text-xs font-medium text-text-primary tactile-wght-breathing truncate">
-          {recipient.alias ?? (streamerMode ? maskIbanCompact(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban))}
+          {displayLabel}
         </span>
         <span className="text-[10px] text-text-tertiary tactile-tabular-nums truncate">
           {formatRelativeTime(recipient.last_transfer_ms)} · ×{recipient.transfer_count}
@@ -170,10 +173,10 @@ function CompactRow({
       <button
         type="button"
         onClick={() => onQuickSend(recipient, presetAmount)}
-        aria-label={`Enviar ${formatEur(presetAmount / 100)} a ${recipient.alias ?? 'destinatario oculto'}`}
+        aria-label={`Enviar ${streamerMode ? 'importe oculto' : formatEur(presetAmount / 100)} a ${streamerMode ? 'destinatario oculto' : recipient.alias ?? 'destinatario'}`}
         className="tactile-button-accent-outline tactile-focus-ring shrink-0 h-7 px-2.5 rounded-md text-[10px] font-semibold tactile-tabular-nums"
       >
-        €{formatEur(presetAmount / 100)}
+        {streamerMode ? maskMoneyDisplay() : `€${formatEur(presetAmount / 100)}`}
       </button>
     </motion.div>
   )

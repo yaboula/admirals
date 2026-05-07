@@ -7,7 +7,9 @@ import { BankAvatar } from '@/components/brand/BankAvatar'
 import { formatCurrency, formatRelativeTime } from '@/lib/utils'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { useTransferWizard } from '@/stores/transferWizard'
+import { usePrivacyMode } from '@/stores/privacy'
 import { sfx } from '@/lib/sfx'
+import { maskSignedMoneyDisplay } from '@/lib/privacy'
 import { CardVisual } from '../cards/CardVisual'
 
 export interface HomeCardsRailProps {
@@ -122,6 +124,8 @@ function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: str
   const counterpart = outgoing ? tx.to_iban : tx.from_iban
   const name = getMockAliasForIban(counterpart) ?? tx.reason ?? 'Movimiento'
   const amount = tx.amount_minor / 100
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const displayName = streamerMode ? 'Movimiento oculto' : name
 
   return (
     <div
@@ -131,13 +135,13 @@ function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: str
         border: '1px solid oklch(1 0 0 / 0.06)',
       }}
     >
-      <BankAvatar name={name} size="md" seed={index} />
+      <BankAvatar name={displayName} size="md" seed={index} />
       <div className="min-w-0 flex-1 flex flex-col leading-tight">
-        <span className="text-sm font-semibold text-white truncate">{name}</span>
+        <span className="text-sm font-semibold text-white truncate">{displayName}</span>
         <span className="text-[11px] text-white/46 truncate">{formatRelativeTime(tx.timestamp_ms)}</span>
       </div>
       <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'oklch(0.72 0.16 25)' : 'oklch(0.78 0.16 150)' }}>
-        {outgoing ? '-' : '+'}{formatCurrency(amount)}
+        {streamerMode ? maskSignedMoneyDisplay() : `${outgoing ? '-' : '+'}${formatCurrency(amount)}`}
       </span>
     </div>
   )

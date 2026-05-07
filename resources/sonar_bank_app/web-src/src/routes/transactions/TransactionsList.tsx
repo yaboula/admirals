@@ -3,6 +3,8 @@ import type { Transaction } from '@/data/contracts'
 import { TransactionRow } from './TransactionRow'
 import { TransactionsEmptyState, type TransactionsEmptyVariant } from './TransactionsEmptyState'
 import { cn } from '@/lib/utils'
+import { maskSignedMoneyDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 
 /**
  * BANK-FE.3 — Filtered list with sticky day separators.
@@ -33,6 +35,7 @@ export function TransactionsList({
   totalCount,
 }: TransactionsListProps) {
   const groups = useMemo(() => groupByDay(transactions), [transactions])
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   if (transactions.length === 0) {
     return <TransactionsEmptyState variant={emptyVariant} totalCount={totalCount} />
@@ -44,7 +47,7 @@ export function TransactionsList({
       <div className="flex flex-col gap-3 pb-2">
         {groups.map((group) => (
           <section key={group.dayKey} className="flex flex-col gap-1">
-            <DaySeparator label={group.label} count={group.items.length} totalAmount={group.netLabel} />
+            <DaySeparator label={group.label} count={group.items.length} totalAmount={streamerMode ? maskSignedMoneyDisplay() : group.netLabel} />
             <div className="flex flex-col gap-0.5">
               {group.items.map((tx) => {
                 const idx = runningIndex++

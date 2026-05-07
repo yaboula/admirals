@@ -33,6 +33,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
   const savingsMajor = account ? account.savings_minor / 100 : 0
   const monthIn = sumThisMonth(transactions, account?.iban, 'in') / 100
   const monthOut = sumThisMonth(transactions, account?.iban, 'out') / 100
+  const hideFinancials = hidden || streamerMode
 
   const handleCopyIban = async (): Promise<void> => {
     if (!account) return
@@ -77,37 +78,37 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
 
         <button
           type="button"
-          aria-label={hidden ? 'Mostrar saldo' : 'Ocultar saldo'}
-          aria-pressed={hidden}
+          aria-label={hideFinancials ? 'Mostrar saldo' : 'Ocultar saldo'}
+          aria-pressed={hideFinancials}
           onClick={() => {
             setHidden((h) => !h)
             sfx.console_tap()
           }}
           className="tactile-button-ghost tactile-focus-ring inline-flex items-center justify-center h-8 w-8 rounded-lg shrink-0"
         >
-          {hidden ? <Eye size={15} /> : <EyeOff size={15} />}
+          {hideFinancials ? <Eye size={15} /> : <EyeOff size={15} />}
         </button>
       </div>
 
       {/* Balance — 56px Light + tabular-nums + blur-reveal */}
       <div className="px-4 pb-3.5 2xl:px-6 2xl:pb-5">
-        <BalanceDisplay value={balanceMajor} hidden={hidden} loading={loading} />
+        <BalanceDisplay value={balanceMajor} hidden={hideFinancials} loading={loading} />
       </div>
 
       {/* Footer — 3-column sub-KPI grid (no compression) */}
       <div className="grid grid-cols-3 border-t border-border-subtle">
-        <SubKpi label="Ahorro" value={savingsMajor} hidden={hidden} tone="neutral" />
+        <SubKpi label="Ahorro" value={savingsMajor} hidden={hideFinancials} tone="neutral" />
         <SubKpi
           label="Ingresos · mes"
           value={monthIn}
-          hidden={hidden}
+          hidden={hideFinancials}
           tone="success"
           icon={<ArrowDownRight size={12} strokeWidth={2.4} />}
         />
         <SubKpi
           label="Gastos · mes"
           value={monthOut}
-          hidden={hidden}
+          hidden={hideFinancials}
           tone="danger"
           icon={<ArrowUpRight size={12} strokeWidth={2.4} />}
         />

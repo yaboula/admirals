@@ -9,9 +9,9 @@ export interface PrivacyState {
 }
 
 function readInitialStreamerMode(): boolean {
-  if (typeof window === 'undefined') return true
+  if (typeof window === 'undefined') return false
   const stored = window.localStorage.getItem(STORAGE_KEY)
-  return stored === null ? true : stored !== 'off'
+  return stored === 'on'
 }
 
 function persistStreamerMode(enabled: boolean): void {

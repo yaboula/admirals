@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
 import { handleBankError } from '@/lib/bankError'
-import { maskIbanCompact, revealIbanDisplay } from '@/lib/privacy'
+import { maskIbanCompact, maskMoneyDisplay, revealIbanDisplay } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 import { resolveCardDesign } from './cardDesigns'
 import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
@@ -39,7 +39,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const setStreamerMode = usePrivacyMode((s) => s.setStreamerMode)
   const cardId = card?.card_id ?? '__none__'
-  const { revealed, remainingMs, reveal, hide } = useCardReveal(cardId)
+  const { revealed, reveal, hide } = useCardReveal(cardId)
   const freezeMutation = useFreezeCard()
 
   if (!card) {
@@ -55,19 +55,20 @@ export function CardDetails({ card, className }: CardDetailsProps) {
   }
 
   const design = resolveCardDesign(card.design_id)
-  const remainingSec = Math.ceil(remainingMs / 1000)
 
   const isLocked = card.status === 'locked'
   const isExpired = card.status === 'expired'
   const freezePending = freezeMutation.isPending
 
   const flipped = flippedIds.includes(card.card_id)
-  const effectiveRevealed = !streamerMode && revealed
+  const effectiveRevealed = !streamerMode && (revealed || Boolean(card.full_pan))
 
   const handleToggleReveal = () => {
     if (effectiveRevealed) {
       hide()
+      setStreamerMode(true)
       sfx.console_tap()
+      toast.info('Streamer Mode activo', 'Número de tarjeta oculto para compartir pantalla.')
     } else {
       if (streamerMode) {
         setStreamerMode(false)
@@ -201,6 +202,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             limit={card.daily_limit_minor}
             pct={dailyPct}
             accent={design.accent}
+            hidden={streamerMode}
           />
           <Meter
             label="Este mes"
@@ -208,6 +210,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             limit={card.monthly_limit_minor}
             pct={monthlyPct}
             accent={design.accent}
+            hidden={streamerMode}
           />
         </div>
 
@@ -225,8 +228,8 @@ export function CardDetails({ card, className }: CardDetailsProps) {
               icon={Eye}
               label={
                 effectiveRevealed
-                  ? `Ocultar número · ${String(remainingSec).padStart(2, '0')}s`
-                  : streamerMode ? 'Pausar Streamer' : 'Ver número'
+                  ? 'Activar Streamer'
+                  : streamerMode ? 'Pausar Streamer' : 'Ocultar número'
               }
               onClick={handleToggleReveal}
               active={effectiveRevealed}
@@ -430,12 +433,14 @@ function Meter({
   limit,
   pct,
   accent,
+  hidden,
 }: {
   label: string
   spent: number
   limit: number
   pct: number
   accent: string
+  hidden: boolean
 }) {
   const isAlarm = pct > 80
   // Use color-mix to derive a softer entry stop in the same hue family. The
@@ -452,7 +457,7 @@ function Meter({
           className="text-[10px] text-text-secondary tactile-tabular-nums"
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {formatMinor(spent)} / {formatMinor(limit)}
+          {hidden ? `${maskMoneyDisplay()} / ${maskMoneyDisplay()}` : `${formatMinor(spent)} / ${formatMinor(limit)}`}
         </span>
       </div>
       <div

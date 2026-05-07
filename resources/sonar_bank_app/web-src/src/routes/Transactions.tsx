@@ -8,7 +8,7 @@ import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
 import { formatCurrency } from '@/lib/utils'
-import { maskIbanPanel, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
+import { maskIbanPanel, maskMoneyDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
 import { BankAvatar } from '@/components/brand/BankAvatar'
@@ -162,6 +162,8 @@ function TransactionInsightPanel({
 
   const meta = getTransactionMeta(tx, ownIban)
   const StatusIcon = STATUS_PANEL[tx.status].icon
+  const displayName = streamerMode ? 'Movimiento oculto' : meta.name
+  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (meta.outgoing ? 'Transferencia enviada' : 'Transferencia recibida')
 
   const copyIban = async (): Promise<void> => {
     try {
@@ -207,7 +209,7 @@ function TransactionInsightPanel({
 
         <div className="mt-5 flex flex-col items-center text-center gap-3">
           <div className="relative">
-            <BankAvatar name={meta.name} size="lg" className="h-16 w-16" />
+            <BankAvatar name={displayName} size="lg" className="h-16 w-16" />
             <span
               className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full"
               style={{
@@ -220,8 +222,8 @@ function TransactionInsightPanel({
             </span>
           </div>
           <div className="min-w-0">
-            <h3 className="text-lg font-semibold text-white truncate">{meta.name}</h3>
-            <p className="text-xs text-white/46 truncate">{tx.reason ?? (meta.outgoing ? 'Transferencia enviada' : 'Transferencia recibida')}</p>
+            <h3 className="text-lg font-semibold text-white truncate">{displayName}</h3>
+            <p className="text-xs text-white/46 truncate">{displayReason}</p>
           </div>
         </div>
 
@@ -231,7 +233,7 @@ function TransactionInsightPanel({
             className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums"
             style={{ color: meta.outgoing ? 'white' : 'oklch(0.78 0.16 155)' }}
           >
-            {meta.outgoing ? '−' : '+'}{formatCurrency(tx.amount_minor / 100)}
+            {streamerMode ? maskMoneyDisplay() : `${meta.outgoing ? '−' : '+'}${formatCurrency(tx.amount_minor / 100)}`}
           </span>
         </div>
 

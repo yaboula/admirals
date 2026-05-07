@@ -4,6 +4,8 @@ import { TrendingUp, TrendingDown, Sigma } from 'lucide-react'
 import type { Transaction, Account } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { maskMoneyDisplay } from '@/lib/privacy'
+import { usePrivacyMode } from '@/stores/privacy'
 
 /**
  * BANK-FE.3 — Transactions Hero stats card.
@@ -27,6 +29,7 @@ export function TransactionsHero({
 }: TransactionsHeroProps) {
   const own = account?.iban.replace(/\s+/g, '')
   const totals = useMemo(() => computeTotals(transactions, own), [transactions, own])
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   return (
     <Card
@@ -65,6 +68,7 @@ export function TransactionsHero({
             label="Ingresos"
             icon={<TrendingUp size={14} strokeWidth={2.2} />}
             value={totals.income}
+            hidden={streamerMode}
             color="oklch(0.78 0.16 155)"
             accentBg="oklch(0.72 0.16 155 / 0.10)"
             tone="positive"
@@ -73,6 +77,7 @@ export function TransactionsHero({
             label="Gastos"
             icon={<TrendingDown size={14} strokeWidth={2.2} />}
             value={totals.expense}
+            hidden={streamerMode}
             color="oklch(0.74 0.20 25)"
             accentBg="oklch(0.68 0.20 25 / 0.10)"
             tone="negative"
@@ -81,6 +86,7 @@ export function TransactionsHero({
             label="Neto"
             icon={<Sigma size={14} strokeWidth={2.2} />}
             value={totals.net}
+            hidden={streamerMode}
             color={totals.net >= 0 ? 'oklch(0.78 0.16 155)' : 'oklch(0.74 0.20 25)'}
             accentBg="oklch(1 0 0 / 0.06)"
             tone={totals.net >= 0 ? 'positive' : 'negative'}
@@ -96,13 +102,14 @@ interface StatProps {
   label: string
   icon: React.ReactNode
   value: number
+  hidden: boolean
   color: string
   accentBg: string
   tone: 'positive' | 'negative'
   highlighted?: boolean
 }
 
-function Stat({ label, icon, value, color, accentBg, tone, highlighted }: StatProps) {
+function Stat({ label, icon, value, hidden, color, accentBg, tone, highlighted }: StatProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -134,7 +141,7 @@ function Stat({ label, icon, value, color, accentBg, tone, highlighted }: StatPr
         className="truncate text-xl 2xl:text-2xl font-semibold tracking-[-0.045em] tactile-tabular-nums"
         style={{ color }}
       >
-        <AnimatedAmount value={value} prefix={tone === 'negative' && value > 0 ? '−' : tone === 'positive' && value > 0 ? '+' : ''} />
+        {hidden ? maskMoneyDisplay() : <AnimatedAmount value={value} prefix={tone === 'negative' && value > 0 ? '−' : tone === 'positive' && value > 0 ? '+' : ''} />}
       </div>
     </motion.div>
   )

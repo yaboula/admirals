@@ -161,7 +161,7 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
                     card={card}
                     flipped={flippedIds.includes(card.card_id)}
                     onFlip={() => toggleFlip(card.card_id)}
-                    revealed={!streamerMode && (revealedUntil[card.card_id] ?? 0) > now}
+                    revealed={!streamerMode && ((revealedUntil[card.card_id] ?? 0) > now || Boolean(card.full_pan))}
                     onToggleReveal={() => {
                       const expiry = revealedUntil[card.card_id] ?? 0
                       if (!streamerMode && expiry > now) {
