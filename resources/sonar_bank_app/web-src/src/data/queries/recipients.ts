@@ -1,8 +1,8 @@
-import { useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
+import { useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
 import { queryKeys } from '@/data/queryKeys'
-import { nuiQuery } from '@/lib/nui'
 import type { RecentRecipientsResponse } from '@/data/contracts'
 import { BankError } from '@/lib/bankError'
+import { useBankCallback } from '@/lib/bankQuery'
 
 const RECENT_EVENT = 'sonar:bank:transfer:recentRecipients'
 
@@ -12,18 +12,16 @@ export type RecentRecipientsOptions = Omit<
 >
 
 export function useRecentRecipients(options: RecentRecipientsOptions = {}) {
-  return useQuery<RecentRecipientsResponse, BankError>({
-    queryKey: queryKeys.recipients.recent(),
-    queryFn: () => nuiQuery<RecentRecipientsResponse>(RECENT_EVENT, {}),
-    staleTime: 30_000,
-    gcTime: 5 * 60_000,
-    retry: (failureCount, err) => {
-      if (err instanceof BankError && err.retryable === false) return false
-      return failureCount < 2
+  return useBankCallback<RecentRecipientsResponse>(
+    RECENT_EVENT,
+    queryKeys.recipients.recent(),
+    {},
+    {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      ...options,
     },
-    refetchOnWindowFocus: false,
-    ...options,
-  })
+  )
 }
 
 export function useInvalidateRecentRecipients() {

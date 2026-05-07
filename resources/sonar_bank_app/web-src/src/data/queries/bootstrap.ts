@@ -1,11 +1,11 @@
-import { useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
+import { useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { queryKeys } from '@/data/queryKeys'
-import { nuiQuery } from '@/lib/nui'
 import type { BalanceSnapshot, BootstrapSnapshot } from '@/data/contracts'
 import { useBankSession } from '@/stores/session'
 import { BankError } from '@/lib/bankError'
 import { useWatchdog } from '@/hooks/useWatchdog'
+import { useBankCallback } from '@/lib/bankQuery'
 
 const BOOTSTRAP_EVENT = 'sonar:bank:bootstrap:snapshot'
 const BALANCE_EVENT = 'sonar:bank:bootstrap:balance'
@@ -18,21 +18,16 @@ export type BootstrapQueryOptions = Omit<
 export function useBootstrap(options: BootstrapQueryOptions = {}) {
   const setSession = useBankSession((s) => s.setSession)
 
-  const query = useQuery<BootstrapSnapshot, BankError>({
-    queryKey: queryKeys.bootstrap(),
-    queryFn: async () => {
-      const snap = await nuiQuery<BootstrapSnapshot>(BOOTSTRAP_EVENT, {})
-      return snap
+  const query = useBankCallback<BootstrapSnapshot>(
+    BOOTSTRAP_EVENT,
+    queryKeys.bootstrap(),
+    {},
+    {
+      staleTime: 25_000,
+      gcTime: 5 * 60_000,
+      ...options,
     },
-    staleTime: 25_000,
-    gcTime: 5 * 60_000,
-    retry: (failureCount, err) => {
-      if (err instanceof BankError && err.retryable === false) return false
-      return failureCount < 2
-    },
-    refetchOnWindowFocus: false,
-    ...options,
-  })
+  )
 
   useEffect(() => {
     const data = query.data
@@ -63,13 +58,15 @@ export interface UseBalanceFallbackArgs {
 }
 
 export function useBalanceFallback({ iban, enabled = true }: UseBalanceFallbackArgs) {
-  return useQuery<BalanceSnapshot, BankError>({
-    queryKey: queryKeys.account.balance(iban),
-    queryFn: () => nuiQuery<BalanceSnapshot>(BALANCE_EVENT, { iban }),
-    enabled: enabled && Boolean(iban),
-    staleTime: 10_000,
-    refetchOnWindowFocus: false,
-  })
+  return useBankCallback<BalanceSnapshot, { iban: string }>(
+    BALANCE_EVENT,
+    queryKeys.account.balance(iban),
+    { iban },
+    {
+      enabled: enabled && Boolean(iban),
+      staleTime: 10_000,
+    },
+  )
 }
 
 export function useInvalidateBootstrap() {

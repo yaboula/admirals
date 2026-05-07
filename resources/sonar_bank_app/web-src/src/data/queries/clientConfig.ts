@@ -1,8 +1,8 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
+import type { UseQueryOptions } from '@tanstack/react-query'
 import { queryKeys } from '@/data/queryKeys'
-import { nuiQuery } from '@/lib/nui'
 import type { ClientConfigSnapshot } from '@/data/contracts'
 import { BankError } from '@/lib/bankError'
+import { useBankCallback } from '@/lib/bankQuery'
 
 const CONFIG_EVENT = 'sonar:bank:nui:getConfig'
 
@@ -12,13 +12,15 @@ export type ClientConfigOptions = Omit<
 >
 
 export function useClientConfig(options: ClientConfigOptions = {}) {
-  return useQuery<ClientConfigSnapshot, BankError>({
-    queryKey: queryKeys.config(),
-    queryFn: () => nuiQuery<ClientConfigSnapshot>(CONFIG_EVENT, {}),
-    staleTime: 5 * 60_000,
-    gcTime: 30 * 60_000,
-    retry: 1,
-    refetchOnWindowFocus: false,
-    ...options,
-  })
+  return useBankCallback<ClientConfigSnapshot>(
+    CONFIG_EVENT,
+    queryKeys.config(),
+    {},
+    {
+      staleTime: 5 * 60_000,
+      gcTime: 30 * 60_000,
+      retry: 1,
+      ...options,
+    },
+  )
 }
