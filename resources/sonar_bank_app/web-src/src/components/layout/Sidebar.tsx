@@ -5,6 +5,7 @@ import {
   Landmark,
   ArrowLeftRight,
   CreditCard,
+  RefreshCw,
   Settings,
   Receipt,
 } from 'lucide-react'
@@ -30,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/cuentas', label: 'Cuentas', icon: Landmark, requiredPerm: ACE_PERMS.P01.perm },
   { to: '/transacciones', label: 'Transacciones', icon: Receipt, requiredPerm: ACE_PERMS.P01.perm },
   { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/recurrentes', label: 'Recurrentes', icon: RefreshCw, requiredPerm: ACE_PERMS.P01.perm },
   { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, requiredPerm: ACE_PERMS.P01.perm },
 ]
 

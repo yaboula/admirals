@@ -5,6 +5,7 @@ import type {
   ClientConfigSnapshot,
   RecentRecipient,
   RecentRecipientsResponse,
+  Recurring,
   Transaction,
 } from '@/data/contracts'
 import { generateUuidV4 } from '@/lib/utils'
@@ -233,6 +234,78 @@ export function buildMockAccounts(): Account[] {
   ]
 }
 
+export function buildMockRecurring(): Recurring[] {
+  const now = NOW()
+  const primary = ACCOUNT_IBANS[0]!
+  return [
+    {
+      recurring_id: 'rec-mock-rent',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      from_iban: primary,
+      to_iban: SAMPLE_RECIPIENTS_META[1]!.iban,
+      amount_minor: 650_00,
+      reason: 'Alquiler piso Vespucci',
+      interval_days: 30,
+      status: 'active',
+      next_charge_ms: now + 4 * DAY_MS,
+      last_charge_ms: now - 26 * DAY_MS,
+      created_ms: now - 160 * DAY_MS,
+    },
+    {
+      recurring_id: 'rec-mock-garage',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      from_iban: primary,
+      to_iban: SAMPLE_RECIPIENTS_META[3]!.iban,
+      amount_minor: 185_00,
+      reason: 'Cuota vehículo',
+      interval_days: 14,
+      status: 'active',
+      next_charge_ms: now + 9 * DAY_MS,
+      last_charge_ms: now - 5 * DAY_MS,
+      created_ms: now - 74 * DAY_MS,
+    },
+    {
+      recurring_id: 'rec-mock-market',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      from_iban: primary,
+      to_iban: SAMPLE_RECIPIENTS_META[6]!.iban,
+      amount_minor: 42_50,
+      reason: 'Suministros tienda',
+      interval_days: 7,
+      status: 'active',
+      next_charge_ms: now + 2 * DAY_MS,
+      last_charge_ms: now - 5 * DAY_MS,
+      created_ms: now - 42 * DAY_MS,
+    },
+    {
+      recurring_id: 'rec-mock-paused',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      from_iban: primary,
+      to_iban: SAMPLE_RECIPIENTS_META[4]!.iban,
+      amount_minor: 75_00,
+      reason: 'Seguro temporal',
+      interval_days: 30,
+      status: 'paused',
+      next_charge_ms: now + 18 * DAY_MS,
+      last_charge_ms: now - 12 * DAY_MS,
+      created_ms: now - 96 * DAY_MS,
+    },
+    {
+      recurring_id: 'rec-mock-cancelled',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      from_iban: primary,
+      to_iban: SAMPLE_RECIPIENTS_META[2]!.iban,
+      amount_minor: 19_99,
+      reason: 'Club privado',
+      interval_days: 30,
+      status: 'cancelled',
+      next_charge_ms: now - 20 * DAY_MS,
+      last_charge_ms: now - 50 * DAY_MS,
+      created_ms: now - 140 * DAY_MS,
+    },
+  ]
+}
+
 /* ---------------------------------------------------------------------------
    Mock cards — three cards mapped to different designs so the Tarjetas view
    demonstrates the design registry variety from the first render.
@@ -326,7 +399,7 @@ export function buildMockBootstrap(): BootstrapSnapshot {
       created_ms: NOW() - 60 * DAY_MS,
     })),
     loans: [],
-    recurring: [],
+    recurring: buildMockRecurring(),
     portfolio: [],
     cards: buildMockCards(),
     outstanding_notices: [],
