@@ -32,10 +32,10 @@ import { toast } from '@/stores/toast'
 import { useTransferWizard, type TransferWizardStep } from '@/stores/transferWizard'
 
 const STEPS: Array<{ id: TransferWizardStep; label: string; helper: string }> = [
-  { id: 'amount', label: 'Amount', helper: 'Importe' },
-  { id: 'recipient', label: 'Recipient', helper: 'Destino' },
-  { id: 'review', label: 'Review', helper: 'Firma' },
-  { id: 'confirm', label: 'Confirm', helper: 'Recibo' },
+  { id: 'amount', label: 'Importe', helper: 'Saldo' },
+  { id: 'recipient', label: 'Destino', helper: 'Cuenta' },
+  { id: 'review', label: 'Firma', helper: 'Revisión' },
+  { id: 'confirm', label: 'Recibo', helper: 'Listo' },
 ]
 
 const EXPRESS_STEPS: TransferWizardStep[] = ['review', 'confirm']
@@ -148,15 +148,15 @@ export function Transfer() {
           'h-full w-full mx-auto grid min-h-0',
           isReviewStep
             ? 'max-w-[1080px] grid-cols-1'
-            : 'max-w-[1400px] grid-cols-[minmax(0,1fr)_320px] gap-4 2xl:gap-5',
+            : 'max-w-[1400px] grid-cols-[minmax(0,1fr)_320px] gap-3 2xl:gap-5',
         )}
       >
-        <section className="min-h-0 flex flex-col gap-4">
+        <section className="min-h-0 flex flex-col gap-3 2xl:gap-4">
           <TransferHero expressMode={expressMode} account={primaryAccount} />
-          <Card variant="glass" padding="lg" className="min-h-0 flex-1 border-white/10 overflow-hidden">
-            <div className="h-full min-h-0 grid grid-rows-[auto_1fr] gap-5">
+          <Card variant="glass" padding="md" className="min-h-0 flex-1 border-white/10 overflow-hidden">
+            <div className="h-full min-h-0 grid grid-rows-[auto_1fr] gap-3 2xl:gap-5">
               <TransferStepper step={step} steps={visibleSteps} />
-              <div className="min-h-0 overflow-y-auto pr-1 scrollbar-thin">
+              <div className="min-h-0 overflow-y-auto pr-1 pb-5 scrollbar-thin">
                 {step === 'amount' && (
                   <AmountStep account={primaryAccount} expressMode={expressMode} />
                 )}
@@ -204,19 +204,19 @@ export function Transfer() {
 
 function TransferHero({ expressMode, account }: { expressMode: boolean; account: Account | null }) {
   return (
-    <Card variant="glass" padding="lg" heroLight className="relative overflow-hidden border-white/10 shrink-0">
+    <Card variant="glass" padding="md" heroLight className="relative overflow-hidden border-white/10 shrink-0">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
               {expressMode ? <Zap size={12} strokeWidth={2.4} /> : <SendHorizontal size={12} strokeWidth={2.4} />}
-              {expressMode ? 'EXPRESS TRANSFER' : 'TRANSFER WIZARD V3'}
+              {expressMode ? 'ENVÍO RÁPIDO' : 'TRANSFERENCIA SEGURA'}
             </span>
           </CardEyebrow>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl 2xl:text-4xl font-semibold tracking-[-0.045em] text-text-primary">Transferir dinero</h1>
+            <h1 className="text-2xl 2xl:text-4xl font-semibold tracking-[-0.045em] text-text-primary">Transferir dinero</h1>
             <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
-              Envía fondos con validación local, aviso AR-P01 para importes altos y confirmación por presión sostenida.
+              Revisa el destino, confirma con firma sostenida y recibe tu justificante al momento.
             </p>
           </div>
         </div>
@@ -243,7 +243,7 @@ function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: typ
           <div
             key={item.id}
             className={cn(
-              'relative rounded-2xl border px-3 py-3 transition-colors',
+              'relative rounded-2xl border px-3 py-2.5 2xl:py-3 transition-colors',
               active
                 ? 'border-white/18 bg-white/[0.075] text-text-primary'
                 : complete
@@ -254,7 +254,7 @@ function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: typ
             <div className="flex items-center gap-2">
               <span
                 className={cn(
-                  'inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-semibold tactile-tabular-nums',
+                  'inline-flex h-6 w-6 2xl:h-7 2xl:w-7 items-center justify-center rounded-full border text-[11px] font-semibold tactile-tabular-nums',
                   active
                     ? 'border-white/20 bg-white/[0.10]'
                     : complete
@@ -309,10 +309,10 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   }
 
   return (
-    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_280px] gap-5">
-      <div className="flex flex-col gap-5">
-        <StepHeader icon={<CircleDollarSign size={18} />} title="Elige el importe" description="Los importes se validan en céntimos y se comparan con tu saldo disponible antes de avanzar." />
-        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-5 flex flex-col gap-4">
+    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_280px] gap-4 2xl:gap-5 pb-1">
+      <div className="flex flex-col gap-4 2xl:gap-5">
+        <StepHeader icon={<CircleDollarSign size={18} />} title="Elige el importe" description="Te mostramos el saldo final antes de continuar." />
+        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <Input
             label="Importe"
             inputMode="decimal"
@@ -348,7 +348,7 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
             hint={`${memoText.length}/140`}
           />
         </div>
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2 pb-1">
           <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={submit}>
             Continuar
           </Button>
@@ -364,10 +364,10 @@ function AmountInsight({ account, amountMinor }: { account: Account | null; amou
   const risk = amountMinor ? Math.min(1, amountMinor / Math.max(account?.balance_minor ?? 1, 1)) : 0
 
   return (
-    <div className="rounded-3xl border border-border-subtle bg-white/[0.03] p-4 flex flex-col gap-4 h-fit">
+    <div className="rounded-3xl border border-border-subtle bg-white/[0.03] p-4 flex flex-col gap-3 2xl:gap-4 h-fit">
       <div className="flex items-center gap-2 text-text-secondary">
         <ShieldCheck size={16} strokeWidth={1.8} />
-        <span className="text-sm font-semibold">Pre-check</span>
+        <span className="text-sm font-semibold">Vista segura</span>
       </div>
       <div className="space-y-3">
         <Metric label="Disponible" value={account ? formatCurrency(account.balance_minor / 100) : '—'} />
@@ -378,7 +378,7 @@ function AmountInsight({ account, amountMinor }: { account: Account | null; amou
       </div>
       {amountMinor && isLargeTransfer(amountMinor) ? (
         <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] p-3 text-xs text-amber-100 leading-relaxed">
-          AR-P01 se activará en revisión por importe alto.
+          Te pediremos una confirmación más consciente por el importe elegido.
         </div>
       ) : null}
     </div>
@@ -419,10 +419,10 @@ function RecipientStep({ account }: { account: Account | null }) {
   }
 
   return (
-    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
+    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4 2xl:gap-5 pb-1">
       <StepHeader icon={<UserRound size={18} />} title="Elige destinatario" description="Selecciona un contacto reciente o introduce un IBAN manualmente." />
-      <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-5">
-        <Card variant="elevated" padding="md" className="border-white/10 min-h-[360px]">
+      <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 2xl:gap-5">
+        <Card variant="elevated" padding="md" className="border-white/10 min-h-[300px] 2xl:min-h-[360px]">
           <CardContent className="gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-text-primary">Recientes</span>
@@ -433,8 +433,8 @@ function RecipientStep({ account }: { account: Account | null }) {
                 <Spinner size="sm" />
               </div>
             ) : (
-              <div className="space-y-2">
-                {(data?.recipients ?? []).slice(0, 7).map((recipient) => (
+              <div className="max-h-[300px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
+                {(data?.recipients ?? []).slice(0, 6).map((recipient) => (
                   <RecipientChip
                     key={recipient.counterpart_iban}
                     recipient={recipient}
@@ -446,7 +446,7 @@ function RecipientStep({ account }: { account: Account | null }) {
             )}
           </CardContent>
         </Card>
-        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-5 flex flex-col gap-4">
+        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-4">
           <Input
             label="IBAN destino"
             value={iban}
@@ -462,7 +462,7 @@ function RecipientStep({ account }: { account: Account | null }) {
             onChange={(e) => setAlias(e.target.value.slice(0, 48))}
             placeholder="Nombre visible en revisión"
           />
-          <div className="mt-auto flex items-center justify-between gap-2 pt-4">
+          <div className="mt-auto flex items-center justify-between gap-2 pt-3 2xl:pt-4">
             <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep('amount')}>
               Atrás
             </Button>
@@ -519,20 +519,20 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
   const large = Boolean(amount && isLargeTransfer(amount))
 
   return (
-    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_300px] gap-5">
-      <div className="flex flex-col gap-5">
-        <StepHeader icon={<ReceiptText size={18} />} title="Revisa y firma" description="Comprueba cada dato antes de mantener pulsado para enviar." />
-        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-5 flex flex-col gap-4">
+    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 2xl:gap-5 pb-1">
+      <div className="flex flex-col gap-4 2xl:gap-5">
+        <StepHeader icon={<ReceiptText size={18} />} title="Revisa y firma" description="Comprueba los datos antes de autorizar el envío." />
+        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">Metadatos</span>
-            <span className="text-xs font-mono text-text-tertiary text-right break-all">correlation_id · {correlationId ?? '—'}</span>
+            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">Código de seguridad</span>
+            <span className="text-xs font-mono text-text-tertiary text-right break-all">{correlationId ?? '—'}</span>
           </div>
           <ReviewRow label="Desde" value={account ? formatIbanMasked(account.iban) : '—'} />
           <ReviewRow label="Para" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : '—')} helper={recipientIban ? formatIban(recipientIban) : undefined} />
           <ReviewRow label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} strong />
           <ReviewRow label="Concepto" value={memo.trim() || 'Sin concepto'} />
         </div>
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 pb-1">
           <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep(expressMode ? 'recipient' : 'recipient')}>
             Editar destino
           </Button>
@@ -545,9 +545,9 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
           <CardContent className="gap-2">
             <div className="flex items-center gap-2 text-text-secondary">
               <Clock3 size={15} />
-              <span className="text-sm font-semibold">Idempotencia</span>
+              <span className="text-sm font-semibold">Protección anti-duplicados</span>
             </div>
-            <p className="text-xs text-text-tertiary leading-relaxed">Cada intento usa una clave única para evitar duplicados en reintentos o latencia NUI.</p>
+            <p className="text-xs text-text-tertiary leading-relaxed">Si la conexión se interrumpe, evitamos repetir el envío.</p>
           </CardContent>
         </Card>
       </div>
@@ -561,10 +561,10 @@ function LargeTransferWarning({ amount }: { amount: number }) {
       <CardContent className="gap-3">
         <div className="flex items-center gap-2 text-amber-100">
           <AlertTriangle size={17} strokeWidth={2} />
-          <span className="text-sm font-semibold">AR-P01 · importe alto</span>
+          <span className="text-sm font-semibold">Confirmación reforzada</span>
         </div>
         <p className="text-xs text-amber-100/80 leading-relaxed">
-          Vas a enviar {formatCurrency(amount / 100)}. Mantén pulsado para confirmar conscientemente esta operación.
+          Vas a enviar {formatCurrency(amount / 100)}. Revisa el destino con calma antes de firmar.
         </p>
       </CardContent>
     </Card>
@@ -577,9 +577,9 @@ function SecurityPanel() {
       <CardContent className="gap-3">
         <div className="flex items-center gap-2 text-emerald-100">
           <ShieldCheck size={17} strokeWidth={2} />
-          <span className="text-sm font-semibold">Riesgo normal</span>
+          <span className="text-sm font-semibold">Operación protegida</span>
         </div>
-        <p className="text-xs text-emerald-100/75 leading-relaxed">Importe dentro de umbral estándar. La firma sostenida sigue siendo obligatoria.</p>
+        <p className="text-xs text-emerald-100/75 leading-relaxed">Todo listo para confirmar con firma sostenida.</p>
       </CardContent>
     </Card>
   )
@@ -690,7 +690,7 @@ function ConfirmStep({
 
   if (pending) {
     return (
-      <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title="Enviando transferencia" description="Aplicando operación optimista y esperando confirmación mock." />
+      <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title="Enviando transferencia" description="Estamos verificando la operación." />
     )
   }
 
@@ -718,17 +718,17 @@ function ConfirmStep({
       title="Transferencia completada"
       description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'destinatario')}.`}
     >
-      <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-4 text-left space-y-3">
+      <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-4 text-left space-y-2.5 2xl:space-y-3">
         <ReviewRow label="Recibo" value={receipt.transaction_id} mono />
-        <ReviewRow label="Correlation ID" value={receipt.correlation_id} mono />
+        <ReviewRow label="Código de seguridad" value={receipt.correlation_id} mono />
         <ReviewRow label="Origen" value={formatIbanMasked(receipt.from_iban)} />
         <ReviewRow label="Destino" value={formatIbanMasked(receipt.to_iban)} helper={recipientAlias ?? undefined} />
         <ReviewRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
         <ReviewRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
         <ReviewRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
-        <ReviewRow label="Estado" value="Committed" />
+        <ReviewRow label="Estado" value="Confirmada" />
       </div>
-      <div className="flex justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         <Button
           variant="secondary"
           leftIcon={pdfPending ? <Spinner size="sm" /> : <Download size={16} />}
@@ -748,23 +748,23 @@ function ResultShell({ tone, icon, title, description, children }: { tone: 'pend
   const toneClass = tone === 'success' ? 'text-emerald-100 border-emerald-300/20 bg-emerald-300/[0.055]' : tone === 'error' ? 'text-red-100 border-red-300/20 bg-red-300/[0.055]' : 'text-text-primary border-border-subtle bg-white/[0.035]'
 
   return (
-    <div className="h-full min-h-[440px] flex items-center justify-center">
+    <div className="h-full min-h-[390px] flex items-center justify-center py-2">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-xl text-center flex flex-col items-center gap-5"
+        className="w-full max-w-xl text-center flex flex-col items-center gap-4 2xl:gap-5"
       >
         <motion.div
           initial={{ scale: 0.82 }}
           animate={{ scale: tone === 'success' ? [0.86, 1.08, 1] : 1 }}
           transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
-          className={cn('inline-flex h-24 w-24 items-center justify-center rounded-full border', toneClass)}
+          className={cn('inline-flex h-20 w-20 2xl:h-24 2xl:w-24 items-center justify-center rounded-full border', toneClass)}
         >
           {icon}
         </motion.div>
         <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-semibold tracking-[-0.04em] text-text-primary">{title}</h2>
+          <h2 className="text-2xl 2xl:text-3xl font-semibold tracking-[-0.04em] text-text-primary">{title}</h2>
           <p className="text-sm text-text-secondary leading-relaxed max-w-[52ch]">{description}</p>
         </div>
         {children}
@@ -775,15 +775,15 @@ function ResultShell({ tone, icon, title, description, children }: { tone: 'pend
 
 function TransferRail({ account, amount, memo, recipientAlias, recipientIban, expressMode }: { account: Account | null; amount: number | null; memo: string; recipientAlias: string | null; recipientIban: string | null; expressMode: boolean }) {
   return (
-    <aside className="min-h-0 flex flex-col gap-4">
-      <Card variant="glass" padding="lg" className="border-white/10">
-        <CardContent className="gap-4">
+    <aside className="min-h-0 overflow-y-auto pb-5 pr-1 flex flex-col gap-3 2xl:gap-4 scrollbar-thin">
+      <Card variant="glass" padding="md" className="border-white/10">
+        <CardContent className="gap-3 2xl:gap-4">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-text-secondary" />
-            <CardTitle className="text-base">Resumen vivo</CardTitle>
+            <CardTitle className="text-base">Resumen</CardTitle>
           </div>
           <div className="space-y-3">
-            <Metric label="Modo" value={expressMode ? 'Express · 2 pasos' : 'Wizard · 4 pasos'} />
+            <Metric label="Modo" value={expressMode ? 'Rápido' : 'Seguro'} />
             <Metric label="Origen" value={account ? formatIbanShort(account.iban) : '—'} />
             <Metric label="Destino" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'Pendiente')} />
             <Metric label="Importe" value={amount ? formatCurrency(amount / 100) : 'Pendiente'} />
@@ -797,7 +797,7 @@ function TransferRail({ account, amount, memo, recipientAlias, recipientIban, ex
             <LockKeyhole size={15} />
             <span className="text-sm font-semibold">Firma táctil</span>
           </div>
-          <CardDescription className="text-xs">El envío final requiere presión sostenida. Esto reduce errores accidentales en tablet NUI.</CardDescription>
+          <CardDescription className="text-xs">El envío final requiere presión sostenida para evitar errores accidentales.</CardDescription>
         </CardContent>
       </Card>
     </aside>
