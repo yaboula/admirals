@@ -671,7 +671,7 @@ function ConfirmStep({
     setPdfPending(true)
     try {
       const { downloadTransferReceiptPdf } = await import('./transfer/receipt-pdf')
-      downloadTransferReceiptPdf({
+      await downloadTransferReceiptPdf({
         receipt,
         recipientLabel: recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : formatIbanShort(receipt.to_iban)),
         amountLabel: formatCurrency((amount ?? receipt.amount_minor) / 100),

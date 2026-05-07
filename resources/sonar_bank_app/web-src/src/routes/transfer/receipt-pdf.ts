@@ -1,4 +1,4 @@
-import type { TransferReceipt } from '@/data/mutations'
+﻿import type { TransferReceipt } from '@/data/mutations'
 
 export interface TransferReceiptPdfInput {
   receipt: TransferReceipt
@@ -9,34 +9,41 @@ export interface TransferReceiptPdfInput {
   timestampLabel: string
 }
 
-interface PdfTextOptions {
+interface CanvasTextOptions {
   size?: number
+  weight?: 400 | 600 | 700 | 800
   color?: string
-  font?: 'regular' | 'bold'
+  align?: CanvasTextAlign
+  maxWidth?: number
 }
 
-interface PdfLineOptions {
-  width?: number
-  color?: string
+interface ReceiptJpeg {
+  bytes: Uint8Array
+  width: number
+  height: number
 }
 
 const PAGE_WIDTH = 595.28
 const PAGE_HEIGHT = 841.89
+const CANVAS_SCALE = 2
 const MARGIN_X = 54
-const FONT_REGULAR = 'F1'
-const FONT_BOLD = 'F2'
+const FONT_FAMILY = '"Inter Variable", Inter, "Segoe UI", Arial, sans-serif'
 const COLORS = {
-  ink: '0.950 0.950 0.970',
-  muted: '0.560 0.580 0.620',
-  faint: '0.210 0.220 0.250',
-  panel: '0.110 0.115 0.135',
-  border: '0.235 0.245 0.275',
-  brand: '0.910 0.430 0.180',
-  success: '0.490 0.850 0.650',
+  background: '#0d0e12',
+  shell: '#13151b',
+  panel: '#1d1f26',
+  ink: '#f3f3f7',
+  muted: '#8f95a3',
+  faint: 'rgba(255, 255, 255, 0.10)',
+  border: 'rgba(255, 255, 255, 0.16)',
+  brand: '#ef7338',
+  success: '#7be0a7',
+  watermark: 'rgba(255, 255, 255, 0.035)',
 }
 
-export function downloadTransferReceiptPdf(input: TransferReceiptPdfInput): void {
-  const pdf = createTransferReceiptPdf(input)
+export async function downloadTransferReceiptPdf(input: TransferReceiptPdfInput): Promise<void> {
+  const image = await createReceiptJpeg(input)
+  const pdf = buildPdfDocument(image)
   const blob = new Blob([pdf], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
@@ -48,46 +55,81 @@ export function downloadTransferReceiptPdf(input: TransferReceiptPdfInput): void
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-function createTransferReceiptPdf(input: TransferReceiptPdfInput): Uint8Array {
-  const stream = new PdfContentStream()
-  drawBackground(stream)
-  drawHeader(stream, input)
-  drawAmount(stream, input)
-  drawReceiptPanel(stream, input)
-  drawWatermark(stream)
-  drawFooter(stream)
+async function createReceiptJpeg(input: TransferReceiptPdfInput): Promise<ReceiptJpeg> {
+  await registerReceiptFont()
 
-  return buildPdfDocument(stream.toString())
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(PAGE_WIDTH * CANVAS_SCALE)
+  canvas.height = Math.round(PAGE_HEIGHT * CANVAS_SCALE)
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('PDF_CANVAS_UNAVAILABLE')
+
+  ctx.scale(CANVAS_SCALE, CANVAS_SCALE)
+  drawReceiptCanvas(ctx, input)
+
+  const blob = await canvasToBlob(canvas)
+  return {
+    bytes: new Uint8Array(await blob.arrayBuffer()),
+    width: canvas.width,
+    height: canvas.height,
+  }
 }
 
-function drawBackground(stream: PdfContentStream): void {
-  stream.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, '0.050 0.055 0.070')
-  stream.rect(32, 32, PAGE_WIDTH - 64, PAGE_HEIGHT - 64, '0.074 0.079 0.098')
-  stream.line(32, PAGE_HEIGHT - 98, PAGE_WIDTH - 32, PAGE_HEIGHT - 98, { color: COLORS.border })
-  stream.line(32, 116, PAGE_WIDTH - 32, 116, { color: COLORS.border })
+async function registerReceiptFont(): Promise<void> {
+  if (!('fonts' in document)) return
+  await Promise.all([
+    document.fonts.load(`400 12px ${FONT_FAMILY}`),
+    document.fonts.load(`700 38px ${FONT_FAMILY}`),
+  ])
 }
 
-function drawHeader(stream: PdfContentStream, input: TransferReceiptPdfInput): void {
-  stream.text('SONAR', MARGIN_X, PAGE_HEIGHT - 70, { size: 24, font: 'bold', color: COLORS.ink })
-  stream.text('BANK', MARGIN_X + 84, PAGE_HEIGHT - 70, { size: 24, font: 'bold', color: COLORS.brand })
-  stream.text('Transfer receipt', MARGIN_X, PAGE_HEIGHT - 92, { size: 10, color: COLORS.muted })
-  stream.text(input.receipt.status.toUpperCase(), PAGE_WIDTH - MARGIN_X - 90, PAGE_HEIGHT - 70, { size: 10, font: 'bold', color: COLORS.success })
-  stream.text(input.timestampLabel, PAGE_WIDTH - MARGIN_X - 130, PAGE_HEIGHT - 91, { size: 9, color: COLORS.muted })
+function drawReceiptCanvas(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
+  drawBackground(ctx)
+  drawHeader(ctx, input)
+  drawAmount(ctx, input)
+  drawReceiptPanel(ctx, input)
+  drawWatermark(ctx)
+  drawFooter(ctx)
 }
 
-function drawAmount(stream: PdfContentStream, input: TransferReceiptPdfInput): void {
-  stream.text('Amount sent', MARGIN_X, PAGE_HEIGHT - 154, { size: 11, color: COLORS.muted })
-  stream.text(input.amountLabel, MARGIN_X, PAGE_HEIGHT - 195, { size: 38, font: 'bold', color: COLORS.ink })
-  stream.text(`To ${input.recipientLabel}`, MARGIN_X, PAGE_HEIGHT - 220, { size: 12, color: COLORS.muted })
+function drawBackground(ctx: CanvasRenderingContext2D): void {
+  fillRect(ctx, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, COLORS.background)
+  fillRect(ctx, 32, 32, PAGE_WIDTH - 64, PAGE_HEIGHT - 64, COLORS.shell)
+  line(ctx, 32, 98, PAGE_WIDTH - 32, 98, COLORS.border)
+  line(ctx, 32, PAGE_HEIGHT - 116, PAGE_WIDTH - 32, PAGE_HEIGHT - 116, COLORS.border)
 }
 
-function drawReceiptPanel(stream: PdfContentStream, input: TransferReceiptPdfInput): void {
+function drawHeader(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
+  text(ctx, 'SONAR', MARGIN_X, 70, { size: 24, weight: 800, color: COLORS.ink })
+  text(ctx, 'BANK', MARGIN_X + 84, 70, { size: 24, weight: 800, color: COLORS.brand })
+  text(ctx, 'Transfer receipt', MARGIN_X, 92, { size: 10, color: COLORS.muted })
+  text(ctx, input.receipt.status.toUpperCase(), PAGE_WIDTH - MARGIN_X, 70, {
+    size: 10,
+    weight: 800,
+    color: COLORS.success,
+    align: 'right',
+  })
+  text(ctx, input.timestampLabel, PAGE_WIDTH - MARGIN_X, 92, {
+    size: 9,
+    color: COLORS.muted,
+    align: 'right',
+  })
+}
+
+function drawAmount(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
+  text(ctx, 'Amount sent', MARGIN_X, 154, { size: 11, color: COLORS.muted })
+  text(ctx, input.amountLabel, MARGIN_X, 195, { size: 38, weight: 800, color: COLORS.ink, maxWidth: 360 })
+  text(ctx, `To ${input.recipientLabel}`, MARGIN_X, 220, { size: 12, color: COLORS.muted, maxWidth: 420 })
+}
+
+function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
   const x = MARGIN_X
-  const y = PAGE_HEIGHT - 580
+  const y = 280
   const w = PAGE_WIDTH - MARGIN_X * 2
   const h = 300
-  stream.rect(x, y, w, h, COLORS.panel)
-  stream.line(x, y + h, x + w, y + h, { width: 1.4, color: COLORS.brand })
+  fillRect(ctx, x, y, w, h, COLORS.panel)
+  line(ctx, x, y, x + w, y, COLORS.brand, 1.4)
 
   const rows: Array<[string, string]> = [
     ['Transaction ID', input.receipt.transaction_id],
@@ -100,84 +142,113 @@ function drawReceiptPanel(stream: PdfContentStream, input: TransferReceiptPdfInp
     ['Idempotency key', input.receipt.idempotency_key],
   ]
 
-  let rowY = y + h - 42
+  let rowY = y + 58
   for (const [label, value] of rows) {
-    stream.text(label, x + 24, rowY, { size: 8, color: COLORS.muted })
-    stream.text(value, x + 150, rowY, { size: 9, font: 'bold', color: COLORS.ink })
-    stream.line(x + 24, rowY - 14, x + w - 24, rowY - 14, { color: COLORS.faint })
-    rowY -= 32
+    text(ctx, label, x + 24, rowY, { size: 8, color: COLORS.muted })
+    text(ctx, value, x + 150, rowY, { size: 9, weight: 700, color: COLORS.ink, maxWidth: w - 174 })
+    line(ctx, x + 24, rowY + 18, x + w - 24, rowY + 18, COLORS.faint)
+    rowY += 32
   }
 }
 
-function drawWatermark(stream: PdfContentStream): void {
-  stream.text('SONAR BANK', 188, 396, { size: 34, font: 'bold', color: '0.145 0.150 0.170' })
-  stream.text('RECEIPT', 230, 362, { size: 18, font: 'bold', color: '0.145 0.150 0.170' })
+function drawWatermark(ctx: CanvasRenderingContext2D): void {
+  text(ctx, 'SONAR BANK', 188, 450, { size: 34, weight: 800, color: COLORS.watermark })
+  text(ctx, 'RECEIPT', 230, 484, { size: 18, weight: 800, color: COLORS.watermark })
 }
 
-function drawFooter(stream: PdfContentStream): void {
-  stream.text('Generated by SONAR Bank NUI · Financial-grade mock receipt · Keep this receipt for audit reference.', MARGIN_X, 78, { size: 8, color: COLORS.muted })
-  stream.text('This document mirrors the client-side C-FE-01 transfer receipt contract.', MARGIN_X, 62, { size: 8, color: COLORS.muted })
-}
-
-class PdfContentStream {
-  private readonly parts: string[] = []
-
-  text(value: string, x: number, y: number, options: PdfTextOptions = {}): void {
-    const size = options.size ?? 10
-    const font = options.font === 'bold' ? FONT_BOLD : FONT_REGULAR
-    const color = options.color ?? COLORS.ink
-    this.parts.push('BT')
-    this.parts.push(`${color} rg`)
-    this.parts.push(`/${font} ${size} Tf`)
-    this.parts.push(`${fixed(x)} ${fixed(y)} Td`)
-    this.parts.push(`(${escapePdfText(value)}) Tj`)
-    this.parts.push('ET')
-  }
-
-  rect(x: number, y: number, width: number, height: number, color: string): void {
-    this.parts.push(`${color} rg`)
-    this.parts.push(`${fixed(x)} ${fixed(y)} ${fixed(width)} ${fixed(height)} re f`)
-  }
-
-  line(x1: number, y1: number, x2: number, y2: number, options: PdfLineOptions = {}): void {
-    const width = options.width ?? 0.7
-    const color = options.color ?? COLORS.border
-    this.parts.push(`${color} RG`)
-    this.parts.push(`${fixed(width)} w`)
-    this.parts.push(`${fixed(x1)} ${fixed(y1)} m ${fixed(x2)} ${fixed(y2)} l S`)
-  }
-
-  toString(): string {
-    return this.parts.join('\n')
-  }
-}
-
-function buildPdfDocument(contentStream: string): Uint8Array {
-  const objects = [
-    '<< /Type /Catalog /Pages 2 0 R >>',
-    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${fixed(PAGE_WIDTH)} ${fixed(PAGE_HEIGHT)}] /Resources << /Font << /${FONT_REGULAR} 4 0 R /${FONT_BOLD} 5 0 R >> >> /Contents 6 0 R >>`,
-    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
-    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
-    `<< /Length ${byteLength(contentStream)} >>\nstream\n${contentStream}\nendstream`,
-  ]
-
-  let body = '%PDF-1.4\n%SONAR\n'
-  const offsets = [0]
-  objects.forEach((object, index) => {
-    offsets.push(byteLength(body))
-    body += `${index + 1} 0 obj\n${object}\nendobj\n`
+function drawFooter(ctx: CanvasRenderingContext2D): void {
+  text(ctx, 'Generated by SONAR Bank NUI · Financial-grade mock receipt · Keep this receipt for audit reference.', MARGIN_X, 764, {
+    size: 8,
+    color: COLORS.muted,
+    maxWidth: PAGE_WIDTH - MARGIN_X * 2,
   })
+  text(ctx, 'This document mirrors the client-side C-FE-01 transfer receipt contract.', MARGIN_X, 780, {
+    size: 8,
+    color: COLORS.muted,
+    maxWidth: PAGE_WIDTH - MARGIN_X * 2,
+  })
+}
 
-  const xrefOffset = byteLength(body)
-  body += `xref\n0 ${objects.length + 1}\n`
-  body += '0000000000 65535 f \n'
-  for (const offset of offsets.slice(1)) {
-    body += `${String(offset).padStart(10, '0')} 00000 n \n`
+function fillRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string): void {
+  ctx.fillStyle = color
+  ctx.fillRect(x, y, width, height)
+}
+
+function line(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, color: string, width = 0.7): void {
+  ctx.strokeStyle = color
+  ctx.lineWidth = width
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
+  ctx.stroke()
+}
+
+function text(ctx: CanvasRenderingContext2D, value: string, x: number, y: number, options: CanvasTextOptions = {}): void {
+  const size = options.size ?? 10
+  const weight = options.weight ?? 400
+  ctx.fillStyle = options.color ?? COLORS.ink
+  ctx.font = `${weight} ${size}px ${FONT_FAMILY}`
+  ctx.textAlign = options.align ?? 'left'
+  ctx.textBaseline = 'alphabetic'
+  if (options.maxWidth) {
+    ctx.fillText(value, x, y, options.maxWidth)
+    return
   }
-  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`
+  ctx.fillText(value, x, y)
+}
 
-  return new TextEncoder().encode(body)
+function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob)
+        return
+      }
+      reject(new Error('PDF_CANVAS_BLOB_FAILED'))
+    }, 'image/jpeg', 0.94)
+  })
+}
+
+function buildPdfDocument(image: ReceiptJpeg): Uint8Array {
+  const content = `q\n${fixed(PAGE_WIDTH)} 0 0 ${fixed(PAGE_HEIGHT)} 0 0 cm\n/Im1 Do\nQ`
+  const chunks: Uint8Array[] = []
+  const offsets: number[] = []
+  let length = 0
+
+  const append = (value: string | Uint8Array): void => {
+    const chunk = typeof value === 'string' ? encode(value) : value
+    chunks.push(chunk)
+    length += chunk.length
+  }
+
+  const addObject = (id: number, value: string): void => {
+    offsets[id] = length
+    append(`${id} 0 obj\n${value}\nendobj\n`)
+  }
+
+  const addStreamObject = (id: number, dictionary: string, stream: Uint8Array): void => {
+    offsets[id] = length
+    append(`${id} 0 obj\n${dictionary}\nstream\n`)
+    append(stream)
+    append('\nendstream\nendobj\n')
+  }
+
+  append('%PDF-1.4\n%SONAR\n')
+  addObject(1, '<< /Type /Catalog /Pages 2 0 R >>')
+  addObject(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>')
+  addObject(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${fixed(PAGE_WIDTH)} ${fixed(PAGE_HEIGHT)}] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>`)
+  addStreamObject(4, `<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${image.bytes.length} >>`, image.bytes)
+  addStreamObject(5, `<< /Length ${byteLength(content)} >>`, encode(content))
+
+  const xrefOffset = length
+  append('xref\n0 6\n')
+  append('0000000000 65535 f \n')
+  for (let id = 1; id <= 5; id += 1) {
+    append(`${String(offsets[id]).padStart(10, '0')} 00000 n \n`)
+  }
+  append(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`)
+
+  return concat(chunks, length)
 }
 
 function buildReceiptFileName(receipt: TransferReceipt): string {
@@ -193,14 +264,24 @@ function formatMinorCurrency(amountMinor: number): string {
   }).format(amountMinor / 100)
 }
 
-function escapePdfText(value: string): string {
-  return value.replace(/[\\()]/g, (match) => `\\${match}`).replace(/[\r\n\t]/g, ' ')
-}
-
 function fixed(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(2)
 }
 
 function byteLength(value: string): number {
-  return new TextEncoder().encode(value).length
+  return encode(value).length
+}
+
+function encode(value: string): Uint8Array {
+  return new TextEncoder().encode(value)
+}
+
+function concat(chunks: Uint8Array[], length: number): Uint8Array {
+  const out = new Uint8Array(length)
+  let offset = 0
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.length
+  }
+  return out
 }
