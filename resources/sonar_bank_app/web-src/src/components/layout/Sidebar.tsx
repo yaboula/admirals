@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Receipt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
@@ -27,6 +28,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true },
+  { to: '/transacciones', label: 'Transacciones', icon: Receipt },
   { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight, disabled: true },
   { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, disabled: true },
   { to: '/ahorro', label: 'Ahorro', icon: PiggyBank, disabled: true },

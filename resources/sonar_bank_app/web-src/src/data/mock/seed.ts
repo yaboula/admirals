@@ -84,40 +84,76 @@ function findMetaByIban(
   )
 }
 
-const SAMPLE_TX_DATA: Array<{
+/* ---------------------------------------------------------------------------
+   Anchored transactions — guaranteed to appear so chart spikes / dashboard
+   preview stay visually predictable across reloads.
+   --------------------------------------------------------------------------- */
+const ANCHORED_TX: Array<{
   amount: number
   reason: string | null
   direction: Transaction['direction']
   status: Transaction['status']
   hoursAgo: number
-  fromIdx: number
-  toIdx: number
+  partnerIdx: number
 }> = [
-  { amount: 250_00,  reason: 'Mitad alquiler abril',     direction: 'out', status: 'committed', hoursAgo: 6,    fromIdx: 0, toIdx: 1 },
-  { amount: 1_250_00, reason: 'Salario mensual',         direction: 'in',  status: 'committed', hoursAgo: 18,   fromIdx: 9, toIdx: 0 },
-  { amount: 38_50,   reason: 'Cena domingo',             direction: 'out', status: 'committed', hoursAgo: 36,   fromIdx: 0, toIdx: 0 },
-  { amount: 120_00,  reason: 'Devolución viaje',         direction: 'in',  status: 'committed', hoursAgo: 50,   fromIdx: 5, toIdx: 0 },
-  { amount: 75_00,   reason: 'Material taller',          direction: 'out', status: 'pending',   hoursAgo: 2,    fromIdx: 0, toIdx: 3 },
-  { amount: 12_50,   reason: 'Cafés semana',             direction: 'out', status: 'committed', hoursAgo: 72,   fromIdx: 0, toIdx: 2 },
-  { amount: 500_00,  reason: 'Cuota préstamo coche',     direction: 'out', status: 'committed', hoursAgo: 96,   fromIdx: 0, toIdx: 8 },
-  { amount: 9_99,    reason: 'Suscripción mensual',      direction: 'out', status: 'committed', hoursAgo: 120,  fromIdx: 0, toIdx: 7 },
+  { amount: 250_00,   reason: 'Mitad alquiler abril',  direction: 'out', status: 'committed', hoursAgo: 6,   partnerIdx: 1 },
+  { amount: 1_250_00, reason: 'Salario mensual',       direction: 'in',  status: 'committed', hoursAgo: 18,  partnerIdx: 5 },
+  { amount: 38_50,    reason: 'Cena domingo',          direction: 'out', status: 'committed', hoursAgo: 36,  partnerIdx: 0 },
+  { amount: 120_00,   reason: 'Devolución viaje',      direction: 'in',  status: 'committed', hoursAgo: 50,  partnerIdx: 5 },
+  { amount: 75_00,    reason: 'Material taller',       direction: 'out', status: 'pending',   hoursAgo: 2,   partnerIdx: 3 },
+  { amount: 12_50,    reason: 'Cafés semana',          direction: 'out', status: 'committed', hoursAgo: 72,  partnerIdx: 2 },
+  { amount: 500_00,   reason: 'Cuota préstamo coche',  direction: 'out', status: 'committed', hoursAgo: 96,  partnerIdx: 6 },
+  { amount: 9_99,     reason: 'Suscripción mensual',   direction: 'out', status: 'committed', hoursAgo: 120, partnerIdx: 6 },
+]
+
+/* Procedural pool — categorised reasons used to fill the rest of the 30-day
+   window. Tags are kept on the entry (not in the public Transaction contract)
+   so the history filter logic could later expose category chips. */
+const PROCEDURAL_POOL: Array<{
+  amount: [number, number]
+  reason: string
+  direction: Transaction['direction']
+  partnerIdx: number
+  weight: number
+}> = [
+  { amount: [3_50, 8_00],     reason: 'Café del día',          direction: 'out', partnerIdx: 2, weight: 8 },
+  { amount: [12_00, 28_00],   reason: 'Comida menú',            direction: 'out', partnerIdx: 6, weight: 5 },
+  { amount: [6_00, 14_00],    reason: 'Pan + leche',            direction: 'out', partnerIdx: 6, weight: 4 },
+  { amount: [40_00, 90_00],   reason: 'Compra supermercado',    direction: 'out', partnerIdx: 6, weight: 3 },
+  { amount: [22_00, 60_00],   reason: 'Gasolina',               direction: 'out', partnerIdx: 4, weight: 3 },
+  { amount: [15_00, 35_00],   reason: 'Transporte',             direction: 'out', partnerIdx: 4, weight: 2 },
+  { amount: [9_99, 19_99],    reason: 'Suscripción servicio',   direction: 'out', partnerIdx: 6, weight: 2 },
+  { amount: [80_00, 240_00],  reason: 'Compra electrónica',     direction: 'out', partnerIdx: 3, weight: 1 },
+  { amount: [25_00, 80_00],   reason: 'Cena con amigos',        direction: 'out', partnerIdx: 0, weight: 3 },
+  { amount: [120_00, 280_00], reason: 'Reembolso pendiente',    direction: 'in',  partnerIdx: 5, weight: 2 },
+  { amount: [18_00, 50_00],   reason: 'Cafés semana',           direction: 'in',  partnerIdx: 2, weight: 1 },
+  { amount: [60_00, 180_00],  reason: 'Trabajo freelance',      direction: 'in',  partnerIdx: 3, weight: 2 },
+  { amount: [40_00, 120_00],  reason: 'Devolución compra',      direction: 'in',  partnerIdx: 6, weight: 1 },
 ]
 
 const ACCOUNT_IBANS = ['ES12 9999 0000 1111 2222 3333', 'ES12 9999 0000 1111 2222 4444']
 
+/* Tiny deterministic LCG so the procedural mock stays stable across reloads.
+   Seed pinned to a known value: changing it regenerates the dataset. */
+function makeRng(seed: number): () => number {
+  let s = seed >>> 0
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 0xffffffff
+  }
+}
+
 export function buildMockTransactions(): Transaction[] {
   const now = NOW()
-  return SAMPLE_TX_DATA.map((t, i) => {
-    const fromIban =
-      t.direction === 'in'
-        ? SAMPLE_RECIPIENTS_META[t.fromIdx % SAMPLE_RECIPIENTS_META.length]!.iban
-        : ACCOUNT_IBANS[0]!
-    const toIban =
-      t.direction === 'in'
-        ? ACCOUNT_IBANS[0]!
-        : SAMPLE_RECIPIENTS_META[t.toIdx % SAMPLE_RECIPIENTS_META.length]!.iban
-    return {
-      txn_id: `txn-mock-${i.toString().padStart(4, '0')}`,
+  const out: Transaction[] = []
+
+  // Anchor entries first.
+  ANCHORED_TX.forEach((t, i) => {
+    const partner = SAMPLE_RECIPIENTS_META[t.partnerIdx % SAMPLE_RECIPIENTS_META.length]!
+    const fromIban = t.direction === 'in' ? partner.iban : ACCOUNT_IBANS[0]!
+    const toIban = t.direction === 'in' ? ACCOUNT_IBANS[0]! : partner.iban
+    out.push({
+      txn_id: `txn-anc-${i.toString().padStart(4, '0')}`,
       from_iban: fromIban,
       to_iban: toIban,
       amount_minor: t.amount,
@@ -125,8 +161,48 @@ export function buildMockTransactions(): Transaction[] {
       direction: t.direction,
       status: t.status,
       timestamp_ms: now - t.hoursAgo * 60 * 60 * 1000,
-    }
+    })
   })
+
+  // Build a weighted bag once for fast pick.
+  const weightedBag: number[] = []
+  PROCEDURAL_POOL.forEach((p, idx) => {
+    for (let i = 0; i < p.weight; i++) weightedBag.push(idx)
+  })
+
+  const rng = makeRng(0x5EED_BA15)
+  const TARGET_TOTAL = 48 // 8 anchored + 40 procedural
+  const WINDOW_HOURS = 30 * 24
+
+  for (let i = 0; i < TARGET_TOTAL - ANCHORED_TX.length; i++) {
+    const tpl = PROCEDURAL_POOL[weightedBag[Math.floor(rng() * weightedBag.length)]!]!
+    const partner = SAMPLE_RECIPIENTS_META[tpl.partnerIdx % SAMPLE_RECIPIENTS_META.length]!
+    const amount = Math.round(tpl.amount[0] + rng() * (tpl.amount[1] - tpl.amount[0]))
+    // Cluster more transactions in the recent week (front-weighted).
+    const hoursAgo = Math.round(Math.pow(rng(), 1.6) * WINDOW_HOURS)
+    // Most committed; sprinkle a few pending / reverted for realism.
+    const r = rng()
+    const status: Transaction['status'] =
+      r < 0.05 ? 'pending' : r < 0.07 ? 'reverted' : 'committed'
+
+    const fromIban = tpl.direction === 'in' ? partner.iban : ACCOUNT_IBANS[0]!
+    const toIban = tpl.direction === 'in' ? ACCOUNT_IBANS[0]! : partner.iban
+
+    out.push({
+      txn_id: `txn-pro-${i.toString().padStart(4, '0')}`,
+      from_iban: fromIban,
+      to_iban: toIban,
+      amount_minor: amount,
+      reason: tpl.reason,
+      direction: tpl.direction,
+      status,
+      timestamp_ms: now - hoursAgo * 60 * 60 * 1000,
+    })
+  }
+
+  // Sort newest-first so list/preview consumers work without re-sorting.
+  out.sort((a, b) => b.timestamp_ms - a.timestamp_ms)
+  return out
 }
 
 export function buildMockAccounts(): Account[] {

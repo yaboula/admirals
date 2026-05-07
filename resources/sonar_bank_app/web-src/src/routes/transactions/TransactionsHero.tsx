@@ -1,0 +1,198 @@
+import { useMemo, useEffect, useRef } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { TrendingUp, TrendingDown, Sigma } from 'lucide-react'
+import type { Transaction, Account } from '@/data/contracts'
+import { Card } from '@/components/ui'
+import { cn } from '@/lib/utils'
+
+/**
+ * BANK-FE.3 — Transactions Hero stats card.
+ *
+ * Shows three high-impact tabular figures derived from the currently-filtered
+ * dataset: ingresos · gastos · neto. Each value animates from previous to new
+ * value when filters mutate, providing a continuous-feel counter.
+ */
+export interface TransactionsHeroProps {
+  transactions: Transaction[]
+  account: Account | undefined
+  totalCount: number
+  filteredCount: number
+}
+
+export function TransactionsHero({
+  transactions,
+  account,
+  totalCount,
+  filteredCount,
+}: TransactionsHeroProps) {
+  const own = account?.iban.replace(/\s+/g, '')
+  const totals = useMemo(() => computeTotals(transactions, own), [transactions, own])
+
+  return (
+    <Card
+      variant="glass"
+      padding="lg"
+      className="relative overflow-hidden border-white/10"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
+            Resumen del periodo
+          </span>
+          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
+            Transacciones
+          </h1>
+        </div>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+            Mostrando
+          </span>
+          <span className="text-sm font-semibold text-text-primary tactile-tabular-nums">
+            {filteredCount} <span className="text-text-tertiary font-normal">/ {totalCount}</span>
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <Stat
+          label="Ingresos"
+          icon={<TrendingUp size={14} strokeWidth={2.2} />}
+          value={totals.income}
+          color="oklch(0.78 0.16 155)"
+          accentBg="oklch(0.72 0.16 155 / 0.10)"
+          tone="positive"
+        />
+        <Stat
+          label="Gastos"
+          icon={<TrendingDown size={14} strokeWidth={2.2} />}
+          value={totals.expense}
+          color="oklch(0.74 0.20 25)"
+          accentBg="oklch(0.68 0.20 25 / 0.10)"
+          tone="negative"
+        />
+        <Stat
+          label="Neto"
+          icon={<Sigma size={14} strokeWidth={2.2} />}
+          value={totals.net}
+          color={totals.net >= 0 ? 'oklch(0.78 0.16 155)' : 'oklch(0.74 0.20 25)'}
+          accentBg="oklch(1 0 0 / 0.04)"
+          tone={totals.net >= 0 ? 'positive' : 'negative'}
+          highlighted
+        />
+      </div>
+    </Card>
+  )
+}
+
+interface StatProps {
+  label: string
+  icon: React.ReactNode
+  value: number
+  color: string
+  accentBg: string
+  tone: 'positive' | 'negative'
+  highlighted?: boolean
+}
+
+function Stat({ label, icon, value, color, accentBg, tone, highlighted }: StatProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+      className={cn(
+        'relative flex flex-col gap-1.5 rounded-lg p-3',
+        highlighted && 'tactile-card',
+      )}
+      style={highlighted ? { background: 'oklch(1 0 0 / 0.025)', border: '1px solid oklch(1 0 0 / 0.06)' } : undefined}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className="inline-flex items-center justify-center h-6 w-6 rounded-md"
+          style={{ background: accentBg, color }}
+          aria-hidden
+        >
+          {icon}
+        </span>
+        <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-medium">
+          {label}
+        </span>
+      </div>
+      <div
+        className="text-xl font-semibold tracking-tight tactile-tabular-nums"
+        style={{ color }}
+      >
+        <AnimatedAmount value={value} prefix={tone === 'negative' && value > 0 ? '−' : tone === 'positive' && value > 0 ? '+' : ''} />
+      </div>
+    </motion.div>
+  )
+}
+
+/* Smooth counter — interpolates between the previous render and the new one. */
+function AnimatedAmount({ value, prefix }: { value: number; prefix: string }) {
+  const reduced = useReducedMotion()
+  const elRef = useRef<HTMLSpanElement | null>(null)
+  const prevRef = useRef<number>(value)
+
+  useEffect(() => {
+    const el = elRef.current
+    if (!el) return
+    if (reduced) {
+      el.textContent = formatEur(value)
+      prevRef.current = value
+      return
+    }
+    const start = prevRef.current
+    const delta = value - start
+    if (Math.abs(delta) < 0.005) {
+      el.textContent = formatEur(value)
+      return
+    }
+    const duration = 480
+    const t0 = performance.now()
+    let raf = 0
+    const tick = (t: number) => {
+      const k = Math.min(1, (t - t0) / duration)
+      const eased = 1 - Math.pow(1 - k, 3)
+      const cur = start + delta * eased
+      el.textContent = formatEur(cur)
+      if (k < 1) raf = requestAnimationFrame(tick)
+      else prevRef.current = value
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value, reduced])
+
+  return (
+    <>
+      <span className="text-text-tertiary mr-0.5">{prefix}</span>
+      <span ref={elRef}>{formatEur(value)}</span>
+    </>
+  )
+}
+
+function formatEur(major: number): string {
+  return `€${new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(major))}`
+}
+
+function computeTotals(
+  transactions: Transaction[],
+  ownIban: string | undefined,
+): { income: number; expense: number; net: number } {
+  let income = 0
+  let expense = 0
+  for (const t of transactions) {
+    if (t.status !== 'committed' && t.status !== 'pending') continue
+    const fromCompact = t.from_iban.replace(/\s+/g, '')
+    const toCompact = t.to_iban.replace(/\s+/g, '')
+    const isOutgoing = ownIban
+      ? fromCompact === ownIban && toCompact !== ownIban
+      : t.direction === 'out'
+    if (isOutgoing) expense += t.amount_minor / 100
+    else income += t.amount_minor / 100
+  }
+  return { income, expense, net: income - expense }
+}

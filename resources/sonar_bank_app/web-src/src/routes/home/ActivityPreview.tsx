@@ -11,9 +11,9 @@ import {
 import { Card, CardEyebrow, CardTitle } from '@/components/ui'
 import type { Account, Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
+import { useNavigate } from 'react-router-dom'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { sfx } from '@/lib/sfx'
-import { toast } from '@/stores/toast'
 import { getMockAliasForIban } from '@/data/mock/seed'
 
 export interface ActivityPreviewProps {
@@ -35,10 +35,10 @@ export function ActivityPreview({ transactions, account, loading, compact }: Act
   const limit = compact ? 4 : 8
   const hasMore = transactions.length > 0
 
+  const navigate = useNavigate()
   const handleViewAll = (): void => {
     sfx.console_tap()
-    // Phase A: history view ships in BANK-FE.3.
-    toast.info('Historial completo', 'Disponible en BANK-FE.3 · vista Transacciones')
+    navigate('/transacciones')
   }
 
   return (

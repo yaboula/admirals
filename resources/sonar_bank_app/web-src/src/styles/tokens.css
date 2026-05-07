@@ -184,6 +184,8 @@
   --z-popover: 70;
   --z-modal-scrim: 80;
   --z-modal: 90;
+  --z-drawer-scrim: 85;
+  --z-drawer: 95;
   --z-toast: 100;
   --z-splash: 110;
 

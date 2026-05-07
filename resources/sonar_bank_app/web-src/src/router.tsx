@@ -2,6 +2,7 @@ import { createBrowserRouter, createHashRouter } from 'react-router-dom'
 import { App } from './App'
 import { AppShell } from './components/layout/AppShell'
 import { Home } from './routes/Home'
+import { Transactions } from './routes/Transactions'
 import { DevShowcase } from './routes/dev/Showcase'
 import { NotFound } from './routes/NotFound'
 import { isInsideFiveMNui } from './lib/env'
@@ -16,6 +17,7 @@ const routes = [
         element: <AppShell />,
         children: [
           { index: true, element: <Home /> },
+          { path: 'transacciones', element: <Transactions /> },
           { path: 'dev/showcase', element: <DevShowcase /> },
         ],
       },
