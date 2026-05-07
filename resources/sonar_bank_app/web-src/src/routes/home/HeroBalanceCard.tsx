@@ -5,6 +5,7 @@ import { Card } from '@/components/ui'
 import type { Account, Transaction } from '@/data/contracts'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
+import { maskIbanPanel } from '@/lib/privacy'
 
 export interface HeroBalanceCardProps {
   account: Account | undefined
@@ -62,7 +63,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
             aria-label="Copiar IBAN"
           >
             <span style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }}>
-              {account ? formatIbanMask(account.iban) : '—'}
+              {account ? maskIbanPanel(account.iban) : '—'}
             </span>
             {copied ? (
               <CheckCheck size={11} className="text-semantic-success-deep" />
@@ -279,12 +280,6 @@ function formatEur(major: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(major)
-}
-
-function formatIbanMask(iban: string): string {
-  const compact = iban.replace(/\s+/g, '')
-  if (compact.length < 8) return iban
-  return `${compact.slice(0, 4)} ···· ···· ${compact.slice(-4)}`
 }
 
 function sumThisMonth(

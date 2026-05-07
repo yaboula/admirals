@@ -8,6 +8,7 @@ import { sfx } from '@/lib/sfx'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { toast } from '@/stores/toast'
 import { cn, formatRelativeTime } from '@/lib/utils'
+import { maskIbanCompact } from '@/lib/privacy'
 import { getMockInitialsForIban } from '@/data/mock/seed'
 
 /**
@@ -30,7 +31,7 @@ export function CompactQuickTransfer() {
     sfx.coin_clink()
     toast.info(
       'Transferencia iniciada',
-      `${formatEur(amount / 100)} → ${r.alias ?? formatIbanShort(r.counterpart_iban)}`,
+      `${formatEur(amount / 100)} → ${r.alias ?? maskIbanCompact(r.counterpart_iban)}`,
     )
     navigate('/transferir')
   }
@@ -156,7 +157,7 @@ function CompactRow({
 
       <div className="flex-1 flex flex-col min-w-0 leading-tight">
         <span className="text-xs font-medium text-text-primary tactile-wght-breathing truncate">
-          {recipient.alias ?? formatIbanShort(recipient.counterpart_iban)}
+          {recipient.alias ?? maskIbanCompact(recipient.counterpart_iban)}
         </span>
         <span className="text-[10px] text-text-tertiary tactile-tabular-nums truncate">
           {formatRelativeTime(recipient.last_transfer_ms)} · ×{recipient.transfer_count}
@@ -166,7 +167,7 @@ function CompactRow({
       <button
         type="button"
         onClick={() => onQuickSend(recipient, presetAmount)}
-        aria-label={`Enviar ${formatEur(presetAmount / 100)} a ${recipient.alias ?? recipient.counterpart_iban}`}
+        aria-label={`Enviar ${formatEur(presetAmount / 100)} a ${recipient.alias ?? 'destinatario oculto'}`}
         className="tactile-button-accent-outline tactile-focus-ring shrink-0 h-7 px-2.5 rounded-md text-[10px] font-semibold tactile-tabular-nums"
       >
         €{formatEur(presetAmount / 100)}
@@ -225,10 +226,4 @@ function formatEur(major: number): string {
     minimumFractionDigits: major < 100 ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(major)
-}
-
-function formatIbanShort(iban: string): string {
-  const compact = iban.replace(/\s+/g, '')
-  if (compact.length < 8) return iban
-  return `${compact.slice(0, 4)}…${compact.slice(-4)}`
 }

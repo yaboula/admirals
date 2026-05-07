@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
 import { handleBankError } from '@/lib/bankError'
+import { maskIbanCompact } from '@/lib/privacy'
 import { resolveCardDesign } from './cardDesigns'
 import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
 import { useFreezeCard } from '@/data/mutations'
@@ -158,7 +159,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         <dl className="grid grid-cols-2 gap-2.5">
           <MetaItem icon={User2} label="Titular" value={card.holder_name} accent={design.accent} />
           <MetaItem icon={CalendarDays} label="Caduca" value={expiryStr} accent={design.accent} mono />
-          <MetaItem icon={Wallet} label="Vinculada" value={maskIbanShort(card.iban)} accent={design.accent} mono />
+          <MetaItem icon={Wallet} label="Vinculada" value={maskIbanCompact(card.iban)} accent={design.accent} mono />
           <MetaItem
             icon={Sparkles}
             label="Tipo"
@@ -516,12 +517,6 @@ function ActionButton({
 
 function typeLabel(t: BankCardMock['card_type']): string {
   return t === 'debit' ? 'Débito' : t === 'virtual' ? 'Virtual' : 'Crédito'
-}
-
-function maskIbanShort(iban: string): string {
-  const compact = iban.replace(/\s+/g, '')
-  if (compact.length < 8) return iban
-  return `${compact.slice(0, 4)} ··· ${compact.slice(-4)}`
 }
 
 function formatMinor(minor: number): string {

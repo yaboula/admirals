@@ -3,6 +3,7 @@ import { Eye, EyeOff, Wifi, Lock, Clock3 } from 'lucide-react'
 import type { BankCard, BankCardMock } from '@/data/contracts'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
+import { maskPanDisplay } from '@/lib/privacy'
 import { resolveCardDesign, type CardDesign, type CardDesignMotif } from './cardDesigns'
 
 /**
@@ -59,9 +60,7 @@ export function CardVisual({
   const expiryDate = new Date(card.expiry_ms)
   const expiryStr = `${String(expiryDate.getMonth() + 1).padStart(2, '0')}/${String(expiryDate.getFullYear()).slice(-2)}`
 
-  const maskedMid = '···· ····'
-  const fullPan = (card as BankCardMock).full_pan
-  const pan = revealed && fullPan ? fullPan : `4287 ${maskedMid} ${card.pan_last_four}`
+  const pan = maskPanDisplay(undefined, card.pan_last_four)
 
   return (
     <motion.div

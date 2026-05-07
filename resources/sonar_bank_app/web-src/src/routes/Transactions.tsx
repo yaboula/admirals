@@ -8,6 +8,7 @@ import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
 import { formatCurrency } from '@/lib/utils'
+import { maskIbanPanel, maskOperationCode } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import { TransactionsHero } from './transactions/TransactionsHero'
@@ -234,8 +235,8 @@ function TransactionInsightPanel({
         <div className="mt-4 space-y-2">
           <PanelRow label="Estado" value={STATUS_PANEL[tx.status].label} icon={<StatusIcon size={14} strokeWidth={2.3} />} />
           <PanelRow label="Hora" value={formatPanelTime(tx.timestamp_ms)} />
-          <PanelRow label="IBAN" value={formatIbanPanel(meta.counterpartIban)} mono action={<button type="button" onClick={copyIban} className="text-white/44 hover:text-white"><Copy size={13} /></button>} />
-          <PanelRow label="Recibo" value={tx.txn_id} mono />
+          <PanelRow label="IBAN" value={maskIbanPanel(meta.counterpartIban)} mono action={<button type="button" onClick={copyIban} className="text-white/44 hover:text-white"><Copy size={13} /></button>} />
+          <PanelRow label="Recibo" value={maskOperationCode(tx.txn_id)} mono />
         </div>
       </div>
     </Card>
@@ -295,12 +296,6 @@ function formatPanelTime(timestampMs: number): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(timestampMs))
-}
-
-function formatIbanPanel(iban: string): string {
-  const compact = iban.replace(/\s+/g, '')
-  if (compact.length < 8) return iban
-  return `${compact.slice(0, 4)} ···· ···· ${compact.slice(-4)}`
 }
 
 /* -------------------------------------------------------------------------- */

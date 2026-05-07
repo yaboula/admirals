@@ -27,6 +27,7 @@ import type { Account, RecentRecipient } from '@/data/contracts'
 import { getUserMessage, handleBankError } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
 import { cn, formatCurrency } from '@/lib/utils'
+import { maskIbanCompact, maskIbanDisplay, maskOperationCode } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 import { useTransferWizard, type TransferWizardStep } from '@/stores/transferWizard'
 import { BankAvatar } from '@/components/brand/BankAvatar'
@@ -111,7 +112,7 @@ export function Transfer() {
       setReceipt(nextReceipt)
       clearOperationIds()
       sfx.vault_close()
-      toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? formatIbanShort(recipientIban)}`)
+      toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? maskIbanCompact(recipientIban)}`)
 
       if (fallbackRefetchTimerRef.current) {
         window.clearTimeout(fallbackRefetchTimerRef.current)
@@ -251,7 +252,7 @@ function TransferHero({
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[430px]">
           <HeroMetric label="Disponible" value={account ? formatCurrency(account.balance_minor / 100) : '—'} />
           <HeroMetric label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} />
-          <HeroMetric label="Destino" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'Pendiente')} />
+          <HeroMetric label="Destino" value={recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : 'Pendiente')} />
         </div>
       </div>
     </Card>
@@ -539,7 +540,7 @@ function RecipientStep({ account }: { account: Account | null }) {
 }
 
 function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipient; active: boolean; onClick: () => void }) {
-  const label = recipient.alias ?? formatIbanShort(recipient.counterpart_iban)
+  const label = recipient.alias ?? maskIbanCompact(recipient.counterpart_iban)
   return (
     <button
       type="button"
@@ -554,7 +555,7 @@ function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipi
       <BankAvatar name={label} size="md" />
       <span className="min-w-0 flex-1 flex flex-col gap-0.5">
         <span className="text-sm font-semibold text-text-primary truncate">{label}</span>
-        <span className="text-[11px] text-text-tertiary truncate">{formatIban(recipient.counterpart_iban)}</span>
+        <span className="text-[11px] text-text-tertiary truncate">{maskIbanDisplay(recipient.counterpart_iban)}</span>
       </span>
       <span className="text-[11px] font-semibold text-text-secondary tactile-tabular-nums">×{recipient.transfer_count}</span>
     </button>
@@ -578,10 +579,10 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
             <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">Código de seguridad</span>
-            <span className="text-xs font-mono text-text-tertiary text-right break-all">{correlationId ?? '—'}</span>
+            <span className="text-xs font-mono text-text-tertiary text-right">{maskOperationCode(correlationId)}</span>
           </div>
-          <ReviewRow label="Desde" value={account ? formatIbanMasked(account.iban) : '—'} />
-          <ReviewRow label="Para" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : '—')} helper={recipientIban ? formatIban(recipientIban) : undefined} />
+          <ReviewRow label="Desde" value={account ? maskIbanDisplay(account.iban) : '—'} />
+          <ReviewRow label="Para" value={recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : '—')} helper={recipientIban ? maskIbanDisplay(recipientIban) : undefined} />
           <ReviewRow label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} strong />
           <ReviewRow label="Concepto" value={memo.trim() || 'Sin concepto'} />
         </div>
@@ -726,14 +727,14 @@ function ConfirmStep({
       const { downloadTransferReceiptPdf } = await import('./transfer/receipt-pdf')
       await downloadTransferReceiptPdf({
         receipt,
-        recipientLabel: recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : formatIbanShort(receipt.to_iban)),
+        recipientLabel: recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : maskIbanCompact(receipt.to_iban)),
         amountLabel: formatCurrency((amount ?? receipt.amount_minor) / 100),
-        fromIbanMasked: formatIbanMasked(receipt.from_iban),
-        toIbanMasked: formatIbanMasked(receipt.to_iban),
+        fromIbanMasked: maskIbanDisplay(receipt.from_iban),
+        toIbanMasked: maskIbanDisplay(receipt.to_iban),
         timestampLabel: formatReceiptTime(receipt.committed_at_ms),
       })
       sfx.coin_clink()
-      toast.success('Recibo PDF generado', receipt.transaction_id)
+      toast.success('Recibo PDF generado', maskOperationCode(receipt.transaction_id))
     } catch {
       toast.warning('No se pudo generar el PDF', 'Inténtalo de nuevo en unos segundos.')
     } finally {
@@ -769,13 +770,13 @@ function ConfirmStep({
       tone="success"
       icon={<CheckCircle2 size={38} strokeWidth={1.8} />}
       title="Transferencia completada"
-      description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'destinatario')}.`}
+      description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : 'destinatario')}.`}
     >
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-3.5 text-left">
-        <ReceiptRow label="Recibo" value={receipt.transaction_id} mono />
-        <ReceiptRow label="Código de seguridad" value={receipt.correlation_id} mono />
-        <ReceiptRow label="Origen" value={formatIbanMasked(receipt.from_iban)} />
-        <ReceiptRow label="Destino" value={formatIbanMasked(receipt.to_iban)} helper={recipientAlias ?? undefined} />
+        <ReceiptRow label="Recibo" value={maskOperationCode(receipt.transaction_id)} mono />
+        <ReceiptRow label="Código de seguridad" value={maskOperationCode(receipt.correlation_id)} mono />
+        <ReceiptRow label="Origen" value={maskIbanDisplay(receipt.from_iban)} />
+        <ReceiptRow label="Destino" value={maskIbanDisplay(receipt.to_iban)} helper={recipientAlias ?? undefined} />
         <ReceiptRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
         <ReceiptRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
         <ReceiptRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
@@ -839,7 +840,7 @@ function TransferRail({
   recipientAlias: string | null
   recipientIban: string | null
 }) {
-  const destinationLabel = recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'Selecciona destino')
+  const destinationLabel = recipientAlias ?? (recipientIban ? maskIbanCompact(recipientIban) : 'Selecciona destino')
   const hasDestination = Boolean(recipientAlias || recipientIban)
   const hasAmount = Boolean(amount)
   return (
@@ -877,7 +878,7 @@ function TransferRail({
               <BankAvatar name={destinationLabel} size="lg" />
               <span className="min-w-0 flex flex-col">
                 <span className="text-sm font-semibold text-white truncate">{destinationLabel}</span>
-                <span className="text-[11px] text-white/46 truncate">{recipientIban ? formatIban(recipientIban) : 'Pendiente de seleccionar'}</span>
+                <span className="text-[11px] text-white/46 truncate">{recipientIban ? maskIbanDisplay(recipientIban) : 'Pendiente de seleccionar'}</span>
               </span>
             </div>
           </div>
@@ -889,7 +890,7 @@ function TransferRail({
           </div>
 
           <div className="mt-auto pt-4 space-y-2">
-            <Metric label="Origen" value={account ? formatIbanShort(account.iban) : '—'} />
+            <Metric label="Origen" value={account ? maskIbanCompact(account.iban) : '—'} />
             {memo.trim() ? <Metric label="Concepto" value={memo.trim()} /> : null}
           </div>
         </div>
@@ -983,18 +984,6 @@ function formatReceiptTime(timestampMs: number): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(timestampMs))
-}
-
-function formatIbanMasked(iban: string): string {
-  const compact = normalizeIban(iban)
-  if (compact.length < 8) return formatIbanShort(iban)
-  return `${compact.slice(0, 4)} **** **** ${compact.slice(-4)}`
-}
-
-function formatIbanShort(iban: string): string {
-  const compact = normalizeIban(iban)
-  if (compact.length < 8) return iban
-  return `${compact.slice(0, 4)}…${compact.slice(-4)}`
 }
 
 function normalizeRecipientSearch(value: string): string {

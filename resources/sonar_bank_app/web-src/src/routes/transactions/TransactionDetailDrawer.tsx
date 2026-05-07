@@ -16,6 +16,7 @@ import type { Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { getMockAliasForIban, getMockInitialsForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
+import { maskIbanDisplay, maskOperationCode, safeAriaLabel } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 
 /**
@@ -246,10 +247,10 @@ function DrawerBody({
             type="button"
             onClick={handleCopyIban}
             className="group flex items-center gap-2 text-left"
-            aria-label={`Copiar IBAN ${counterpartIban}`}
+            aria-label={safeAriaLabel(`Copiar IBAN ${counterpartIban}`)}
           >
             <span className="text-sm font-mono font-medium text-text-primary tracking-wider tactile-tabular-nums">
-              {counterpartIban}
+              {maskIbanDisplay(counterpartIban)}
             </span>
             <Copy
               size={12}
@@ -270,7 +271,7 @@ function DrawerBody({
           })} · ${formatRelativeTime(tx.timestamp_ms)}`}
         />
 
-        <DetailRow label="ID transacción" mono value={tx.txn_id} />
+        <DetailRow label="ID transacción" mono value={maskOperationCode(tx.txn_id)} />
 
         {/* Status timeline */}
         <div className="flex flex-col gap-2">

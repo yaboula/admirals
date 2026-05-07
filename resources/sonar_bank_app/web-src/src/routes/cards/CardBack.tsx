@@ -75,7 +75,7 @@ export function CardBack({ card, design: designOverride, compact = false, classN
         {/* Signature panel + CVV row */}
         <div className="flex items-stretch gap-2 mb-2.5">
           <SignaturePanel holder={card.holder_name} compact={compact} />
-          <CvvBox cvv={card.cvv} compact={compact} />
+          <CvvBox compact={compact} />
         </div>
 
         {/* Footer row: disclaimer + last4 echo */}
@@ -167,7 +167,7 @@ function SignaturePanel({ holder, compact }: { holder: string; compact: boolean 
 }
 
 /** White inline box showing CVV2 with a "CVV" caption above it. */
-function CvvBox({ cvv, compact }: { cvv: string; compact: boolean }) {
+function CvvBox({ compact }: { compact: boolean }) {
   return (
     <div
       className={cn(
@@ -190,7 +190,7 @@ function CvvBox({ cvv, compact }: { cvv: string; compact: boolean }) {
           letterSpacing: '0.08em',
         }}
       >
-        {cvv}
+        •••
       </span>
     </div>
   )

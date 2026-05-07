@@ -1,4 +1,5 @@
 ﻿import type { TransferReceipt } from '@/data/mutations'
+import { maskOperationCode } from '@/lib/privacy'
 
 export interface TransferReceiptPdfInput {
   receipt: TransferReceipt
@@ -132,14 +133,14 @@ function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptP
   line(ctx, x, y, x + w, y, COLORS.brand, 1.4)
 
   const rows: Array<[string, string]> = [
-    ['Nº de recibo', input.receipt.transaction_id],
-    ['Código de seguridad', input.receipt.correlation_id],
+    ['Nº de recibo', maskOperationCode(input.receipt.transaction_id)],
+    ['Código de seguridad', maskOperationCode(input.receipt.correlation_id)],
     ['Origen', input.fromIbanMasked],
     ['Destino', input.toIbanMasked],
     ['Concepto', input.receipt.reason?.trim() || 'Sin concepto'],
     ['Fecha', input.timestampLabel],
     ['Balance disponible', formatMinorCurrency(input.receipt.available_balance_minor)],
-    ['Referencia bancaria', input.receipt.idempotency_key],
+    ['Referencia bancaria', maskOperationCode(input.receipt.idempotency_key)],
   ]
 
   let rowY = y + 58
@@ -252,7 +253,7 @@ function buildPdfDocument(image: ReceiptJpeg): Uint8Array {
 }
 
 function buildReceiptFileName(receipt: TransferReceipt): string {
-  return `sonar-bank-receipt-${receipt.transaction_id}.pdf`
+  return `sonar-bank-receipt-${maskOperationCode(receipt.transaction_id).replace(/[^a-z0-9]/gi, '-')}.pdf`
 }
 
 function formatMinorCurrency(amountMinor: number): string {
