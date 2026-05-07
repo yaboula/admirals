@@ -84,6 +84,7 @@ export function Transfer() {
   }, [])
 
   const visibleSteps = expressMode ? STEPS.filter((s) => EXPRESS_STEPS.includes(s.id)) : STEPS
+  const isConfirmStep = step === 'confirm'
   const showRail = step === 'recipient'
 
   const canExecute = Boolean(primaryAccount && amount && recipientIban && idempotencyKey && correlationId)
@@ -151,12 +152,12 @@ export function Transfer() {
             : 'max-w-[1080px] grid-cols-1',
         )}
       >
-        <section className="min-h-0 flex flex-col gap-3 2xl:gap-4">
-          <TransferHero expressMode={expressMode} account={primaryAccount} />
+        <section className={cn('min-h-0 flex flex-col', isConfirmStep ? 'gap-0' : 'gap-3 2xl:gap-4')}>
+          {!isConfirmStep ? <TransferHero expressMode={expressMode} account={primaryAccount} /> : null}
           <Card variant="glass" padding="md" className="min-h-0 flex-1 border-white/10 overflow-hidden">
-            <div className="h-full min-h-0 grid grid-rows-[auto_1fr] gap-3 2xl:gap-5">
-              <TransferStepper step={step} steps={visibleSteps} />
-              <div className="min-h-0 overflow-y-auto pr-1 pb-5 scrollbar-thin">
+            <div className={cn('h-full min-h-0', isConfirmStep ? 'flex flex-col' : 'grid grid-rows-[auto_1fr] gap-3 2xl:gap-5')}>
+              {!isConfirmStep ? <TransferStepper step={step} steps={visibleSteps} /> : null}
+              <div className={cn('min-h-0', isConfirmStep ? 'h-full overflow-hidden' : 'overflow-y-auto pr-1 pb-5 scrollbar-thin')}>
                 {step === 'amount' && (
                   <AmountStep account={primaryAccount} expressMode={expressMode} />
                 )}
@@ -739,19 +740,19 @@ function ConfirmStep({
   return (
     <ResultShell
       tone="success"
-      icon={<CheckCircle2 size={46} strokeWidth={1.8} />}
+      icon={<CheckCircle2 size={38} strokeWidth={1.8} />}
       title="Transferencia completada"
       description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'destinatario')}.`}
     >
-      <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-4 text-left space-y-2.5 2xl:space-y-3">
-        <ReviewRow label="Recibo" value={receipt.transaction_id} mono />
-        <ReviewRow label="Código de seguridad" value={receipt.correlation_id} mono />
-        <ReviewRow label="Origen" value={formatIbanMasked(receipt.from_iban)} />
-        <ReviewRow label="Destino" value={formatIbanMasked(receipt.to_iban)} helper={recipientAlias ?? undefined} />
-        <ReviewRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
-        <ReviewRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
-        <ReviewRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
-        <ReviewRow label="Estado" value="Confirmada" />
+      <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-3.5 text-left">
+        <ReceiptRow label="Recibo" value={receipt.transaction_id} mono />
+        <ReceiptRow label="Código de seguridad" value={receipt.correlation_id} mono />
+        <ReceiptRow label="Origen" value={formatIbanMasked(receipt.from_iban)} />
+        <ReceiptRow label="Destino" value={formatIbanMasked(receipt.to_iban)} helper={recipientAlias ?? undefined} />
+        <ReceiptRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
+        <ReceiptRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
+        <ReceiptRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
+        <ReceiptRow label="Estado" value="Confirmada" />
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         <Button
@@ -773,22 +774,22 @@ function ResultShell({ tone, icon, title, description, children }: { tone: 'pend
   const toneClass = tone === 'success' ? 'text-emerald-100 border-emerald-300/20 bg-emerald-300/[0.055]' : tone === 'error' ? 'text-red-100 border-red-300/20 bg-red-300/[0.055]' : 'text-text-primary border-border-subtle bg-white/[0.035]'
 
   return (
-    <div className="h-full min-h-[390px] flex items-center justify-center py-2">
+    <div className="h-full min-h-0 flex items-center justify-center py-1">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-xl text-center flex flex-col items-center gap-4 2xl:gap-5"
+        className="w-full max-w-xl text-center flex flex-col items-center gap-3 2xl:gap-4"
       >
         <motion.div
           initial={{ scale: 0.82 }}
           animate={{ scale: tone === 'success' ? [0.86, 1.08, 1] : 1 }}
           transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
-          className={cn('inline-flex h-20 w-20 2xl:h-24 2xl:w-24 items-center justify-center rounded-full border', toneClass)}
+          className={cn('inline-flex h-16 w-16 2xl:h-20 2xl:w-20 items-center justify-center rounded-full border', toneClass)}
         >
           {icon}
         </motion.div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <h2 className="text-2xl 2xl:text-3xl font-semibold tracking-[-0.04em] text-text-primary">{title}</h2>
           <p className="text-sm text-text-secondary leading-relaxed max-w-[52ch]">{description}</p>
         </div>
@@ -868,6 +869,18 @@ function ReviewRow({ label, value, helper, strong, mono }: { label: string; valu
       <span className="text-right flex flex-col gap-0.5 min-w-0">
         <span className={cn('text-text-primary break-all', strong ? 'text-2xl font-semibold tracking-[-0.04em] tactile-tabular-nums' : 'text-sm font-semibold', mono ? 'font-mono text-xs text-text-secondary' : undefined)}>{value}</span>
         {helper ? <span className="text-[11px] text-text-tertiary font-mono tracking-[0.04em] break-all">{helper}</span> : null}
+      </span>
+    </div>
+  )
+}
+
+function ReceiptRow({ label, value, helper, mono }: { label: string; value: string; helper?: string; mono?: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-border-subtle py-2 first:pt-0 last:border-b-0 last:pb-0">
+      <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary pt-1">{label}</span>
+      <span className="text-right flex flex-col gap-0.5 min-w-0">
+        <span className={cn('text-sm font-semibold text-text-primary break-all', mono ? 'font-mono text-xs text-text-secondary' : undefined)}>{value}</span>
+        {helper ? <span className="text-[11px] text-text-tertiary tracking-[0.02em] break-all">{helper}</span> : null}
       </span>
     </div>
   )
