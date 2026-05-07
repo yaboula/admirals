@@ -91,6 +91,48 @@ export const CARD_DESIGNS: CardDesign[] = [
     textTertiary: 'oklch(0.80 0.05 40 / 0.75)',
     motif: 'fluid',
   },
+  {
+    id: 'titanium',
+    name: 'Titanium',
+    tagline: 'Metal claro · precisión ejecutiva',
+    tier: 'premium',
+    surface:
+      'linear-gradient(135deg, oklch(0.88 0.010 250) 0%, oklch(0.74 0.014 250) 48%, oklch(0.50 0.018 250) 100%)',
+    overlay:
+      'radial-gradient(circle at 78% 20%, oklch(1 0 0 / 0.42) 0%, transparent 42%), linear-gradient(115deg, transparent 0%, oklch(1 0 0 / 0.22) 48%, transparent 62%)',
+    accent: 'oklch(0.48 0.018 250)',
+    textPrimary: 'oklch(0.12 0.010 250)',
+    textTertiary: 'oklch(0.28 0.014 250 / 0.70)',
+    motif: 'geometric',
+  },
+  {
+    id: 'deep_space',
+    name: 'Deep Space',
+    tagline: 'Azul gravitacional · núcleo violeta',
+    tier: 'signature',
+    surface:
+      'linear-gradient(135deg, oklch(0.055 0.010 270) 0%, oklch(0.11 0.09 265) 48%, oklch(0.055 0.025 300) 100%)',
+    overlay:
+      'radial-gradient(circle at 68% 38%, oklch(0.58 0.24 285 / 0.28) 0%, transparent 46%), radial-gradient(circle at 24% 76%, oklch(0.58 0.18 220 / 0.22) 0%, transparent 42%)',
+    accent: 'oklch(0.68 0.18 265)',
+    textPrimary: 'oklch(0.98 0.006 260)',
+    textTertiary: 'oklch(0.76 0.05 260 / 0.74)',
+    motif: 'fluid',
+  },
+  {
+    id: 'emerald_vault',
+    name: 'Emerald Vault',
+    tagline: 'Verde privado · bóveda nocturna',
+    tier: 'premium',
+    surface:
+      'linear-gradient(135deg, oklch(0.12 0.035 165) 0%, oklch(0.16 0.070 155) 52%, oklch(0.055 0.018 170) 100%)',
+    overlay:
+      'radial-gradient(circle at 72% 24%, oklch(0.72 0.16 155 / 0.20) 0%, transparent 48%)',
+    accent: 'oklch(0.76 0.15 155)',
+    textPrimary: 'oklch(0.98 0.006 165)',
+    textTertiary: 'oklch(0.76 0.045 165 / 0.72)',
+    motif: 'pinstripe',
+  },
 ]
 
 export const CARD_DESIGNS_BY_ID: Record<string, CardDesign> = Object.fromEntries(

@@ -12,14 +12,14 @@ import { toast } from '@/stores/toast'
 /**
  * BANK-FE.4.4 — DesignPickerDialog
  *
- * Wide centred dialog that lets the user audition the 4 designs against
+ * Wide centred dialog that lets the user audition the available designs against
  * their actual card. Layout (top → bottom):
  *
  *   1. Header — title + tagline (changes per selected design) + close
  *   2. Preview — full-size CardVisual rendered with the selected design
  *      applied to the user's card. AnimatePresence keyed on designId
  *      crossfades between recipes so changing selection feels alive.
- *   3. Gallery — 4 mini cards, each showing the design applied to the
+ *   3. Gallery — mini cards, each showing the design applied to the
  *      user's data. Click selects (sets the local draft); active design
  *      gets a glowing accent ring.
  *   4. Footer — Cancel + Apply (disabled if selection equals current).
@@ -207,8 +207,8 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
               </div>
             </div>
 
-            {/* Gallery — 4 mini cards in a 2x2 grid (responsive 4-col on 2xl) */}
-            <div className="px-5 pb-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Gallery */}
+            <div className="px-5 pb-3 grid grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto scrollbar-thin max-h-[240px]">
               {CARD_DESIGNS.map((d) => (
                 <DesignTile
                   key={d.id}

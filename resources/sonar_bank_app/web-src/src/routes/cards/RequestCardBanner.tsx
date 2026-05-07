@@ -46,7 +46,7 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
         }}
       />
       <div className="relative flex items-center -space-x-1.5 shrink-0">
-        {CARD_DESIGNS.map((design, i) => (
+        {CARD_DESIGNS.slice(0, 5).map((design, i) => (
           <DesignSwatch key={design.id} surface={design.surface} index={i} />
         ))}
       </div>
@@ -61,7 +61,7 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
           Elige un diseño con la misma seguridad
         </p>
         <p className="hidden 2xl:block text-[11px] text-white/60 mt-0.5">
-          4 acabados disponibles para tu tarjeta activa
+          {CARD_DESIGNS.length} acabados disponibles para tu tarjeta activa
         </p>
       </div>
       <button
