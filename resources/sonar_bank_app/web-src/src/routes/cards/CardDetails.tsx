@@ -5,6 +5,7 @@ import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
+import { handleBankError } from '@/lib/bankError'
 import { resolveCardDesign } from './cardDesigns'
 import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
 import { useFreezeCard } from '@/data/mutations'
@@ -83,7 +84,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           )
         },
         onError: (err) => {
-          toast.danger('No se pudo cambiar el estado', err.message)
+          handleBankError(err)
         },
       },
     )

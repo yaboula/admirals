@@ -8,6 +8,7 @@ import { CardVisual } from './CardVisual'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
+import { handleBankError } from '@/lib/bankError'
 
 /**
  * BANK-FE.4.4 — DesignPickerDialog
@@ -84,7 +85,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
           onClose()
         },
         onError: (err) => {
-          toast.danger('No se pudo aplicar el diseño', err.message)
+          handleBankError(err)
         },
       },
     )

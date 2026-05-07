@@ -7,6 +7,7 @@ import { resolveCardDesign } from './cardDesigns'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
+import { handleBankError } from '@/lib/bankError'
 
 /**
  * BANK-FE.4.3 — LimitsModal
@@ -86,7 +87,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
           onClose()
         },
         onError: (err) => {
-          toast.danger('No se pudieron guardar', err.message)
+          handleBankError(err)
         },
       },
     )

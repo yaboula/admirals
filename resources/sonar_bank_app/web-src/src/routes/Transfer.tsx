@@ -24,7 +24,7 @@ import { useExecuteTransfer, formatIban, isLargeTransfer, isValidSpanishIban, no
 import type { TransferReceipt } from '@/data/mutations'
 import { useBootstrap, useInvalidateBootstrap, useInvalidateRecentRecipients, useRecentRecipients } from '@/data/queries'
 import type { Account, RecentRecipient } from '@/data/contracts'
-import { getUserMessage } from '@/lib/bankError'
+import { getUserMessage, handleBankError } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
 import { cn, formatCurrency } from '@/lib/utils'
 import { toast } from '@/stores/toast'
@@ -120,9 +120,7 @@ export function Transfer() {
         fallbackRefetchTimerRef.current = null
       }, POST_CONFIRM_REFETCH_MS)
     } catch (err) {
-      const code = err && typeof err === 'object' && 'code' in err ? String(err.code) : 'INTERNAL_ERROR'
-      const message = getUserMessage(code)
-      toast.danger(message.title, message.description)
+      handleBankError(err)
     }
   }
 

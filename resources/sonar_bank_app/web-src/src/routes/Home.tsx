@@ -5,7 +5,7 @@ import { HomeBalanceGraph } from './home/HomeBalanceGraph'
 import { HomePromoCarousel } from './home/HomePromoCarousel'
 import { HomeMoneyActions } from './home/HomeMoneyActions'
 import { HomeCardsRail } from './home/HomeCardsRail'
-import { toast } from '@/stores/toast'
+import { handleBankError } from '@/lib/bankError'
 
 /**
  * BANK-FE.2.3 Dashboard — zero-scroll, 2-column main grid (the third column
@@ -28,7 +28,7 @@ export function Home() {
 
   useEffect(() => {
     if (isError && error) {
-      toast.danger('Bootstrap falló', error.message ?? error.code)
+      handleBankError(error)
     }
   }, [isError, error])
 
