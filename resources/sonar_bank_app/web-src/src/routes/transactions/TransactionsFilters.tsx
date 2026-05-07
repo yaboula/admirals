@@ -99,7 +99,7 @@ export function TransactionsFilters() {
               aria-label={`Restablecer ${activeCount} filtros activos`}
             >
               <RotateCcw size={12} strokeWidth={2.2} />
-              Reset
+              Limpiar
               <span
                 className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] font-semibold tactile-tabular-nums"
                 style={{

@@ -5,13 +5,9 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   CreditCard,
-  PiggyBank,
-  TrendingUp,
-  ShieldCheck,
   Settings,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Receipt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -31,13 +27,9 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/transacciones', label: 'Transacciones', icon: Receipt },
   { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight },
   { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard },
-  { to: '/ahorro', label: 'Ahorro', icon: PiggyBank, disabled: true },
-  { to: '/portfolio', label: 'Portfolio', icon: TrendingUp, disabled: true },
-  { to: '/compliance', label: 'Compliance', icon: ShieldCheck, disabled: true, badge: 'admin' },
 ]
 
 const FOOTER_ITEMS: NavItem[] = [
-  { to: '/dev/showcase', label: 'Dev Showcase', icon: Sparkles },
   { to: '/ajustes', label: 'Ajustes', icon: Settings, disabled: true },
 ]
 
@@ -123,7 +115,7 @@ export function Sidebar({ defaultCollapsed }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Subtle separator before Dev Showcase footer block */}
+      {/* Subtle separator before footer block */}
       <div
         aria-hidden
         className="mx-4 h-px"

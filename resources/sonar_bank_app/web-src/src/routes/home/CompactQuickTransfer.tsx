@@ -52,10 +52,10 @@ export function CompactQuickTransfer() {
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
               <Zap size={10} strokeWidth={2.4} />
-              EXPRESS · 2 PASOS
+              ENVÍO RÁPIDO
             </span>
           </CardEyebrow>
-          <CardTitle className="text-sm">Transferir</CardTitle>
+          <CardTitle className="text-sm">Contactos frecuentes</CardTitle>
         </div>
         <button
           type="button"
@@ -144,7 +144,10 @@ function CompactRow({
           <span
             aria-hidden
             className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full text-text-primary"
-            style={{ background: 'var(--gradient-primary)' }}
+            style={{
+              background: 'oklch(1 0 0 / 0.12)',
+              border: '1px solid oklch(1 0 0 / 0.18)',
+            }}
           >
             <Star size={7} strokeWidth={3} fill="currentColor" />
           </span>

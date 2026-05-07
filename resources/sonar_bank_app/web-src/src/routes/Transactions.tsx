@@ -136,7 +136,7 @@ function filterTransactions(
       ? -Infinity
       : now - (args.range === '7d' ? 7 : args.range === '30d' ? 30 : 90) * dayMs
 
-  const q = args.query.trim().toLowerCase()
+  const q = normalizeSearch(args.query)
 
   return txs.filter((t) => {
     if (t.timestamp_ms < cutoffMs) return false
@@ -158,14 +158,23 @@ function filterTransactions(
         ? t.from_iban.replace(/\s+/g, '') === ownIban
         : t.direction === 'out'
       const counterpartIban = isOut ? t.to_iban : t.from_iban
-      const counterpartName = (getMockAliasForIban(counterpartIban) ?? '').toLowerCase()
-      const reason = (t.reason ?? '').toLowerCase()
-      const ibanCompact = counterpartIban.replace(/\s+/g, '').toLowerCase()
-      if (!counterpartName.includes(q) && !reason.includes(q) && !ibanCompact.includes(q)) {
+      const counterpartName = normalizeSearch(getMockAliasForIban(counterpartIban) ?? '')
+      const reason = normalizeSearch(t.reason ?? '')
+      const ibanCompact = normalizeSearch(counterpartIban.replace(/\s+/g, ''))
+      const ibanFormatted = normalizeSearch(counterpartIban)
+      if (!counterpartName.includes(q) && !reason.includes(q) && !ibanCompact.includes(q) && !ibanFormatted.includes(q)) {
         return false
       }
     }
 
     return true
   })
+}
+
+function normalizeSearch(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
 }

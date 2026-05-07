@@ -61,14 +61,14 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
         <div className="inline-flex items-center gap-1.5">
           <Sparkles size={10} strokeWidth={2} className="text-text-tertiary opacity-70" />
           <span className="text-[9px] uppercase tracking-[0.18em] text-text-tertiary font-semibold">
-            Pide tu próxima tarjeta
+            Personaliza tu tarjeta
           </span>
         </div>
         <p className="text-xs 2xl:text-sm font-semibold text-text-primary tactile-wght-breathing tracking-tight truncate">
-          Diseña, elige límites y recíbela en segundos
+          Elige un diseño con la misma seguridad
         </p>
         <p className="hidden 2xl:block text-[11px] text-text-tertiary mt-0.5">
-          4 diseños disponibles · débito, virtual o crédito
+          4 acabados disponibles para tu tarjeta activa
         </p>
       </div>
 
@@ -101,7 +101,7 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
             : '0 0 14px -4px oklch(0.72 0.22 40 / 0.55)',
         }}
       >
-        <span>Empezar</span>
+        <span>Diseñar</span>
         <ArrowRight size={12} strokeWidth={2} />
       </button>
     </motion.div>

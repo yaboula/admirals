@@ -145,7 +145,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             Límites
           </span>
           <span className="text-[10px] text-text-tertiary opacity-70">
-            preview
+            vista segura
           </span>
         </div>
 
@@ -179,8 +179,8 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             icon={Eye}
             label={
               revealed
-                ? `Ocultar PAN · ${String(remainingSec).padStart(2, '0')}s`
-                : 'Revelar PAN'
+                ? `Ocultar número · ${String(remainingSec).padStart(2, '0')}s`
+                : 'Ver número'
             }
             onClick={handleToggleReveal}
             active={revealed}
@@ -211,7 +211,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         </div>
         <ActionButton
           icon={Palette}
-          label="Cambiar diseño"
+          label="Personalizar diseño"
           onClick={() => {
             sfx.panel_open()
             openDialog('design', card.card_id)
@@ -240,15 +240,15 @@ const BENEFITS_BY_TIER: Record<'default' | 'premium' | 'signature', string[]> = 
     'Notificaciones de gasto en tiempo real',
   ],
   premium: [
-    'Cashback 0.5% en compras del día a día',
+    'Reembolso 0.5% en compras del día a día',
     'Atención prioritaria 24/7',
     'Sin comisiones de mantenimiento',
     'Pagos contactless y por móvil',
   ],
   signature: [
-    'Cashback 1% global · sin tope mensual',
+    'Reembolso 1% global · sin tope mensual',
     'Concierge bancario dedicado',
-    'Acceso anticipado a nuevas features',
+    'Acceso anticipado a nuevas ventajas',
     'Atención prioritaria 24/7',
     'Sin comisiones de mantenimiento',
   ],

@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, Search, Volume2, VolumeX, User } from 'lucide-react'
 import { Input, IconButton } from '@/components/ui'
 import { StatusBadge } from './StatusBadge'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
+import { useTransactionsFilter } from '@/stores/transactionsFilter'
+import { toast } from '@/stores/toast'
 
 export interface TopbarProps {
   greeting?: string
@@ -22,12 +25,24 @@ export function Topbar({
   userInitials,
 }: TopbarProps) {
   const [muted, setMuted] = useState(sfx.getMuted())
+  const [query, setQuery] = useState('')
+  const navigate = useNavigate()
+  const setTransactionQuery = useTransactionsFilter((s) => s.setQuery)
 
   const toggleMute = (): void => {
     const next = !muted
     sfx.setMuted(next)
     setMuted(next)
     if (!next) sfx.signal_emerge()
+  }
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault()
+    const nextQuery = query.trim()
+    if (!nextQuery) return
+    setTransactionQuery(nextQuery)
+    navigate('/transacciones')
+    sfx.console_tap()
   }
 
   return (
@@ -51,15 +66,18 @@ export function Topbar({
         </span>
       </div>
 
-      <div className="flex-1 flex justify-center max-w-md mx-auto w-full">
+      <form onSubmit={submitSearch} className="flex-1 flex justify-center max-w-md mx-auto w-full">
         <Input
+          type="search"
           inputSize="sm"
-          placeholder="Buscar transferencias, IBAN, beneficiario…"
+          placeholder="Buscar movimientos, IBAN o beneficiario…"
           leftAdornment={<Search size={14} strokeWidth={2} />}
-          aria-label="Buscar"
+          aria-label="Buscar movimientos"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
           fullWidth
         />
-      </div>
+      </form>
 
       <div className="flex items-center gap-1.5">
         <StatusBadge />
@@ -68,6 +86,7 @@ export function Topbar({
           aria-label="Notificaciones"
           variant="ghost"
           size="sm"
+          onClick={() => toast.info('Sin avisos pendientes', 'Tu cuenta está al día.')}
         />
         <IconButton
           icon={muted ? <VolumeX size={16} strokeWidth={1.9} /> : <Volume2 size={16} strokeWidth={1.9} />}
