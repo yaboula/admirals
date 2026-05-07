@@ -21,7 +21,7 @@ import {
 import { Button, Card, CardContent, CardDescription, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
 import { useExecuteTransfer, formatIban, isLargeTransfer, isValidSpanishIban, normalizeIban } from '@/data/mutations'
 import type { TransferReceipt } from '@/data/mutations'
-import { useBootstrap, useRecentRecipients } from '@/data/queries'
+import { useBootstrap, useInvalidateBootstrap, useInvalidateRecentRecipients, useRecentRecipients } from '@/data/queries'
 import type { Account, RecentRecipient } from '@/data/contracts'
 import { getUserMessage } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
@@ -39,14 +39,18 @@ const STEPS: Array<{ id: TransferWizardStep; label: string; helper: string }> = 
 
 const EXPRESS_STEPS: TransferWizardStep[] = ['review', 'confirm']
 const HOLD_TO_CONFIRM_MS = 1500
+const POST_CONFIRM_REFETCH_MS = 3000
 
 export function Transfer() {
   const navigate = useNavigate()
   const reduced = useReducedMotion()
   const { data } = useBootstrap()
+  const invalidateBootstrap = useInvalidateBootstrap()
+  const invalidateRecentRecipients = useInvalidateRecentRecipients()
   const primaryAccount = data?.accounts[0] ?? null
   const executeTransfer = useExecuteTransfer()
   const [receipt, setReceipt] = useState<TransferReceipt | null>(null)
+  const fallbackRefetchTimerRef = useRef<number | null>(null)
 
   const step = useTransferWizard((s) => s.step)
   const expressMode = useTransferWizard((s) => s.expressMode)
@@ -69,6 +73,14 @@ export function Transfer() {
       setStep('review')
     }
   }, [amount, expressMode, recipientIban, setStep, step])
+
+  useEffect(() => {
+    return () => {
+      if (fallbackRefetchTimerRef.current) {
+        window.clearTimeout(fallbackRefetchTimerRef.current)
+      }
+    }
+  }, [])
 
   const visibleSteps = expressMode ? STEPS.filter((s) => EXPRESS_STEPS.includes(s.id)) : STEPS
   const isReviewStep = step === 'review'
@@ -96,6 +108,15 @@ export function Transfer() {
       setReceipt(nextReceipt)
       sfx.vault_close()
       toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? formatIbanShort(recipientIban)}`)
+
+      if (fallbackRefetchTimerRef.current) {
+        window.clearTimeout(fallbackRefetchTimerRef.current)
+      }
+      fallbackRefetchTimerRef.current = window.setTimeout(() => {
+        void invalidateBootstrap()
+        void invalidateRecentRecipients()
+        fallbackRefetchTimerRef.current = null
+      }, POST_CONFIRM_REFETCH_MS)
     } catch (err) {
       const code = err && typeof err === 'object' && 'code' in err ? String(err.code) : 'INTERNAL_ERROR'
       const message = getUserMessage(code)
@@ -672,7 +693,12 @@ function ConfirmStep({
       description={`${formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'destinatario')}.`}
     >
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-4 text-left space-y-3">
-        <ReviewRow label="Recibo" value={receipt.transaction_id} />
+        <ReviewRow label="Recibo" value={receipt.transaction_id} mono />
+        <ReviewRow label="Correlation ID" value={receipt.correlation_id} mono />
+        <ReviewRow label="Origen" value={formatIbanMasked(receipt.from_iban)} />
+        <ReviewRow label="Destino" value={formatIbanMasked(receipt.to_iban)} helper={recipientAlias ?? undefined} />
+        <ReviewRow label="Concepto" value={receipt.reason?.trim() || 'Sin concepto'} />
+        <ReviewRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
         <ReviewRow label="Balance disponible" value={formatCurrency(receipt.available_balance_minor / 100)} />
         <ReviewRow label="Estado" value="Committed" />
       </div>
@@ -767,12 +793,12 @@ function Metric({ label, value }: { label: string; value: string }) {
   )
 }
 
-function ReviewRow({ label, value, helper, strong }: { label: string; value: string; helper?: string; strong?: boolean }) {
+function ReviewRow({ label, value, helper, strong, mono }: { label: string; value: string; helper?: string; strong?: boolean; mono?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-border-subtle pb-3 last:border-b-0 last:pb-0">
       <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-1">{label}</span>
       <span className="text-right flex flex-col gap-0.5 min-w-0">
-        <span className={cn('text-text-primary break-all', strong ? 'text-2xl font-semibold tracking-[-0.04em] tactile-tabular-nums' : 'text-sm font-semibold')}>{value}</span>
+        <span className={cn('text-text-primary break-all', strong ? 'text-2xl font-semibold tracking-[-0.04em] tactile-tabular-nums' : 'text-sm font-semibold', mono ? 'font-mono text-xs text-text-secondary' : undefined)}>{value}</span>
         {helper ? <span className="text-[11px] text-text-tertiary font-mono tracking-[0.04em] break-all">{helper}</span> : null}
       </span>
     </div>
@@ -792,6 +818,13 @@ function parseAmountMinor(value: string): number | null {
 
 function formatMajorInput(amountMinor: number): string {
   return (amountMinor / 100).toFixed(2)
+}
+
+function formatReceiptTime(timestampMs: number): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(timestampMs))
 }
 
 function formatIbanMasked(iban: string): string {
