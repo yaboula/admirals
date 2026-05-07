@@ -42,7 +42,7 @@ export function ActivityPreview({ transactions, account, loading, compact }: Act
   }
 
   return (
-    <Card variant="baseline" padding={compact ? 'md' : 'lg'}>
+    <Card variant="glass" padding={compact ? 'md' : 'lg'} className="border-white/10">
       <div className={cn('flex items-end justify-between', compact ? 'mb-2' : 'mb-4')}>
         <div className="flex flex-col gap-0.5">
           <CardEyebrow>Actividad reciente</CardEyebrow>

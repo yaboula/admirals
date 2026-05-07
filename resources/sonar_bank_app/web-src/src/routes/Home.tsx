@@ -64,12 +64,14 @@ export function Home() {
             gridTemplateRows: 'auto 1fr auto',
           }}
         >
-          <HeroBalanceCard
-            account={primaryAccount}
-            transactions={transactions}
-          />
+          <div className="tactile-halo-orange tactile-halo-orange--soft">
+            <HeroBalanceCard
+              account={primaryAccount}
+              transactions={transactions}
+            />
+          </div>
 
-          <Card variant="baseline" padding="md" className="min-h-0 flex">
+          <Card variant="glass" padding="md" className="min-h-0 flex border-white/10">
             <IncomeExpenseChart
               transactions={transactions}
               ownIban={primaryAccount?.iban}

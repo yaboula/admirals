@@ -66,7 +66,7 @@ export function AppShell() {
           subtitle="SONAR Bank"
           userInitials={playerInitials}
         />
-        <main className="relative min-h-0 overflow-hidden px-5 lg:px-7 pb-5 pt-3">
+        <main className="relative min-h-0 overflow-hidden px-5 lg:px-7 pb-7 pt-3">
           <RouteTransition>
             <Outlet />
           </RouteTransition>

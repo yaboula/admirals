@@ -39,9 +39,9 @@ export function CompactQuickTransfer() {
 
   return (
     <Card
-      variant="baseline"
+      variant="glass"
       padding="md"
-      className="relative overflow-hidden flex flex-col h-full min-h-0"
+      className="relative overflow-hidden flex flex-col h-full min-h-0 border-white/10"
     >
       <div className="flex items-end justify-between mb-3 shrink-0">
         <div className="flex flex-col gap-0.5">

@@ -45,9 +45,9 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
 
   return (
     <Card
-      variant="baseline"
+      variant="glass"
       padding="none"
-      className="relative overflow-hidden rounded-2xl flex flex-col"
+      className="relative overflow-hidden rounded-2xl flex flex-col border-white/10"
     >
       {/* Header row — eyebrow + IBAN copy + reveal toggle */}
       <div className="flex items-start justify-between px-6 pt-5 pb-1.5">
