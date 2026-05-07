@@ -100,6 +100,25 @@ export interface PortfolioHolding {
 
 export type CardStatus = 'active' | 'locked' | 'expired' | 'pending'
 
+export type CardType = 'debit' | 'virtual' | 'credit'
+
+/**
+ * REQ-FE-014 — BankCard contract.
+ *
+ * Canonical minimum kept for BE compatibility (Phase A / H3):
+ *   card_id, owner_citizen_id, iban, status, pan_last_four, expiry_ms, created_ms.
+ *
+ * BANK-FE.4 additions (visual + functional, eventually persisted by BE):
+ *   - card_type: product tier (debit / virtual / credit).
+ *   - design_id: references @/routes/cards/cardDesigns registry.
+ *   - holder_name: denormalized from citizen profile for offline display.
+ *   - daily_limit_minor / daily_spent_minor: daily spending meter.
+ *   - monthly_limit_minor / monthly_spent_minor: monthly spending meter.
+ *
+ * FULL PAN and CVV are NEVER part of the canonical contract for security.
+ * The mock seed exposes them via a separate `BankCardMock` extension used
+ * only when isMockMode() is true.
+ */
 export interface BankCard {
   card_id: string
   owner_citizen_id: string
@@ -108,6 +127,23 @@ export interface BankCard {
   pan_last_four: string
   expiry_ms: number
   created_ms: number
+  card_type: CardType
+  design_id: string
+  holder_name: string
+  daily_limit_minor: number
+  daily_spent_minor: number
+  monthly_limit_minor: number
+  monthly_spent_minor: number
+}
+
+/**
+ * Mock-only card with full PAN and CVV for local dev. Gated to isMockMode().
+ * Never sent by a real BE — the production flow would return `pan_last_four`
+ * only and require a dedicated, authenticated "reveal" endpoint for CVV/PAN.
+ */
+export interface BankCardMock extends BankCard {
+  full_pan: string
+  cvv: string
 }
 
 export interface OutstandingNotice {
@@ -131,7 +167,7 @@ export interface BootstrapSnapshot {
   loans: Loan[]
   recurring: Recurring[]
   portfolio: PortfolioHolding[]
-  cards: BankCard[]
+  cards: BankCardMock[]
   outstanding_notices: OutstandingNotice[]
   pending_tx_count: number
   server_now_ms: number

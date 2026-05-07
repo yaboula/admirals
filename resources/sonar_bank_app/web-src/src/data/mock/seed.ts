@@ -1,5 +1,6 @@
 import type {
   Account,
+  BankCardMock,
   BootstrapSnapshot,
   ClientConfigSnapshot,
   RecentRecipient,
@@ -232,6 +233,86 @@ export function buildMockAccounts(): Account[] {
   ]
 }
 
+/* ---------------------------------------------------------------------------
+   Mock cards — three cards mapped to different designs so the Tarjetas view
+   demonstrates the design registry variety from the first render.
+
+   - Main debit: Sonar Signature (brand anchor, active)
+   - Virtual:    Aurora (premium design, active, for online purchases)
+   - Savings:    Noir (locked state, demonstrates freeze UI)
+
+   Full PAN + CVV live ONLY in this mock extension. Production BE must expose
+   `pan_last_four` only; a dedicated authenticated endpoint returns PAN/CVV
+   when the user explicitly requests reveal.
+   --------------------------------------------------------------------------- */
+export function buildMockCards(): BankCardMock[] {
+  const accounts = buildMockAccounts()
+  const primary = accounts[0]!
+  const savings = accounts[1]!
+  const holder = MOCK_DISPLAY_NAME.toUpperCase()
+  const issuedMainMs = NOW() - 280 * DAY_MS
+  const issuedVirtualMs = NOW() - 95 * DAY_MS
+  const issuedSavingsMs = NOW() - 180 * DAY_MS
+  const fourYears = 4 * 365 * DAY_MS
+
+  return [
+    {
+      card_id: 'card-mock-signature',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      iban: primary.iban,
+      status: 'active',
+      pan_last_four: '5614',
+      full_pan: '4287 1842 0739 5614',
+      cvv: '428',
+      expiry_ms: issuedMainMs + fourYears,
+      created_ms: issuedMainMs,
+      card_type: 'debit',
+      design_id: 'sonar_signature',
+      holder_name: holder,
+      daily_limit_minor: 2_000_00,
+      daily_spent_minor: 347_82,
+      monthly_limit_minor: 25_000_00,
+      monthly_spent_minor: 6_284_15,
+    },
+    {
+      card_id: 'card-mock-virtual',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      iban: primary.iban,
+      status: 'active',
+      pan_last_four: '1027',
+      full_pan: '4287 2901 8834 1027',
+      cvv: '019',
+      expiry_ms: issuedVirtualMs + fourYears,
+      created_ms: issuedVirtualMs,
+      card_type: 'virtual',
+      design_id: 'aurora',
+      holder_name: holder,
+      daily_limit_minor: 500_00,
+      daily_spent_minor: 48_90,
+      monthly_limit_minor: 5_000_00,
+      monthly_spent_minor: 1_124_60,
+    },
+    {
+      card_id: 'card-mock-savings',
+      owner_citizen_id: MOCK_CITIZEN_ID,
+      iban: savings.iban,
+      status: 'locked',
+      pan_last_four: '8802',
+      full_pan: '4287 3728 4619 8802',
+      cvv: '734',
+      expiry_ms: issuedSavingsMs + fourYears,
+      created_ms: issuedSavingsMs,
+      card_type: 'debit',
+      design_id: 'noir',
+      holder_name: holder,
+      daily_limit_minor: 1_000_00,
+      daily_spent_minor: 0,
+      monthly_limit_minor: 10_000_00,
+      monthly_spent_minor: 0,
+    },
+  ]
+}
+
 export function buildMockBootstrap(): BootstrapSnapshot {
   return {
     citizen_id: MOCK_CITIZEN_ID,
@@ -247,7 +328,7 @@ export function buildMockBootstrap(): BootstrapSnapshot {
     loans: [],
     recurring: [],
     portfolio: [],
-    cards: [],
+    cards: buildMockCards(),
     outstanding_notices: [],
     pending_tx_count: 1,
     server_now_ms: NOW(),
