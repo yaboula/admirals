@@ -101,10 +101,11 @@ export function TransactionsFilters() {
               <RotateCcw size={12} strokeWidth={2.2} />
               Reset
               <span
-                className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] tactile-tabular-nums"
+                className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] font-semibold tactile-tabular-nums"
                 style={{
-                  background: 'var(--gradient-primary)',
-                  color: 'oklch(0.10 0.010 270)',
+                  background: 'oklch(1 0 0 / 0.10)',
+                  border: '1px solid oklch(1 0 0 / 0.14)',
+                  color: 'var(--color-text-primary)',
                 }}
               >
                 {activeCount}
@@ -157,11 +158,12 @@ function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGr
               style={
                 active
                   ? {
-                      background:
-                        'linear-gradient(135deg, oklch(0.65 0.22 40 / 0.18), oklch(0.65 0.22 40 / 0.06))',
-                      border: '1px solid oklch(0.65 0.22 40 / 0.42)',
+                      // BANK-FE.3.6 — neutral elevated active state. Orange reserved
+                      // for primary CTAs and single-item selection feedback.
+                      background: 'oklch(1 0 0 / 0.08)',
+                      border: '1px solid oklch(1 0 0 / 0.16)',
                       boxShadow:
-                        'inset 0 1px 0 oklch(1 0 0 / 0.06), 0 0 0 1px oklch(0 0 0 / 0.4), 0 0 12px -2px oklch(0.65 0.22 40 / 0.32)',
+                        'inset 0 1px 0 oklch(1 0 0 / 0.10), 0 1px 0 oklch(0 0 0 / 0.3)',
                     }
                   : {
                       background: 'oklch(1 0 0 / 0.02)',
