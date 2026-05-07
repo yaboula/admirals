@@ -9,6 +9,9 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
+import { useAceGate } from '@/components/security'
+import { ACE_PERMS } from '@/lib/ace'
+import type { AcePerm } from '@/stores/session'
 import sonarMonogramUrl from '@/assets/branding/monogram_s.svg'
 
 interface NavItem {
@@ -18,13 +21,14 @@ interface NavItem {
   end?: boolean
   disabled?: boolean
   badge?: string
+  requiredPerm?: AcePerm
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true },
-  { to: '/transacciones', label: 'Transacciones', icon: Receipt },
-  { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight },
-  { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard },
+  { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/transacciones', label: 'Transacciones', icon: Receipt, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, requiredPerm: ACE_PERMS.P01.perm },
 ]
 
 const FOOTER_ITEMS: NavItem[] = [
@@ -105,14 +109,15 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
  */
 function SidebarItem({ item }: { item: NavItem }) {
   const Icon = item.icon
-  if (item.disabled) {
+  const granted = useAceGate({ require: item.requiredPerm })
+  if (item.disabled || !granted) {
     return (
       <div
         className={cn(
           'group relative flex h-11 w-11 items-center justify-center rounded-2xl',
           'cursor-not-allowed opacity-50 select-none',
         )}
-        title={`${item.label} (próximamente)`}
+        title={item.disabled ? `${item.label} (próximamente)` : `${item.label} (permiso requerido)`}
         style={{ color: 'oklch(0.55 0.01 270 / 0.6)' }}
       >
         <Icon size={18} strokeWidth={1.8} className="shrink-0" />

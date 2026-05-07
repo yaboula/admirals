@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { isAceGranted } from '@/lib/ace'
 
 export type AcePerm =
   | 'sonar.bank.player'
@@ -52,7 +53,7 @@ export const useBankSession = create<BankSessionState>((set, get) => ({
   ...initial,
   setSession: (s) => set(s),
   setLocale: (locale) => set({ locale }),
-  hasPerm: (perm) => get().acePerms.includes(perm),
+  hasPerm: (perm) => isAceGranted(get().acePerms, perm),
   hasMembership: (companyId) => get().memberships.find((m) => m.company_id === companyId),
   clearSession: () => set(initial),
 }))
