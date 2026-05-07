@@ -1,5 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
+import afroManWithVrUrl from '@/assets/avatars/afro-man-with-vr.png'
+import boyWithVrUrl from '@/assets/avatars/boy-with-vr.png'
+import minerUrl from '@/assets/avatars/miner.png'
+import shortHairManWithBucketHatUrl from '@/assets/avatars/short-hair-man-with-bucket-hat.png'
+import shortHairManWithSweaterUrl from '@/assets/avatars/short-hair-man-with-sweater.png'
+import thiefWithBlackHoodieUrl from '@/assets/avatars/thief-with-black-hoodie.png'
 
 export interface BankAvatarProps {
   name: string | null | undefined
@@ -22,20 +27,19 @@ const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, oklch(0.82 0.08 20), oklch(0.50 0.12 12))',
 ]
 
-export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarProps) {
-  const [imageFailed, setImageFailed] = useState(false)
-  const label = name?.trim() || 'Contacto'
-  const initials = getInitials(label)
-  const index = Math.abs(seed ?? hashString(label)) % AVATAR_GRADIENTS.length
-  const avatarUrl = useMemo(
-    () =>
-      `https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(label)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c7f9cc&radius=50&scale=92`,
-    [label],
-  )
+const AVATAR_IMAGES = [
+  boyWithVrUrl,
+  afroManWithVrUrl,
+  thiefWithBlackHoodieUrl,
+  shortHairManWithSweaterUrl,
+  shortHairManWithBucketHatUrl,
+  minerUrl,
+]
 
-  useEffect(() => {
-    setImageFailed(false)
-  }, [avatarUrl])
+export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarProps) {
+  const label = name?.trim() || 'Contacto'
+  const index = Math.abs(seed ?? hashString(label)) % AVATAR_GRADIENTS.length
+  const imageUrl = AVATAR_IMAGES[Math.abs(seed ?? hashString(label)) % AVATAR_IMAGES.length]
 
   return (
     <span
@@ -53,29 +57,14 @@ export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarPro
       aria-label={label}
       title={label}
     >
-      {!imageFailed && (
-        <img
-          src={avatarUrl}
-          alt=""
-          className="h-full w-full object-cover scale-110"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          onError={() => setImageFailed(true)}
-        />
-      )}
-      {imageFailed && initials}
+      <img
+        src={imageUrl}
+        alt=""
+        className="h-full w-full object-cover scale-110"
+        loading="lazy"
+      />
     </span>
   )
-}
-
-function getInitials(value: string): string {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase() || '··'
 }
 
 function hashString(value: string): number {

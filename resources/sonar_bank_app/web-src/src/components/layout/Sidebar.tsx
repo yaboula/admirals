@@ -44,7 +44,7 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: 104 }}
+      animate={{ width: 88 }}
       transition={{ type: 'spring', stiffness: 260, damping: 30 }}
       className={cn(
         'relative h-full flex-shrink-0 p-3',
@@ -62,17 +62,17 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
           WebkitBackdropFilter: 'blur(24px) saturate(150%)',
         }}
       >
-      <div className="flex items-center justify-center pt-4 pb-4">
+      <div className="flex items-center justify-center pt-5 pb-4">
         <div
-          className="relative flex h-[66px] w-[66px] items-center justify-center rounded-[1.7rem]"
+          className="relative flex h-10 w-10 items-center justify-center rounded-2xl"
           style={{
             background: 'oklch(0.035 0.01 30 / 0.72)',
             border: '1px solid oklch(1 0 0 / 0.08)',
-            boxShadow: '0 0 42px -8px oklch(0.72 0.22 40 / 0.88), inset 0 1px 0 oklch(1 0 0 / 0.05)',
+            boxShadow: '0 0 28px -8px oklch(0.72 0.22 40 / 0.68), inset 0 1px 0 oklch(1 0 0 / 0.05)',
           }}
           aria-hidden
         >
-          <img src={sonarMonogramUrl} alt="" className="h-[54px] w-[54px] object-contain" />
+          <img src={sonarMonogramUrl} alt="" className="h-[54px] w-[54px] max-w-none object-contain scale-[1.55]" />
         </div>
       </div>
 
