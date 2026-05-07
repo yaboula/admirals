@@ -31,54 +31,62 @@ export function TransactionsHero({
   return (
     <Card
       variant="glass"
-      padding="md"
-      className="relative overflow-hidden border-white/10 2xl:p-8"
+      padding="none"
+      className="relative overflow-hidden border-white/10 rounded-[1.75rem]"
     >
-      <div className="flex items-start justify-between mb-3 2xl:mb-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
-            Resumen del periodo
-          </span>
-          <h1 className="text-lg 2xl:text-xl font-semibold tracking-tight text-text-primary">
-            Transacciones
-          </h1>
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle at 12% 0%, oklch(1 0 0 / 0.06), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.025), transparent 60%)',
+        }}
+      />
+      <div className="relative grid grid-cols-[220px_minmax(0,1fr)] gap-4 p-4 2xl:grid-cols-[260px_minmax(0,1fr)] 2xl:p-5">
+        <div className="flex min-w-0 flex-col justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
+              Resumen del periodo
+            </span>
+            <h1 className="text-2xl 2xl:text-3xl font-light tracking-[-0.055em] text-text-primary">
+              Transacciones
+            </h1>
+          </div>
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary">Mostrando</span>
+            <span className="text-xs font-semibold text-text-primary tactile-tabular-nums">
+              {filteredCount}<span className="text-text-tertiary font-normal">/{totalCount}</span>
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-0.5">
-          <span className="text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-            Mostrando
-          </span>
-          <span className="text-sm font-semibold text-text-primary tactile-tabular-nums">
-            {filteredCount} <span className="text-text-tertiary font-normal">/ {totalCount}</span>
-          </span>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-3 gap-2.5 2xl:gap-4">
-        <Stat
-          label="Ingresos"
-          icon={<TrendingUp size={14} strokeWidth={2.2} />}
-          value={totals.income}
-          color="oklch(0.78 0.16 155)"
-          accentBg="oklch(0.72 0.16 155 / 0.10)"
-          tone="positive"
-        />
-        <Stat
-          label="Gastos"
-          icon={<TrendingDown size={14} strokeWidth={2.2} />}
-          value={totals.expense}
-          color="oklch(0.74 0.20 25)"
-          accentBg="oklch(0.68 0.20 25 / 0.10)"
-          tone="negative"
-        />
-        <Stat
-          label="Neto"
-          icon={<Sigma size={14} strokeWidth={2.2} />}
-          value={totals.net}
-          color={totals.net >= 0 ? 'oklch(0.78 0.16 155)' : 'oklch(0.74 0.20 25)'}
-          accentBg="oklch(1 0 0 / 0.04)"
-          tone={totals.net >= 0 ? 'positive' : 'negative'}
-          highlighted
-        />
+        <div className="grid grid-cols-3 gap-3 2xl:gap-4">
+          <Stat
+            label="Ingresos"
+            icon={<TrendingUp size={14} strokeWidth={2.2} />}
+            value={totals.income}
+            color="oklch(0.78 0.16 155)"
+            accentBg="oklch(0.72 0.16 155 / 0.10)"
+            tone="positive"
+          />
+          <Stat
+            label="Gastos"
+            icon={<TrendingDown size={14} strokeWidth={2.2} />}
+            value={totals.expense}
+            color="oklch(0.74 0.20 25)"
+            accentBg="oklch(0.68 0.20 25 / 0.10)"
+            tone="negative"
+          />
+          <Stat
+            label="Neto"
+            icon={<Sigma size={14} strokeWidth={2.2} />}
+            value={totals.net}
+            color={totals.net >= 0 ? 'oklch(0.78 0.16 155)' : 'oklch(0.74 0.20 25)'}
+            accentBg="oklch(1 0 0 / 0.06)"
+            tone={totals.net >= 0 ? 'positive' : 'negative'}
+            highlighted
+          />
+        </div>
       </div>
     </Card>
   )
@@ -101,25 +109,29 @@ function Stat({ label, icon, value, color, accentBg, tone, highlighted }: StatPr
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        'relative flex flex-col gap-1 2xl:gap-1.5 rounded-lg p-2.5 2xl:p-3',
+        'relative flex min-w-0 flex-col justify-between gap-3 rounded-[1.35rem] border p-3.5 2xl:p-4',
         highlighted && 'tactile-card',
       )}
-      style={highlighted ? { background: 'oklch(1 0 0 / 0.025)', border: '1px solid oklch(1 0 0 / 0.06)' } : undefined}
+      style={{
+        background: highlighted ? 'oklch(1 0 0 / 0.055)' : 'oklch(1 0 0 / 0.032)',
+        borderColor: highlighted ? 'oklch(1 0 0 / 0.12)' : 'oklch(1 0 0 / 0.07)',
+        boxShadow: highlighted ? 'inset 0 1px 0 oklch(1 0 0 / 0.08)' : undefined,
+      }}
     >
       <div className="flex items-center gap-2">
         <span
-          className="inline-flex items-center justify-center h-6 w-6 rounded-md"
+          className="inline-flex items-center justify-center h-7 w-7 rounded-xl"
           style={{ background: accentBg, color }}
           aria-hidden
         >
           {icon}
         </span>
-        <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-medium">
+        <span className="text-[10px] uppercase tracking-[0.15em] text-text-tertiary font-semibold">
           {label}
         </span>
       </div>
       <div
-        className="text-base 2xl:text-xl font-semibold tracking-tight tactile-tabular-nums"
+        className="truncate text-xl 2xl:text-2xl font-semibold tracking-[-0.045em] tactile-tabular-nums"
         style={{ color }}
       >
         <AnimatedAmount value={value} prefix={tone === 'negative' && value > 0 ? '−' : tone === 'positive' && value > 0 ? '+' : ''} />

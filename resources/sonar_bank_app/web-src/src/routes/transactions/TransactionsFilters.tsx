@@ -52,29 +52,31 @@ export function TransactionsFilters() {
   const activeCount = countActiveFilters({ range, direction, status, query })
 
   return (
-    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 2xl:gap-2.5">
-      <ChipGroup
-        label="Periodo"
-        options={RANGE_OPTIONS}
-        value={range}
-        onChange={(v) => setRange(v as TxRange)}
-      />
-      <Divider />
-      <ChipGroup
-        label="Tipo"
-        options={DIRECTION_OPTIONS}
-        value={direction}
-        onChange={(v) => setDirection(v as TxDirection)}
-      />
-      <Divider />
-      <ChipGroup
-        label="Estado"
-        options={STATUS_OPTIONS}
-        value={status}
-        onChange={(v) => setStatus(v as TxStatus)}
-      />
+    <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        <ChipGroup
+          label="Periodo"
+          options={RANGE_OPTIONS}
+          value={range}
+          onChange={(v) => setRange(v as TxRange)}
+        />
+        <Divider />
+        <ChipGroup
+          label="Tipo"
+          options={DIRECTION_OPTIONS}
+          value={direction}
+          onChange={(v) => setDirection(v as TxDirection)}
+        />
+        <Divider />
+        <ChipGroup
+          label="Estado"
+          options={STATUS_OPTIONS}
+          value={status}
+          onChange={(v) => setStatus(v as TxStatus)}
+        />
+      </div>
 
-      <div className="flex-1 min-w-[160px] flex items-center justify-end gap-2 ml-auto">
+      <div className="shrink-0 flex items-center justify-end gap-2">
         <SearchInput value={query} onChange={setQuery} />
         <AnimatePresence>
           {activeCount > 0 && (
@@ -129,11 +131,11 @@ interface ChipGroupProps<T extends string> {
 
 function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGroupProps<T>) {
   return (
-    <div className="flex items-center gap-1.5 2xl:gap-2">
-      <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-medium">
+    <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.025] p-1">
+      <span className="pl-2 text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-semibold">
         {label}
       </span>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         {options.map((opt) => {
           const active = opt.value === value
           return (
@@ -148,7 +150,7 @@ function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGr
               }}
               aria-pressed={active}
               className={cn(
-                'relative inline-flex items-center px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-full',
+                'relative inline-flex h-7 items-center px-2.5 rounded-full',
                 'text-[11px] font-medium tracking-tight transition-[color,border-color,background] duration-200',
                 'tactile-focus-ring',
                 active
@@ -158,16 +160,14 @@ function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGr
               style={
                 active
                   ? {
-                      // BANK-FE.3.6 — neutral elevated active state. Orange reserved
-                      // for primary CTAs and single-item selection feedback.
                       background: 'oklch(1 0 0 / 0.08)',
                       border: '1px solid oklch(1 0 0 / 0.16)',
                       boxShadow:
                         'inset 0 1px 0 oklch(1 0 0 / 0.10), 0 1px 0 oklch(0 0 0 / 0.3)',
                     }
                   : {
-                      background: 'oklch(1 0 0 / 0.02)',
-                      border: '1px solid var(--color-border-subtle)',
+                      background: 'transparent',
+                      border: '1px solid transparent',
                     }
               }
             >
@@ -184,7 +184,7 @@ function Divider() {
   return (
     <span
       aria-hidden
-      className="hidden md:inline-block h-5 w-px"
+      className="hidden xl:inline-block h-7 w-px"
       style={{ background: 'oklch(1 0 0 / 0.06)' }}
     />
   )
@@ -229,8 +229,8 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
         aria-label="Buscar transacciones"
         className={cn(
           'tactile-input tactile-focus-ring',
-          'pl-7 pr-7 py-1.5 text-[12px]',
-          'w-[160px] xl:w-[200px] 2xl:w-[220px]',
+          'h-9 rounded-full pl-8 pr-8 py-1.5 text-[12px]',
+          'w-[210px] 2xl:w-[250px]',
           'placeholder:text-text-tertiary',
         )}
       />
