@@ -63,11 +63,12 @@ export function Transfer() {
   const recipientAlias = useTransferWizard((s) => s.recipientAlias)
   const init = useTransferWizard((s) => s.init)
   const setStep = useTransferWizard((s) => s.setStep)
+  const clearOperationIds = useTransferWizard((s) => s.clearOperationIds)
   const reset = useTransferWizard((s) => s.reset)
 
   useEffect(() => {
-    if (!idempotencyKey || !correlationId) init(false)
-  }, [correlationId, idempotencyKey, init])
+    if (step !== 'confirm' && (!idempotencyKey || !correlationId)) init(false)
+  }, [correlationId, idempotencyKey, init, step])
 
   useEffect(() => {
     if (expressMode && step === 'amount' && amount && recipientIban) {
@@ -108,6 +109,7 @@ export function Transfer() {
         correlation_id: correlationId,
       })
       setReceipt(nextReceipt)
+      clearOperationIds()
       sfx.vault_close()
       toast.success('Transferencia enviada', `${formatCurrency(amount / 100)} → ${recipientAlias ?? formatIbanShort(recipientIban)}`)
 

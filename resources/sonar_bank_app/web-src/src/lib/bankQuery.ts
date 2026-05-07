@@ -1,5 +1,6 @@
 import { useMutation, useQuery, type QueryKey, type UseMutationOptions, type UseQueryOptions } from '@tanstack/react-query'
 import { BankError } from '@/lib/bankError'
+import { withBankIdempotency, type BankIdempotencyPolicy } from '@/lib/bankIdempotency'
 import { nuiMutate, nuiQuery, type NuiFetchOptions } from '@/lib/nui'
 
 export function shouldRetryBankError(failureCount: number, err: BankError): boolean {
@@ -17,6 +18,10 @@ export type BankMutationOptions<TResponse, TVariables, TContext = unknown> = Omi
   'mutationFn'
 >
 
+export interface BankMutationNuiOptions extends NuiFetchOptions {
+  idempotency?: BankIdempotencyPolicy
+}
+
 export async function bankCallback<TPayload extends Record<string, unknown>, TResponse>(
   eventName: string,
   payload?: TPayload,
@@ -28,9 +33,11 @@ export async function bankCallback<TPayload extends Record<string, unknown>, TRe
 export async function bankMutation<TVariables extends Record<string, unknown>, TResponse>(
   eventName: string,
   payload: TVariables,
-  options: NuiFetchOptions = {},
+  options: BankMutationNuiOptions = {},
 ): Promise<TResponse> {
-  return nuiMutate<TResponse>(eventName, payload, options)
+  const { idempotency = false, ...nuiOptions } = options
+  const nextPayload = withBankIdempotency(payload, idempotency)
+  return nuiMutate<TResponse>(eventName, nextPayload, nuiOptions)
 }
 
 export function useBankCallback<
@@ -62,7 +69,7 @@ export function useBankMutation<
 >(
   eventName: string,
   options: BankMutationOptions<TResponse, TVariables, TContext> = {},
-  nuiOptions: NuiFetchOptions = {},
+  nuiOptions: BankMutationNuiOptions = {},
 ) {
   return useMutation<TResponse, BankError, TVariables, TContext>({
     mutationFn: (payload) => bankMutation<TVariables, TResponse>(eventName, payload, nuiOptions),

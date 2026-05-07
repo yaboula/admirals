@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { generateUuidV4 } from '@/lib/utils'
+import { createBankOperationIds } from '@/lib/bankIdempotency'
 
 export type TransferWizardStep = 'amount' | 'recipient' | 'review' | 'confirm'
 
@@ -18,12 +18,13 @@ export interface TransferWizardState {
   setExpressMode: (v: boolean) => void
   setAmount: (amount: number, memo?: string) => void
   setRecipient: (iban: string, alias?: string | null) => void
+  clearOperationIds: () => void
   reset: () => void
 }
 
 const initial: Omit<
   TransferWizardState,
-  'init' | 'setStep' | 'setExpressMode' | 'setAmount' | 'setRecipient' | 'reset'
+  'init' | 'setStep' | 'setExpressMode' | 'setAmount' | 'setRecipient' | 'clearOperationIds' | 'reset'
 > = {
   step: 'amount',
   expressMode: false,
@@ -38,19 +39,23 @@ const initial: Omit<
 export const useTransferWizard = create<TransferWizardState>((set) => ({
   ...initial,
   init: (express = false) =>
-    set({
-      step: 'amount',
-      expressMode: express,
-      idempotencyKey: generateUuidV4(),
-      correlationId: generateUuidV4(),
-      amount: null,
-      memo: '',
-      recipientIban: null,
-      recipientAlias: null,
+    set(() => {
+      const ids = createBankOperationIds()
+      return {
+        step: 'amount',
+        expressMode: express,
+        idempotencyKey: ids.idempotencyKey,
+        correlationId: ids.correlationId,
+        amount: null,
+        memo: '',
+        recipientIban: null,
+        recipientAlias: null,
+      }
     }),
   setStep: (step) => set({ step }),
   setExpressMode: (v) => set({ expressMode: v }),
   setAmount: (amount, memo) => set({ amount, memo: memo ?? '' }),
   setRecipient: (iban, alias) => set({ recipientIban: iban, recipientAlias: alias ?? null }),
+  clearOperationIds: () => set({ idempotencyKey: null, correlationId: null }),
   reset: () => set(initial),
 }))
