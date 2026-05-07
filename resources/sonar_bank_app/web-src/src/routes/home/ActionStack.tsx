@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, ChevronRight } from 'lucide-react'
 import { sfx } from '@/lib/sfx'
@@ -22,11 +23,13 @@ import { cn } from '@/lib/utils'
  */
 export function ActionStack() {
   const reduced = useReducedMotion()
+  const navigate = useNavigate()
   const initWizard = useTransferWizard((s) => s.init)
 
   const handleTransferir = (): void => {
     sfx.depth_press()
     initWizard(false)
+    navigate('/transferir')
   }
 
   const handleDepositar = (): void => {

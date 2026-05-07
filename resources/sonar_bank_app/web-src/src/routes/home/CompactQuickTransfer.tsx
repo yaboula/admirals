@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Star, Zap, Loader2, UserPlus, Users2 } from 'lucide-react'
 import { Card, CardEyebrow, CardTitle } from '@/components/ui'
@@ -16,6 +17,7 @@ import { getMockInitialsForIban } from '@/data/mock/seed'
  * Express CTA uses ghost/outline styling — orange ONLY appears on hover.
  */
 export function CompactQuickTransfer() {
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useRecentRecipients()
   const initWizard = useTransferWizard((s) => s.init)
   const setRecipient = useTransferWizard((s) => s.setRecipient)
@@ -30,11 +32,13 @@ export function CompactQuickTransfer() {
       'Transferencia iniciada',
       `${formatEur(amount / 100)} → ${r.alias ?? formatIbanShort(r.counterpart_iban)}`,
     )
+    navigate('/transferir')
   }
 
   const handleNew = (): void => {
     initWizard(false)
     sfx.depth_press()
+    navigate('/transferir')
   }
 
   return (

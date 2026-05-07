@@ -4,6 +4,7 @@ import { AppShell } from './components/layout/AppShell'
 import { Home } from './routes/Home'
 import { Transactions } from './routes/Transactions'
 import { Cards } from './routes/Cards'
+import { Transfer } from './routes/Transfer'
 import { DevShowcase } from './routes/dev/Showcase'
 import { NotFound } from './routes/NotFound'
 import { isInsideFiveMNui } from './lib/env'
@@ -20,6 +21,7 @@ const routes = [
           { index: true, element: <Home /> },
           { path: 'transacciones', element: <Transactions /> },
           { path: 'tarjetas', element: <Cards /> },
+          { path: 'transferir', element: <Transfer /> },
           { path: 'dev/showcase', element: <DevShowcase /> },
         ],
       },

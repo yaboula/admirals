@@ -29,7 +29,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true },
   { to: '/transacciones', label: 'Transacciones', icon: Receipt },
-  { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight, disabled: true },
+  { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight },
   { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard },
   { to: '/ahorro', label: 'Ahorro', icon: PiggyBank, disabled: true },
   { to: '/portfolio', label: 'Portfolio', icon: TrendingUp, disabled: true },

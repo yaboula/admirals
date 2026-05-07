@@ -8,3 +8,15 @@ export type {
   UpdateCardLimitsArgs,
   ApplyCardDesignArgs,
 } from './cards'
+export {
+  useExecuteTransfer,
+  formatIban,
+  isLargeTransfer,
+  isValidSpanishIban,
+  normalizeIban,
+} from './transfers'
+export type {
+  TransferExecuteArgs,
+  TransferExecuteArgsInput,
+  TransferReceipt,
+} from './transfers'
