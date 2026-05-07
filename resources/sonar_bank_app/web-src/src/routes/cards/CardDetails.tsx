@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw } from 'lucide-react'
+import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -122,8 +122,12 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         />
       </div>
 
+      {/* Benefits — tier-driven perks bring brand storytelling into the panel
+          and naturally absorb any leftover vertical real-estate. */}
+      <BenefitsPanel tier={design.tier} accent={design.accent} className="flex-1 min-h-0" />
+
       {/* Action row — interactive: Reveal + Flip; placeholder: Freeze + Limits */}
-      <div className="grid grid-cols-2 gap-2 mt-auto">
+      <div className="grid grid-cols-2 gap-2">
         <ActionButton
           icon={Eye}
           label={revealed ? 'Ocultar PAN' : 'Revelar PAN'}
@@ -144,6 +148,99 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         <ActionButton icon={Settings2} label="Límites" disabled />
       </div>
     </Card>
+  )
+}
+
+/* --------------------------------------------------------------------------
+   BenefitsPanel — tier-aware perk list driven by design.tier.
+   - default   → 3 baseline perks
+   - premium   → +1 cashback / +1 priority support
+   - signature → premium set + concierge / early access
+   The accent colour ties the check marks to the focused card's chromatic
+   identity so the panel reads as part of the same visual story.
+   -------------------------------------------------------------------------- */
+
+const BENEFITS_BY_TIER: Record<'default' | 'premium' | 'signature', string[]> = {
+  default: [
+    'Sin comisiones de mantenimiento',
+    'Pagos contactless y por móvil',
+    'Notificaciones de gasto en tiempo real',
+  ],
+  premium: [
+    'Cashback 0.5% en compras del día a día',
+    'Atención prioritaria 24/7',
+    'Sin comisiones de mantenimiento',
+    'Pagos contactless y por móvil',
+  ],
+  signature: [
+    'Cashback 1% global · sin tope mensual',
+    'Concierge bancario dedicado',
+    'Acceso anticipado a nuevas features',
+    'Atención prioritaria 24/7',
+    'Sin comisiones de mantenimiento',
+  ],
+}
+
+function BenefitsPanel({
+  tier,
+  accent,
+  className,
+}: {
+  tier: 'default' | 'premium' | 'signature'
+  accent: string
+  className?: string
+}) {
+  const items = BENEFITS_BY_TIER[tier]
+  return (
+    <div
+      className={cn(
+        'rounded-xl p-3 flex flex-col gap-2 overflow-hidden',
+        className,
+      )}
+      style={{
+        background: 'oklch(1 0 0 / 0.025)',
+        border: '1px solid oklch(1 0 0 / 0.07)',
+      }}
+    >
+      <div className="flex items-center justify-between shrink-0">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-semibold">
+          Beneficios
+        </span>
+        <TierBadge tier={tier} />
+      </div>
+      <ul className="flex flex-col gap-1.5 min-h-0 overflow-y-auto" role="list">
+        {items.map((label) => (
+          <li
+            key={label}
+            className="flex items-start gap-2 text-[11px] leading-snug text-text-secondary"
+          >
+            <Check
+              size={11}
+              strokeWidth={2.4}
+              className="shrink-0 mt-0.5"
+              style={{ color: accent, opacity: 0.85 }}
+            />
+            <span className="truncate">{label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function TierBadge({ tier }: { tier: 'default' | 'premium' | 'signature' }) {
+  const label = tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : 'Estándar'
+  return (
+    <span
+      className="text-[9px] uppercase tracking-[0.16em] font-semibold px-1.5 py-0.5 rounded"
+      style={{
+        color: 'oklch(0.78 0.012 270)',
+        background: 'oklch(1 0 0 / 0.05)',
+        border: '1px solid oklch(1 0 0 / 0.10)',
+      }}
+    >
+      {label}
+    </span>
   )
 }
 
