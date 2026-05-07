@@ -44,7 +44,7 @@ export function ActionStack() {
       initial={reduced ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-1.5 2xl:gap-2"
     >
       <ActionRow
         tier="primary"

@@ -32,7 +32,9 @@ export interface ActivityPreviewProps {
  */
 export function ActivityPreview({ transactions, account, loading, compact }: ActivityPreviewProps) {
   const own = account?.iban.replace(/\s+/g, '')
-  const limit = compact ? 4 : 8
+  // BANK-FE.3.5: 3 rows in compact mode releases ~50px vertical for the chart
+  // at 1280×800 / 1024×768. Full-screen 2xl users see 4 rows via prop override.
+  const limit = compact ? 3 : 8
   const hasMore = transactions.length > 0
 
   const navigate = useNavigate()

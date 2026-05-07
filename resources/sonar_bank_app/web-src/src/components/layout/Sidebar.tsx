@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
@@ -45,8 +45,30 @@ export interface SidebarProps {
   defaultCollapsed?: boolean
 }
 
-export function Sidebar({ defaultCollapsed = false }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(defaultCollapsed)
+/**
+ * BANK-FE.3.5 — Auto-collapse below 1280px (target tablet 1280×800 / 1024×768).
+ * Manual toggle wins: once the user clicks the chevron, we stop syncing with
+ * the media query so we don't bounce their preference back.
+ */
+const COLLAPSE_BREAKPOINT = 1280
+
+export function Sidebar({ defaultCollapsed }: SidebarProps) {
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof defaultCollapsed === 'boolean') return defaultCollapsed
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < COLLAPSE_BREAKPOINT
+  })
+  const [userOverride, setUserOverride] = useState(false)
+
+  useEffect(() => {
+    if (userOverride) return
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia(`(max-width: ${COLLAPSE_BREAKPOINT - 1}px)`)
+    const apply = () => setCollapsed(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [userOverride])
 
   return (
     <motion.aside
@@ -123,6 +145,7 @@ export function Sidebar({ defaultCollapsed = false }: SidebarProps) {
         aria-label={collapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
         onClick={() => {
           setCollapsed((c) => !c)
+          setUserOverride(true)
           sfx.layer_dive()
         }}
         className={cn(

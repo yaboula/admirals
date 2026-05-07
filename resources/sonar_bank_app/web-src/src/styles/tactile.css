@@ -253,9 +253,10 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 14px 18px;
+  /* BANK-FE.3.5: tablet-tight base; comfort restored at 2xl below. */
+  padding: 10px 14px;
   border-radius: var(--radius-lg);
   font-size: 14px;
   font-weight: 600;
@@ -267,6 +268,13 @@
     transform 180ms var(--ease-spring-premium),
     background 200ms var(--ease-in-out-smooth),
     border-color 200ms var(--ease-in-out-smooth);
+}
+
+@media (min-width: 1536px) {
+  .tactile-action-btn {
+    gap: 12px;
+    padding: 14px 18px;
+  }
 }
 
 .tactile-action-btn:active:not(:disabled) {

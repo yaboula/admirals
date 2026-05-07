@@ -81,7 +81,8 @@ export function TransactionDetailDrawer({ tx, ownIban, onClose }: TransactionDet
             }
             className={cn(
               'absolute top-0 right-0 bottom-0 z-[var(--z-drawer)]',
-              'w-full sm:w-[440px] lg:w-[480px]',
+              'w-full sm:w-[380px] xl:w-[420px] 2xl:w-[480px]',
+              'max-w-[92vw]',
               'flex flex-col',
               'border-l border-white/10',
             )}
@@ -141,7 +142,7 @@ function DrawerBody({
   return (
     <>
       {/* Header */}
-      <div className="flex items-start justify-between px-6 pt-6 pb-4">
+      <div className="flex items-start justify-between px-4 pt-4 pb-3 2xl:px-6 2xl:pt-6 2xl:pb-4">
         <div className="flex items-center gap-3 min-w-0">
           <span
             className="relative inline-flex items-center justify-center h-12 w-12 rounded-full shrink-0"
@@ -177,7 +178,7 @@ function DrawerBody({
       </div>
 
       {/* Hero amount */}
-      <div className="px-6 pb-5">
+      <div className="px-4 pb-4 2xl:px-6 2xl:pb-5">
         <div
           className="relative rounded-2xl px-6 py-5 overflow-hidden"
           style={{
@@ -231,7 +232,7 @@ function DrawerBody({
       </div>
 
       {/* Body grid */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6 flex flex-col gap-5">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 flex flex-col gap-4 2xl:px-6 2xl:pb-6 2xl:gap-5">
         <DetailRow
           label="Concepto"
           value={tx.reason ?? (isOutgoing ? 'Transferencia' : 'Pago recibido')}
@@ -281,7 +282,7 @@ function DrawerBody({
       </div>
 
       {/* Footer actions */}
-      <div className="px-6 pb-6 pt-4 border-t border-white/06 flex flex-col gap-2">
+      <div className="px-4 pb-4 pt-3 border-t border-white/06 flex flex-col gap-2 2xl:px-6 2xl:pb-6 2xl:pt-4">
         <ActionButton
           icon={<Repeat size={14} strokeWidth={2.2} />}
           label="Repetir transferencia"

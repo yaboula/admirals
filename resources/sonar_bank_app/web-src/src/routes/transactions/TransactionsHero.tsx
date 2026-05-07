@@ -31,15 +31,15 @@ export function TransactionsHero({
   return (
     <Card
       variant="glass"
-      padding="lg"
-      className="relative overflow-hidden border-white/10"
+      padding="md"
+      className="relative overflow-hidden border-white/10 2xl:p-8"
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3 2xl:mb-4">
         <div className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
             Resumen del periodo
           </span>
-          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
+          <h1 className="text-lg 2xl:text-xl font-semibold tracking-tight text-text-primary">
             Transacciones
           </h1>
         </div>
@@ -53,7 +53,7 @@ export function TransactionsHero({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2.5 2xl:gap-4">
         <Stat
           label="Ingresos"
           icon={<TrendingUp size={14} strokeWidth={2.2} />}
@@ -101,7 +101,7 @@ function Stat({ label, icon, value, color, accentBg, tone, highlighted }: StatPr
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        'relative flex flex-col gap-1.5 rounded-lg p-3',
+        'relative flex flex-col gap-1 2xl:gap-1.5 rounded-lg p-2.5 2xl:p-3',
         highlighted && 'tactile-card',
       )}
       style={highlighted ? { background: 'oklch(1 0 0 / 0.025)', border: '1px solid oklch(1 0 0 / 0.06)' } : undefined}
@@ -119,7 +119,7 @@ function Stat({ label, icon, value, color, accentBg, tone, highlighted }: StatPr
         </span>
       </div>
       <div
-        className="text-xl font-semibold tracking-tight tactile-tabular-nums"
+        className="text-base 2xl:text-xl font-semibold tracking-tight tactile-tabular-nums"
         style={{ color }}
       >
         <AnimatedAmount value={value} prefix={tone === 'negative' && value > 0 ? '−' : tone === 'positive' && value > 0 ? '+' : ''} />

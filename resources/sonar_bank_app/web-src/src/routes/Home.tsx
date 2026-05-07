@@ -49,16 +49,16 @@ export function Home() {
       className="h-full w-full"
     >
       <div
-        className="h-full w-full mx-auto max-w-[1500px] gap-4 lg:gap-5"
+        className="h-full w-full mx-auto max-w-[1500px] gap-3 2xl:gap-5"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.7fr) minmax(280px, 0.85fr)',
+          gridTemplateColumns: 'minmax(0, 1.7fr) minmax(260px, 0.85fr)',
           gridTemplateRows: '1fr',
         }}
       >
         {/* ── DATA COLUMN ─────────────────────────────────────────────── */}
         <section
-          className="h-full min-h-0 gap-4"
+          className="h-full min-h-0 gap-3 2xl:gap-4"
           style={{
             display: 'grid',
             gridTemplateRows: 'auto 1fr auto',
@@ -89,7 +89,7 @@ export function Home() {
 
         {/* ── ACTION COLUMN ────────────────────────────── */}
         <aside
-          className="h-full min-h-0 gap-4"
+          className="h-full min-h-0 gap-3 2xl:gap-4"
           style={{
             display: 'grid',
             gridTemplateRows: 'auto auto 1fr',

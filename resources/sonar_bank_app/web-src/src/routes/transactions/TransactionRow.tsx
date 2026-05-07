@@ -49,7 +49,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       aria-pressed={selected}
       aria-label={`${counterpartName} · ${sign}€${formatEur(tx.amount_minor / 100)} · ${formatRelativeTime(tx.timestamp_ms)}`}
       className={cn(
-        'group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left',
+        'group w-full flex items-center gap-2.5 px-2.5 py-2 2xl:gap-3 2xl:px-3 2xl:py-2.5 rounded-xl text-left',
         'transition-[box-shadow,background,border-color] duration-180',
         'tactile-focus-ring',
       )}
@@ -75,7 +75,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
     >
       {/* Avatar pill — initials over direction-tinted background */}
       <span
-        className="relative inline-flex items-center justify-center h-10 w-10 rounded-full shrink-0"
+        className="relative inline-flex items-center justify-center h-9 w-9 2xl:h-10 2xl:w-10 rounded-full shrink-0"
         style={{
           background: isOutgoing
             ? 'linear-gradient(135deg, oklch(0.18 0.014 25 / 0.6), oklch(0.10 0.010 25 / 0.4))'

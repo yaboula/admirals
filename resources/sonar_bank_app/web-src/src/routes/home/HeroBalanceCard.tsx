@@ -50,7 +50,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
       className="relative overflow-hidden rounded-2xl flex flex-col border-white/10"
     >
       {/* Header row — eyebrow + IBAN copy + reveal toggle */}
-      <div className="flex items-start justify-between px-6 pt-5 pb-1.5">
+      <div className="flex items-start justify-between px-4 pt-3.5 pb-1.5 2xl:px-6 2xl:pt-5">
         <div className="flex flex-col gap-1.5 min-w-0">
           <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
             Saldo disponible
@@ -87,7 +87,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
       </div>
 
       {/* Balance — 56px Light + tabular-nums + blur-reveal */}
-      <div className="px-6 pb-5">
+      <div className="px-4 pb-3.5 2xl:px-6 2xl:pb-5">
         <BalanceDisplay value={balanceMajor} hidden={hidden} loading={loading} />
       </div>
 

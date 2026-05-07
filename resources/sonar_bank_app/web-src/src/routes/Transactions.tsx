@@ -76,7 +76,7 @@ export function Transactions() {
         className="h-full w-full"
       >
         <div
-          className="h-full w-full mx-auto max-w-[1500px] gap-4"
+          className="h-full w-full mx-auto max-w-[1500px] gap-3 2xl:gap-4"
           style={{
             display: 'grid',
             gridTemplateRows: 'auto auto 1fr',
@@ -89,7 +89,7 @@ export function Transactions() {
             filteredCount={filtered.length}
           />
 
-          <Card variant="glass" padding="md" className="border-white/10">
+          <Card variant="glass" padding="sm" className="border-white/10 2xl:p-4">
             <TransactionsFilters />
           </Card>
 

@@ -52,7 +52,7 @@ export function TransactionsFilters() {
   const activeCount = countActiveFilters({ range, direction, status, query })
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 2xl:gap-2.5">
       <ChipGroup
         label="Periodo"
         options={RANGE_OPTIONS}
@@ -74,7 +74,7 @@ export function TransactionsFilters() {
         onChange={(v) => setStatus(v as TxStatus)}
       />
 
-      <div className="flex-1 min-w-[180px] flex items-center justify-end gap-2">
+      <div className="flex-1 min-w-[160px] flex items-center justify-end gap-2 ml-auto">
         <SearchInput value={query} onChange={setQuery} />
         <AnimatePresence>
           {activeCount > 0 && (
@@ -128,7 +128,7 @@ interface ChipGroupProps<T extends string> {
 
 function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGroupProps<T>) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 2xl:gap-2">
       <span className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-medium">
         {label}
       </span>
@@ -147,7 +147,7 @@ function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGr
               }}
               aria-pressed={active}
               className={cn(
-                'relative inline-flex items-center px-3 py-1.5 rounded-full',
+                'relative inline-flex items-center px-2.5 py-1 2xl:px-3 2xl:py-1.5 rounded-full',
                 'text-[11px] font-medium tracking-tight transition-[color,border-color,background] duration-200',
                 'tactile-focus-ring',
                 active
@@ -227,7 +227,8 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
         aria-label="Buscar transacciones"
         className={cn(
           'tactile-input tactile-focus-ring',
-          'pl-7 pr-7 py-1.5 text-[12px] w-[220px]',
+          'pl-7 pr-7 py-1.5 text-[12px]',
+          'w-[160px] xl:w-[200px] 2xl:w-[220px]',
           'placeholder:text-text-tertiary',
         )}
       />
