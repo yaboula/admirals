@@ -2,7 +2,8 @@ import { motion } from 'motion/react'
 import { ArrowDownLeft, ArrowUpRight, RotateCw, AlertTriangle, Check, ChevronRight } from 'lucide-react'
 import type { Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
-import { getMockAliasForIban, getMockInitialsForIban } from '@/data/mock/seed'
+import { getMockAliasForIban } from '@/data/mock/seed'
+import { BankAvatar } from '@/components/brand/BankAvatar'
 
 /**
  * BANK-FE.3 — Single transaction row.
@@ -32,7 +33,6 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
   const counterpartIban = isOutgoing ? tx.to_iban : tx.from_iban
   const counterpartName =
     getMockAliasForIban(counterpartIban) ?? (isOutgoing ? 'Beneficiario' : 'Remitente')
-  const initials = getMockInitialsForIban(counterpartIban)
 
   const sign = isOutgoing ? '−' : '+'
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
@@ -55,11 +55,11 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       )}
       style={{
         background: selected
-          ? 'linear-gradient(135deg, oklch(0.65 0.22 40 / 0.06), oklch(1 0 0 / 0.02))'
+          ? 'oklch(1 0 0 / 0.07)'
           : 'transparent',
-        border: `1px solid ${selected ? 'oklch(0.65 0.22 40 / 0.32)' : 'transparent'}`,
+        border: `1px solid ${selected ? 'oklch(1 0 0 / 0.16)' : 'transparent'}`,
         boxShadow: selected
-          ? 'inset 0 1px 0 oklch(1 0 0 / 0.05), 0 0 0 1px oklch(0 0 0 / 0.4), 0 6px 16px -8px oklch(0.65 0.22 40 / 0.28)'
+          ? 'inset 0 1px 0 oklch(1 0 0 / 0.08), 0 10px 22px -18px oklch(0 0 0 / 0.8)'
           : undefined,
       }}
       onMouseEnter={(e) => {
@@ -73,22 +73,8 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
         }
       }}
     >
-      {/* Avatar pill — initials over direction-tinted background */}
-      <span
-        className="relative inline-flex items-center justify-center h-9 w-9 2xl:h-10 2xl:w-10 rounded-full shrink-0"
-        style={{
-          background: isOutgoing
-            ? 'linear-gradient(135deg, oklch(0.18 0.014 25 / 0.6), oklch(0.10 0.010 25 / 0.4))'
-            : 'linear-gradient(135deg, oklch(0.18 0.014 155 / 0.6), oklch(0.10 0.010 155 / 0.4))',
-          border: `1px solid ${isOutgoing ? 'oklch(0.68 0.20 25 / 0.24)' : 'oklch(0.72 0.16 155 / 0.24)'}`,
-          color: isOutgoing ? 'oklch(0.78 0.18 25)' : 'oklch(0.80 0.18 155)',
-          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.06), inset 0 -1px 0 oklch(0 0 0 / 0.32)',
-        }}
-        aria-hidden
-      >
-        <span className="text-[11px] font-semibold tracking-wide tactile-tabular-nums">
-          {initials}
-        </span>
+      <span className="relative shrink-0" aria-hidden>
+        <BankAvatar name={counterpartName} size="md" />
         <span
           className="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center h-4 w-4 rounded-full"
           style={{
