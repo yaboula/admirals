@@ -19,7 +19,7 @@ import {
   UserRound,
   Zap,
 } from 'lucide-react'
-import { Button, Card, CardContent, CardDescription, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
+import { Button, Card, CardContent, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
 import { useExecuteTransfer, formatIban, isLargeTransfer, isValidSpanishIban, normalizeIban } from '@/data/mutations'
 import type { TransferReceipt } from '@/data/mutations'
 import { useBootstrap, useInvalidateBootstrap, useInvalidateRecentRecipients, useRecentRecipients } from '@/data/queries'
@@ -84,7 +84,7 @@ export function Transfer() {
   }, [])
 
   const visibleSteps = expressMode ? STEPS.filter((s) => EXPRESS_STEPS.includes(s.id)) : STEPS
-  const isReviewStep = step === 'review'
+  const showRail = step === 'recipient'
 
   const canExecute = Boolean(primaryAccount && amount && recipientIban && idempotencyKey && correlationId)
 
@@ -146,9 +146,9 @@ export function Transfer() {
       <div
         className={cn(
           'h-full w-full mx-auto grid min-h-0',
-          isReviewStep
-            ? 'max-w-[1080px] grid-cols-1'
-            : 'max-w-[1400px] grid-cols-[minmax(0,1fr)_320px] gap-3 2xl:gap-5',
+          showRail
+            ? 'max-w-[1320px] grid-cols-[minmax(0,1fr)_300px] gap-3 2xl:gap-5'
+            : 'max-w-[1080px] grid-cols-1',
         )}
       >
         <section className="min-h-0 flex flex-col gap-3 2xl:gap-4">
@@ -187,14 +187,13 @@ export function Transfer() {
             </div>
           </Card>
         </section>
-        {!isReviewStep ? (
+        {showRail ? (
           <TransferRail
             account={primaryAccount}
             amount={amount}
             memo={memo}
             recipientAlias={recipientAlias}
             recipientIban={recipientIban}
-            expressMode={expressMode}
           />
         ) : null}
       </div>
@@ -393,8 +392,20 @@ function RecipientStep({ account }: { account: Account | null }) {
   const setStep = useTransferWizard((s) => s.setStep)
   const [iban, setIban] = useState(() => storeIban ? formatIban(storeIban) : '')
   const [alias, setAlias] = useState(storeAlias ?? '')
+  const [searchText, setSearchText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const normalized = normalizeIban(iban)
+  const searchQuery = normalizeRecipientSearch(searchText)
+  const filteredRecipients = (data?.recipients ?? []).filter((recipient) => {
+    if (!searchQuery) return true
+    const haystack = normalizeRecipientSearch([
+      recipient.alias ?? '',
+      recipient.counterpart_iban,
+      formatIban(recipient.counterpart_iban),
+      recipient.last_reason ?? '',
+    ].join(' '))
+    return haystack.includes(searchQuery)
+  })
 
   const submit = (): void => {
     if (!isValidSpanishIban(iban)) {
@@ -421,20 +432,34 @@ function RecipientStep({ account }: { account: Account | null }) {
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4 2xl:gap-5 pb-1">
       <StepHeader icon={<UserRound size={18} />} title="Elige destinatario" description="Selecciona un contacto reciente o introduce un IBAN manualmente." />
-      <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 2xl:gap-5">
+      <div className="grid grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-4 2xl:gap-5">
         <Card variant="elevated" padding="md" className="border-white/10 min-h-[300px] 2xl:min-h-[360px]">
           <CardContent className="gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-text-primary">Recientes</span>
-              <Search size={15} className="text-text-tertiary" />
+              <span className="text-sm font-semibold text-text-primary">Contactos</span>
+              <span className="text-[11px] text-text-tertiary tactile-tabular-nums">{filteredRecipients.length}</span>
             </div>
+            <Input
+              type="search"
+              aria-label="Buscar contacto o IBAN"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar contacto o IBAN"
+              inputSize="sm"
+              leftAdornment={<Search size={15} />}
+              autoComplete="off"
+            />
             {isLoading ? (
               <div className="flex h-56 items-center justify-center text-text-tertiary">
                 <Spinner size="sm" />
               </div>
+            ) : filteredRecipients.length === 0 ? (
+              <div className="flex min-h-[180px] items-center justify-center rounded-3xl border border-border-subtle bg-white/[0.025] px-4 text-center text-sm text-text-tertiary">
+                No encontramos coincidencias.
+              </div>
             ) : (
               <div className="max-h-[300px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
-                {(data?.recipients ?? []).slice(0, 6).map((recipient) => (
+                {filteredRecipients.map((recipient) => (
                   <RecipientChip
                     key={recipient.counterpart_iban}
                     recipient={recipient}
@@ -773,31 +798,40 @@ function ResultShell({ tone, icon, title, description, children }: { tone: 'pend
   )
 }
 
-function TransferRail({ account, amount, memo, recipientAlias, recipientIban, expressMode }: { account: Account | null; amount: number | null; memo: string; recipientAlias: string | null; recipientIban: string | null; expressMode: boolean }) {
+function TransferRail({
+  account,
+  amount,
+  memo,
+  recipientAlias,
+  recipientIban,
+}: {
+  account: Account | null
+  amount: number | null
+  memo: string
+  recipientAlias: string | null
+  recipientIban: string | null
+}) {
   return (
     <aside className="min-h-0 overflow-y-auto pb-5 pr-1 flex flex-col gap-3 2xl:gap-4 scrollbar-thin">
       <Card variant="glass" padding="md" className="border-white/10">
         <CardContent className="gap-3 2xl:gap-4">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-text-secondary" />
-            <CardTitle className="text-base">Resumen</CardTitle>
+            <CardTitle className="text-base">Tu envío</CardTitle>
           </div>
-          <div className="space-y-3">
-            <Metric label="Modo" value={expressMode ? 'Rápido' : 'Seguro'} />
+          <div className="rounded-3xl border border-border-subtle bg-white/[0.035] px-4 py-4">
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-text-tertiary">Importe</span>
+            <span className="block text-2xl font-semibold tracking-[-0.04em] tactile-tabular-nums text-text-primary">
+              {amount ? formatCurrency(amount / 100) : '—'}
+            </span>
+          </div>
+          <div className="space-y-2">
             <Metric label="Origen" value={account ? formatIbanShort(account.iban) : '—'} />
-            <Metric label="Destino" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'Pendiente')} />
-            <Metric label="Importe" value={amount ? formatCurrency(amount / 100) : 'Pendiente'} />
-            <Metric label="Concepto" value={memo.trim() || 'Sin concepto'} />
+            {recipientAlias || recipientIban ? (
+              <Metric label="Destino" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : '—')} />
+            ) : null}
+            {memo.trim() ? <Metric label="Concepto" value={memo.trim()} /> : null}
           </div>
-        </CardContent>
-      </Card>
-      <Card variant="glass" padding="md" className="border-white/10">
-        <CardContent className="gap-3">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <LockKeyhole size={15} />
-            <span className="text-sm font-semibold">Firma táctil</span>
-          </div>
-          <CardDescription className="text-xs">El envío final requiere presión sostenida para evitar errores accidentales.</CardDescription>
         </CardContent>
       </Card>
     </aside>
@@ -871,4 +905,12 @@ function formatIbanShort(iban: string): string {
   const compact = normalizeIban(iban)
   if (compact.length < 8) return iban
   return `${compact.slice(0, 4)}…${compact.slice(-4)}`
+}
+
+function normalizeRecipientSearch(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
 }
