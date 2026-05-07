@@ -4,6 +4,7 @@ import { ShieldCheck, ShieldAlert, ShieldOff, ShieldQuestion } from 'lucide-reac
 import { Badge } from '@/components/ui'
 import type { BadgeTone } from '@/components/ui/Badge'
 import { useBankStatus, type BridgeStatus } from '@/stores/status'
+import { useBankStateBag } from '@/lib/bankStateBags'
 
 const STATUS_META: Record<
   BridgeStatus,
@@ -41,7 +42,9 @@ const STATUS_META: Record<
 }
 
 export function StatusBadge() {
-  const status = useBankStatus((s) => s.bridgesStatus)
+  const storedStatus = useBankStatus((s) => s.bridgesStatus)
+  const stateBagStatus = useBankStateBag<BridgeStatus>('bank.bridges.status')
+  const status = stateBagStatus ?? storedStatus
   const meta = STATUS_META[status]
   const Icon = meta.icon
   const [hovering, setHovering] = useState(false)

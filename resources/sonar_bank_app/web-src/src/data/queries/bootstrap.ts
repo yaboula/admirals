@@ -5,6 +5,7 @@ import { nuiQuery } from '@/lib/nui'
 import type { BalanceSnapshot, BootstrapSnapshot } from '@/data/contracts'
 import { useBankSession } from '@/stores/session'
 import { BankError } from '@/lib/bankError'
+import { useWatchdog } from '@/hooks/useWatchdog'
 
 const BOOTSTRAP_EVENT = 'sonar:bank:bootstrap:snapshot'
 const BALANCE_EVENT = 'sonar:bank:bootstrap:balance'
@@ -42,6 +43,10 @@ export function useBootstrap(options: BootstrapQueryOptions = {}) {
       ibanMasked: primary ? maskIban(primary.iban) : null,
     })
   }, [query.data, setSession])
+
+  useWatchdog(30_000, () => {
+    void query.refetch()
+  }, [query.data?.server_now_ms, query.data?.bootstrap_id])
 
   return query
 }
