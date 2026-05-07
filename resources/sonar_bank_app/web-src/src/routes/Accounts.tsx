@@ -193,8 +193,14 @@ function AccountList({
 
 function AccountButton({ account, index, active, streamerMode, onClick }: { account: Account; index: number; active: boolean; streamerMode: boolean; onClick: () => void }) {
   const name = accountName(account, index)
+  const accountKind = getAccountKind(account, index)
   const ibanLabel = streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban)
+  const ibanTail = streamerMode ? '••••' : account.iban.replace(/\s+/g, '').slice(-4)
   const amountLabel = streamerMode ? maskMoneyDisplay() : formatCurrency((account.balance_minor + account.savings_minor) / 100)
+  const totalMinor = account.balance_minor + account.savings_minor
+  const savingsRatio = totalMinor > 0 ? account.savings_minor / totalMinor : 0
+  const Icon = accountKind.icon
+  const barWidth = streamerMode ? 48 : Math.round(savingsRatio * 100)
 
   return (
     <button
@@ -203,20 +209,64 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
       aria-pressed={active}
       aria-label={safeAriaLabel(`${name} · ${amountLabel} · ${ibanLabel}`)}
       className={cn(
-        'w-full rounded-2xl border px-3 py-3 text-left transition-[background,border-color,box-shadow] tactile-focus-ring',
-        active ? 'border-white/16 bg-white/[0.075]' : 'border-border-subtle bg-white/[0.025] hover:bg-white/[0.055]',
+        'group relative w-full overflow-hidden rounded-[1.35rem] border px-3.5 py-3.5 text-left transition-[background,border-color,box-shadow,transform] tactile-focus-ring',
+        active ? 'border-white/18 bg-white/[0.085]' : 'border-border-subtle bg-white/[0.025] hover:bg-white/[0.055]',
       )}
-      style={{ boxShadow: active ? 'inset 0 1px 0 oklch(1 0 0 / 0.08)' : undefined }}
+      style={{
+        boxShadow: active
+          ? `inset 0 1px 0 oklch(1 0 0 / 0.10), 0 18px 34px -28px ${accountKind.glow}`
+          : undefined,
+      }}
     >
-      <div className="flex items-center gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-text-primary">
-          {account.savings_minor > account.balance_minor ? <PiggyBank size={17} /> : <Landmark size={17} />}
+      <span
+        aria-hidden
+        className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full transition-opacity"
+        style={{ background: accountKind.accent, opacity: active ? 1 : 0.42 }}
+      />
+      <div className="flex items-start gap-3">
+        <span
+          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border shrink-0"
+          style={{
+            color: accountKind.accent,
+            borderColor: `${accountKind.accent.replace(')', ' / 0.24)')}`,
+            background: `${accountKind.accent.replace(')', ' / 0.08)')}`,
+          }}
+        >
+          <Icon size={18} strokeWidth={2.2} />
         </span>
-        <span className="min-w-0 flex-1 flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-text-primary truncate">{name}</span>
-          <span className="text-[11px] text-text-tertiary tactile-tabular-nums truncate">{ibanLabel}</span>
+        <span className="min-w-0 flex-1 flex flex-col gap-1">
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-semibold text-text-primary truncate">{name}</span>
+            <span
+              className="shrink-0 rounded-full border px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em]"
+              style={{
+                color: accountKind.accent,
+                borderColor: `${accountKind.accent.replace(')', ' / 0.22)')}`,
+                background: `${accountKind.accent.replace(')', ' / 0.07)')}`,
+              }}
+            >
+              {accountKind.label}
+            </span>
+          </span>
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="text-[11px] text-text-tertiary tactile-tabular-nums truncate">{ibanLabel}</span>
+            <span className="shrink-0 text-[10px] font-semibold text-text-secondary tactile-tabular-nums">#{ibanTail}</span>
+          </span>
+          <span className="mt-1 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+            <span
+              className="block h-full rounded-full"
+              style={{
+                width: `${barWidth}%`,
+                background: accountKind.accent,
+                opacity: 0.72,
+              }}
+            />
+          </span>
         </span>
-        <span className="text-sm font-semibold text-text-primary tactile-tabular-nums shrink-0">{amountLabel}</span>
+        <span className="shrink-0 flex flex-col items-end gap-1">
+          <span className="text-sm font-semibold text-text-primary tactile-tabular-nums">{amountLabel}</span>
+          <span className="text-[9px] uppercase tracking-[0.12em] text-text-tertiary">{active ? 'Activa' : 'Ver'}</span>
+        </span>
       </div>
     </button>
   )
@@ -462,6 +512,36 @@ function accountName(account: Account, index: number): string {
   if (account.savings_minor > account.balance_minor && account.balance_minor === 0) return 'Ahorro protegido'
   if (index === 0) return 'Cuenta principal'
   return `Cuenta ${index + 1}`
+}
+
+function getAccountKind(account: Account, index: number): {
+  label: string
+  icon: typeof Landmark
+  accent: string
+  glow: string
+} {
+  if (account.savings_minor > account.balance_minor && account.balance_minor === 0) {
+    return {
+      label: 'Reserva',
+      icon: PiggyBank,
+      accent: 'oklch(0.76 0.15 155)',
+      glow: 'oklch(0.76 0.15 155 / 0.42)',
+    }
+  }
+  if (index === 0) {
+    return {
+      label: 'Diaria',
+      icon: Wallet,
+      accent: 'oklch(0.70 0.22 40)',
+      glow: 'oklch(0.70 0.22 40 / 0.42)',
+    }
+  }
+  return {
+    label: 'Extra',
+    icon: Landmark,
+    accent: 'oklch(0.72 0.13 235)',
+    glow: 'oklch(0.72 0.13 235 / 0.42)',
+  }
 }
 
 function computeAccountTotals(accounts: Account[]): AccountTotals {
