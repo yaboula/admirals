@@ -27,9 +27,9 @@ import type { Account, RecentRecipient } from '@/data/contracts'
 import { getUserMessage } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
 import { cn, formatCurrency } from '@/lib/utils'
-import { getMockInitialsForIban } from '@/data/mock/seed'
 import { toast } from '@/stores/toast'
 import { useTransferWizard, type TransferWizardStep } from '@/stores/transferWizard'
+import { BankAvatar } from '@/components/brand/BankAvatar'
 
 const STEPS: Array<{ id: TransferWizardStep; label: string; helper: string }> = [
   { id: 'amount', label: 'Importe', helper: 'Saldo' },
@@ -85,7 +85,7 @@ export function Transfer() {
 
   const visibleSteps = expressMode ? STEPS.filter((s) => EXPRESS_STEPS.includes(s.id)) : STEPS
   const isConfirmStep = step === 'confirm'
-  const showRail = step === 'recipient'
+  const showRail = !isConfirmStep
 
   const canExecute = Boolean(primaryAccount && amount && recipientIban && idempotencyKey && correlationId)
 
@@ -148,13 +148,21 @@ export function Transfer() {
         className={cn(
           'h-full w-full mx-auto grid min-h-0',
           showRail
-            ? 'max-w-[1320px] grid-cols-[minmax(0,1fr)_300px] gap-3 2xl:gap-5'
+            ? 'max-w-[1500px] grid-cols-[minmax(0,1fr)_320px] gap-4 2xl:gap-5'
             : 'max-w-[1080px] grid-cols-1',
         )}
       >
-        <section className={cn('min-h-0 flex flex-col', isConfirmStep ? 'gap-0' : 'gap-3 2xl:gap-4')}>
-          {!isConfirmStep ? <TransferHero expressMode={expressMode} account={primaryAccount} /> : null}
-          <Card variant="glass" padding="md" className="min-h-0 flex-1 border-white/10 overflow-hidden">
+        <section className={cn('min-h-0 flex flex-col', isConfirmStep ? 'gap-0' : 'gap-4 2xl:gap-5')}>
+          {!isConfirmStep ? (
+            <TransferHero
+              expressMode={expressMode}
+              account={primaryAccount}
+              amount={amount}
+              recipientAlias={recipientAlias}
+              recipientIban={recipientIban}
+            />
+          ) : null}
+          <Card variant="glass" padding="md" className="min-h-0 flex-1 border-white/10 overflow-hidden rounded-[1.75rem]">
             <div className={cn('h-full min-h-0', isConfirmStep ? 'flex flex-col' : 'grid grid-rows-[auto_1fr] gap-3 2xl:gap-5')}>
               {!isConfirmStep ? <TransferStepper step={step} steps={visibleSteps} /> : null}
               <div className={cn('min-h-0', isConfirmStep ? 'h-full overflow-hidden' : 'overflow-y-auto pr-1 pb-5 scrollbar-thin')}>
@@ -202,10 +210,30 @@ export function Transfer() {
   )
 }
 
-function TransferHero({ expressMode, account }: { expressMode: boolean; account: Account | null }) {
+function TransferHero({
+  expressMode,
+  account,
+  amount,
+  recipientAlias,
+  recipientIban,
+}: {
+  expressMode: boolean
+  account: Account | null
+  amount: number | null
+  recipientAlias: string | null
+  recipientIban: string | null
+}) {
   return (
-    <Card variant="glass" padding="md" heroLight className="relative overflow-hidden border-white/10 shrink-0">
-      <div className="flex items-start justify-between gap-4">
+    <Card variant="glass" padding="none" className="relative overflow-hidden border-white/10 shrink-0 rounded-[1.75rem]">
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle at 12% 0%, oklch(0.70 0.22 40 / 0.13), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 54%)',
+        }}
+      />
+      <div className="relative flex items-center justify-between gap-5 p-5 2xl:p-6">
         <div className="flex flex-col gap-2">
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
@@ -214,20 +242,28 @@ function TransferHero({ expressMode, account }: { expressMode: boolean; account:
             </span>
           </CardEyebrow>
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl 2xl:text-4xl font-semibold tracking-[-0.045em] text-text-primary">Transferir dinero</h1>
+            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">Transferir dinero</h1>
             <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
-              Revisa el destino, confirma con firma sostenida y recibe tu justificante al momento.
+              Envía con revisión clara, firma sostenida y recibo descargable al momento.
             </p>
           </div>
         </div>
-        <div className="shrink-0 rounded-2xl border border-border-subtle bg-white/[0.04] px-4 py-3 text-right">
-          <span className="block text-[10px] uppercase tracking-[0.16em] text-text-tertiary">Saldo disponible</span>
-          <span className="block text-xl font-semibold tactile-tabular-nums text-text-primary">
-            {account ? formatCurrency(account.balance_minor / 100) : '—'}
-          </span>
+        <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[430px]">
+          <HeroMetric label="Disponible" value={account ? formatCurrency(account.balance_minor / 100) : '—'} />
+          <HeroMetric label="Importe" value={amount ? formatCurrency(amount / 100) : '—'} />
+          <HeroMetric label="Destino" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'Pendiente')} />
         </div>
       </div>
     </Card>
+  )
+}
+
+function HeroMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-white/[0.04] px-3 py-3 text-right min-w-0">
+      <span className="block text-[10px] uppercase tracking-[0.16em] text-text-tertiary truncate">{label}</span>
+      <span className="block text-sm 2xl:text-base font-semibold tactile-tabular-nums text-text-primary truncate">{value}</span>
+    </div>
   )
 }
 
@@ -503,14 +539,7 @@ function RecipientStep({ account }: { account: Account | null }) {
 }
 
 function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipient; active: boolean; onClick: () => void }) {
-  const initials = recipient.alias
-    ?.split(' ')
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() ?? getMockInitialsForIban(recipient.counterpart_iban)
-
+  const label = recipient.alias ?? formatIbanShort(recipient.counterpart_iban)
   return (
     <button
       type="button"
@@ -522,11 +551,9 @@ function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipi
           : 'border-border-subtle bg-white/[0.025] hover:bg-white/[0.055]',
       )}
     >
-      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-medium bg-white/[0.04] text-xs font-semibold">
-        {initials || '··'}
-      </span>
+      <BankAvatar name={label} size="md" />
       <span className="min-w-0 flex-1 flex flex-col gap-0.5">
-        <span className="text-sm font-semibold text-text-primary truncate">{recipient.alias ?? formatIbanShort(recipient.counterpart_iban)}</span>
+        <span className="text-sm font-semibold text-text-primary truncate">{label}</span>
         <span className="text-[11px] text-text-tertiary truncate">{formatIban(recipient.counterpart_iban)}</span>
       </span>
       <span className="text-[11px] font-semibold text-text-secondary tactile-tabular-nums">×{recipient.transfer_count}</span>
@@ -812,30 +839,80 @@ function TransferRail({
   recipientAlias: string | null
   recipientIban: string | null
 }) {
+  const destinationLabel = recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : 'Selecciona destino')
+  const hasDestination = Boolean(recipientAlias || recipientIban)
+  const hasAmount = Boolean(amount)
   return (
-    <aside className="min-h-0 overflow-y-auto pb-5 pr-1 flex flex-col gap-3 2xl:gap-4 scrollbar-thin">
-      <Card variant="glass" padding="md" className="border-white/10">
-        <CardContent className="gap-3 2xl:gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-text-secondary" />
-            <CardTitle className="text-base">Tu envío</CardTitle>
+    <aside className="min-h-0 flex flex-col gap-4 2xl:gap-5">
+      <Card variant="glass" padding="none" className="relative min-h-0 overflow-hidden rounded-[1.75rem] border-white/10 flex-1">
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(180deg, oklch(0.70 0.22 40 / 0.38), oklch(0.12 0.035 35 / 0.72) 34%, oklch(0.035 0.009 35 / 0.88))',
+          }}
+        />
+        <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-white/72" />
+              <CardTitle className="text-base text-white">Tu envío</CardTitle>
+            </div>
+            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/68" style={{ background: 'oklch(1 0 0 / 0.10)' }}>
+              Secure
+            </span>
           </div>
-          <div className="rounded-3xl border border-border-subtle bg-white/[0.035] px-4 py-4">
-            <span className="block text-[11px] uppercase tracking-[0.14em] text-text-tertiary">Importe</span>
-            <span className="block text-2xl font-semibold tracking-[-0.04em] tactile-tabular-nums text-text-primary">
+
+          <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-black/20 px-4 py-4">
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">Importe</span>
+            <span className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums text-white">
               {amount ? formatCurrency(amount / 100) : '—'}
             </span>
           </div>
-          <div className="space-y-2">
+
+          <div className="mt-4 rounded-[1.55rem] border border-white/10 bg-black/18 p-3.5">
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 mb-3">Destino</span>
+            <div className="flex items-center gap-3">
+              <BankAvatar name={destinationLabel} size="lg" />
+              <span className="min-w-0 flex flex-col">
+                <span className="text-sm font-semibold text-white truncate">{destinationLabel}</span>
+                <span className="text-[11px] text-white/46 truncate">{recipientIban ? formatIban(recipientIban) : 'Pendiente de seleccionar'}</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <RailCheck done={hasAmount} label="Importe elegido" />
+            <RailCheck done={hasDestination} label="Destino verificado" />
+            <RailCheck done={hasAmount && hasDestination} label="Listo para revisión" />
+          </div>
+
+          <div className="mt-auto pt-4 space-y-2">
             <Metric label="Origen" value={account ? formatIbanShort(account.iban) : '—'} />
-            {recipientAlias || recipientIban ? (
-              <Metric label="Destino" value={recipientAlias ?? (recipientIban ? formatIbanShort(recipientIban) : '—')} />
-            ) : null}
             {memo.trim() ? <Metric label="Concepto" value={memo.trim()} /> : null}
           </div>
-        </CardContent>
+        </div>
       </Card>
     </aside>
+  )
+}
+
+function RailCheck({ done, label }: { done: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-2xl border border-white/8 bg-black/16 px-3 py-2.5">
+      <span
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px]"
+        style={{
+          borderColor: done ? 'oklch(0.78 0.16 150 / 0.42)' : 'oklch(1 0 0 / 0.12)',
+          background: done ? 'oklch(0.78 0.16 150 / 0.12)' : 'transparent',
+          color: done ? 'oklch(0.84 0.12 150)' : 'oklch(1 0 0 / 0.36)',
+        }}
+      >
+        {done ? <Check size={12} strokeWidth={2.6} /> : '·'}
+      </span>
+      <span className="text-sm font-medium text-white/72">{label}</span>
+    </div>
   )
 }
 
