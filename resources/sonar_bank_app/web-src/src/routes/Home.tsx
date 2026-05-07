@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { useBootstrap } from '@/data/queries'
 import { HeroBalanceCard } from './home/HeroBalanceCard'
 import { CreditCardVisual } from './home/CreditCardVisual'
+import { CardActionsRow } from './home/CardActionsRow'
 import { CompactQuickTransfer } from './home/CompactQuickTransfer'
 import { ActivityPreview } from './home/ActivityPreview'
 import { Card } from '@/components/ui'
@@ -10,15 +11,16 @@ import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart'
 import { toast } from '@/stores/toast'
 
 /**
- * BANK-FE.2.1 Dashboard — zero-scroll, 2-column main grid (the third column
+ * BANK-FE.2.2 Dashboard — zero-scroll, 2-column main grid (the third column
  * is the AppShell sidebar). Optimised for 1280×800 / 1024×768 in-game tablet.
  *
  *   ┌──────────────── main col 1 (data) ─────────────┬─ main col 2 (action) ─┐
- *   │ HeroBalanceCard           (≈140-160 px)        │ CreditCardVisual      │
+ *   │ HeroBalanceCard           (≈210 px)            │ CreditCardVisual      │
  *   │ ─────────────────────────────────────────────  │  (≈210-220 px)        │
- *   │ IncomeExpenseChart        (flex-1, ≈340 px)    │ CompactQuickTransfer  │
- *   │ ─────────────────────────────────────────────  │  (flex-1)             │
- *   │ ActivityPreview           (≈170 px)            │                       │
+ *   │ IncomeExpenseChart        (flex-1, ≈260 px)    │ CardActionsRow        │
+ *   │ ─────────────────────────────────────────────  │  (≈40 px)             │
+ *   │ ActivityPreview · 5 rows  (≈230 px)            │ CompactQuickTransfer  │
+ *   │                                                │  (flex-1)             │
  *   └────────────────────────────────────────────────┴───────────────────────┘
  */
 export function Home() {
@@ -79,16 +81,17 @@ export function Home() {
 
         {/* ── ACTION COLUMN ───────────────────────────────────────────── */}
         <aside
-          className="h-full min-h-0 gap-4"
+          className="h-full min-h-0 gap-3"
           style={{
             display: 'grid',
-            gridTemplateRows: 'auto 1fr',
+            gridTemplateRows: 'auto auto 1fr',
           }}
         >
           <CreditCardVisual
             account={primaryAccount}
             holderName={data?.citizen_id ?? 'CITIZEN'}
           />
+          <CardActionsRow />
           <CompactQuickTransfer />
         </aside>
       </div>

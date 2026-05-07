@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Search, Volume2, VolumeX } from 'lucide-react'
+import { Bell, Search, Volume2, VolumeX, User } from 'lucide-react'
 import { Input, IconButton } from '@/components/ui'
 import { StatusBadge } from './StatusBadge'
 import { sfx } from '@/lib/sfx'
@@ -8,13 +8,19 @@ import { cn } from '@/lib/utils'
 export interface TopbarProps {
   greeting?: string
   subtitle?: string
+  /** Citizen / user identifier rendered in the profile chip. */
+  userInitials?: string
 }
 
 /**
  * Slim topbar (56px) for the zero-scroll dashboard. No ScrollContext
  * dependency — fixed glass intensity since the shell no longer scrolls.
  */
-export function Topbar({ greeting = 'Buenos días', subtitle = 'SONAR Bank' }: TopbarProps) {
+export function Topbar({
+  greeting = 'Buenos días',
+  subtitle = 'SONAR Bank',
+  userInitials,
+}: TopbarProps) {
   const [muted, setMuted] = useState(sfx.getMuted())
 
   const toggleMute = (): void => {
@@ -70,7 +76,37 @@ export function Topbar({ greeting = 'Buenos días', subtitle = 'SONAR Bank' }: T
           size="sm"
           onClick={toggleMute}
         />
+        <ProfileAvatar initials={userInitials} />
       </div>
     </div>
+  )
+}
+
+function ProfileAvatar({ initials }: { initials: string | undefined }) {
+  return (
+    <button
+      type="button"
+      aria-label="Perfil"
+      className={cn(
+        'tactile-focus-ring shrink-0 inline-flex items-center justify-center',
+        'h-8 w-8 rounded-full ml-1',
+        'border border-border-medium hover:border-border-strong transition-colors',
+      )}
+      style={{
+        background:
+          'linear-gradient(135deg, oklch(0.16 0.012 270), oklch(0.10 0.010 270))',
+      }}
+    >
+      {initials ? (
+        <span
+          className="text-[10px] font-semibold text-text-primary tactile-wght-breathing"
+          style={{ letterSpacing: '0.02em' }}
+        >
+          {initials.slice(0, 2).toUpperCase()}
+        </span>
+      ) : (
+        <User size={14} strokeWidth={1.9} className="text-text-secondary" />
+      )}
+    </button>
   )
 }

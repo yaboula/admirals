@@ -1,43 +1,57 @@
 import { motion } from 'motion/react'
-import { ArrowDownLeft, ArrowUpRight, RotateCw, AlertTriangle, Check } from 'lucide-react'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  RotateCw,
+  AlertTriangle,
+  Check,
+  ScrollText,
+} from 'lucide-react'
 import { Card, CardEyebrow, CardTitle } from '@/components/ui'
 import type { Account, Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
+import { useTransferWizard } from '@/stores/transferWizard'
+import { sfx } from '@/lib/sfx'
+import { getMockAliasForIban } from '@/data/mock/seed'
 
 export interface ActivityPreviewProps {
   transactions: Transaction[]
   account: Account | undefined
   loading?: boolean
-  /** Compact mode: tighter spacing, 3 rows max — for zero-scroll dashboard */
+  /** Compact mode: tight spacing, 5 rows max — for zero-scroll dashboard */
   compact?: boolean
 }
 
+/**
+ * BANK-FE.2.2 — Top 5 movements with counterpart NAME ONLY (IBAN hidden by
+ * design, lives in the detail drawer). Real empty-state for zero data.
+ */
 export function ActivityPreview({ transactions, account, loading, compact }: ActivityPreviewProps) {
   const own = account?.iban.replace(/\s+/g, '')
-  const limit = compact ? 3 : 6
+  const limit = compact ? 5 : 8
 
   return (
     <Card variant="baseline" padding={compact ? 'md' : 'lg'}>
       <div className={cn('flex items-end justify-between', compact ? 'mb-2' : 'mb-4')}>
         <div className="flex flex-col gap-0.5">
-          <CardEyebrow>ACTIVIDAD RECIENTE</CardEyebrow>
+          <CardEyebrow>Actividad reciente</CardEyebrow>
           <CardTitle className={compact ? 'text-sm' : undefined}>Movimientos</CardTitle>
         </div>
-        <span className="text-xs text-text-tertiary">
-          Últimos {Math.min(transactions.length, limit)} de {transactions.length}
-        </span>
+        {transactions.length > 0 && (
+          <span className="text-[10px] uppercase tracking-wider text-text-tertiary tactile-wght-breathing">
+            Últimos {Math.min(transactions.length, limit)} de {transactions.length}
+          </span>
+        )}
       </div>
 
       {loading ? (
         <div className="space-y-1.5">
           {Array.from({ length: limit }).map((_, i) => (
-            <div key={i} className={cn('tactile-skeleton w-full', compact ? 'h-10' : 'h-12')} />
+            <div key={i} className={cn('tactile-skeleton w-full', compact ? 'h-9' : 'h-12')} />
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <div className={cn('text-sm text-text-tertiary', compact ? 'py-3' : 'py-6')}>
-          Sin movimientos recientes.
-        </div>
+        <ActivityEmptyState compact={compact} />
       ) : (
         <div className={compact ? 'space-y-0.5' : 'space-y-1.5'}>
           {transactions.slice(0, limit).map((t, i) => (
@@ -48,6 +62,52 @@ export function ActivityPreview({ transactions, account, loading, compact }: Act
     </Card>
   )
 }
+
+/* --------------------------------------------------------------------------
+   Empty state — opaque icon + label + micro-CTA
+   -------------------------------------------------------------------------- */
+
+function ActivityEmptyState({ compact }: { compact: boolean | undefined }) {
+  const initWizard = useTransferWizard((s) => s.init)
+  return (
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center text-center gap-2',
+        compact ? 'py-5' : 'py-10',
+      )}
+    >
+      <div
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+        style={{
+          background: 'oklch(1 0 0 / 0.04)',
+          border: '1px solid var(--color-border-subtle)',
+          color: 'oklch(0.55 0.012 270 / 0.7)',
+        }}
+        aria-hidden
+      >
+        <ScrollText size={18} strokeWidth={1.7} />
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-medium text-text-secondary">Sin actividad</span>
+        <span className="text-[11px] text-text-tertiary">Aún no hay movimientos en tu cuenta.</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          initWizard(false)
+          sfx.depth_press()
+        }}
+        className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-brand-signal-orange-light hover:text-text-primary transition-colors"
+      >
+        + Iniciar transferencia
+      </button>
+    </div>
+  )
+}
+
+/* --------------------------------------------------------------------------
+   Row — counterpart NAME (no IBAN), amount, relative date
+   -------------------------------------------------------------------------- */
 
 function Row({
   tx,
@@ -62,16 +122,17 @@ function Row({
 }) {
   const fromCompact = tx.from_iban.replace(/\s+/g, '')
   const toCompact = tx.to_iban.replace(/\s+/g, '')
-  const isOutgoing = ownIban ? fromCompact === ownIban && toCompact !== ownIban : tx.direction === 'out'
-  const counterpart = isOutgoing ? tx.to_iban : tx.from_iban
+  const isOutgoing = ownIban
+    ? fromCompact === ownIban && toCompact !== ownIban
+    : tx.direction === 'out'
+  const counterpartIban = isOutgoing ? tx.to_iban : tx.from_iban
+  const counterpartName = resolveCounterpartName(counterpartIban, isOutgoing)
   const sign = isOutgoing ? '−' : '+'
-  const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.70 0.16 155)'
+  const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.72 0.16 155)'
 
   const StatusIcon = STATUS_META[tx.status].icon
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
-
   const iconSize = compact ? 14 : 16
-  const avatarSize = compact ? 'h-7 w-7' : 'h-9 w-9'
 
   return (
     <motion.div
@@ -87,11 +148,11 @@ function Row({
       <span
         className={cn(
           'inline-flex items-center justify-center rounded-lg shrink-0',
-          avatarSize,
+          compact ? 'h-7 w-7' : 'h-9 w-9',
         )}
         style={{
-          background: isOutgoing ? 'oklch(0.62 0.21 25 / 0.10)' : 'oklch(0.65 0.18 155 / 0.10)',
-          color: isOutgoing ? 'oklch(0.62 0.21 25)' : 'oklch(0.65 0.18 155)',
+          background: isOutgoing ? 'oklch(0.68 0.20 25 / 0.10)' : 'oklch(0.72 0.16 155 / 0.10)',
+          color: isOutgoing ? 'oklch(0.68 0.20 25)' : 'oklch(0.72 0.16 155)',
         }}
         aria-hidden
       >
@@ -106,7 +167,7 @@ function Row({
               compact ? 'text-xs' : 'text-sm',
             )}
           >
-            {tx.reason ?? (isOutgoing ? 'Transferencia enviada' : 'Transferencia recibida')}
+            {counterpartName}
           </span>
           {tx.status !== 'committed' && (
             <span
@@ -121,26 +182,21 @@ function Row({
             </span>
           )}
         </div>
-        <div
+        <span
           className={cn(
-            'flex items-center gap-1.5 text-text-tertiary',
+            'truncate text-text-tertiary',
             compact ? 'text-[10px]' : 'text-xs',
           )}
+          style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {formatRelativeTime(tx.timestamp_ms)}
-          </span>
-          <span className="h-2 w-px bg-border-medium shrink-0" />
-          <span className="font-mono truncate">{formatIbanShort(counterpart)}</span>
-        </div>
+          {tx.reason ?? (isOutgoing ? 'Transferencia' : 'Recibida')} ·{' '}
+          {formatRelativeTime(tx.timestamp_ms)}
+        </span>
       </div>
 
       <div
-        className={cn(
-          'font-semibold shrink-0',
-          compact ? 'text-xs' : 'text-sm',
-        )}
-        style={{ color: amountColor, fontVariantNumeric: 'tabular-nums' }}
+        className={cn('font-semibold shrink-0', compact ? 'text-xs' : 'text-sm')}
+        style={{ color: amountColor, fontVariantNumeric: 'tabular-nums lining-nums' }}
       >
         {sign}€{formatEur(tx.amount_minor / 100)}
       </div>
@@ -152,11 +208,11 @@ const STATUS_META: Record<
   Transaction['status'],
   { icon: typeof Check; label: string; color: string }
 > = {
-  committed: { icon: Check, label: 'OK', color: 'oklch(0.65 0.18 155)' },
+  committed: { icon: Check, label: 'OK', color: 'oklch(0.72 0.16 155)' },
   pending: { icon: RotateCw, label: 'pendiente', color: 'oklch(0.78 0.16 85)' },
   reconciling: { icon: RotateCw, label: 'reconcil.', color: 'oklch(0.78 0.16 85)' },
-  reverted: { icon: AlertTriangle, label: 'revertido', color: 'oklch(0.62 0.21 25)' },
-  failed: { icon: AlertTriangle, label: 'fallida', color: 'oklch(0.62 0.21 25)' },
+  reverted: { icon: AlertTriangle, label: 'revertido', color: 'oklch(0.68 0.20 25)' },
+  failed: { icon: AlertTriangle, label: 'fallida', color: 'oklch(0.68 0.20 25)' },
 }
 
 function formatEur(major: number): string {
@@ -166,8 +222,13 @@ function formatEur(major: number): string {
   }).format(major)
 }
 
-function formatIbanShort(iban: string): string {
-  const compact = iban.replace(/\s+/g, '')
-  if (compact.length < 8) return iban
-  return `${compact.slice(0, 4)}…${compact.slice(-4)}`
+/**
+ * Maps a counterpart IBAN to a human-readable name. Phase A uses the mock
+ * seed registry; production swaps in a `useSavedRecipients()` query without
+ * touching the call-sites.
+ */
+function resolveCounterpartName(iban: string, isOutgoing: boolean): string {
+  const alias = getMockAliasForIban(iban)
+  if (alias) return alias
+  return isOutgoing ? 'Beneficiario' : 'Remitente'
 }

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import {
-  Area,
-  AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -86,11 +86,16 @@ function buildBuckets(
   return buckets
 }
 
-const COLOR_INCOME = 'oklch(0.70 0.16 155)'
-const COLOR_EXPENSE = 'oklch(0.65 0.20 25)'
+const COLOR_INCOME = 'oklch(0.72 0.16 155)'
+const COLOR_EXPENSE = 'oklch(0.68 0.20 25)'
 const COLOR_GRID = 'oklch(1 0 0 / 0.04)'
 const COLOR_AXIS = 'oklch(0.55 0.012 270)'
 
+/**
+ * BANK-FE.2.2 — grouped bar chart (income vs expense per day) with logarithmic-
+ * style scale clipping (squashed via square-root sqrt scaling for visual balance
+ * when the dataset has a single high spike that would otherwise flatten the rest).
+ */
 export function IncomeExpenseChart({
   transactions,
   ownIban,
@@ -114,19 +119,18 @@ export function IncomeExpenseChart({
 
   return (
     <div className={cn('relative h-full w-full flex flex-col', className)}>
-      {/* Header summary */}
       <div className="flex items-end justify-between gap-4 mb-3 shrink-0">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[9px] uppercase tracking-[0.20em] text-text-tertiary font-medium">
-            INGRESOS · GASTOS · {windowDays}D
+          <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
+            Ingresos · Gastos · {windowDays}D
           </span>
           <h3 className="text-base font-semibold text-text-primary tactile-wght-breathing">
             Flujo del periodo
           </h3>
         </div>
-        <div className="flex items-center gap-4">
-          <Stat label="Ingresos" value={totals.income} color={COLOR_INCOME} />
-          <Stat label="Gastos" value={totals.expense} color={COLOR_EXPENSE} />
+        <div className="flex items-center gap-5">
+          <Stat label="Ingresos" value={totals.income} color={COLOR_INCOME} dot />
+          <Stat label="Gastos" value={totals.expense} color={COLOR_EXPENSE} dot />
           <Stat
             label="Neto"
             value={totals.net}
@@ -136,18 +140,22 @@ export function IncomeExpenseChart({
         </div>
       </div>
 
-      {/* Chart canvas — flex-1 so it fills the card */}
-      <div className="flex-1 min-h-0 -mx-2">
+      <div className="flex-1 min-h-0 -mx-1">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <BarChart
+            data={data}
+            margin={{ top: 6, right: 6, left: 0, bottom: 0 }}
+            barGap={2}
+            barCategoryGap="22%"
+          >
             <defs>
-              <linearGradient id="bk-income-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLOR_INCOME} stopOpacity={0.45} />
-                <stop offset="100%" stopColor={COLOR_INCOME} stopOpacity={0.02} />
+              <linearGradient id="bk-bar-income" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLOR_INCOME} stopOpacity={0.95} />
+                <stop offset="100%" stopColor={COLOR_INCOME} stopOpacity={0.55} />
               </linearGradient>
-              <linearGradient id="bk-expense-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLOR_EXPENSE} stopOpacity={0.40} />
-                <stop offset="100%" stopColor={COLOR_EXPENSE} stopOpacity={0.02} />
+              <linearGradient id="bk-bar-expense" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLOR_EXPENSE} stopOpacity={0.95} />
+                <stop offset="100%" stopColor={COLOR_EXPENSE} stopOpacity={0.55} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke={COLOR_GRID} strokeDasharray="2 4" vertical={false} />
@@ -157,7 +165,7 @@ export function IncomeExpenseChart({
               tick={{ fill: COLOR_AXIS, fontSize: 10, style: { fontVariantNumeric: 'tabular-nums' } }}
               tickLine={false}
               axisLine={false}
-              minTickGap={32}
+              minTickGap={28}
               interval="preserveStartEnd"
             />
             <YAxis
@@ -167,32 +175,36 @@ export function IncomeExpenseChart({
               axisLine={false}
               tickFormatter={(v: number) => formatCompact(v)}
               width={42}
+              scale="sqrt"
             />
             <Tooltip
-              cursor={{ stroke: 'oklch(1 0 0 / 0.10)', strokeWidth: 1 }}
+              cursor={{ fill: 'oklch(1 0 0 / 0.04)' }}
               content={<CustomTooltip />}
+              animationDuration={120}
             />
-            <Area
-              type="monotone"
+            <Bar
               dataKey="income"
+              fill="url(#bk-bar-income)"
               stroke={COLOR_INCOME}
-              strokeWidth={1.8}
-              fill="url(#bk-income-grad)"
-              animationDuration={620}
+              strokeOpacity={0.4}
+              strokeWidth={0.5}
+              radius={[3, 3, 0, 0]}
+              maxBarSize={10}
+              animationDuration={520}
               isAnimationActive
-              activeDot={{ r: 4, strokeWidth: 0, fill: COLOR_INCOME }}
             />
-            <Area
-              type="monotone"
+            <Bar
               dataKey="expense"
+              fill="url(#bk-bar-expense)"
               stroke={COLOR_EXPENSE}
-              strokeWidth={1.8}
-              fill="url(#bk-expense-grad)"
-              animationDuration={620}
+              strokeOpacity={0.4}
+              strokeWidth={0.5}
+              radius={[3, 3, 0, 0]}
+              maxBarSize={10}
+              animationDuration={520}
               isAnimationActive
-              activeDot={{ r: 4, strokeWidth: 0, fill: COLOR_EXPENSE }}
             />
-          </AreaChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
@@ -204,23 +216,29 @@ function Stat({
   value,
   color,
   highlighted,
+  dot,
 }: {
   label: string
   value: number
   color: string
   highlighted?: boolean
+  dot?: boolean
 }) {
   return (
-    <div className="flex flex-col items-end leading-none">
-      <span className="text-[9px] uppercase tracking-wider text-text-tertiary font-medium">
+    <div className="flex flex-col items-end leading-none gap-0.5">
+      <span className="text-[10px] uppercase tracking-wider text-text-tertiary font-medium inline-flex items-center gap-1.5">
+        {dot && (
+          <span
+            aria-hidden
+            className="inline-block w-1.5 h-1.5 rounded-full"
+            style={{ background: color }}
+          />
+        )}
         {label}
       </span>
       <span
-        className={cn(
-          'tactile-tabular-nums font-semibold',
-          highlighted ? 'text-base' : 'text-sm',
-        )}
-        style={{ color, fontVariantNumeric: 'tabular-nums' }}
+        className={cn('font-semibold', highlighted ? 'text-base' : 'text-sm')}
+        style={{ color, fontVariantNumeric: 'tabular-nums lining-nums' }}
       >
         €{formatEur(value)}
       </span>
@@ -241,7 +259,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
     <div
       className="rounded-lg px-3 py-2 text-xs"
       style={{
-        background: 'oklch(0.10 0.010 270 / 0.92)',
+        background: 'oklch(0.10 0.010 270 / 0.94)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         border: '1px solid var(--color-border-medium)',
@@ -249,7 +267,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
       }}
     >
       <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-1">{label}</div>
-      <div className="space-y-0.5 tactile-tabular-nums">
+      <div className="space-y-0.5">
         <Row label="Ingresos" value={income} color={COLOR_INCOME} />
         <Row label="Gastos" value={expense} color={COLOR_EXPENSE} />
         <div className="h-px my-1 bg-border-subtle" />
@@ -274,7 +292,11 @@ function Row({
     <div className="flex items-center justify-between gap-4">
       <span className="text-text-tertiary">{label}</span>
       <span
-        style={{ color, fontWeight: bold ? 700 : 500, fontVariantNumeric: 'tabular-nums' }}
+        style={{
+          color,
+          fontWeight: bold ? 700 : 500,
+          fontVariantNumeric: 'tabular-nums lining-nums',
+        }}
       >
         €{formatEur(value)}
       </span>

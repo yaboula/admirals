@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Star, Zap, Loader2 } from 'lucide-react'
+import { Star, Zap, Loader2, UserPlus, Users2 } from 'lucide-react'
 import { Card, CardEyebrow, CardTitle } from '@/components/ui'
 import { useRecentRecipients } from '@/data/queries'
 import type { RecentRecipient } from '@/data/contracts'
@@ -67,11 +67,15 @@ export function CompactQuickTransfer() {
           <Loader2 size={18} className="animate-spin" />
         </div>
       ) : isError ? (
-        <div className="text-xs text-semantic-danger-deep py-4">
-          No se pudieron cargar destinatarios.
-        </div>
+        <RecipientsEmptyState
+          variant="error"
+          onAction={handleNew}
+        />
       ) : !data || data.recipients.length === 0 ? (
-        <div className="text-xs text-text-tertiary py-4">Sin transferencias en 90d.</div>
+        <RecipientsEmptyState
+          variant="empty"
+          onAction={handleNew}
+        />
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1 space-y-1.5 scrollbar-thin">
           {data.recipients.slice(0, 5).map((r, i) => (
@@ -161,6 +165,51 @@ function CompactRow({
         €{formatEur(presetAmount / 100)}
       </button>
     </motion.div>
+  )
+}
+
+function RecipientsEmptyState({
+  variant,
+  onAction,
+}: {
+  variant: 'empty' | 'error'
+  onAction: () => void
+}) {
+  const isError = variant === 'error'
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 px-4 py-6">
+      <div
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+        style={{
+          background: isError ? 'oklch(0.68 0.20 25 / 0.08)' : 'oklch(1 0 0 / 0.04)',
+          border: `1px solid ${
+            isError ? 'oklch(0.68 0.20 25 / 0.30)' : 'var(--color-border-subtle)'
+          }`,
+          color: isError ? 'oklch(0.68 0.20 25)' : 'oklch(0.55 0.012 270 / 0.7)',
+        }}
+        aria-hidden
+      >
+        <Users2 size={18} strokeWidth={1.7} />
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-medium text-text-secondary">
+          {isError ? 'Sin conexión' : 'Sin actividad'}
+        </span>
+        <span className="text-[11px] text-text-tertiary leading-snug max-w-[22ch]">
+          {isError
+            ? 'No se pudieron cargar destinatarios.'
+            : 'Aún no tienes transferencias rápidas guardadas.'}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={onAction}
+        className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-brand-signal-orange-light hover:text-text-primary transition-colors"
+      >
+        <UserPlus size={11} strokeWidth={2.4} />
+        {isError ? 'Reintentar' : 'Añadir destinatario'}
+      </button>
+    </div>
   )
 }
 

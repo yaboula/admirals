@@ -86,18 +86,30 @@ export function Sidebar({ defaultCollapsed = false }: SidebarProps) {
         )}
       </div>
 
-      <div className="tactile-divider-shimmer mx-3" />
+      <div
+        aria-hidden
+        className="mx-3 h-px"
+        style={{ background: 'oklch(1 0 0 / 0.04)' }}
+      />
 
       {/* Nav primary */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
         {NAV_ITEMS.map((item) => (
           <SidebarItem key={item.to} item={item} collapsed={collapsed} />
         ))}
       </nav>
 
-      <div className="tactile-divider-shimmer mx-3" />
+      {/* Subtle separator before Dev Showcase footer block */}
+      <div
+        aria-hidden
+        className="mx-4 h-px"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.06) 50%, transparent 100%)',
+        }}
+      />
 
-      <div className="px-3 py-3 flex flex-col gap-1">
+      <div className="px-3 py-3 flex flex-col gap-0.5">
         {FOOTER_ITEMS.map((item) => (
           <SidebarItem key={item.to} item={item} collapsed={collapsed} />
         ))}
@@ -125,21 +137,30 @@ export function Sidebar({ defaultCollapsed = false }: SidebarProps) {
   )
 }
 
+/**
+ * Sidebar nav item — premium 3-state contrast hierarchy:
+ *   default → text 45% gray, no bg
+ *   hover   → text 70% gray, bg 5% white
+ *   active  → text 100% white, bg 6% white, 3px left orange rail indicator
+ *
+ * Icons: unified outline style (lucide-react), strokeWidth 1.7 across all states.
+ */
 function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const Icon = item.icon
   if (item.disabled) {
     return (
       <div
         className={cn(
-          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5',
-          'text-text-quaternary cursor-not-allowed opacity-60 select-none',
+          'group relative flex items-center gap-3 rounded-md px-3 py-2',
+          'cursor-not-allowed opacity-50 select-none',
           collapsed && 'justify-center px-0',
         )}
         title={`${item.label} (próximamente)`}
+        style={{ color: 'oklch(0.55 0.01 270 / 0.6)' }}
       >
-        <Icon size={18} strokeWidth={1.8} />
+        <Icon size={17} strokeWidth={1.7} className="shrink-0" />
         {!collapsed && (
-          <span className="text-sm font-medium tactile-wght-breathing flex-1">{item.label}</span>
+          <span className="text-sm font-medium flex-1 truncate">{item.label}</span>
         )}
         {!collapsed && item.badge && (
           <span className="text-[9px] uppercase tracking-wider text-text-tertiary border border-border-subtle rounded px-1 py-0.5">
@@ -156,22 +177,51 @@ function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean })
       onClick={() => sfx.console_tap()}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5',
-          'text-text-secondary hover:text-text-primary',
-          'transition-colors duration-200',
+          'sidebar-item group relative flex items-center gap-3 rounded-md px-3 py-2',
+          'transition-[background-color,color] duration-180',
           collapsed && 'justify-center px-0',
-          isActive && 'tactile-rail-active text-text-primary bg-surface-card/60',
+          isActive && 'sidebar-item--active',
         )
       }
     >
-      <Icon size={18} strokeWidth={1.9} className="shrink-0" />
-      {!collapsed && (
-        <span className="text-sm font-medium tactile-wght-breathing flex-1">{item.label}</span>
-      )}
-      {!collapsed && item.badge && (
-        <span className="text-[9px] uppercase tracking-wider text-brand-signal-orange-light border border-border-brand-subtle rounded px-1 py-0.5">
-          {item.badge}
-        </span>
+      {({ isActive }) => (
+        <>
+          {isActive && !collapsed && (
+            <span
+              aria-hidden
+              className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
+              style={{ background: 'var(--gradient-primary)' }}
+            />
+          )}
+          <Icon
+            size={17}
+            strokeWidth={1.7}
+            className="shrink-0"
+            style={{ color: 'currentColor' }}
+          />
+          {!collapsed && (
+            <span className="text-sm font-medium flex-1 truncate tactile-wght-breathing">
+              {item.label}
+            </span>
+          )}
+          {!collapsed && item.badge && (
+            <span
+              className="text-[9px] uppercase tracking-wider rounded px-1 py-0.5"
+              style={{
+                color: isActive
+                  ? 'var(--color-brand-signal-orange-light)'
+                  : 'oklch(0.55 0.012 270)',
+                border: `1px solid ${
+                  isActive
+                    ? 'var(--color-border-brand-subtle)'
+                    : 'var(--color-border-subtle)'
+                }`,
+              }}
+            >
+              {item.badge}
+            </span>
+          )}
+        </>
       )}
     </NavLink>
   )

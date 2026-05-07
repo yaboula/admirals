@@ -244,6 +244,26 @@
 }
 
 /* ----------------------------------------------------------------------------
+   Sidebar nav item — premium contrast hierarchy
+   Default 45% gray · Hover 70% gray + bg 5% · Active 100% white + bg 6%
+   ---------------------------------------------------------------------------- */
+
+.sidebar-item {
+  color: oklch(0.62 0.012 270 / 0.78);
+  background-color: transparent;
+}
+
+.sidebar-item:hover {
+  color: oklch(0.82 0.008 270);
+  background-color: oklch(1 0 0 / 0.05);
+}
+
+.sidebar-item.sidebar-item--active {
+  color: oklch(1 0 0);
+  background-color: oklch(1 0 0 / 0.06);
+}
+
+/* ----------------------------------------------------------------------------
    Input primitive — bevel inset (pressed-into-surface)
    ---------------------------------------------------------------------------- */
 

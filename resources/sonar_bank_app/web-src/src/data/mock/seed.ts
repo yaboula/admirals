@@ -46,8 +46,22 @@ export function buildMockRecentRecipients(): RecentRecipient[] {
 }
 
 export function getMockInitialsForIban(iban: string): string {
-  const meta = SAMPLE_RECIPIENTS_META.find((m) => m.iban === iban)
+  const meta = findMetaByIban(iban)
   return meta?.initials ?? '··'
+}
+
+export function getMockAliasForIban(iban: string): string | null {
+  const meta = findMetaByIban(iban)
+  return meta?.alias ?? null
+}
+
+function findMetaByIban(
+  iban: string,
+): (typeof SAMPLE_RECIPIENTS_META)[number] | undefined {
+  const compact = iban.replace(/\s+/g, '')
+  return SAMPLE_RECIPIENTS_META.find(
+    (m) => m.iban.replace(/\s+/g, '') === compact,
+  )
 }
 
 const SAMPLE_TX_DATA: Array<{

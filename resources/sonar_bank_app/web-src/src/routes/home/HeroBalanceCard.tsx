@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { Eye, EyeOff, Copy, CheckCheck, ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { Card } from '@/components/ui'
-import { AnimatedNumber } from '@/components/vanguard/AnimatedNumber'
 import type { Account, Transaction } from '@/data/contracts'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
@@ -13,9 +13,14 @@ export interface HeroBalanceCardProps {
 }
 
 /**
- * BANK-FE.2.1 hero balance card — compact, monochrome surface, balance
- * typography dominates (clamp 48-72px, tabular-nums). Orange forbidden
- * in baseline — appears only as 1px accent rule below balance.
+ * BANK-FE.2.2 Hero Balance — Top-tier fintech detail (Revolut Metal / Apple Card grade).
+ *
+ *  ▸ Balance 56px weight 300 (Light), tabular-nums.
+ *  ▸ Counter animation 800ms ease-out from 0 on mount/value-change.
+ *  ▸ Blur-reveal toggle (filter:blur(14px) transition) — never asterisks.
+ *  ▸ € sign 24px, vertically aligned to the balance baseline.
+ *  ▸ NO orange accent rule below balance (eliminated).
+ *  ▸ Sub-KPIs in 3 clean columns: 12px uppercase muted titles + 18px values.
  */
 export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceCardProps) {
   const [hidden, setHidden] = useState(false)
@@ -23,7 +28,6 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
 
   const balanceMajor = account ? account.balance_minor / 100 : 0
   const savingsMajor = account ? account.savings_minor / 100 : 0
-
   const monthIn = sumThisMonth(transactions, account?.iban, 'in') / 100
   const monthOut = sumThisMonth(transactions, account?.iban, 'out') / 100
 
@@ -45,10 +49,10 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
       padding="none"
       className="relative overflow-hidden rounded-2xl flex flex-col"
     >
-      {/* Top row — eyebrow + IBAN + reveal toggle */}
-      <div className="flex items-start justify-between px-5 pt-4 pb-2">
-        <div className="flex flex-col gap-1 min-w-0">
-          <span className="text-[9px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
+      {/* Header row — eyebrow + IBAN copy + reveal toggle */}
+      <div className="flex items-start justify-between px-6 pt-5 pb-1.5">
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
             Saldo disponible
           </span>
           <button
@@ -71,6 +75,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
         <button
           type="button"
           aria-label={hidden ? 'Mostrar saldo' : 'Ocultar saldo'}
+          aria-pressed={hidden}
           onClick={() => {
             setHidden((h) => !h)
             sfx.console_tap()
@@ -81,113 +86,193 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
         </button>
       </div>
 
-      {/* Balance — dominant typography */}
-      <div className="px-5 pb-3 flex items-baseline gap-2">
-        <span
-          className="text-text-tertiary font-medium"
-          style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', lineHeight: 1 }}
-        >
-          €
-        </span>
-        {hidden ? (
-          <span
-            className="text-text-tertiary tracking-widest tactile-display-balance"
-            style={{ fontSize: 'clamp(2.75rem, 6vw, 4.25rem)' }}
-          >
-            ••••••
-          </span>
-        ) : loading ? (
-          <span
-            className="tactile-skeleton h-[1em] w-56"
-            style={{ height: 'clamp(2.75rem, 6vw, 4.25rem)' }}
-          />
-        ) : (
-          <AnimatedNumber
-            value={balanceMajor}
-            decimals={2}
-            className="tactile-display-balance text-text-primary"
-            stiffness={90}
-            damping={24}
-          />
-        )}
+      {/* Balance — 56px Light + tabular-nums + blur-reveal */}
+      <div className="px-6 pb-5">
+        <BalanceDisplay value={balanceMajor} hidden={hidden} loading={loading} />
       </div>
 
-      {/* Accent rule — single orange hairline (the only allowed orange touch) */}
-      <div className="mx-5 h-px" style={{ background: 'var(--gradient-primary)', opacity: 0.55 }} />
-
-      {/* Footer stats row — tight 3-column ghost pills */}
-      <div className="grid grid-cols-3 gap-px bg-border-subtle/30 mt-3">
-        <FooterStat
-          label="Ahorro"
-          value={savingsMajor}
-          hidden={hidden}
-          neutral
-        />
-        <FooterStat
+      {/* Footer — 3-column sub-KPI grid (no compression) */}
+      <div className="grid grid-cols-3 border-t border-border-subtle">
+        <SubKpi label="Ahorro" value={savingsMajor} hidden={hidden} tone="neutral" />
+        <SubKpi
           label="Ingresos · mes"
           value={monthIn}
-          icon={<ArrowDownRight size={11} strokeWidth={2.6} />}
-          tone="success"
           hidden={hidden}
+          tone="success"
+          icon={<ArrowDownRight size={12} strokeWidth={2.4} />}
         />
-        <FooterStat
+        <SubKpi
           label="Gastos · mes"
           value={monthOut}
-          icon={<ArrowUpRight size={11} strokeWidth={2.6} />}
-          tone="danger"
           hidden={hidden}
+          tone="danger"
+          icon={<ArrowUpRight size={12} strokeWidth={2.4} />}
         />
       </div>
     </Card>
   )
 }
 
-interface FooterStatProps {
-  label: string
-  value: number
-  icon?: React.ReactNode
-  tone?: 'success' | 'danger'
-  hidden: boolean
-  neutral?: boolean
-}
+/* --------------------------------------------------------------------------
+   BalanceDisplay — counter (0 → value, 800ms ease-out) + blur-reveal toggle
+   -------------------------------------------------------------------------- */
 
-function FooterStat({ label, value, icon, tone, hidden, neutral }: FooterStatProps) {
-  const color =
-    neutral
-      ? 'oklch(0.78 0.01 270)'
-      : tone === 'success'
-        ? 'oklch(0.70 0.16 155)'
-        : 'oklch(0.65 0.20 25)'
-  const sign = tone === 'success' ? '+' : tone === 'danger' ? '−' : ''
+function BalanceDisplay({
+  value,
+  hidden,
+  loading,
+}: {
+  value: number
+  hidden: boolean
+  loading: boolean | undefined
+}) {
+  const reduced = useReducedMotion()
+  const motionValue = useMotionValue(0)
+  const formatted = useTransform(motionValue, (latest) => formatEur(latest))
+  const [display, setDisplay] = useState('0,00')
+  const lastTargetRef = useRef<number>(0)
+
+  useEffect(() => {
+    const unsub = formatted.on('change', (v) => setDisplay(v))
+    return unsub
+  }, [formatted])
+
+  useEffect(() => {
+    if (loading) return
+    const previous = lastTargetRef.current
+    lastTargetRef.current = value
+
+    if (reduced) {
+      motionValue.set(value)
+      return
+    }
+
+    // First mount → animate from 0. Subsequent updates → animate from previous.
+    const from = previous === 0 && value !== 0 ? 0 : motionValue.get()
+    motionValue.set(from)
+
+    const controls = animate(motionValue, value, {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1],
+    })
+    return () => controls.stop()
+  }, [value, loading, motionValue, reduced])
+
+  if (loading) {
+    return (
+      <div className="flex items-baseline gap-2">
+        <span className="text-text-tertiary font-light" style={{ fontSize: '24px' }}>
+          €
+        </span>
+        <span
+          className="tactile-skeleton rounded"
+          style={{ height: '56px', width: '14ch', display: 'inline-block' }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div
-      className={cn(
-        'flex items-center gap-2 px-4 py-2.5',
-        'bg-surface-card',
-      )}
+      className="flex items-baseline gap-2"
+      aria-live="polite"
+      aria-atomic
+      aria-label={hidden ? 'Saldo oculto' : `Saldo ${display} euros`}
     >
-      {icon && (
-        <span
-          className="inline-flex h-5 w-5 items-center justify-center rounded shrink-0"
-          style={{ background: `${color.slice(0, -1)} / 0.08)`, color }}
-        >
-          {icon}
-        </span>
-      )}
-      <div className="flex flex-col leading-none gap-0.5 min-w-0">
-        <span className="text-[9px] uppercase tracking-wider text-text-tertiary truncate">
-          {label}
-        </span>
-        <span
-          className="text-xs font-semibold tactile-tabular-nums truncate"
-          style={{ color, fontVariantNumeric: 'tabular-nums' }}
-        >
-          {hidden ? '••••' : `${sign}€${formatEur(Math.abs(value))}`}
-        </span>
-      </div>
+      <span
+        className="text-text-tertiary font-light leading-none"
+        style={{ fontSize: '24px', lineHeight: 1 }}
+      >
+        €
+      </span>
+      <span
+        className="text-text-primary leading-none"
+        style={{
+          fontSize: '56px',
+          fontWeight: 300,
+          letterSpacing: '-0.02em',
+          fontVariantNumeric: 'tabular-nums lining-nums',
+          fontVariationSettings: '"wght" 300, "opsz" 32',
+          filter: hidden ? 'blur(14px)' : 'blur(0px)',
+          transition: 'filter 360ms cubic-bezier(0.16, 1, 0.3, 1)',
+          userSelect: hidden ? 'none' : 'text',
+        }}
+      >
+        {display}
+      </span>
     </div>
   )
 }
+
+/* --------------------------------------------------------------------------
+   SubKpi — 3-column premium ghost cell (12px title + 18px value)
+   -------------------------------------------------------------------------- */
+
+interface SubKpiProps {
+  label: string
+  value: number
+  hidden: boolean
+  tone: 'neutral' | 'success' | 'danger'
+  icon?: React.ReactNode
+}
+
+function SubKpi({ label, value, hidden, tone, icon }: SubKpiProps) {
+  const color =
+    tone === 'success'
+      ? 'oklch(0.72 0.16 155)'
+      : tone === 'danger'
+        ? 'oklch(0.68 0.20 25)'
+        : 'oklch(0.92 0.005 270)'
+  const sign = tone === 'success' ? '+' : tone === 'danger' ? '−' : ''
+
+  return (
+    <div
+      className={cn(
+        'flex flex-col gap-1.5 px-5 py-4',
+        'border-r border-border-subtle last:border-r-0',
+      )}
+    >
+      <div className="flex items-center gap-1.5">
+        {icon && (
+          <span
+            className="inline-flex h-4 w-4 items-center justify-center rounded shrink-0"
+            style={{
+              background: tone === 'success'
+                ? 'oklch(0.72 0.16 155 / 0.10)'
+                : tone === 'danger'
+                  ? 'oklch(0.68 0.20 25 / 0.10)'
+                  : 'transparent',
+              color,
+            }}
+          >
+            {icon}
+          </span>
+        )}
+        <span
+          className="uppercase font-medium text-text-tertiary"
+          style={{ fontSize: '12px', letterSpacing: '0.08em' }}
+        >
+          {label}
+        </span>
+      </div>
+      <span
+        className="font-semibold leading-none"
+        style={{
+          fontSize: '18px',
+          color,
+          fontVariantNumeric: 'tabular-nums lining-nums',
+          filter: hidden ? 'blur(8px)' : 'blur(0px)',
+          transition: 'filter 320ms cubic-bezier(0.16, 1, 0.3, 1)',
+          userSelect: hidden ? 'none' : 'text',
+        }}
+      >
+        {sign}€{formatEur(value)}
+      </span>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
 
 function formatEur(major: number): string {
   return new Intl.NumberFormat('es-ES', {

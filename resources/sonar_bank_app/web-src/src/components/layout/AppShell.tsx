@@ -57,6 +57,7 @@ export function AppShell() {
         <Topbar
           greeting={greeting}
           subtitle={citizenId ? `Hola, ${citizenId.slice(0, 14)}…` : 'SONAR Bank'}
+          userInitials={citizenId ? citizenId.slice(4, 6) : undefined}
         />
         <main className="relative min-h-0 overflow-hidden px-5 lg:px-7 pb-5 pt-3">
           <RouteTransition>
