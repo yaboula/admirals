@@ -28,17 +28,9 @@ export function Topbar({
   profileName,
   profileHandle,
 }: TopbarProps) {
-  const [muted, setMuted] = useState(sfx.getMuted())
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const setTransactionQuery = useTransactionsFilter((s) => s.setQuery)
-
-  const toggleMute = (): void => {
-    const next = !muted
-    sfx.setMuted(next)
-    setMuted(next)
-    if (!next) sfx.signal_emerge()
-  }
 
   const submitSearch = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -113,10 +105,10 @@ export function Topbar({
         />
         <IconButton
           icon={<Moon size={16} strokeWidth={1.9} />}
-          aria-label={muted ? 'Activar sonido' : 'Silenciar sonido'}
+          aria-label="Cambiar tema"
           variant="ghost"
           size="sm"
-          onClick={toggleMute}
+          onClick={() => toast.info('Tema claro próximamente', 'Esta opción estará disponible en una próxima versión.')}
         />
         <ProfileChip
           initials={userInitials}

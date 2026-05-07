@@ -64,7 +64,7 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
       >
       <div className="flex items-center justify-center pt-5 pb-4">
         <div
-          className="relative flex h-10 w-10 items-center justify-center rounded-2xl"
+          className="relative flex h-12 w-12 items-center justify-center rounded-[1.35rem]"
           style={{
             background: 'oklch(0.035 0.01 30 / 0.72)',
             border: '1px solid oklch(1 0 0 / 0.08)',
@@ -72,7 +72,7 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
           }}
           aria-hidden
         >
-          <img src={sonarMonogramUrl} alt="" className="h-7 w-7 object-contain" />
+          <img src={sonarMonogramUrl} alt="" className="h-9 w-9 object-contain" />
         </div>
       </div>
 

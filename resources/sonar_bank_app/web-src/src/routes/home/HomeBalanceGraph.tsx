@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipProps } from 'recharts'
 import type { Account, Transaction } from '@/data/contracts'
 import { Card } from '@/components/ui'
@@ -16,9 +16,22 @@ export interface HomeBalanceGraphProps {
 
 const ORANGE = 'oklch(0.70 0.22 40)'
 const ORANGE_SOFT = 'oklch(0.58 0.18 38)'
+const PERIODS = [
+  { key: '1y', label: '1 year', days: 365 },
+  { key: '6m', label: '6 month', days: 180 },
+  { key: '3m', label: '3 month', days: 90 },
+  { key: '1m', label: '1 month', days: 30 },
+] as const
+
+type PeriodKey = (typeof PERIODS)[number]['key']
 
 export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProps) {
-  const data = useMemo(() => buildGraph(account, transactions), [account, transactions])
+  const [period, setPeriod] = useState<PeriodKey>('6m')
+  const activePeriod = PERIODS.find((item) => item.key === period) ?? PERIODS[1]
+  const data = useMemo(
+    () => buildGraph(account, transactions, activePeriod.days),
+    [account, activePeriod.days, transactions],
+  )
   const balance = account ? account.balance_minor / 100 : 0
   const monthDelta = computeMonthDelta(transactions, account?.iban)
   const deltaPct = balance > 0 ? (monthDelta / balance) * 100 : 0
@@ -50,20 +63,24 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
             </div>
           </div>
           <div className="hidden md:flex items-center gap-1.5 rounded-full p-1" style={{ background: 'oklch(1 0 0 / 0.045)' }}>
-            {['1 year', '6 month', '3 month', '1 month'].map((label) => (
+            {PERIODS.map((item) => {
+              const active = item.key === period
+              return (
               <button
-                key={label}
+                key={item.key}
                 type="button"
+                onClick={() => setPeriod(item.key)}
                 className="h-8 rounded-full px-3 text-[11px] font-medium text-text-secondary"
                 style={
-                  label === '6 month'
+                  active
                     ? { background: 'oklch(1 0 0 / 0.10)', color: 'var(--color-text-primary)' }
                     : undefined
                 }
               >
-                {label}
+                {item.label}
               </button>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -140,21 +157,24 @@ function BalanceTooltip({ active, payload, label }: TooltipProps<number, string>
   )
 }
 
-function buildGraph(account: Account | undefined, transactions: Transaction[]): GraphPoint[] {
+function buildGraph(account: Account | undefined, transactions: Transaction[], periodDays: number): GraphPoint[] {
   const balance = account ? account.balance_minor / 100 : 0
   const own = account?.iban.replace(/\s+/g, '')
-  const months = Array.from({ length: 6 }, (_, index) => {
-    const date = new Date()
-    date.setMonth(date.getMonth() - (5 - index), 1)
-    date.setHours(0, 0, 0, 0)
-    return date
+  const bucketCount = 6
+  const end = new Date()
+  end.setHours(23, 59, 59, 999)
+  const start = new Date(end)
+  start.setDate(start.getDate() - periodDays)
+  start.setHours(0, 0, 0, 0)
+  const bucketMs = (end.getTime() - start.getTime()) / bucketCount
+  const buckets = Array.from({ length: bucketCount }, (_, index) => {
+    const from = start.getTime() + bucketMs * index
+    const to = index === bucketCount - 1 ? end.getTime() : start.getTime() + bucketMs * (index + 1)
+    return { from, to, date: new Date(to) }
   })
-  const monthlyNet = months.map((month) => {
-    const monthIndex = month.getMonth()
-    const year = month.getFullYear()
+  const bucketNet = buckets.map((bucket) => {
     return transactions.reduce((sum, tx) => {
-      const date = new Date(tx.timestamp_ms)
-      if (date.getMonth() !== monthIndex || date.getFullYear() !== year || tx.status !== 'committed') return sum
+      if (tx.timestamp_ms < bucket.from || tx.timestamp_ms > bucket.to || tx.status !== 'committed') return sum
       const fromOwn = own ? tx.from_iban.replace(/\s+/g, '') === own : tx.direction === 'out'
       const toOwn = own ? tx.to_iban.replace(/\s+/g, '') === own : tx.direction === 'in'
       if (toOwn && !fromOwn) return sum + tx.amount_minor / 100
@@ -163,11 +183,11 @@ function buildGraph(account: Account | undefined, transactions: Transaction[]): 
     }, 0)
   })
   const points: GraphPoint[] = []
-  let rolling = balance - monthlyNet.reduce((sum, value) => sum + value, 0)
-  months.forEach((month, index) => {
-    rolling += monthlyNet[index] ?? 0
+  let rolling = balance - bucketNet.reduce((sum, value) => sum + value, 0)
+  buckets.forEach((bucket, index) => {
+    rolling += bucketNet[index] ?? 0
     points.push({
-      label: month.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''),
+      label: bucket.date.toLocaleDateString('es-ES', periodDays <= 45 ? { day: '2-digit', month: 'short' } : { month: 'short' }).replace('.', ''),
       balance: Math.max(0, rolling),
     })
   })

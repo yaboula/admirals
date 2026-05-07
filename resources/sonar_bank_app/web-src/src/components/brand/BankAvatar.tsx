@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface BankAvatarProps {
@@ -22,9 +23,19 @@ const AVATAR_GRADIENTS = [
 ]
 
 export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarProps) {
+  const [imageFailed, setImageFailed] = useState(false)
   const label = name?.trim() || 'Contacto'
   const initials = getInitials(label)
   const index = Math.abs(seed ?? hashString(label)) % AVATAR_GRADIENTS.length
+  const avatarUrl = useMemo(
+    () =>
+      `https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(label)}&backgroundType=gradientLinear&radius=50`,
+    [label],
+  )
+
+  useEffect(() => {
+    setImageFailed(false)
+  }, [avatarUrl])
 
   return (
     <span
@@ -42,7 +53,17 @@ export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarPro
       aria-label={label}
       title={label}
     >
-      {initials}
+      {!imageFailed && (
+        <img
+          src={avatarUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setImageFailed(true)}
+        />
+      )}
+      {imageFailed && initials}
     </span>
   )
 }

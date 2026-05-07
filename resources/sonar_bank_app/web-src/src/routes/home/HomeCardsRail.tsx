@@ -8,6 +8,7 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { sfx } from '@/lib/sfx'
+import { CardVisual } from '../cards/CardVisual'
 
 export interface HomeCardsRailProps {
   account: Account | undefined
@@ -56,37 +57,21 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
           </button>
         </div>
 
-        <div className="relative mt-4 h-[205px] shrink-0">
-          <div className="absolute left-[14%] right-[4%] top-0 h-[78px] rounded-[1.35rem]" style={{ background: 'oklch(0.32 0.09 38 / 0.72)', border: '1px solid oklch(1 0 0 / 0.10)' }} />
-          <div className="absolute left-[8%] right-[2%] top-8 h-[88px] rounded-[1.45rem]" style={{ background: 'oklch(0.24 0.065 35 / 0.86)', border: '1px solid oklch(1 0 0 / 0.11)' }} />
-          <div
-            className="absolute inset-x-0 bottom-0 h-[154px] rounded-[1.55rem] p-5 flex flex-col justify-between"
-            style={{
-              background: 'linear-gradient(135deg, oklch(0.16 0.018 35), oklch(0.08 0.012 270))',
-              border: '1px solid oklch(1 0 0 / 0.13)',
-              boxShadow: '0 26px 46px -26px oklch(0 0 0 / 0.95), inset 0 1px 0 oklch(1 0 0 / 0.08)',
-            }}
-          >
-            <div className="flex items-start justify-between">
-              <span className="text-xl font-bold tracking-tight text-white">VISA</span>
-              <span className="h-9 w-11 rounded-lg" style={{ background: 'linear-gradient(135deg, oklch(0.86 0.03 85), oklch(0.62 0.02 85))', border: '1px solid oklch(1 0 0 / 0.22)' }} />
+        <div className="relative mt-4 h-[205px] shrink-0" style={{ perspective: '900px' }}>
+          {cards[2] && (
+            <div className="absolute left-[16%] right-[2%] top-0 opacity-36" style={{ transform: 'translateY(0) rotateX(48deg) scale(0.86)', transformOrigin: 'center top' }}>
+              <CardVisual card={cards[2]} compact />
             </div>
-            <div className="flex items-end justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-white/64">Balance</span>
-                <span className="text-2xl font-light tracking-[-0.035em] text-white tactile-tabular-nums">
-                  {formatCurrency(account ? account.balance_minor / 100 : 0)}
-                </span>
-              </div>
-              <span className="rounded-lg px-2 py-1 text-xs font-semibold text-emerald-300" style={{ background: 'oklch(0.48 0.16 150 / 0.18)' }}>
-                ↑ 3.52%
-              </span>
+          )}
+          {cards[1] && (
+            <div className="absolute left-[8%] right-[1%] top-7 opacity-58" style={{ transform: 'translateY(0) rotateX(42deg) scale(0.92)', transformOrigin: 'center top' }}>
+              <CardVisual card={cards[1]} compact />
             </div>
-          </div>
+          )}
           {primaryCard && (
-            <span className="absolute right-6 top-[14px] text-xs text-white/42 tactile-tabular-nums">
-              ···· {primaryCard.pan_last_four}
-            </span>
+            <div className="absolute inset-x-0 bottom-0">
+              <CardVisual card={primaryCard} compact />
+            </div>
           )}
         </div>
 

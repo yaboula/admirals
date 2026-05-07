@@ -18,7 +18,7 @@ export function RouteTransition({ children }: RouteTransitionProps) {
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         exit={reduced ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(6px)' }}
         transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-        className="will-change-transform"
+        className="h-full min-h-0 will-change-transform"
       >
         {children}
       </motion.div>
