@@ -13,6 +13,26 @@ const DAY_MS = 24 * 60 * 60 * 1000
 
 export const MOCK_CITIZEN_ID = 'CIT-7F4A-9B2D-AC01'
 
+/* ---------------------------------------------------------------------------
+   Mock player identity — Phase A stand-in until real NetEvent plugs in.
+   Production pipeline: bootstrap payload → session store `displayName`.
+   --------------------------------------------------------------------------- */
+export const MOCK_GIVEN_NAME = 'Alex'
+export const MOCK_FAMILY_NAME = 'Rivera'
+export const MOCK_DISPLAY_NAME = `${MOCK_GIVEN_NAME} ${MOCK_FAMILY_NAME}`
+
+export function getMockGivenName(): string {
+  return MOCK_GIVEN_NAME
+}
+
+export function getMockDisplayName(): string {
+  return MOCK_DISPLAY_NAME
+}
+
+export function getMockInitialsFromName(): string {
+  return `${MOCK_GIVEN_NAME[0] ?? ''}${MOCK_FAMILY_NAME[0] ?? ''}`.toUpperCase()
+}
+
 const SAMPLE_RECIPIENTS_META: Array<{
   iban: string
   alias: string | null

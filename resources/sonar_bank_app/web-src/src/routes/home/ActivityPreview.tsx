@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ArrowRight,
   RotateCw,
   AlertTriangle,
   Check,
@@ -12,6 +13,7 @@ import type { Account, Transaction } from '@/data/contracts'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { sfx } from '@/lib/sfx'
+import { toast } from '@/stores/toast'
 import { getMockAliasForIban } from '@/data/mock/seed'
 
 export interface ActivityPreviewProps {
@@ -23,12 +25,21 @@ export interface ActivityPreviewProps {
 }
 
 /**
- * BANK-FE.2.2 — Top 5 movements with counterpart NAME ONLY (IBAN hidden by
+ * BANK-FE.2.3 — Top 4 movements with counterpart NAME ONLY (IBAN hidden by
  * design, lives in the detail drawer). Real empty-state for zero data.
+ * Header exposes a 'Ver todo' CTA with an elegant arrow chevron that routes
+ * to the transactions history view (Phase A: toast placeholder).
  */
 export function ActivityPreview({ transactions, account, loading, compact }: ActivityPreviewProps) {
   const own = account?.iban.replace(/\s+/g, '')
-  const limit = compact ? 5 : 8
+  const limit = compact ? 4 : 8
+  const hasMore = transactions.length > 0
+
+  const handleViewAll = (): void => {
+    sfx.console_tap()
+    // Phase A: history view ships in BANK-FE.3.
+    toast.info('Historial completo', 'Disponible en BANK-FE.3 · vista Transacciones')
+  }
 
   return (
     <Card variant="baseline" padding={compact ? 'md' : 'lg'}>
@@ -37,10 +48,25 @@ export function ActivityPreview({ transactions, account, loading, compact }: Act
           <CardEyebrow>Actividad reciente</CardEyebrow>
           <CardTitle className={compact ? 'text-sm' : undefined}>Movimientos</CardTitle>
         </div>
-        {transactions.length > 0 && (
-          <span className="text-[10px] uppercase tracking-wider text-text-tertiary tactile-wght-breathing">
-            Últimos {Math.min(transactions.length, limit)} de {transactions.length}
-          </span>
+        {hasMore && (
+          <button
+            type="button"
+            onClick={handleViewAll}
+            className={cn(
+              'group inline-flex items-center gap-1.5 px-2 py-1 rounded-md',
+              'text-[10px] font-semibold uppercase tracking-[0.14em] text-text-tertiary',
+              'hover:text-text-primary hover:bg-surface-card-elevated/60 transition-colors',
+              'tactile-focus-ring',
+            )}
+            aria-label={`Ver los ${transactions.length} movimientos`}
+          >
+            Ver todo
+            <ArrowRight
+              size={12}
+              strokeWidth={2}
+              className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+            />
+          </button>
         )}
       </div>
 

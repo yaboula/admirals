@@ -7,6 +7,8 @@ import { ToastContainer } from './ToastContainer'
 import { AuroraBackground } from '@/components/vanguard/AuroraBackground'
 import { useBootstrap } from '@/data/queries'
 import { useBankSession } from '@/stores/session'
+import { getMockGivenName, getMockInitialsFromName } from '@/data/mock/seed'
+import { isMockMode } from '@/lib/env'
 
 /**
  * BANK-FE.2.1 — Tablet-first 3-column zero-scroll shell.
@@ -31,7 +33,12 @@ export function AppShell() {
     }
   }, [isError, error])
 
-  const greeting = computeGreeting()
+  const greetingPrefix = computeGreetingPrefix()
+  // Phase A (mock): derive player name from seed registry.
+  // Production (H3+): read session.displayName populated by bootstrap NetEvent.
+  // citizenId is kept in session for audit / permission wiring — never displayed.
+  const playerGivenName = isMockMode() || citizenId ? getMockGivenName() : null
+  const playerInitials = isMockMode() || citizenId ? getMockInitialsFromName() : undefined
 
   return (
     <div
@@ -55,9 +62,9 @@ export function AppShell() {
         style={{ display: 'grid', gridTemplateRows: 'auto 1fr' }}
       >
         <Topbar
-          greeting={greeting}
-          subtitle={citizenId ? `Hola, ${citizenId.slice(0, 14)}…` : 'SONAR Bank'}
-          userInitials={citizenId ? citizenId.slice(4, 6) : undefined}
+          greeting={playerGivenName ? `${greetingPrefix}, ${playerGivenName}` : greetingPrefix}
+          subtitle="SONAR Bank"
+          userInitials={playerInitials}
         />
         <main className="relative min-h-0 overflow-hidden px-5 lg:px-7 pb-5 pt-3">
           <RouteTransition>
@@ -80,7 +87,7 @@ export function AppShell() {
   )
 }
 
-function computeGreeting(): string {
+function computeGreetingPrefix(): string {
   const h = new Date().getHours()
   if (h < 6) return 'Buenas noches'
   if (h < 13) return 'Buenos días'

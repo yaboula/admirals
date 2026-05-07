@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -87,14 +87,17 @@ function buildBuckets(
 }
 
 const COLOR_INCOME = 'oklch(0.72 0.16 155)'
+const COLOR_INCOME_STROKE = 'oklch(0.80 0.18 155)'
 const COLOR_EXPENSE = 'oklch(0.68 0.20 25)'
+const COLOR_EXPENSE_STROKE = 'oklch(0.76 0.22 25)'
 const COLOR_GRID = 'oklch(1 0 0 / 0.04)'
 const COLOR_AXIS = 'oklch(0.55 0.012 270)'
 
 /**
- * BANK-FE.2.2 — grouped bar chart (income vs expense per day) with logarithmic-
- * style scale clipping (squashed via square-root sqrt scaling for visual balance
- * when the dataset has a single high spike that would otherwise flatten the rest).
+ * BANK-FE.2.3 — dual AreaChart (income vs expense per day) with illuminated
+ * monotone strokes and gradient fill cascading to the X-axis. SQRT scale
+ * preserved to prevent a single spike from flattening the rest of the dataset.
+ * This is the V1 aesthetic restored, but hardened against pathological data.
  */
 export function IncomeExpenseChart({
   transactions,
@@ -142,21 +145,38 @@ export function IncomeExpenseChart({
 
       <div className="flex-1 min-h-0 -mx-1">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
+          <AreaChart
             data={data}
-            margin={{ top: 6, right: 6, left: 0, bottom: 0 }}
-            barGap={2}
-            barCategoryGap="22%"
+            margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="bk-bar-income" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLOR_INCOME} stopOpacity={0.95} />
-                <stop offset="100%" stopColor={COLOR_INCOME} stopOpacity={0.55} />
+              {/* —— Income fill — luminous green cascading to x-axis —— */}
+              <linearGradient id="bk-area-income" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor={COLOR_INCOME} stopOpacity={0.42} />
+                <stop offset="55%" stopColor={COLOR_INCOME} stopOpacity={0.16} />
+                <stop offset="100%" stopColor={COLOR_INCOME} stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="bk-bar-expense" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLOR_EXPENSE} stopOpacity={0.95} />
-                <stop offset="100%" stopColor={COLOR_EXPENSE} stopOpacity={0.55} />
+              {/* —— Expense fill — warm red cascading to x-axis —— */}
+              <linearGradient id="bk-area-expense" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor={COLOR_EXPENSE} stopOpacity={0.38} />
+                <stop offset="55%" stopColor={COLOR_EXPENSE} stopOpacity={0.14} />
+                <stop offset="100%" stopColor={COLOR_EXPENSE} stopOpacity={0} />
               </linearGradient>
+              {/* —— Halo filters: the strokes glow, not the fill —— */}
+              <filter id="bk-glow-income" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2.4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="bk-glow-expense" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2.4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
             <CartesianGrid stroke={COLOR_GRID} strokeDasharray="2 4" vertical={false} />
             <XAxis
@@ -178,33 +198,40 @@ export function IncomeExpenseChart({
               scale="sqrt"
             />
             <Tooltip
-              cursor={{ fill: 'oklch(1 0 0 / 0.04)' }}
+              cursor={{ stroke: 'oklch(1 0 0 / 0.14)', strokeWidth: 1, strokeDasharray: '3 4' }}
               content={<CustomTooltip />}
               animationDuration={120}
             />
-            <Bar
-              dataKey="income"
-              fill="url(#bk-bar-income)"
-              stroke={COLOR_INCOME}
-              strokeOpacity={0.4}
-              strokeWidth={0.5}
-              radius={[3, 3, 0, 0]}
-              maxBarSize={10}
-              animationDuration={520}
-              isAnimationActive
-            />
-            <Bar
+            {/* Expense first so income line draws on top */}
+            <Area
+              type="monotone"
               dataKey="expense"
-              fill="url(#bk-bar-expense)"
-              stroke={COLOR_EXPENSE}
-              strokeOpacity={0.4}
-              strokeWidth={0.5}
-              radius={[3, 3, 0, 0]}
-              maxBarSize={10}
-              animationDuration={520}
+              stroke={COLOR_EXPENSE_STROKE}
+              strokeWidth={2}
+              strokeOpacity={0.95}
+              fill="url(#bk-area-expense)"
+              fillOpacity={1}
+              activeDot={{ r: 4, stroke: COLOR_EXPENSE_STROKE, strokeWidth: 2, fill: 'oklch(0.08 0.008 25)' }}
+              dot={false}
+              animationDuration={640}
+              filter="url(#bk-glow-expense)"
               isAnimationActive
             />
-          </BarChart>
+            <Area
+              type="monotone"
+              dataKey="income"
+              stroke={COLOR_INCOME_STROKE}
+              strokeWidth={2}
+              strokeOpacity={0.95}
+              fill="url(#bk-area-income)"
+              fillOpacity={1}
+              activeDot={{ r: 4, stroke: COLOR_INCOME_STROKE, strokeWidth: 2, fill: 'oklch(0.08 0.008 155)' }}
+              dot={false}
+              animationDuration={640}
+              filter="url(#bk-glow-income)"
+              isAnimationActive
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>

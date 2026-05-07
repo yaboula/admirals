@@ -62,18 +62,33 @@ export function CreditCardVisual({
           }}
         />
 
-        {/* Subtle chroma orb — far corner only, neutral cool */}
+        {/* V1 aesthetic — warm orange corner luminary (founder mandate FE.2.3).
+           Creates the Revolut Metal "black card with orange heartbeat" feel. */}
         <div
           aria-hidden
           className="absolute pointer-events-none"
           style={{
-            top: '-30%',
-            right: '-10%',
-            width: '70%',
-            height: '120%',
+            top: '-25%',
+            right: '-15%',
+            width: '80%',
+            height: '130%',
             background:
-              'radial-gradient(circle at 50% 50%, oklch(0.50 0.06 240 / 0.18), transparent 60%)',
-            filter: 'blur(20px)',
+              'radial-gradient(circle at 60% 50%, oklch(0.65 0.22 40 / 0.26), transparent 60%)',
+            filter: 'blur(22px)',
+          }}
+        />
+        {/* Bottom-left cool counter-orb for subtle chromatic balance */}
+        <div
+          aria-hidden
+          className="absolute pointer-events-none"
+          style={{
+            bottom: '-20%',
+            left: '-10%',
+            width: '55%',
+            height: '80%',
+            background:
+              'radial-gradient(circle at 40% 50%, oklch(0.50 0.06 240 / 0.10), transparent 65%)',
+            filter: 'blur(24px)',
           }}
         />
 

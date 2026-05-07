@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useBootstrap } from '@/data/queries'
+import { getMockDisplayName } from '@/data/mock/seed'
 import { HeroBalanceCard } from './home/HeroBalanceCard'
 import { CreditCardVisual } from './home/CreditCardVisual'
-import { CardActionsRow } from './home/CardActionsRow'
+import { ActionStack } from './home/ActionStack'
 import { CompactQuickTransfer } from './home/CompactQuickTransfer'
 import { ActivityPreview } from './home/ActivityPreview'
 import { Card } from '@/components/ui'
@@ -11,17 +12,20 @@ import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart'
 import { toast } from '@/stores/toast'
 
 /**
- * BANK-FE.2.2 Dashboard — zero-scroll, 2-column main grid (the third column
+ * BANK-FE.2.3 Dashboard — zero-scroll, 2-column main grid (the third column
  * is the AppShell sidebar). Optimised for 1280×800 / 1024×768 in-game tablet.
  *
- *   ┌──────────────── main col 1 (data) ─────────────┬─ main col 2 (action) ─┐
+ *   ┌──────────────── main col 1 (data) ─────────┬─ main col 2 (action) ─┐
  *   │ HeroBalanceCard           (≈210 px)            │ CreditCardVisual      │
- *   │ ─────────────────────────────────────────────  │  (≈210-220 px)        │
- *   │ IncomeExpenseChart        (flex-1, ≈260 px)    │ CardActionsRow        │
- *   │ ─────────────────────────────────────────────  │  (≈40 px)             │
- *   │ ActivityPreview · 5 rows  (≈230 px)            │ CompactQuickTransfer  │
- *   │                                                │  (flex-1)             │
- *   └────────────────────────────────────────────────┴───────────────────────┘
+ *   │ ─────────────────────────────────────────────  │  + orange halo V1      │
+ *   │ IncomeExpenseChart (1fr)  THE CHART IS KING    │ ───────────────────── │
+ *   │   AreaChart luminous stroke + gradient fall   │ ActionStack (NFS)     │
+ *   │ ───────────────────────────────────────────────  │ Transferir · Depositar│
+ *   │ ActivityPreview · 4 rows · Ver todo →         │ Retirar (vertical)    │
+ *   │                                                │ ───────────────────── │
+ *   │                                                │ CompactQuickTransfer  │
+ *   │                                                │  (1fr fills remainder)│
+ *   └─────────────────────────────────────────────────┘───────────────────────┘
  */
 export function Home() {
   const { data, isError, error } = useBootstrap()
@@ -34,6 +38,8 @@ export function Home() {
 
   const primaryAccount = data?.accounts[0]
   const transactions = data?.recent_transactions ?? []
+  // Phase A mock: display name comes from seed; H3+ session.displayName.
+  const holderDisplayName = data ? getMockDisplayName().toUpperCase() : 'CITIZEN'
 
   return (
     <motion.div
@@ -79,19 +85,21 @@ export function Home() {
           />
         </section>
 
-        {/* ── ACTION COLUMN ───────────────────────────────────────────── */}
+        {/* ── ACTION COLUMN ────────────────────────────── */}
         <aside
-          className="h-full min-h-0 gap-3"
+          className="h-full min-h-0 gap-4"
           style={{
             display: 'grid',
             gridTemplateRows: 'auto auto 1fr',
           }}
         >
-          <CreditCardVisual
-            account={primaryAccount}
-            holderName={data?.citizen_id ?? 'CITIZEN'}
-          />
-          <CardActionsRow />
+          <div className="tactile-halo-orange">
+            <CreditCardVisual
+              account={primaryAccount}
+              holderName={holderDisplayName}
+            />
+          </div>
+          <ActionStack />
           <CompactQuickTransfer />
         </aside>
       </div>
