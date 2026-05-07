@@ -1,7 +1,7 @@
 <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(-29, -36)">
-    <path d="M124 108 Q158 108 158 132 Q158 156 124 156" fill="none" stroke="#FF5100" stroke-width="12" stroke-linecap="round" opacity="0.35" />
-    <path d="M124 122 Q148 122 148 136 Q148 150 124 150" fill="none" stroke="#FF5100" stroke-width="12" stroke-linecap="round" opacity="0.65" />
-    <path d="M100 136 Q110 122 124 122 Q138 122 138 136 Q138 150 124 150 Q108 150 100 164" fill="none" stroke="#FF5100" stroke-width="12" stroke-linecap="round" />
+    <path d="M124 108 Q158 108 158 132 Q158 156 124 156" fill="none" stroke="#FF5100" stroke-width="6" stroke-linecap="round" opacity="0.35" />
+    <path d="M124 122 Q148 122 148 136 Q148 150 124 150" fill="none" stroke="#FF5100" stroke-width="6" stroke-linecap="round" opacity="0.65" />
+    <path d="M100 136 Q110 122 124 122 Q138 122 138 136 Q138 150 124 150 Q108 150 100 164" fill="none" stroke="#FF5100" stroke-width="6" stroke-linecap="round" />
   </g>
 </svg>

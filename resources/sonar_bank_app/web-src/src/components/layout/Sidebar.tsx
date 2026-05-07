@@ -63,16 +63,13 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
         }}
       >
       <div className="flex items-center justify-center pt-5 pb-4">
-        <div
-          className="relative flex h-10 w-10 items-center justify-center rounded-2xl"
-          style={{
-            background: 'oklch(0.035 0.01 30 / 0.72)',
-            border: '1px solid oklch(1 0 0 / 0.08)',
-            boxShadow: '0 0 28px -8px oklch(0.72 0.22 40 / 0.68), inset 0 1px 0 oklch(1 0 0 / 0.05)',
-          }}
-          aria-hidden
-        >
-          <img src={sonarMonogramUrl} alt="" className="h-[54px] w-[54px] max-w-none object-contain scale-[1.55]" />
+        <div className="relative flex h-10 w-10 items-center justify-center" aria-hidden>
+          <img
+            src={sonarMonogramUrl}
+            alt=""
+            className="h-[46px] w-[46px] max-w-none object-contain"
+            style={{ filter: 'drop-shadow(0 0 14px oklch(0.72 0.22 40 / 0.66))' }}
+          />
         </div>
       </div>
 

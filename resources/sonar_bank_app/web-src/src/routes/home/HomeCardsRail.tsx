@@ -59,12 +59,12 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
 
         <div className="relative mt-3 h-[224px] shrink-0 overflow-visible" style={{ perspective: '1000px' }}>
           {cards[2] && (
-            <div className="absolute inset-x-0 top-0 z-0 opacity-75" style={{ transform: 'translateY(-8px) scale(0.94)', transformOrigin: 'center top' }}>
+            <div className="absolute left-[8%] right-[-3%] top-0 z-0 opacity-70" style={{ transform: 'translateY(-10px) rotateZ(0.35deg) scale(0.92)', transformOrigin: 'center top' }}>
               <CardVisual card={cards[2]} compact className="shadow-none" />
             </div>
           )}
           {cards[1] && (
-            <div className="absolute inset-x-0 top-[31px] z-10" style={{ opacity: 0.88, transform: 'scale(0.97)', transformOrigin: 'center top' }}>
+            <div className="absolute left-[4%] right-[-1%] top-[29px] z-10" style={{ opacity: 0.86, transform: 'rotateZ(-0.2deg) scale(0.96)', transformOrigin: 'center top' }}>
               <CardVisual card={cards[1]} compact className="shadow-none" />
             </div>
           )}
