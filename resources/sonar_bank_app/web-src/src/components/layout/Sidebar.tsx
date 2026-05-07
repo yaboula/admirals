@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
   LayoutDashboard,
+  Landmark,
   ArrowLeftRight,
   CreditCard,
   Settings,
@@ -26,6 +27,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/cuentas', label: 'Cuentas', icon: Landmark, requiredPerm: ACE_PERMS.P01.perm },
   { to: '/transacciones', label: 'Transacciones', icon: Receipt, requiredPerm: ACE_PERMS.P01.perm },
   { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight, requiredPerm: ACE_PERMS.P01.perm },
   { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, requiredPerm: ACE_PERMS.P01.perm },

@@ -2,6 +2,7 @@ import { createBrowserRouter, createHashRouter } from 'react-router-dom'
 import { App } from './App'
 import { AppShell } from './components/layout/AppShell'
 import { Home } from './routes/Home'
+import { Accounts } from './routes/Accounts'
 import { Transactions } from './routes/Transactions'
 import { Cards } from './routes/Cards'
 import { Transfer } from './routes/Transfer'
@@ -19,6 +20,7 @@ const routes = [
         element: <AppShell />,
         children: [
           { index: true, element: <Home /> },
+          { path: 'cuentas', element: <Accounts /> },
           { path: 'transacciones', element: <Transactions /> },
           { path: 'tarjetas', element: <Cards /> },
           { path: 'transferir', element: <Transfer /> },
