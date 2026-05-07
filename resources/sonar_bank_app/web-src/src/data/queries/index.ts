@@ -14,3 +14,6 @@ export type { RecentRecipientsOptions } from './recipients'
 
 export { useClientConfig } from './clientConfig'
 export type { ClientConfigOptions } from './clientConfig'
+
+export { useCards, useCardById } from './cards'
+export type { UseCardsResult } from './cards'

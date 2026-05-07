@@ -3,6 +3,7 @@ import { App } from './App'
 import { AppShell } from './components/layout/AppShell'
 import { Home } from './routes/Home'
 import { Transactions } from './routes/Transactions'
+import { Cards } from './routes/Cards'
 import { DevShowcase } from './routes/dev/Showcase'
 import { NotFound } from './routes/NotFound'
 import { isInsideFiveMNui } from './lib/env'
@@ -18,6 +19,7 @@ const routes = [
         children: [
           { index: true, element: <Home /> },
           { path: 'transacciones', element: <Transactions /> },
+          { path: 'tarjetas', element: <Cards /> },
           { path: 'dev/showcase', element: <DevShowcase /> },
         ],
       },
