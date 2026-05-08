@@ -21,6 +21,7 @@ const NotFound = lazy(() => import('./routes/NotFound').then(m => ({ default: m.
 const GovtShell = lazy(() => import('./govt/layout/GovtShell').then(m => ({ default: m.GovtShell })))
 const Bureau = lazy(() => import('./govt/routes/Bureau').then(m => ({ default: m.Bureau })))
 const Census = lazy(() => import('./govt/routes/Census').then(m => ({ default: m.Census })))
+const Sanctions = lazy(() => import('./govt/routes/Sanctions').then(m => ({ default: m.Sanctions })))
 
 function RouteLoader() {
   return (
@@ -46,6 +47,7 @@ const routes = [
         children: [
           { index: true, element: <S><Bureau /></S> },
           { path: 'censo', element: <S><Census /></S> },
+          { path: 'sanciones', element: <S><Sanctions /></S> },
         ],
       },
       {

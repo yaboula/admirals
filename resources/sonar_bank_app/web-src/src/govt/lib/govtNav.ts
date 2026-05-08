@@ -76,7 +76,6 @@ export const GOVT_NAV_ITEMS: GovtNavItem[] = [
     descriptionKey: 'govt.nav.sanctionsDescription',
     icon: Scale,
     requiredPerm: ACE_PERMS.P10.perm,
-    comingSoon: true,
   },
   {
     id: 'subsidies',

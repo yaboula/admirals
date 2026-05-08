@@ -71,3 +71,71 @@ export interface GovtCensusFilters {
   compliance: GovtTaxCompliance | 'all'
   riskLevel: GovtRiskLevel | 'all'
 }
+
+/* ============================================================================
+   Sanctions module — flag queue, actions and history.
+   ============================================================================ */
+
+export type GovtSanctionActionType =
+  | 'freeze_accounts'
+  | 'lift_freeze'
+  | 'apply_fine'
+  | 'close_flag'
+
+export interface GovtFlagQueueItem {
+  flagId: string
+  citizenCid: string
+  citizenAlias: string
+  citizenStatus: GovtCitizenStatus
+  citizenRiskLevel: GovtRiskLevel
+  raisedAt: number
+  severity: GovtFlagSeverity
+  status: GovtFlagStatus
+  summary: string
+}
+
+export interface GovtSanctionAction {
+  id: string
+  type: GovtSanctionActionType
+  targetCid: string
+  targetAlias: string
+  relatedFlagId?: string
+  amount?: number
+  verdict?: 'resolved' | 'dismissed'
+  reason: string
+  operator: string
+  performedAt: number
+  idempotencyKey: string
+}
+
+export interface GovtFlagQueueFilters {
+  search: string
+  severity: GovtFlagSeverity | 'all'
+  status: GovtFlagStatus | 'all'
+}
+
+export interface GovtSanctionRequestBase {
+  reason: string
+  idempotencyKey: string
+}
+
+export interface GovtCloseFlagRequest extends GovtSanctionRequestBase {
+  flagId: string
+  verdict: 'resolved' | 'dismissed'
+}
+
+export interface GovtFreezeAccountsRequest extends GovtSanctionRequestBase {
+  targetCid: string
+  relatedFlagId?: string
+}
+
+export interface GovtLiftFreezeRequest extends GovtSanctionRequestBase {
+  targetCid: string
+  relatedFlagId?: string
+}
+
+export interface GovtApplyFineRequest extends GovtSanctionRequestBase {
+  targetCid: string
+  relatedFlagId?: string
+  amount: number
+}
