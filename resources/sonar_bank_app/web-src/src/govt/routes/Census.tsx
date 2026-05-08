@@ -6,7 +6,6 @@ import { useAceGate } from '@/components/security'
 import { ACE_PERMS } from '@/lib/ace'
 import { cn } from '@/lib/utils'
 import { GovtCard } from '../components/GovtCard'
-import { GovtPill } from '../components/GovtPill'
 import { CensusFilters } from './census/CensusFilters'
 import { CitizenRow } from './census/CitizenRow'
 import { CitizenDetail } from './census/CitizenDetail'
@@ -52,31 +51,32 @@ export function Census() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 pt-1">
+    <div className="flex h-full flex-col gap-4 pt-2">
       <motion.header
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="flex flex-wrap items-center justify-between gap-3"
+        className="space-y-3 border-b pb-4"
+        style={{ borderColor: 'var(--color-govt-border)' }}
       >
         <div className="flex items-center gap-3">
-          <span
+          <div
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border"
+            style={{ background: 'var(--color-govt-glass)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
             aria-hidden
-            className="flex h-9 w-9 items-center justify-center rounded-2xl"
-            style={{ background: 'var(--color-govt-accent-subtle)', color: 'var(--color-govt-accent-light)' }}
           >
-            <Users size={16} strokeWidth={1.9} />
-          </span>
+            <Users size={17} strokeWidth={1.8} />
+          </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-[-0.02em] text-[var(--color-govt-text-primary)]">{t('govt.census.title')}</h1>
-            <p className="text-xs text-[var(--color-govt-text-tertiary)]">{t('govt.census.subtitle')}</p>
+            <h1 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-govt-text-primary)]">{t('govt.census.title')}</h1>
+            <p className="text-[11px] text-[var(--color-govt-text-tertiary)]">{t('govt.census.subtitle')}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <GovtPill tone="success" size="xs">{`${number(totalsByStatus.active)} ${t('govt.census.status.active')}`}</GovtPill>
-          <GovtPill tone="warning" size="xs">{`${number(totalsByStatus.flagged)} ${t('govt.census.status.flagged')}`}</GovtPill>
-          <GovtPill tone="danger" size="xs">{`${number(totalsByStatus.sanctioned)} ${t('govt.census.status.sanctioned')}`}</GovtPill>
-          <GovtPill tone="neutral" size="xs">{`${number(totalsByStatus.exempt)} ${t('govt.census.status.exempt')}`}</GovtPill>
+        <div className="flex flex-wrap items-center gap-2">
+          <CensusStatTile value={number(totalsByStatus.active)} label={t('govt.census.status.active')} color="oklch(0.72 0.17 155)" />
+          <CensusStatTile value={number(totalsByStatus.flagged)} label={t('govt.census.status.flagged')} color="oklch(0.82 0.14 85)" />
+          <CensusStatTile value={number(totalsByStatus.sanctioned)} label={t('govt.census.status.sanctioned')} color="oklch(0.78 0.16 25)" />
+          <CensusStatTile value={number(totalsByStatus.exempt)} label={t('govt.census.status.exempt')} color="var(--color-govt-text-tertiary)" />
         </div>
       </motion.header>
 
@@ -86,7 +86,7 @@ export function Census() {
         resultCount={listQuery.isLoading ? undefined : list.length}
       />
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(320px,0.42fr)_minmax(0,0.58fr)]">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(300px,0.42fr)_minmax(0,0.58fr)]">
         <GovtCard variant="glass" padding="none" className="flex min-h-0 flex-col overflow-hidden">
           <ListHeader />
           <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 scrollbar-thin">
@@ -95,7 +95,7 @@ export function Census() {
             ) : list.length === 0 ? (
               <ListEmpty />
             ) : (
-              <ul className="space-y-1.5 pt-1">
+              <ul className="space-y-2 pt-2">
                 {list.map((citizen) => (
                   <li key={citizen.cid}>
                     <CitizenRow
@@ -165,6 +165,18 @@ function DetailLoading() {
       <Loader2 size={20} className="animate-spin" />
       <span className="text-[11px] uppercase tracking-[0.16em]">Resolving citizen…</span>
     </GovtCard>
+  )
+}
+
+function CensusStatTile({ value, label, color }: { value: string; label: string; color: string }) {
+  return (
+    <div
+      className="flex items-baseline gap-2 rounded-xl border px-3 py-1.5"
+      style={{ background: 'oklch(1 0 0 / 0.04)', borderColor: 'var(--color-govt-border)' }}
+    >
+      <span className="text-lg font-light tabular-nums leading-none tracking-[-0.04em]" style={{ color }}>{value}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
+    </div>
   )
 }
 

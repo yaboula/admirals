@@ -17,7 +17,7 @@ export function Bureau() {
 
   return (
     <div className="relative h-full w-full overflow-y-auto pb-6 scrollbar-thin">
-      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 pt-2">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 pt-2">
         <motion.section
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,11 +66,11 @@ export function Bureau() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, delay: 0.10, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-secondary)]">
+          <div className="mb-4 flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--color-govt-border)' }}>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-govt-text-tertiary)]">
               {t('govt.modulesTitle')}
             </h2>
-            <span className="text-xs text-[var(--color-govt-text-tertiary)]">
+            <span className="text-[10px] text-[var(--color-govt-text-quaternary)]">
               {t('govt.modulesHint')}
             </span>
           </div>
@@ -96,21 +96,13 @@ export function Bureau() {
 function BureauSealLarge() {
   return (
     <div className="flex items-center justify-center">
-      <div className="relative">
         <div
           aria-hidden
-          className="absolute inset-0 -z-[1] rounded-full blur-3xl"
-          style={{ background: 'var(--color-govt-accent-glow)' }}
-        />
-        <div
-          aria-hidden
-          className="flex h-44 w-44 flex-col items-center justify-center rounded-full border-2 text-center"
+          className="flex h-40 w-40 flex-col items-center justify-center rounded-full border text-center"
           style={{
-            background:
-              'radial-gradient(circle at 50% 25%, oklch(0.20 0.05 252 / 0.85), oklch(0.07 0.025 250 / 0.95))',
-            borderColor: 'oklch(0.66 0.18 252 / 0.50)',
-            boxShadow:
-              'inset 0 1px 24px oklch(1 0 0 / 0.10), 0 0 60px oklch(0.66 0.18 252 / 0.30)',
+            background: 'radial-gradient(circle at 50% 30%, oklch(0.16 0.030 252), oklch(0.06 0.010 252))',
+            borderColor: 'oklch(1 0 0 / 0.14)',
+            boxShadow: 'inset 0 1px 20px oklch(1 0 0 / 0.07)',
           }}
         >
           <span className="font-mono text-3xl font-bold tracking-[-0.05em] text-white">SB</span>
@@ -121,7 +113,6 @@ function BureauSealLarge() {
             Treasury Bureau
           </span>
         </div>
-      </div>
     </div>
   )
 }
@@ -138,22 +129,36 @@ function KpiTile({
   tone?: 'neutral' | 'warning'
 }) {
   return (
-    <GovtCard variant="glass" padding="md">
-      <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">
+    <div
+      className="relative overflow-hidden rounded-[1.5rem] border p-5"
+      style={{
+        background: 'var(--color-govt-glass)',
+        borderColor: 'var(--color-govt-border)',
+      }}
+    >
+      <div
+        aria-hidden
+        className="absolute left-0 top-4 h-8 w-[3px] rounded-r-full"
+        style={{
+          background: tone === 'warning' ? 'oklch(0.78 0.16 85)' : 'var(--color-govt-accent)',
+          opacity: 0.6,
+        }}
+      />
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-govt-text-tertiary)]">
         {label}
       </span>
       <span
         className={cn(
-          'mt-2 block truncate text-2xl font-semibold tactile-tabular-nums',
-          tone === 'warning' ? 'text-[oklch(0.85_0.14_85)]' : 'text-[var(--color-govt-text-primary)]',
+          'mt-3 block truncate text-3xl font-light tracking-[-0.04em] tabular-nums',
+          tone === 'warning' ? 'text-[oklch(0.88_0.12_85)]' : 'text-[var(--color-govt-text-primary)]',
         )}
       >
         {value}
       </span>
-      <span className="mt-2 block truncate text-[11px] text-[var(--color-govt-text-tertiary)]">
+      <span className="mt-2 block truncate text-[11px] text-[var(--color-govt-text-quaternary)]">
         {hint}
       </span>
-    </GovtCard>
+    </div>
   )
 }
 
@@ -190,8 +195,8 @@ function ModuleCard({ icon: Icon, title, description, to, requiredPerm, comingSo
       className={cn(
         'group flex flex-col items-start gap-3 rounded-[1.5rem] border p-4 text-left transition-all',
         locked
-          ? 'cursor-not-allowed border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] opacity-60'
-          : 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] hover:-translate-y-0.5 hover:border-[var(--color-govt-border-strong)] hover:bg-[var(--color-govt-accent-subtle)]',
+          ? 'cursor-not-allowed border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] opacity-50'
+          : 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] hover:-translate-y-0.5 hover:border-[var(--color-govt-border-strong)]',
       )}
     >
       <div className="flex w-full items-center justify-between">

@@ -62,7 +62,7 @@ export function CensusFilters({ value, onChange, resultCount }: Props) {
             onChange={(e) => onChange({ ...value, search: e.target.value })}
             placeholder={t('govt.census.searchPlaceholder')}
             aria-label={t('govt.census.searchPlaceholder')}
-            className="h-10 w-full rounded-2xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] pl-9 pr-9 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
+            className="h-10 w-full rounded-2xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.008_252/0.55)] pl-9 pr-9 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
           />
           {value.search.length > 0 ? (
             <button

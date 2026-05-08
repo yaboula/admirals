@@ -12,9 +12,9 @@ export function GovtSidebar() {
       <div
         className="flex h-full w-full flex-col items-center overflow-hidden rounded-[2rem]"
         style={{
-          background: 'linear-gradient(180deg, oklch(0.13 0.035 252 / 0.78), oklch(0.06 0.025 252 / 0.94))',
-          border: '1px solid oklch(0.66 0.18 252 / 0.18)',
-          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.06), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
+          background: 'linear-gradient(180deg, oklch(0.10 0.010 252 / 0.88), oklch(0.05 0.008 252 / 0.96))',
+          border: '1px solid oklch(1 0 0 / 0.09)',
+          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
           backdropFilter: 'blur(24px) saturate(150%)',
           WebkitBackdropFilter: 'blur(24px) saturate(150%)',
         }}
@@ -24,7 +24,7 @@ export function GovtSidebar() {
         <div
           aria-hidden
           className="h-px w-8"
-          style={{ background: 'oklch(0.66 0.18 252 / 0.30)' }}
+          style={{ background: 'oklch(1 0 0 / 0.08)' }}
         />
 
         <nav className="flex flex-1 flex-col items-center gap-2.5 py-4">
@@ -45,7 +45,7 @@ function BureauSeal() {
         style={{
           background: 'var(--gradient-govt-primary)',
           borderColor: 'oklch(1 0 0 / 0.18)',
-          boxShadow: '0 0 18px oklch(0.66 0.18 252 / 0.45), inset 0 1px 0 oklch(1 0 0 / 0.18)',
+          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.18)',
         }}
       >
         <span className="font-mono text-base font-bold tracking-[-0.06em] text-white">SB</span>

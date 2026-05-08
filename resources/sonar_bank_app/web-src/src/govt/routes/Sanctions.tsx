@@ -5,7 +5,6 @@ import { useI18n } from '@/lib/i18n'
 import { useAceGate } from '@/components/security'
 import { ACE_PERMS } from '@/lib/ace'
 import { GovtCard } from '../components/GovtCard'
-import { GovtPill } from '../components/GovtPill'
 import { FlagQueue } from './sanctions/FlagQueue'
 import { FlagDetail } from './sanctions/FlagDetail'
 import {
@@ -44,39 +43,38 @@ export function Sanctions() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 pt-1">
+    <div className="flex h-full flex-col gap-4 pt-2">
       <motion.header
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="flex flex-wrap items-center justify-between gap-3"
+        className="space-y-3 border-b pb-4"
+        style={{ borderColor: 'var(--color-govt-border)' }}
       >
         <div className="flex items-center gap-3">
-          <span
+          <div
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border"
+            style={{ background: 'var(--color-govt-glass)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
             aria-hidden
-            className="flex h-9 w-9 items-center justify-center rounded-2xl"
-            style={{ background: 'var(--color-govt-accent-subtle)', color: 'var(--color-govt-accent-light)' }}
           >
-            <Scale size={16} strokeWidth={1.9} />
-          </span>
+            <Scale size={17} strokeWidth={1.8} />
+          </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-[-0.02em] text-[var(--color-govt-text-primary)]">{t('govt.sanctions.title')}</h1>
-            <p className="text-xs text-[var(--color-govt-text-tertiary)]">{t('govt.sanctions.subtitle')}</p>
+            <h1 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-govt-text-primary)]">{t('govt.sanctions.title')}</h1>
+            <p className="text-[11px] text-[var(--color-govt-text-tertiary)]">{t('govt.sanctions.subtitle')}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {kpisQuery.data ? (
-            <>
-              <GovtPill tone="warning" size="xs">{`${number(kpisQuery.data.open)} ${t('govt.sanctions.kpi.open')}`}</GovtPill>
-              <GovtPill tone="danger" size="xs">{`${number(kpisQuery.data.critical)} ${t('govt.sanctions.kpi.critical')}`}</GovtPill>
-              <GovtPill tone="accent" size="xs">{`${number(kpisQuery.data.today)} ${t('govt.sanctions.kpi.today')}`}</GovtPill>
-              <GovtPill tone="neutral" size="xs">{`${number(kpisQuery.data.total)} ${t('govt.sanctions.kpi.total')}`}</GovtPill>
-            </>
-          ) : null}
-        </div>
+        {kpisQuery.data ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <KpiStrip label={t('govt.sanctions.kpi.open')} value={number(kpisQuery.data.open)} tone="warning" />
+            <KpiStrip label={t('govt.sanctions.kpi.critical')} value={number(kpisQuery.data.critical)} tone="danger" />
+            <KpiStrip label={t('govt.sanctions.kpi.today')} value={number(kpisQuery.data.today)} tone="accent" />
+            <KpiStrip label={t('govt.sanctions.kpi.total')} value={number(kpisQuery.data.total)} tone="neutral" />
+          </div>
+        ) : null}
       </motion.header>
 
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(320px,0.4fr)_minmax(0,0.6fr)]">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(300px,0.4fr)_minmax(0,0.6fr)]">
         <FlagQueue
           filters={filters}
           onFiltersChange={setFilters}
@@ -143,6 +141,26 @@ function PermissionDenied() {
         <p className="text-sm font-semibold text-[var(--color-govt-text-primary)]">{t('nav.permissionRequired')}</p>
         <p className="text-xs leading-relaxed text-[var(--color-govt-text-tertiary)]">{t('govt.sanctions.permissionHint')}</p>
       </GovtCard>
+    </div>
+  )
+}
+
+const KPI_STRIP_TONE: Record<string, { bg: string; border: string; fg: string }> = {
+  warning: { bg: 'oklch(0.78 0.16 85 / 0.08)', border: 'oklch(0.78 0.16 85 / 0.22)', fg: 'oklch(0.88 0.12 85)' },
+  danger:  { bg: 'oklch(0.62 0.21 25 / 0.08)',  border: 'oklch(0.62 0.21 25 / 0.22)',  fg: 'oklch(0.88 0.10 25)' },
+  accent:  { bg: 'var(--color-govt-accent-subtle)', border: 'var(--color-govt-border-active)', fg: 'var(--color-govt-accent-light)' },
+  neutral: { bg: 'oklch(1 0 0 / 0.04)', border: 'var(--color-govt-border)', fg: 'var(--color-govt-text-secondary)' },
+}
+
+function KpiStrip({ label, value, tone }: { label: string; value: string; tone: string }) {
+  const c = KPI_STRIP_TONE[tone] ?? KPI_STRIP_TONE.neutral
+  return (
+    <div
+      className="flex items-baseline gap-2 rounded-xl border px-3 py-1.5"
+      style={{ background: c.bg, borderColor: c.border }}
+    >
+      <span className="text-lg font-light tabular-nums leading-none tracking-[-0.04em]" style={{ color: c.fg }}>{value}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--color-govt-text-tertiary)' }}>{label}</span>
     </div>
   )
 }

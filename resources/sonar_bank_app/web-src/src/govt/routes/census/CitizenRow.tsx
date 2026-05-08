@@ -57,7 +57,7 @@ export function CitizenRow({ citizen, active, onSelect }: Props) {
       className={cn(
         'group flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-all',
         active
-          ? 'border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)] shadow-[0_0_24px_var(--color-govt-accent-glow)]'
+          ? 'border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)]'
           : 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] hover:border-[var(--color-govt-border-strong)] hover:bg-white/[0.04]',
       )}
     >
@@ -67,7 +67,7 @@ export function CitizenRow({ citizen, active, onSelect }: Props) {
           'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border',
           active ? 'border-[var(--color-govt-border-active)]' : 'border-[var(--color-govt-border)]',
         )}
-        style={{ background: 'oklch(0.06 0.022 252 / 0.6)' }}
+        style={{ background: 'oklch(0.06 0.008 252 / 0.65)' }}
       >
         <StatusIcon size={16} strokeWidth={1.9} className={tone.text} />
       </span>

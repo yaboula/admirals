@@ -135,8 +135,8 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
             className="relative w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-[var(--color-govt-border-strong)]"
             style={{
               background:
-                'radial-gradient(circle at 50% 0%, oklch(0.18 0.045 252 / 0.96), oklch(0.07 0.025 252 / 0.98))',
-              boxShadow: '0 40px 90px -32px oklch(0 0 0 / 0.85), 0 0 80px -20px var(--color-govt-accent-glow)',
+                'radial-gradient(circle at 50% 0%, oklch(0.14 0.018 252 / 0.97), oklch(0.05 0.010 252 / 0.99))',
+              boxShadow: '0 40px 90px -32px oklch(0 0 0 / 0.88)',
             }}
           >
             <div className="flex items-start justify-between gap-3 px-6 pt-5">
@@ -221,7 +221,7 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
                       value={fineAmountInput}
                       onChange={(e) => setFineAmountInput(e.target.value.replace(/[^0-9.,]/g, ''))}
                       placeholder="0.00"
-                      className="h-11 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] pl-7 pr-3 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)] tactile-tabular-nums"
+                      className="h-11 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.008_252/0.55)] pl-7 pr-3 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)] tactile-tabular-nums"
                     />
                   </div>
                   {fineAmountCents > 0 ? (
@@ -236,12 +236,12 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
                   onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))}
                   placeholder={t('govt.sanctions.dialog.reasonPlaceholder')}
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] px-3 py-2.5 text-sm leading-relaxed text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
+                  className="w-full resize-none rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.008_252/0.55)] px-3 py-2.5 text-sm leading-relaxed text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
                 />
               </FieldRow>
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-[var(--color-govt-border)] bg-[oklch(0.05_0.022_252/0.85)] px-6 py-3">
+            <div className="flex items-center justify-end gap-2 border-t border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.92)] px-6 py-3">
               <button
                 type="button"
                 onClick={onClose}
