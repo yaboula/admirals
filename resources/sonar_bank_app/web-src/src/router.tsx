@@ -25,6 +25,7 @@ const Sanctions = lazy(() => import('./govt/routes/Sanctions').then(m => ({ defa
 const TaxEngine = lazy(() => import('./govt/routes/TaxEngine').then(m => ({ default: m.TaxEngine })))
 const GovtBusiness = lazy(() => import('./govt/routes/GovtBusiness').then(m => ({ default: m.GovtBusiness })))
 const GovtTreasury = lazy(() => import('./govt/routes/GovtTreasury').then(m => ({ default: m.GovtTreasury })))
+const GovtSubsidies = lazy(() => import('./govt/routes/GovtSubsidies').then(m => ({ default: m.GovtSubsidies })))
 
 function RouteLoader() {
   return (
@@ -54,6 +55,7 @@ const routes = [
           { path: 'fiscal', element: <S><TaxEngine /></S> },
           { path: 'empresas', element: <S><GovtBusiness /></S> },
           { path: 'movimientos', element: <S><GovtTreasury /></S> },
+          { path: 'subsidios', element: <S><GovtSubsidies /></S> },
         ],
       },
       {

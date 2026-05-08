@@ -325,3 +325,65 @@ export interface GovtTreasuryPage {
   totalCount: number
   stats: GovtTreasuryStats
 }
+
+/* ============================================================================
+   Subsidy Programs — state-issued disbursements to citizens and companies.
+   ACE P04: sonar.bank.govt.read (read) / P04: sonar.bank.govt.subsidy.write (mutations — stub).
+   ============================================================================ */
+
+export type GovtSubsidyType =
+  | 'food'
+  | 'housing'
+  | 'employment'
+  | 'medical'
+  | 'education'
+  | 'emergency'
+  | 'agricultural'
+
+export type GovtSubsidyStatus = 'active' | 'paused' | 'completed' | 'proposed'
+
+export type GovtSubsidyRecipientKind = 'citizen' | 'company'
+
+export interface GovtSubsidyProgram {
+  programId: string
+  code: string
+  name: string
+  type: GovtSubsidyType
+  status: GovtSubsidyStatus
+  budget: number
+  disbursed: number
+  beneficiaryCount: number
+  startDate: number
+  endDate: number | null
+  description: string
+}
+
+export interface GovtSubsidyDisbursement {
+  id: string
+  programCode: string
+  recipientId: string
+  recipientLabel: string
+  recipientKind: GovtSubsidyRecipientKind
+  amount: number
+  disbursedAt: number
+  note: string
+  status: 'confirmed' | 'pending' | 'reversed'
+}
+
+export interface GovtSubsidyProgramDetail extends GovtSubsidyProgram {
+  recentDisbursements: GovtSubsidyDisbursement[]
+}
+
+export interface GovtSubsidyFilters {
+  search: string
+  type: GovtSubsidyType | 'all'
+  status: GovtSubsidyStatus | 'all'
+}
+
+export interface GovtSubsidyStats {
+  totalDisbursed: number
+  totalBudget: number
+  activeProgramCount: number
+  totalBeneficiaries: number
+  pendingDisbursements: number
+}

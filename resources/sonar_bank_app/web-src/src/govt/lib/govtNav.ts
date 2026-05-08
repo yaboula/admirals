@@ -81,7 +81,6 @@ export const GOVT_NAV_ITEMS: GovtNavItem[] = [
     descriptionKey: 'govt.nav.subsidiesDescription',
     icon: HandCoins,
     requiredPerm: ACE_PERMS.P04.perm,
-    comingSoon: true,
   },
   {
     id: 'reports',

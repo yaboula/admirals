@@ -3,7 +3,7 @@
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
 > **Status:** 🟡 **OPEN — DRAFTING active BANK-FE.0** — añade requests durante drafting C-FE-01/02/03 v0.1.
-> **Versionado:** v0.3 (BANK-A.GOVT NODOs 1-4 shipped). Bump cada vez que añada/cierre items.
+> **Versionado:** v0.4 (BANK-A.GOVT NODOs 1-5 shipped). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -423,6 +423,40 @@ Cada request sigue:
 
 ---
 
+### REQ-FE-013 — `gov.subsidy.list` + `gov.subsidy.detail` read callbacks (Subsidios — NODO 5)
+
+- **Severity:** 🔴 HIGH
+- **Detected during:** BANK-A.GOVT NODO 5 implementation 2026-05-09 (`src/govt/routes/GovtSubsidies.tsx` + `data/queries/govtSubsidies.ts` mock-backed).
+- **Backend contract afectado:** NEW callbacks (read). Auth: existing ACE `sonar.bank.govt.read` (P04). Write mutations (disburse/grant) ya cubiertas en REQ-FE-010.
+- **Gap concreto:** Subsidies NODO 5 muestra 7 programas de subsidio con: nombre, código, tipo (food/housing/employment/medical/education/emergency/agricultural), status (active/paused/completed/proposed), budget, disbursed, beneficiaryCount + detalle con desembolsos recientes individuales por programa. Sin endpoints, NODO 5 vive sobre mock layer (`src/govt/data/mock/govtSubsidies.ts` 7 programas seed). REQ-FE-010 ya documenta las mutations de escritura (disburse_to_citizen + grant_to_business); este request cubre únicamente los 2 callbacks de lectura.
+- **Workaround mock UI:** Implementado completo — `useGovtSubsidyStatsQuery` + `useGovtSubsidyListQuery` + `useGovtSubsidyDetailQuery` con 7 programas y desembolsos individuales. UI completa funcional (filtros por status/type, list con progress bar, detail con budget gauge, disbursement list, action buttons disabled). Swap mock→real = cambiar 3 funciones internas del query layer.
+- **Propuesta resolución:**
+  ```
+  Callbacks NEW (2):
+  1. sonar:bank:gov:subsidy:list
+     Auth: AUTH-ACE 'sonar.bank.govt.read' (P04).
+     Request: { filters?: { type?: GovtSubsidyType, status?: GovtSubsidyStatus }, search?: string<=64 }
+     Response: { items: GovtSubsidyProgram[], stats: GovtSubsidyStats }
+     GovtSubsidyProgram fields per `src/govt/data/contracts.ts` §Subsidies: programId, code, name, type, status, budget (cents), disbursed (cents), beneficiaryCount, startDate (epoch), endDate (epoch | null), description.
+     GovtSubsidyStats: totalDisbursed, totalBudget, activeProgramCount, totalBeneficiaries, pendingDisbursements.
+     Rate-limit: budget HIGH (capacity 20, refill 3/sec).
+     Idempotency: NO.
+     Perf p99: <= 60ms.
+  2. sonar:bank:gov:subsidy:detail
+     Auth: AUTH-ACE 'sonar.bank.govt.read' (P04).
+     Request: { program_id: string }
+     Response: GovtSubsidyProgramDetail extends GovtSubsidyProgram + { recentDisbursements: GovtSubsidyDisbursement[8..15] }
+     GovtSubsidyDisbursement fields: id, programCode, recipientId, recipientLabel, recipientKind, amount (cents), disbursedAt (epoch), note, status (confirmed/pending/reversed).
+     Side effects: append audit ledger { action: 'GOVT_SUBSIDY_DETAIL_VIEW', actor_cid, target_program_id }.
+     Rate-limit: budget HIGH.
+     Perf p99: <= 80ms.
+  ```
+- **Criterio aceptación:** 2 callbacks LOCKED + audit ledger entries detail view + payload shapes match `src/govt/data/contracts.ts` types 1:1. Nota: mutations REQ-FE-010 (disburse_to_citizen + grant_to_business) deben completarse conjuntamente para full-functional NODO 5.
+- **Path recomendado:** Path A (Phase A.GOVT cycle) — NODO 5 ya entregado UI-side mock-only.
+- **Status:** OPEN — awaiting Backend Lead reactivation.
+
+---
+
 ## 2. Items resueltos / cerrados
 
 _(empty — drafting BANK-FE.0)_
@@ -433,12 +467,12 @@ _(empty — drafting BANK-FE.0)_
 
 | Métrica | Valor |
 |---|---|
-| Total items | 12 |
-| HIGH abiertos | 6 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012) |
+| Total items | 13 |
+| HIGH abiertos | 7 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013) |
 | MEDIUM abiertos | 3 (REQ-FE-001, REQ-FE-002, REQ-FE-008) |
 | LOW abiertos | 3 (REQ-FE-003, REQ-FE-004, REQ-FE-005) |
 | RESOLVED | 0 (REQ-FE-005 path-C self-resolved) |
-| Path A target (Backend amendment / Phase A.GOVT cycle) | 8 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012) |
+| Path A target (Backend amendment / Phase A.GOVT cycle) | 9 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013) |
 | Path A/B target (joint spec) | 1 (REQ-FE-008) |
 | Path B target (Phase B defer) | 2 (REQ-FE-003, REQ-FE-004) |
 | Path C target (UI workaround) | 1 (REQ-FE-005) |
@@ -461,7 +495,8 @@ _(empty — drafting BANK-FE.0)_
 | v0.1 | 2026-05-06 | BANK-FE.0 inicial — 5 items registrados (2 MEDIUM Path A + 2 LOW Path B + 1 LOW Path C self-resolved). |
 | v0.2 | 2026-05-08 | BANK-A.GOVT NODO 1+2 closing — 5 nuevos items govt-scope (REQ-FE-006..010): 4 HIGH (Census list/detail + Sanctions + Subsidies callbacks) + 1 MEDIUM (joint risk score spec con Security Lead). Govt panel mock-only hasta Backend Lead reactivación Phase A.GOVT cycle. |
 | v0.3 | 2026-05-08 | BANK-A.GOVT NODO 3+4 shipped — 2 nuevos items HIGH (REQ-FE-011 Business Registry list+detail callbacks, REQ-FE-012 Treasury Movements callback con stats agregadas server-side). Ambos módulos UI completos sobre mock layer; NODO 3 (`/tesoreria/empresas`) y NODO 4 (`/tesoreria/movimientos`) operativos. Total 12 items — 6 HIGH, 3 MEDIUM, 3 LOW. |
+| v0.4 | 2026-05-09 | BANK-A.GOVT NODO 5 shipped — 1 nuevo item HIGH (REQ-FE-013 Subsidy list+detail read callbacks). Nota: write mutations ya cubiertas en REQ-FE-010. NODO 5 (`/tesoreria/subsidios`) operativo con 7 programas, tipos, status, budget gauges, disbursements recientes. Total 13 items — 7 HIGH, 3 MEDIUM, 3 LOW. |
 
 ---
 
-**FIN `FE_BACKEND_REQUESTS.md` v0.3 — BANK-A.GOVT NODOs 1-4 shipped sobre mock.** Govt panel (Census + Sanctions + TaxEngine + Empresas + Movimientos) requiere Backend Lead Phase A.GOVT cycle para 6 items HIGH (REQ-FE-006/007/009/010/011/012). Frontend continúa drafting NODOs siguientes (Subsidios + Informes) con mock layer.
+**FIN `FE_BACKEND_REQUESTS.md` v0.4 — BANK-A.GOVT NODOs 1-5 shipped sobre mock.** Govt panel (Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios) requiere Backend Lead Phase A.GOVT cycle para 7 items HIGH (REQ-FE-006/007/009/010/011/012/013). Frontend continúa drafting NODO siguiente (Informes) con mock layer.
