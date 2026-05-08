@@ -113,27 +113,25 @@ export function CitizenDetail({ detail, isFetching }: Props) {
       className={cn('flex h-full flex-col gap-3 overflow-y-auto pr-1 scrollbar-thin', isFetching && 'opacity-80')}
     >
       <GovtCard variant="hero" padding="lg" className="overflow-hidden">
-        <div className="flex flex-wrap items-start gap-4">
-          <div className="flex min-w-0 flex-1 items-center gap-4">
-            <div
-              aria-hidden
-              className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 text-white"
-              style={{
-                background: 'radial-gradient(circle at 50% 30%, oklch(0.18 0.018 252), oklch(0.08 0.010 252))',
-                borderColor: 'var(--color-govt-border-strong)',
-              }}
-            >
-              <IdCard size={22} strokeWidth={1.7} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="break-words text-2xl font-light leading-tight tracking-[-0.04em] text-[var(--color-govt-text-primary)]">{detail.alias}</h2>
-              <p className="mt-0.5 truncate font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-govt-text-tertiary)]">{cidDisplay}</p>
-            </div>
+        <div className="flex items-center gap-4">
+          <div
+            aria-hidden
+            className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 text-white"
+            style={{
+              background: 'radial-gradient(circle at 50% 30%, oklch(0.18 0.018 252), oklch(0.08 0.010 252))',
+              borderColor: 'var(--color-govt-border-strong)',
+            }}
+          >
+            <IdCard size={22} strokeWidth={1.7} />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <GovtPill tone={status.tone} size="md">{t(status.key)}</GovtPill>
-            <GovtPill tone="seal" size="md">{`${t('govt.census.detail.residency')}: ${number(detail.residencyDays)}d`}</GovtPill>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-2xl font-light leading-tight tracking-[-0.04em] text-[var(--color-govt-text-primary)]">{detail.alias}</h2>
+            <p className="mt-0.5 truncate font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-govt-text-tertiary)]">{cidDisplay}</p>
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <GovtPill tone={status.tone} size="md">{t(status.key)}</GovtPill>
+          <GovtPill tone="seal" size="md">{`${t('govt.census.detail.residency')}: ${number(detail.residencyDays)}d`}</GovtPill>
         </div>
       </GovtCard>
 
