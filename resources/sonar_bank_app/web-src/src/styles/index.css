@@ -5,6 +5,7 @@
 
 @import './tokens.css';
 @import './tactile.css';
+@import '../govt/styles/govtTokens.css';
 
 /* ============================================================================
    GLOBAL RESETS — Dark-only mandate (ADR-016 D3 + ADR-017 D7)

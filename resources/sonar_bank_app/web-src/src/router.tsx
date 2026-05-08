@@ -18,6 +18,8 @@ const Loans = lazy(() => import('./routes/Loans').then(m => ({ default: m.Loans 
 const Atm = lazy(() => import('./routes/Atm').then(m => ({ default: m.Atm })))
 const DevShowcase = lazy(() => import('./routes/dev/Showcase').then(m => ({ default: m.DevShowcase })))
 const NotFound = lazy(() => import('./routes/NotFound').then(m => ({ default: m.NotFound })))
+const GovtShell = lazy(() => import('./govt/layout/GovtShell').then(m => ({ default: m.GovtShell })))
+const Bureau = lazy(() => import('./govt/routes/Bureau').then(m => ({ default: m.Bureau })))
 
 function RouteLoader() {
   return (
@@ -37,6 +39,13 @@ const routes = [
     element: <App />,
     children: [
       { path: 'atm', element: <S><Atm /></S> },
+      {
+        path: 'tesoreria',
+        element: <S><GovtShell /></S>,
+        children: [
+          { index: true, element: <S><Bureau /></S> },
+        ],
+      },
       {
         path: '/',
         element: <AppShell />,

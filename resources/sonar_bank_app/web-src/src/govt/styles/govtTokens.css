@@ -1,0 +1,68 @@
+/* ============================================================
+   SONAR Treasury Bureau — Civic Navy palette (NODO 1)
+   Activated by [data-theme="govt"] wrapper on <GovtShell>.
+   Isolated tokens — does NOT mutate the consumer Bank palette.
+   ============================================================ */
+
+@theme {
+  /* Civic Navy ladder */
+  --color-govt-abyss: oklch(0.05 0.022 252);
+  --color-govt-void: oklch(0.08 0.028 252);
+  --color-govt-base: oklch(0.11 0.032 252);
+  --color-govt-elevated: oklch(0.14 0.036 252);
+  --color-govt-glass: oklch(0.14 0.036 252 / 0.55);
+  --color-govt-glass-strong: oklch(0.18 0.040 252 / 0.72);
+
+  /* Civic Blue accent (electric blue, fintech-grade) */
+  --color-govt-accent: oklch(0.66 0.18 252);
+  --color-govt-accent-strong: oklch(0.74 0.20 250);
+  --color-govt-accent-light: oklch(0.82 0.16 245);
+  --color-govt-accent-glow: oklch(0.66 0.18 252 / 0.30);
+  --color-govt-accent-subtle: oklch(0.66 0.18 252 / 0.08);
+  --color-govt-accent-soft: oklch(0.66 0.18 252 / 0.16);
+
+  /* Civic seal — hero anchor (cyan-leaning) */
+  --color-govt-seal: oklch(0.78 0.14 215);
+  --color-govt-seal-glow: oklch(0.78 0.14 215 / 0.30);
+
+  /* Borders */
+  --color-govt-border: oklch(1 0 0 / 0.08);
+  --color-govt-border-strong: oklch(0.66 0.18 252 / 0.30);
+  --color-govt-border-active: oklch(0.66 0.18 252 / 0.55);
+
+  /* Authority text scale */
+  --color-govt-text-primary: oklch(0.98 0.005 250);
+  --color-govt-text-secondary: oklch(0.98 0.005 250 / 0.74);
+  --color-govt-text-tertiary: oklch(0.98 0.005 250 / 0.50);
+  --color-govt-text-quaternary: oklch(0.98 0.005 250 / 0.30);
+
+  /* Gradients */
+  --gradient-govt-primary: linear-gradient(135deg, oklch(0.66 0.18 252), oklch(0.78 0.16 240));
+  --gradient-govt-primary-hover: linear-gradient(135deg, oklch(0.72 0.20 250), oklch(0.82 0.16 240));
+  --gradient-govt-hero:
+    radial-gradient(circle at 80% 20%, oklch(0.66 0.18 252 / 0.22), transparent 38%),
+    radial-gradient(circle at 18% 70%, oklch(0.78 0.14 215 / 0.14), transparent 40%),
+    linear-gradient(135deg, oklch(0.10 0.030 252), oklch(0.05 0.022 252));
+}
+
+/* When GovtShell mounts, body inherits Civic Navy authority */
+[data-theme='govt'] {
+  background: var(--color-govt-abyss);
+  color: var(--color-govt-text-primary);
+}
+
+[data-theme='govt']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle at 76% 12%, oklch(0.66 0.18 252 / 0.10), transparent 38%),
+    radial-gradient(circle at 14% 78%, oklch(0.78 0.14 215 / 0.06), transparent 42%);
+}
+
+[data-theme='govt'] ::selection {
+  background: var(--color-govt-accent-glow);
+  color: var(--color-govt-text-primary);
+}
