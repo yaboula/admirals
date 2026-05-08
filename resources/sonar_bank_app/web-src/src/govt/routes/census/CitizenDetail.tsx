@@ -133,10 +133,12 @@ export function CitizenDetail({ detail, isFetching }: Props) {
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <GovtCard variant="glass" padding="md">
           <SectionHeader icon={Wallet} label={t('govt.census.detail.holdingsTitle')} />
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="mt-3 space-y-3">
             <Stat label={t('govt.census.detail.holdingsTotal')} value={holdingsDisplay} prominent />
-            <Stat label={t('govt.census.detail.holdingsAccounts')} value={number(detail.accountCount)} />
-            <Stat label={t('govt.census.detail.flagsCount')} value={number(detail.flagCount)} tone={detail.flagCount > 0 ? 'warning' : 'neutral'} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Stat label={t('govt.census.detail.holdingsAccounts')} value={number(detail.accountCount)} />
+              <Stat label={t('govt.census.detail.flagsCount')} value={number(detail.flagCount)} tone={detail.flagCount > 0 ? 'warning' : 'neutral'} />
+            </div>
           </div>
           <div className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-3">
             <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">
@@ -154,7 +156,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
 
       <GovtCard variant="glass" padding="md">
         <SectionHeader icon={Receipt} label={t('govt.census.detail.taxTitle')} />
-        <div className="mt-3 grid gap-3 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat label={t('govt.census.detail.taxBracket')} value={detail.taxStatus.bracketCode} />
           <Stat label={t('govt.census.detail.taxObligation')} value={streamerMode ? maskMoneyDisplay() : money(detail.taxStatus.periodObligation)} />
           <Stat label={t('govt.census.detail.taxPaid')} value={streamerMode ? maskMoneyDisplay() : money(detail.taxStatus.paid)} tone="success" />
@@ -315,7 +317,7 @@ function Stat({
   return (
     <div className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-3">
       <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
-      <span className={cn('mt-1 block truncate tactile-tabular-nums', prominent ? 'text-xl font-semibold' : 'text-sm font-medium', toneClass)}>
+      <span className={cn('mt-1 block truncate tactile-tabular-nums', prominent ? 'text-2xl font-semibold tracking-[-0.02em]' : 'text-sm font-medium', toneClass)}>
         {value}
       </span>
     </div>
