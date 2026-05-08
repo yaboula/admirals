@@ -89,6 +89,5 @@ export const GOVT_NAV_ITEMS: GovtNavItem[] = [
     descriptionKey: 'govt.nav.reportsDescription',
     icon: LineChart,
     requiredPerm: ACE_PERMS.P04.perm,
-    comingSoon: true,
   },
 ]

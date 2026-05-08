@@ -387,3 +387,63 @@ export interface GovtSubsidyStats {
   totalBeneficiaries: number
   pendingDisbursements: number
 }
+
+/* ============================================================================
+   Reports & Analytics — aggregated fiscal executive dashboard.
+   ACE P04: sonar.bank.govt.read.
+   ============================================================================ */
+
+export type GovtReportsRange = 'month' | 'quarter' | 'year'
+
+export interface GovtRevenueDataPoint {
+  label: string
+  collected: number
+  obligation: number
+}
+
+export interface GovtSectorRevenue {
+  sector: string
+  collected: number
+  entityCount: number
+}
+
+export interface GovtTopContributor {
+  id: string
+  label: string
+  kind: 'citizen' | 'company'
+  taxPaid: number
+  bracketCode: string
+  compliance: GovtTaxCompliance
+}
+
+export interface GovtComplianceBreakdown {
+  current: number
+  overdue: number
+  pending: number
+  exempt: number
+}
+
+export interface GovtRiskBreakdown {
+  low: number
+  medium: number
+  high: number
+  critical: number
+}
+
+export interface GovtReportsKpis {
+  totalRevenue: number
+  totalObligation: number
+  complianceRate: number
+  activeTaxpayers: number
+  revenueVsPriorPct: number
+}
+
+export interface GovtReportsData {
+  range: GovtReportsRange
+  kpis: GovtReportsKpis
+  revenueHistory: GovtRevenueDataPoint[]
+  sectorRevenue: GovtSectorRevenue[]
+  topContributors: GovtTopContributor[]
+  complianceBreakdown: GovtComplianceBreakdown
+  riskBreakdown: GovtRiskBreakdown
+}

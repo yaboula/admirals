@@ -3,7 +3,7 @@
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
 > **Status:** 🟡 **OPEN — DRAFTING active BANK-FE.0** — añade requests durante drafting C-FE-01/02/03 v0.1.
-> **Versionado:** v0.4 (BANK-A.GOVT NODOs 1-5 shipped). Bump cada vez que añada/cierre items.
+> **Versionado:** v0.5 (BANK-A.GOVT NODOs 1-6 shipped — TODOS LOS NODOs A.GOVT COMPLETADOS). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -457,6 +457,40 @@ Cada request sigue:
 
 ---
 
+### REQ-FE-014 — `gov.reports.analytics` callback agregado (Informes — NODO 6)
+
+- **Severity:** 🟡 MEDIUM
+- **Detected during:** BANK-A.GOVT NODO 6 implementation 2026-05-09 (`src/govt/routes/GovtReports.tsx` + `data/queries/govtReports.ts` mock-backed).
+- **Backend contract afectado:** NEW callback. Auth: existing ACE `sonar.bank.govt.read` (P04). Requiere aggregation server-side sobre datos de múltiples tablas (citizens, companies, ledger, flags).
+- **Gap concreto:** Reports NODO 6 muestra dashboard analítico con 5 secciones: KPIs (revenue, obligation, compliance rate, active taxpayers), Revenue bar chart (collected vs obligation por mes), Compliance donut ring (current/overdue/pending/exempt), Sector revenue bars, Top contributors ranked. Todas las secciones requieren aggregaciones DB que sólo el servidor puede computar eficientemente. Sin endpoint, NODO 6 vive sobre mock determinístico (`src/govt/data/mock/govtReports.ts` con wave function para simulación realista). Severity MEDIUM (no HIGH) porque la UI es read-only analytics y el workaround mock es visualmente completo para demo/drafting Phase A.
+- **Workaround mock UI:** Implementado completo — `useGovtReportsQuery` con range selector (Month/Quarter/Year), 4 KPI cards, SVG bar chart puro, ComplianceRing SVG donut, SectorBars horizontales, TopContributors ranked. streamerMode compatible. Swap mock→real = cambiar 1 función interna del query layer.
+- **Propuesta resolución:**
+  ```
+  Callback NEW (1):
+  sonar:bank:gov:reports:analytics
+  Auth: AUTH-ACE 'sonar.bank.govt.read' (P04).
+  Request: { range: 'month' | 'quarter' | 'year' }
+  Response: GovtReportsData {
+    range,
+    kpis: { totalRevenue, totalObligation, complianceRate, activeTaxpayers, revenueVsPriorPct },
+    revenueHistory: [{ label, collected, obligation }] (4/6/12 points depending on range),
+    sectorRevenue: [{ sector, collected, entityCount }] sorted desc,
+    topContributors: [{ id, label, kind, taxPaid, bracketCode, compliance }] top 8,
+    complianceBreakdown: { current, overdue, pending, exempt } (citizen counts),
+    riskBreakdown: { low, medium, high, critical } (citizen counts)
+  }
+  All values: amounts in cents. Computed via DB aggregation on citizens, companies, ledger, flags tables.
+  Side effects: append audit ledger { action: 'GOVT_REPORTS_QUERY', actor_cid, range }.
+  Rate-limit: budget MEDIUM (capacity 10, refill 1/sec) — analytics heavier than reads.
+  Idempotency: NO.
+  Perf p99: <= 300ms (heavier aggregation acceptable for analytics).
+  ```
+- **Criterio aceptación:** 1 callback LOCKED + payload shape matches `GovtReportsData` 1:1 + audit ledger entry per query + p99 <= 300ms. Ranges return correct time windows (month = current month, quarter = last 3 months, year = last 12 months).
+- **Path recomendado:** Path A/B — NODO 6 es visual-only analytics, mock funciona para demo Phase A. Backend con implementación real mejora la experiencia pero no la bloquea.
+- **Status:** OPEN — awaiting Backend Lead reactivation.
+
+---
+
 ## 2. Items resueltos / cerrados
 
 _(empty — drafting BANK-FE.0)_
@@ -467,13 +501,13 @@ _(empty — drafting BANK-FE.0)_
 
 | Métrica | Valor |
 |---|---|
-| Total items | 13 |
+| Total items | 14 |
 | HIGH abiertos | 7 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013) |
-| MEDIUM abiertos | 3 (REQ-FE-001, REQ-FE-002, REQ-FE-008) |
+| MEDIUM abiertos | 4 (REQ-FE-001, REQ-FE-002, REQ-FE-008, REQ-FE-014) |
 | LOW abiertos | 3 (REQ-FE-003, REQ-FE-004, REQ-FE-005) |
 | RESOLVED | 0 (REQ-FE-005 path-C self-resolved) |
 | Path A target (Backend amendment / Phase A.GOVT cycle) | 9 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013) |
-| Path A/B target (joint spec) | 1 (REQ-FE-008) |
+| Path A/B target (joint spec) | 2 (REQ-FE-008, REQ-FE-014) |
 | Path B target (Phase B defer) | 2 (REQ-FE-003, REQ-FE-004) |
 | Path C target (UI workaround) | 1 (REQ-FE-005) |
 
@@ -496,7 +530,8 @@ _(empty — drafting BANK-FE.0)_
 | v0.2 | 2026-05-08 | BANK-A.GOVT NODO 1+2 closing — 5 nuevos items govt-scope (REQ-FE-006..010): 4 HIGH (Census list/detail + Sanctions + Subsidies callbacks) + 1 MEDIUM (joint risk score spec con Security Lead). Govt panel mock-only hasta Backend Lead reactivación Phase A.GOVT cycle. |
 | v0.3 | 2026-05-08 | BANK-A.GOVT NODO 3+4 shipped — 2 nuevos items HIGH (REQ-FE-011 Business Registry list+detail callbacks, REQ-FE-012 Treasury Movements callback con stats agregadas server-side). Ambos módulos UI completos sobre mock layer; NODO 3 (`/tesoreria/empresas`) y NODO 4 (`/tesoreria/movimientos`) operativos. Total 12 items — 6 HIGH, 3 MEDIUM, 3 LOW. |
 | v0.4 | 2026-05-09 | BANK-A.GOVT NODO 5 shipped — 1 nuevo item HIGH (REQ-FE-013 Subsidy list+detail read callbacks). Nota: write mutations ya cubiertas en REQ-FE-010. NODO 5 (`/tesoreria/subsidios`) operativo con 7 programas, tipos, status, budget gauges, disbursements recientes. Total 13 items — 7 HIGH, 3 MEDIUM, 3 LOW. |
+| v0.5 | 2026-05-09 | BANK-A.GOVT NODO 6 shipped — Último nodo A.GOVT. 1 nuevo item MEDIUM/Path A-B (REQ-FE-014 Reports analytics aggregation callback). NODO 6 (`/tesoreria/informes`) operativo: 4 KPI cards, SVG bar chart Revenue vs Obligation, ComplianceRing donut, SectorBars, TopContributors ranked, RiskDistribution. **TODOS LOS NODOs A.GOVT COMPLETADOS** (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes). Total 14 items — 7 HIGH, 4 MEDIUM, 3 LOW. |
 
 ---
 
-**FIN `FE_BACKEND_REQUESTS.md` v0.4 — BANK-A.GOVT NODOs 1-5 shipped sobre mock.** Govt panel (Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios) requiere Backend Lead Phase A.GOVT cycle para 7 items HIGH (REQ-FE-006/007/009/010/011/012/013). Frontend continúa drafting NODO siguiente (Informes) con mock layer.
+**FIN `FE_BACKEND_REQUESTS.md` v0.5 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Requiere Backend Lead Phase A.GOVT cycle para 7 items HIGH + 1 MEDIUM (REQ-FE-006/007/009/010/011/012/013 + REQ-FE-014) para go-live con datos reales.
