@@ -24,6 +24,26 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
+        manualChunks: (id) => {
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/victory-vendor')) {
+            return 'vendor-charts'
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'vendor-motion'
+          }
+          if (id.includes('node_modules/@tanstack')) {
+            return 'vendor-query'
+          }
+          if (id.includes('node_modules/zod') || id.includes('node_modules/react-hook-form')) {
+            return 'vendor-forms'
+          }
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-i18next') || id.includes('node_modules/i18next')) {
+            return 'vendor-react'
+          }
+        },
       },
     },
   },
