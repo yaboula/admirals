@@ -116,7 +116,7 @@ export function BusinessDetail({ detail, isFetching }: Props) {
       transition={{ duration: 0.22 }}
       className={cn('flex h-full flex-col gap-3 overflow-y-auto pr-1 scrollbar-thin', isFetching && 'opacity-80')}
     >
-      <GovtCard variant="hero" padding="lg" className="overflow-hidden">
+      <GovtCard variant="hero" padding="lg">
         <div className="flex items-center gap-4">
           <div
             aria-hidden
