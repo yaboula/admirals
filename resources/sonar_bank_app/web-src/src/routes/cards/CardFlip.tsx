@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import type { BankCardMock } from '@/data/contracts'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
+import { useI18n } from '@/lib/i18n'
 import { CardVisual } from './CardVisual'
 import { CardBack } from './CardBack'
 import { resolveCardDesign } from './cardDesigns'
@@ -38,14 +39,15 @@ export interface CardFlipProps {
 
 export function CardFlip({
   card,
-  flipped,
+  flipped = false,
   onFlip,
-  revealed,
+  revealed = false,
   onToggleReveal,
   compact = false,
   className,
   interactive = true,
 }: CardFlipProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const design = resolveCardDesign(card.design_id)
 
@@ -62,7 +64,7 @@ export function CardFlip({
         className={cn('relative w-full', className)}
         onClick={handleFlip}
         role={interactive ? 'button' : undefined}
-        aria-label={interactive ? (flipped ? 'Mostrar frente de la tarjeta' : 'Mostrar reverso de la tarjeta') : undefined}
+        aria-label={interactive ? (flipped ? t('cards.showCardFront') : t('cards.showCardBack')) : undefined}
         tabIndex={interactive ? 0 : -1}
         onKeyDown={(e) => {
           if (!interactive) return
@@ -94,7 +96,7 @@ export function CardFlip({
       style={{ perspective: '1400px', cursor: interactive ? 'pointer' : 'default' }}
       onClick={handleFlip}
       role={interactive ? 'button' : undefined}
-      aria-label={interactive ? (flipped ? 'Mostrar frente de la tarjeta' : 'Mostrar reverso de la tarjeta') : undefined}
+      aria-label={interactive ? (flipped ? t('cards.showCardFront') : t('cards.showCardBack')) : undefined}
       aria-pressed={flipped}
       tabIndex={interactive ? 0 : -1}
       onKeyDown={(e) => {

@@ -22,7 +22,7 @@ export function cn(...inputs: ClassValue[]): string {
   return out.join(' ')
 }
 
-export function formatCurrency(value: number, currency = 'EUR', locale = 'es-ES'): string {
+export function formatCurrency(value: number, currency = 'USD', locale = 'en-US'): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
@@ -31,7 +31,7 @@ export function formatCurrency(value: number, currency = 'EUR', locale = 'es-ES'
   }).format(value)
 }
 
-export function formatRelativeTime(timestamp: number, locale = 'es-ES'): string {
+export function formatRelativeTime(timestamp: number, locale = 'en-US'): string {
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' })
   const elapsedSec = Math.round((timestamp - Date.now()) / 1000)
   const ranges: Array<[Intl.RelativeTimeFormatUnit, number]> = [

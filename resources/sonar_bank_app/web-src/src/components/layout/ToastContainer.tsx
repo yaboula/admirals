@@ -4,6 +4,7 @@ import { CheckCircle2, AlertTriangle, AlertOctagon, Info, X } from 'lucide-react
 import { useToastQueue, type Toast as ToastT, type ToastTone } from '@/stores/toast'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 
 const TONE_META: Record<
   ToastTone,
@@ -36,6 +37,7 @@ const TONE_META: Record<
 }
 
 export function ToastContainer() {
+  const { t } = useI18n()
   const toasts = useToastQueue((s) => s.toasts)
   const dismiss = useToastQueue((s) => s.dismiss)
   const reduced = useReducedMotion()
@@ -43,7 +45,7 @@ export function ToastContainer() {
   return (
     <div
       role="region"
-      aria-label="Notificaciones"
+      aria-label={t('common.notifications')}
       className="fixed top-20 right-6 z-[var(--z-toast)] flex flex-col gap-3 max-w-sm w-full pointer-events-none"
     >
       <AnimatePresence initial={false}>
@@ -64,6 +66,7 @@ function ToastItem({
   onDismiss: () => void
   reduced: boolean
 }) {
+  const { t } = useI18n()
   const meta = TONE_META[toast.tone]
   const Icon = meta.icon
 
@@ -118,7 +121,7 @@ function ToastItem({
       </div>
       <button
         type="button"
-        aria-label="Cerrar"
+        aria-label={t('common.close')}
         onClick={onDismiss}
         className="shrink-0 text-text-tertiary hover:text-text-primary transition-colors mt-0.5"
       >

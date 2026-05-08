@@ -2,29 +2,31 @@ import type { ReactNode } from 'react'
 import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { Card } from '@/components/ui'
 import { sfx } from '@/lib/sfx'
+import { useI18n } from '@/lib/i18n'
 import { toast } from '@/stores/toast'
 
 export function HomeMoneyActions() {
+  const { t } = useI18n()
   return (
     <Card variant="glass" padding="md" className="h-full min-h-0 rounded-[1.55rem] border-white/10 flex flex-col gap-3 justify-center">
       <MoneyAction
-        title="Ingresar"
-        helper="Añadir efectivo desde cajero"
+        title={t('home.depositTitle')}
+        helper={t('home.depositHelper')}
         icon={<ArrowDownToLine size={18} strokeWidth={2.1} />}
         tone="in"
         onClick={() => {
           sfx.console_tap()
-          toast.info('Ingresar dinero', 'Usa un cajero SONAR para añadir efectivo.')
+          toast.info(t('home.depositToastTitle'), t('home.depositToastBody'))
         }}
       />
       <MoneyAction
-        title="Retirar"
-        helper="Preparar retirada segura"
+        title={t('home.withdrawTitle')}
+        helper={t('home.withdrawHelper')}
         icon={<ArrowUpFromLine size={18} strokeWidth={2.1} />}
         tone="out"
         onClick={() => {
           sfx.console_tap()
-          toast.info('Retirar dinero', 'Usa un cajero SONAR para retirar efectivo.')
+          toast.info(t('home.withdrawToastTitle'), t('home.withdrawToastBody'))
         }}
       />
     </Card>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { ShieldCheck, ShieldAlert, ShieldOff, ShieldQuestion } from 'lucide-react'
 import { Badge } from '@/components/ui'
 import type { BadgeTone } from '@/components/ui/Badge'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { useBankStatus, type BridgeStatus } from '@/stores/status'
 import { useBankStateBag } from '@/lib/bankStateBags'
 
@@ -11,42 +12,45 @@ const STATUS_META: Record<
   {
     tone: BadgeTone
     icon: typeof ShieldCheck
-    label: string
-    tooltip: string
+    labelKey: TranslationKey
+    tooltipKey: TranslationKey
   }
 > = {
   native_full: {
     tone: 'native_full',
     icon: ShieldCheck,
-    label: 'Native Full',
-    tooltip: 'Bridges al 100%. Framework nativo activo y operativo.',
+    labelKey: 'status.nativeFullLabel',
+    tooltipKey: 'status.nativeFullTooltip',
   },
   lite_mode_active: {
     tone: 'lite_mode_active',
     icon: ShieldAlert,
-    label: 'Lite Mode',
-    tooltip: 'Bridges en modo Lite. Funcionalidad reducida sin pérdida de datos.',
+    labelKey: 'status.liteModeLabel',
+    tooltipKey: 'status.liteModeTooltip',
   },
   compromised_load_order: {
     tone: 'compromised',
     icon: ShieldOff,
-    label: 'Comprometido',
-    tooltip: 'Orden de carga comprometido. Operativa restringida — contacta soporte.',
+    labelKey: 'status.compromisedLabel',
+    tooltipKey: 'status.compromisedTooltip',
   },
   framework_missing: {
     tone: 'framework_missing',
     icon: ShieldQuestion,
-    label: 'Sin framework',
-    tooltip: 'Framework no detectado. Bank operará en modo standalone.',
+    labelKey: 'status.frameworkMissingLabel',
+    tooltipKey: 'status.frameworkMissingTooltip',
   },
 }
 
 export function StatusBadge() {
+  const { t } = useI18n()
   const storedStatus = useBankStatus((s) => s.bridgesStatus)
   const stateBagStatus = useBankStateBag<BridgeStatus>('bank.bridges.status')
   const status = stateBagStatus ?? storedStatus
   const meta = STATUS_META[status]
   const Icon = meta.icon
+  const label = t(meta.labelKey)
+  const tooltip = t(meta.tooltipKey)
   const [hovering, setHovering] = useState(false)
 
   return (
@@ -56,7 +60,7 @@ export function StatusBadge() {
       onMouseLeave={() => setHovering(false)}
     >
       <Badge tone={meta.tone} variant="soft" size="sm" pulse leftIcon={<Icon size={12} strokeWidth={2.4} />}>
-        {meta.label}
+        {label}
       </Badge>
 
       <AnimatePresence>
@@ -74,8 +78,8 @@ export function StatusBadge() {
               boxShadow: 'var(--shadow-tooltip)',
             }}
           >
-            <div className="font-medium text-text-primary mb-1">{meta.label}</div>
-            {meta.tooltip}
+            <div className="font-medium text-text-primary mb-1">{label}</div>
+            {tooltip}
           </motion.div>
         )}
       </AnimatePresence>

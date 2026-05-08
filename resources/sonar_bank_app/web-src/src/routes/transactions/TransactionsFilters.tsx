@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Search, X, RotateCcw } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 import {
   countActiveFilters,
   useTransactionsFilter,
@@ -18,27 +19,28 @@ import { cn } from '@/lib/utils'
  * Active chips lift with orange whisper border + tactile depth shadow.
  * The whole row collapses gracefully on narrow viewports (chips wrap).
  */
-const RANGE_OPTIONS: Array<{ value: TxRange; label: string }> = [
-  { value: '7d', label: '7 días' },
-  { value: '30d', label: '30 días' },
-  { value: '90d', label: '90 días' },
-  { value: 'all', label: 'Todo' },
-]
-
-const DIRECTION_OPTIONS: Array<{ value: TxDirection; label: string }> = [
-  { value: 'all', label: 'Ambos' },
-  { value: 'in', label: 'Entradas' },
-  { value: 'out', label: 'Salidas' },
-]
-
-const STATUS_OPTIONS: Array<{ value: TxStatus; label: string }> = [
-  { value: 'all', label: 'Todos' },
-  { value: 'committed', label: 'Confirmadas' },
-  { value: 'pending', label: 'Pendientes' },
-  { value: 'reverted', label: 'Revertidas' },
-]
-
 export function TransactionsFilters() {
+  const { t } = useI18n()
+  
+  const RANGE_OPTIONS: Array<{ value: TxRange; label: string }> = [
+    { value: '7d', label: t('transactions.range7d') },
+    { value: '30d', label: t('transactions.range30d') },
+    { value: '90d', label: t('transactions.range90d') },
+    { value: 'all', label: t('transactions.rangeAll') },
+  ]
+
+  const DIRECTION_OPTIONS: Array<{ value: TxDirection; label: string }> = [
+    { value: 'all', label: t('transactions.directionAll') },
+    { value: 'in', label: t('transactions.directionIn') },
+    { value: 'out', label: t('transactions.directionOut') },
+  ]
+
+  const STATUS_OPTIONS: Array<{ value: TxStatus; label: string }> = [
+    { value: 'all', label: t('transactions.statusAll') },
+    { value: 'committed', label: t('transactions.statusCommitted') },
+    { value: 'pending', label: t('transactions.statusPending') },
+    { value: 'reverted', label: t('transactions.statusReverted') },
+  ]
   const range = useTransactionsFilter((s) => s.range)
   const direction = useTransactionsFilter((s) => s.direction)
   const status = useTransactionsFilter((s) => s.status)
@@ -55,21 +57,21 @@ export function TransactionsFilters() {
     <div className="flex items-center gap-3">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         <ChipGroup
-          label="Periodo"
+          label={t('transactions.period')}
           options={RANGE_OPTIONS}
           value={range}
           onChange={(v) => setRange(v as TxRange)}
         />
         <Divider />
         <ChipGroup
-          label="Tipo"
+          label={t('transactions.type')}
           options={DIRECTION_OPTIONS}
           value={direction}
           onChange={(v) => setDirection(v as TxDirection)}
         />
         <Divider />
         <ChipGroup
-          label="Estado"
+          label={t('transactions.status')}
           options={STATUS_OPTIONS}
           value={status}
           onChange={(v) => setStatus(v as TxStatus)}
@@ -193,7 +195,7 @@ function Divider() {
 /* -------------------------------------------------------------------------- */
 
 function SearchInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  // Debounce so typing doesn't thrash the filter selector + chart re-renders.
+  const { t } = useI18n()
   const [local, setLocal] = useState(value)
   const timer = useRef<number | null>(null)
 
@@ -225,8 +227,8 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
         type="text"
         value={local}
         onChange={(e) => setLocal(e.target.value)}
-        placeholder="Buscar nombre o concepto…"
-        aria-label="Buscar transacciones"
+        placeholder={t('transactions.searchPlaceholder')}
+        aria-label={t('transactions.searchAriaLabel')}
         className={cn(
           'tactile-input tactile-focus-ring',
           'h-9 rounded-full pl-8 pr-8 py-1.5 text-[12px]',
@@ -238,7 +240,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
         <button
           type="button"
           onClick={() => setLocal('')}
-          aria-label="Borrar búsqueda"
+          aria-label={t('transactions.clearSearch')}
           className="absolute right-2 inline-flex items-center justify-center h-4 w-4 rounded-full text-text-tertiary hover:text-text-primary transition-colors"
         >
           <X size={12} strokeWidth={2.2} />

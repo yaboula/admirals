@@ -5,10 +5,34 @@ export interface TransferReceiptPdfInput {
   receipt: TransferReceipt
   recipientLabel: string
   amountLabel: string
+  availableBalanceLabel: string
   fromIbanMasked: string
   toIbanMasked: string
   timestampLabel: string
   streamerMode: boolean
+  labels: TransferReceiptPdfLabels
+}
+
+export interface TransferReceiptPdfLabels {
+  receiptTitle: string
+  sentAmount: string
+  receiptNumber: string
+  securityCode: string
+  from: string
+  to: string
+  memo: string
+  hiddenMemo: string
+  noMemo: string
+  date: string
+  availableBalance: string
+  bankReference: string
+  receiptWatermark: string
+  footerLine1: string
+  footerLine2: string
+  committedStatus: string
+  pendingStatus: string
+  revertedStatus: string
+  failedStatus: string
 }
 
 interface CanvasTextOptions {
@@ -91,8 +115,8 @@ function drawReceiptCanvas(ctx: CanvasRenderingContext2D, input: TransferReceipt
   drawHeader(ctx, input)
   drawAmount(ctx, input)
   drawReceiptPanel(ctx, input)
-  drawWatermark(ctx)
-  drawFooter(ctx)
+  drawWatermark(ctx, input)
+  drawFooter(ctx, input)
 }
 
 function drawBackground(ctx: CanvasRenderingContext2D): void {
@@ -105,8 +129,8 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
 function drawHeader(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
   text(ctx, 'SONAR', MARGIN_X, 70, { size: 24, weight: 800, color: COLORS.ink })
   text(ctx, 'BANK', MARGIN_X + 84, 70, { size: 24, weight: 800, color: COLORS.brand })
-  text(ctx, 'Justificante de transferencia', MARGIN_X, 92, { size: 10, color: COLORS.muted })
-  text(ctx, formatReceiptStatus(input.receipt.status), PAGE_WIDTH - MARGIN_X, 70, {
+  text(ctx, input.labels.receiptTitle, MARGIN_X, 92, { size: 10, color: COLORS.muted })
+  text(ctx, formatReceiptStatus(input.receipt.status, input.labels), PAGE_WIDTH - MARGIN_X, 70, {
     size: 10,
     weight: 800,
     color: COLORS.success,
@@ -120,9 +144,9 @@ function drawHeader(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInpu
 }
 
 function drawAmount(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
-  text(ctx, 'Importe enviado', MARGIN_X, 154, { size: 11, color: COLORS.muted })
+  text(ctx, input.labels.sentAmount, MARGIN_X, 154, { size: 11, color: COLORS.muted })
   text(ctx, input.amountLabel, MARGIN_X, 195, { size: 38, weight: 800, color: COLORS.ink, maxWidth: 360 })
-  text(ctx, `Para ${input.recipientLabel}`, MARGIN_X, 220, { size: 12, color: COLORS.muted, maxWidth: 420 })
+  text(ctx, `${input.labels.to}: ${input.recipientLabel}`, MARGIN_X, 220, { size: 12, color: COLORS.muted, maxWidth: 420 })
 }
 
 function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
@@ -134,14 +158,14 @@ function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptP
   line(ctx, x, y, x + w, y, COLORS.brand, 1.4)
 
   const rows: Array<[string, string]> = [
-    ['Nº de recibo', input.streamerMode ? maskOperationCode(input.receipt.transaction_id) : revealOperationCode(input.receipt.transaction_id)],
-    ['Código de seguridad', input.streamerMode ? maskOperationCode(input.receipt.correlation_id) : revealOperationCode(input.receipt.correlation_id)],
-    ['Origen', input.fromIbanMasked],
-    ['Destino', input.toIbanMasked],
-    ['Concepto', input.streamerMode ? 'Oculto' : input.receipt.reason?.trim() || 'Sin concepto'],
-    ['Fecha', input.timestampLabel],
-    ['Balance disponible', input.streamerMode ? maskMoneyDisplay() : formatMinorCurrency(input.receipt.available_balance_minor)],
-    ['Referencia bancaria', input.streamerMode ? maskOperationCode(input.receipt.idempotency_key) : revealOperationCode(input.receipt.idempotency_key)],
+    [input.labels.receiptNumber, input.streamerMode ? maskOperationCode(input.receipt.transaction_id) : revealOperationCode(input.receipt.transaction_id)],
+    [input.labels.securityCode, input.streamerMode ? maskOperationCode(input.receipt.correlation_id) : revealOperationCode(input.receipt.correlation_id)],
+    [input.labels.from, input.fromIbanMasked],
+    [input.labels.to, input.toIbanMasked],
+    [input.labels.memo, input.streamerMode ? input.labels.hiddenMemo : input.receipt.reason?.trim() || input.labels.noMemo],
+    [input.labels.date, input.timestampLabel],
+    [input.labels.availableBalance, input.streamerMode ? maskMoneyDisplay() : input.availableBalanceLabel],
+    [input.labels.bankReference, input.streamerMode ? maskOperationCode(input.receipt.idempotency_key) : revealOperationCode(input.receipt.idempotency_key)],
   ]
 
   let rowY = y + 58
@@ -153,18 +177,18 @@ function drawReceiptPanel(ctx: CanvasRenderingContext2D, input: TransferReceiptP
   }
 }
 
-function drawWatermark(ctx: CanvasRenderingContext2D): void {
+function drawWatermark(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
   text(ctx, 'SONAR BANK', 188, 450, { size: 34, weight: 800, color: COLORS.watermark })
-  text(ctx, 'RECIBO', 230, 484, { size: 18, weight: 800, color: COLORS.watermark })
+  text(ctx, input.labels.receiptWatermark, 230, 484, { size: 18, weight: 800, color: COLORS.watermark })
 }
 
-function drawFooter(ctx: CanvasRenderingContext2D): void {
-  text(ctx, 'Emitido por SONAR Bank · Conserva este justificante para tus registros.', MARGIN_X, 764, {
+function drawFooter(ctx: CanvasRenderingContext2D, input: TransferReceiptPdfInput): void {
+  text(ctx, input.labels.footerLine1, MARGIN_X, 764, {
     size: 8,
     color: COLORS.muted,
     maxWidth: PAGE_WIDTH - MARGIN_X * 2,
   })
-  text(ctx, 'Documento válido como comprobante de la operación mostrada.', MARGIN_X, 780, {
+  text(ctx, input.labels.footerLine2, MARGIN_X, 780, {
     size: 8,
     color: COLORS.muted,
     maxWidth: PAGE_WIDTH - MARGIN_X * 2,
@@ -257,17 +281,19 @@ function buildReceiptFileName(receipt: TransferReceipt): string {
   return `sonar-bank-receipt-${maskOperationCode(receipt.transaction_id).replace(/[^a-z0-9]/gi, '-')}.pdf`
 }
 
-function formatMinorCurrency(amountMinor: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  }).format(amountMinor / 100)
-}
-
-function formatReceiptStatus(status: string): string {
-  return status.toLowerCase() === 'committed' ? 'CONFIRMADA' : status.toUpperCase()
+function formatReceiptStatus(status: string, labels: TransferReceiptPdfLabels): string {
+  switch (status.toLowerCase()) {
+    case 'committed':
+      return labels.committedStatus
+    case 'pending':
+      return labels.pendingStatus
+    case 'reverted':
+      return labels.revertedStatus
+    case 'failed':
+      return labels.failedStatus
+    default:
+      return status.toUpperCase()
+  }
 }
 
 function fixed(value: number): string {

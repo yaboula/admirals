@@ -2,6 +2,10 @@ export const isMockMode = (): boolean => {
   return import.meta.env.VITE_MOCK_MODE === 'true'
 }
 
+export const isDevAccessUnlocked = (): boolean => {
+  return isMockMode() || !isInsideFiveMNui()
+}
+
 export const isDev = (): boolean => {
   return import.meta.env.DEV === true
 }

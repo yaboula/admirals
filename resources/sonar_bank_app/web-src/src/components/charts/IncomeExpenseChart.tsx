@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import type { Transaction } from '@/data/contracts'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 
 export interface IncomeExpenseChartProps {
   transactions: Transaction[]
@@ -34,6 +35,7 @@ function buildBuckets(
   transactions: Transaction[],
   ownIban: string | undefined,
   windowDays: number,
+  dateTime: (timestamp: number, options?: Intl.DateTimeFormatOptions) => string,
 ): DayBucket[] {
   const ownCompact = ownIban?.replace(/\s+/g, '')
   const today = new Date()
@@ -46,7 +48,7 @@ function buildBuckets(
     d.setHours(0, 0, 0, 0)
     buckets.push({
       ms: d.getTime(),
-      label: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+      label: dateTime(d.getTime(), { day: '2-digit', month: 'short' }),
       income: 0,
       expense: 0,
       net: 0,
@@ -105,9 +107,10 @@ export function IncomeExpenseChart({
   windowDays = 30,
   className,
 }: IncomeExpenseChartProps) {
+  const { money, dateTime } = useI18n()
   const data = useMemo(
-    () => buildBuckets(transactions, ownIban, windowDays),
-    [transactions, ownIban, windowDays],
+    () => buildBuckets(transactions, ownIban, windowDays, dateTime),
+    [dateTime, transactions, ownIban, windowDays],
   )
 
   const totals = useMemo(() => {
@@ -132,12 +135,13 @@ export function IncomeExpenseChart({
           </h3>
         </div>
         <div className="flex items-center gap-5">
-          <Stat label="Ingresos" value={totals.income} color={COLOR_INCOME} dot />
-          <Stat label="Gastos" value={totals.expense} color={COLOR_EXPENSE} dot />
+          <Stat label="Ingresos" value={totals.income} color={COLOR_INCOME} money={money} dot />
+          <Stat label="Gastos" value={totals.expense} color={COLOR_EXPENSE} money={money} dot />
           <Stat
             label="Neto"
             value={totals.net}
             color={totals.net >= 0 ? COLOR_INCOME : COLOR_EXPENSE}
+            money={money}
             highlighted
           />
         </div>
@@ -199,7 +203,7 @@ export function IncomeExpenseChart({
             />
             <Tooltip
               cursor={{ stroke: 'oklch(1 0 0 / 0.14)', strokeWidth: 1, strokeDasharray: '3 4' }}
-              content={<CustomTooltip />}
+              content={<CustomTooltip money={money} />}
               animationDuration={120}
             />
             {/* Expense first so income line draws on top */}
@@ -244,10 +248,12 @@ function Stat({
   color,
   highlighted,
   dot,
+  money,
 }: {
   label: string
   value: number
   color: string
+  money: (value: number, options?: Intl.NumberFormatOptions) => string
   highlighted?: boolean
   dot?: boolean
 }) {
@@ -267,13 +273,13 @@ function Stat({
         className={cn('font-semibold', highlighted ? 'text-base' : 'text-sm')}
         style={{ color, fontVariantNumeric: 'tabular-nums lining-nums' }}
       >
-        €{formatEur(value)}
+        {money(value)}
       </span>
     </div>
   )
 }
 
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload, label, money }: TooltipProps<number, string> & { money: (value: number, options?: Intl.NumberFormatOptions) => string }) {
   if (!active || !payload || payload.length === 0) return null
 
   const incomeEntry = payload.find((p) => p.dataKey === 'income')
@@ -295,10 +301,10 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
     >
       <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-1">{label}</div>
       <div className="space-y-0.5">
-        <Row label="Ingresos" value={income} color={COLOR_INCOME} />
-        <Row label="Gastos" value={expense} color={COLOR_EXPENSE} />
+        <Row label="Ingresos" value={income} color={COLOR_INCOME} money={money} />
+        <Row label="Gastos" value={expense} color={COLOR_EXPENSE} money={money} />
         <div className="h-px my-1 bg-border-subtle" />
-        <Row label="Neto" value={net} color={net >= 0 ? COLOR_INCOME : COLOR_EXPENSE} bold />
+        <Row label="Neto" value={net} color={net >= 0 ? COLOR_INCOME : COLOR_EXPENSE} money={money} bold />
       </div>
     </div>
   )
@@ -308,11 +314,13 @@ function Row({
   label,
   value,
   color,
+  money,
   bold,
 }: {
   label: string
   value: number
   color: string
+  money: (value: number, options?: Intl.NumberFormatOptions) => string
   bold?: boolean
 }) {
   return (
@@ -325,17 +333,10 @@ function Row({
           fontVariantNumeric: 'tabular-nums lining-nums',
         }}
       >
-        €{formatEur(value)}
+        {money(value)}
       </span>
     </div>
   )
-}
-
-function formatEur(value: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
 }
 
 function formatCompact(value: number): string {

@@ -104,7 +104,13 @@ export function acePermForCompany(code: 'P03' | 'P05' | 'P06', companyId: string
 
 export function isAceGranted(ownedPerms: readonly AcePerm[], required: AcePerm): boolean {
   if (required === ACE_PERMS.P01.perm) return true
-  return ownedPerms.includes(required)
+  return ownedPerms.some((owned) => owned === required || aceWildcardMatches(owned, required))
+}
+
+function aceWildcardMatches(owned: AcePerm, required: AcePerm): boolean {
+  if (owned.endsWith('.*') && required.startsWith(owned.slice(0, -1))) return true
+  if (required.endsWith('.*') && owned.startsWith(required.slice(0, -1))) return true
+  return false
 }
 
 export function areAllAceGranted(ownedPerms: readonly AcePerm[], required: readonly AcePerm[]): boolean {

@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { CreditCard } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 /**
  * BANK-FE.4.2 — CardsHero
@@ -16,6 +17,7 @@ export interface CardsHeroProps {
 }
 
 export function CardsHero({ totalCount, activeCount }: CardsHeroProps) {
+  const { t } = useI18n()
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -35,19 +37,19 @@ export function CardsHero({ totalCount, activeCount }: CardsHeroProps) {
         </div>
         <div className="flex flex-col leading-tight min-w-0">
           <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-            Mis tarjetas
+            {t('cards.myCards')}
           </span>
           <h1 className="text-base 2xl:text-lg font-semibold text-text-primary tactile-wght-breathing tracking-tight truncate">
-            {totalCount > 0 ? labelFor(totalCount, activeCount) : 'Solicita tu primera tarjeta'}
+            {totalCount > 0 ? labelFor(totalCount, activeCount, (key: string) => t(key as any)) : t('cards.requestFirstCard')}
           </h1>
         </div>
       </div>
 
       {totalCount > 0 && (
         <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <Pill label={`${activeCount} activa${activeCount === 1 ? '' : 's'}`} tone="active" />
+          <Pill label={`${activeCount} ${t('cards.active')}`} tone="active" />
           {totalCount - activeCount > 0 && (
-            <Pill label={`${totalCount - activeCount} congelada${totalCount - activeCount === 1 ? '' : 's'}`} tone="muted" />
+            <Pill label={`${totalCount - activeCount} ${t('cards.frozen')}`} tone="muted" />
           )}
         </div>
       )}
@@ -55,9 +57,9 @@ export function CardsHero({ totalCount, activeCount }: CardsHeroProps) {
   )
 }
 
-function labelFor(total: number, active: number): string {
-  if (total === 1) return active === 1 ? '1 tarjeta activa' : '1 tarjeta'
-  return `${total} tarjetas`
+function labelFor(total: number, active: number, t: (key: string) => string): string {
+  if (total === 1) return active === 1 ? t('cards.oneActiveCard') : t('cards.oneCard')
+  return t('cards.multipleCards').replace('{count}', String(total))
 }
 
 function Pill({ label, tone }: { label: string; tone: 'active' | 'muted' }) {

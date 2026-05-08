@@ -17,7 +17,7 @@ export interface AnimatedNumberProps {
 export function AnimatedNumber({
   value,
   decimals = 2,
-  locale = 'es-ES',
+  locale = 'en-US',
   prefix = '',
   suffix = '',
   className,

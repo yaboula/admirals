@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, ChevronRight } from 'lucide-react'
 import { sfx } from '@/lib/sfx'
+import { useI18n } from '@/lib/i18n'
 import { toast } from '@/stores/toast'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils'
  * - Depositar / Retirar → toast placeholder until ATM endpoints ship.
  */
 export function ActionStack() {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const navigate = useNavigate()
   const initWizard = useTransferWizard((s) => s.init)
@@ -34,12 +36,12 @@ export function ActionStack() {
 
   const handleDepositar = (): void => {
     sfx.console_tap()
-    toast.info('Depositar', 'Usa un cajero SONAR para ingresar efectivo.')
+    toast.info(t('home.depositToastTitle'), t('home.depositToastBody'))
   }
 
   const handleRetirar = (): void => {
     sfx.console_tap()
-    toast.info('Retirar', 'Usa un cajero SONAR para retirar efectivo.')
+    toast.info(t('home.withdrawToastTitle'), t('home.withdrawToastBody'))
   }
 
   return (
@@ -52,22 +54,22 @@ export function ActionStack() {
       <ActionRow
         tier="primary"
         icon={<ArrowLeftRight size={16} strokeWidth={2.1} />}
-        title="Transferir"
-        helper="Envío rápido a contactos"
+        title={t('home.transferTitle')}
+        helper={t('home.transferHelper')}
         onClick={handleTransferir}
       />
       <ActionRow
         tier="secondary"
         icon={<ArrowDownToLine size={16} strokeWidth={2.1} />}
-        title="Depositar"
-        helper="Ingresa dinero desde cajero"
+        title={t('home.depositTitle')}
+        helper={t('home.depositActionHelper')}
         onClick={handleDepositar}
       />
       <ActionRow
         tier="ghost"
         icon={<ArrowUpFromLine size={16} strokeWidth={2.1} />}
-        title="Retirar"
-        helper="Saca efectivo en cajero"
+        title={t('home.withdrawTitle')}
+        helper={t('home.withdrawActionHelper')}
         onClick={handleRetirar}
       />
     </motion.div>

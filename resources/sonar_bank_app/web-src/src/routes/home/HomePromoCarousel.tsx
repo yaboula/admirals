@@ -1,41 +1,46 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ArrowRight, Bitcoin, ChartNoAxesColumnIncreasing, Gem } from 'lucide-react'
 import { Card } from '@/components/ui'
 import { BankAvatar } from '@/components/brand/BankAvatar'
+import { useI18n } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
-const SLIDES = [
-  {
-    title: 'Crypto custody',
-    text: 'Custodia segura y compras recurrentes cuando activemos inversión digital.',
-    cta: 'Ver plan',
-    icon: Bitcoin,
-    accent: 'oklch(0.72 0.22 40)',
-  },
-  {
-    title: 'Investment vaults',
-    text: 'Cestas de inversión simples para objetivos a medio plazo.',
-    cta: 'Explorar',
-    icon: ChartNoAxesColumnIncreasing,
-    accent: 'oklch(0.74 0.15 150)',
-  },
-  {
-    title: 'Premium benefits',
-    text: 'Ventajas de tarjeta, límites inteligentes y recompensas en camino.',
-    cta: 'Solicitar',
-    icon: Gem,
-    accent: 'oklch(0.78 0.14 75)',
-  },
-]
-
 export function HomePromoCarousel() {
+  const { t } = useI18n()
+  const navigate = useNavigate()
   const reduced = useReducedMotion()
   const [index, setIndex] = useState(0)
-  const slide = SLIDES[index] ?? SLIDES[0]
-  const avatars = useMemo(() => ['Lucía Mendoza', 'Hugo García', 'Carmen Soler'], [])
+
+  const SLIDES = [
+    {
+      title: t('home.cryptoTitle'),
+      text: t('home.cryptoText'),
+      cta: t('home.cryptoCta'),
+      icon: Bitcoin,
+      accent: 'oklch(0.72 0.22 40)',
+      to: undefined,
+    },
+    {
+      title: t('home.investTitle'),
+      text: t('home.investText'),
+      cta: t('home.investCta'),
+      icon: ChartNoAxesColumnIncreasing,
+      accent: 'oklch(0.74 0.15 150)',
+      to: '/inversiones',
+    },
+    {
+      title: t('home.premiumTitle'),
+      text: t('home.premiumText'),
+      cta: t('home.premiumCta'),
+      icon: Gem,
+      accent: 'oklch(0.78 0.14 75)',
+      to: undefined,
+    },
+  ]
 
   useEffect(() => {
     if (reduced) return
@@ -43,6 +48,8 @@ export function HomePromoCarousel() {
     return () => window.clearInterval(timer)
   }, [reduced])
 
+  const slide = SLIDES[index] ?? SLIDES[0]
+  const avatars = useMemo(() => ['Lucía Mendoza', 'Hugo García', 'Carmen Soler'], [])
   const Icon = slide.icon
 
   return (
@@ -104,7 +111,11 @@ export function HomePromoCarousel() {
             type="button"
             onClick={() => {
               sfx.console_tap()
-              toast.info(slide.title, 'Esta experiencia llegará en una próxima fase.')
+              if (slide.to) {
+                navigate(slide.to)
+                return
+              }
+              toast.info(slide.title, t('home.comingSoonPhase'))
             }}
             className={cn(
               'inline-flex h-10 items-center justify-center gap-2 rounded-full px-5',

@@ -1,7 +1,8 @@
 import { motion } from 'motion/react'
 import { ArrowDownLeft, ArrowUpRight, RotateCw, AlertTriangle, Check, ChevronRight } from 'lucide-react'
 import type { Transaction } from '@/data/contracts'
-import { cn, formatRelativeTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import { maskSignedMoneyDisplay } from '@/lib/privacy'
@@ -27,6 +28,7 @@ export interface TransactionRowProps {
 }
 
 export function TransactionRow({ tx, ownIban, index, selected, onSelect }: TransactionRowProps) {
+  const { t, signedMoney, relativeTime, dateTime } = useI18n()
   const fromCompact = tx.from_iban.replace(/\s+/g, '')
   const toCompact = tx.to_iban.replace(/\s+/g, '')
   const isOutgoing = ownIban
@@ -36,14 +38,13 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
   const counterpartName =
     getMockAliasForIban(counterpartIban) ?? (isOutgoing ? 'Beneficiario' : 'Remitente')
 
-  const sign = isOutgoing ? '−' : '+'
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
   const StatusIcon = STATUS_META[tx.status].icon
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const amountLabel = streamerMode ? maskSignedMoneyDisplay() : `${sign}€${formatEur(tx.amount_minor / 100)}`
-  const displayName = streamerMode ? 'Movimiento oculto' : counterpartName
-  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (isOutgoing ? 'Transferencia' : 'Recibida')
+  const amountLabel = streamerMode ? maskSignedMoneyDisplay() : signedMoney((isOutgoing ? -1 : 1) * tx.amount_minor / 100)
+  const displayName = streamerMode ? t('transactions.hiddenMovement') : counterpartName
+  const displayReason = streamerMode ? t('transactions.hiddenDetail') : tx.reason ?? (isOutgoing ? t('transactions.transfer') : t('transactions.received'))
 
   return (
     <motion.button
@@ -53,7 +54,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 12) * 0.018, duration: 0.26 }}
       aria-pressed={selected}
-      aria-label={`${displayName} · ${streamerMode ? 'importe oculto' : amountLabel} · ${formatRelativeTime(tx.timestamp_ms)}`}
+      aria-label={`${displayName} · ${streamerMode ? t('transfer.hiddenAmount') : amountLabel} · ${relativeTime(tx.timestamp_ms)}`}
       className={cn(
         'group w-full flex items-center gap-2.5 px-2.5 py-2 2xl:gap-3 2xl:px-3 2xl:py-2.5 rounded-xl text-left',
         'transition-[box-shadow,background,border-color] duration-180',
@@ -117,7 +118,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
         <span
           className="truncate text-[11px] text-text-tertiary tactile-tabular-nums"
         >
-          {displayReason} · {formatRelativeTime(tx.timestamp_ms)}
+          {displayReason} · {relativeTime(tx.timestamp_ms)}
         </span>
       </div>
 
@@ -130,7 +131,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
           {amountLabel}
         </span>
         <span className="text-[9px] uppercase tracking-wider text-text-tertiary tactile-tabular-nums">
-          {formatTime(tx.timestamp_ms)}
+          {dateTime(tx.timestamp_ms, { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
       <ChevronRight
@@ -152,15 +153,4 @@ const STATUS_META: Record<
   reconciling: { icon: RotateCw, label: 'reconcil.', color: 'oklch(0.78 0.16 85)' },
   reverted: { icon: AlertTriangle, label: 'revertida', color: 'oklch(0.68 0.20 25)' },
   failed: { icon: AlertTriangle, label: 'fallida', color: 'oklch(0.68 0.20 25)' },
-}
-
-function formatEur(major: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(major)
-}
-
-function formatTime(ms: number): string {
-  return new Date(ms).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
 }

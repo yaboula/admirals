@@ -7,7 +7,8 @@ import type { RecentRecipient } from '@/data/contracts'
 import { sfx } from '@/lib/sfx'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { toast } from '@/stores/toast'
-import { cn, formatRelativeTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { maskMoneyDisplay, revealIbanDisplay } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 import { getMockInitialsForIban } from '@/data/mock/seed'
@@ -19,6 +20,7 @@ import { getMockInitialsForIban } from '@/data/mock/seed'
  * Express CTA uses ghost/outline styling — orange ONLY appears on hover.
  */
 export function CompactQuickTransfer() {
+  const { t, money } = useI18n()
   const navigate = useNavigate()
   const { data, isLoading, isError } = useRecentRecipients()
   const initWizard = useTransferWizard((s) => s.init)
@@ -32,8 +34,8 @@ export function CompactQuickTransfer() {
     setAmount(amount, r.last_reason ?? '')
     sfx.coin_clink()
     toast.info(
-      'Transferencia iniciada',
-      `${streamerMode ? maskMoneyDisplay() : formatEur(amount / 100)} → ${streamerMode ? 'destinatario oculto' : r.alias ?? revealIbanDisplay(r.counterpart_iban)}`,
+      t('transfer.sentToastTitle'),
+      `${streamerMode ? maskMoneyDisplay() : money(amount / 100)} → ${streamerMode ? t('transfer.hiddenRecipient') : r.alias ?? revealIbanDisplay(r.counterpart_iban)}`,
     )
     navigate('/transferir')
   }
@@ -55,17 +57,17 @@ export function CompactQuickTransfer() {
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
               <Zap size={10} strokeWidth={2.4} />
-              ENVÍO RÁPIDO
+              {t('home.quickSend')}
             </span>
           </CardEyebrow>
-          <CardTitle className="text-sm">Contactos frecuentes</CardTitle>
+          <CardTitle className="text-sm">{t('home.frequentContacts')}</CardTitle>
         </div>
         <button
           type="button"
           onClick={handleNew}
           className="tactile-button-accent-outline tactile-focus-ring h-7 px-3 rounded-md text-[11px] font-semibold uppercase tracking-wider"
         >
-          + Nuevo
+          + {t('home.new')}
         </button>
       </div>
 
@@ -108,9 +110,10 @@ function CompactRow({
   onQuickSend: (r: RecentRecipient, amount: number) => void
   index: number
 }) {
+  const { t, money, relativeTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const displayLabel = streamerMode
-    ? 'Destinatario oculto'
+    ? t('transfer.hiddenRecipient')
     : recipient.alias ?? revealIbanDisplay(recipient.counterpart_iban)
   const initials =
     recipient.alias
@@ -166,17 +169,17 @@ function CompactRow({
           {displayLabel}
         </span>
         <span className="text-[10px] text-text-tertiary tactile-tabular-nums truncate">
-          {formatRelativeTime(recipient.last_transfer_ms)} · ×{recipient.transfer_count}
+          {relativeTime(recipient.last_transfer_ms)} · ×{recipient.transfer_count}
         </span>
       </div>
 
       <button
         type="button"
         onClick={() => onQuickSend(recipient, presetAmount)}
-        aria-label={`Enviar ${streamerMode ? 'importe oculto' : formatEur(presetAmount / 100)} a ${streamerMode ? 'destinatario oculto' : recipient.alias ?? 'destinatario'}`}
+        aria-label={`Enviar ${streamerMode ? t('transfer.hiddenAmount') : money(presetAmount / 100)} a ${streamerMode ? t('transfer.hiddenRecipient') : recipient.alias ?? t('transfer.hiddenRecipient')}`}
         className="tactile-button-accent-outline tactile-focus-ring shrink-0 h-7 px-2.5 rounded-md text-[10px] font-semibold tactile-tabular-nums"
       >
-        {streamerMode ? maskMoneyDisplay() : `€${formatEur(presetAmount / 100)}`}
+        {streamerMode ? maskMoneyDisplay() : money(presetAmount / 100)}
       </button>
     </motion.div>
   )
@@ -189,6 +192,7 @@ function RecipientsEmptyState({
   variant: 'empty' | 'error'
   onAction: () => void
 }) {
+  const { t } = useI18n()
   const isError = variant === 'error'
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 px-4 py-6">
@@ -207,12 +211,12 @@ function RecipientsEmptyState({
       </div>
       <div className="flex flex-col gap-0.5">
         <span className="text-sm font-medium text-text-secondary">
-          {isError ? 'Sin conexión' : 'Sin actividad'}
+          {isError ? t('home.noConnection') : t('home.noActivity')}
         </span>
         <span className="text-[11px] text-text-tertiary leading-snug max-w-[22ch]">
           {isError
-            ? 'No se pudieron cargar destinatarios.'
-            : 'Aún no tienes transferencias rápidas guardadas.'}
+            ? t('home.recipientsLoadError')
+            : t('home.noQuickTransfers')}
         </span>
       </div>
       <button
@@ -221,15 +225,8 @@ function RecipientsEmptyState({
         className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-brand-signal-orange-light hover:text-text-primary transition-colors"
       >
         <UserPlus size={11} strokeWidth={2.4} />
-        {isError ? 'Reintentar' : 'Añadir destinatario'}
+        {isError ? t('home.retry') : t('home.addRecipient')}
       </button>
     </div>
   )
-}
-
-function formatEur(major: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: major < 100 ? 2 : 0,
-    maximumFractionDigits: 2,
-  }).format(major)
 }

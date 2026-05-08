@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Eye, EyeOff, Wifi } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
 import type { Account } from '@/data/contracts'
 
@@ -25,6 +26,7 @@ export function CreditCardVisual({
   brand = 'sonar',
   className,
 }: CreditCardVisualProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const [revealed, setRevealed] = useState(false)
 
@@ -126,7 +128,7 @@ export function CreditCardVisual({
                   sfx.console_tap()
                 }}
                 className="group flex items-center gap-2 text-text-primary"
-                aria-label={revealed ? 'Ocultar número de tarjeta' : 'Revelar número de tarjeta'}
+                aria-label={revealed ? t('cards.hideNumber') : t('cards.revealNumber')}
               >
                 <span
                   className="text-base lg:text-lg font-mono font-medium tracking-wider tactile-tabular-nums"
@@ -143,7 +145,7 @@ export function CreditCardVisual({
               <div className="flex items-end gap-4 leading-none">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[8px] uppercase tracking-wider text-text-tertiary">
-                    Titular
+                    {t('cards.holder')}
                   </span>
                   <span className="text-xs font-semibold tracking-wide truncate max-w-[18ch]">
                     {holderName}
@@ -151,7 +153,7 @@ export function CreditCardVisual({
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[8px] uppercase tracking-wider text-text-tertiary">
-                    Caduca
+                    {t('cards.expires')}
                   </span>
                   <span className="text-xs font-semibold tracking-wide tactile-tabular-nums">
                     {expiryStr}

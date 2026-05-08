@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { Inbox, SearchX, Filter } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
@@ -8,7 +9,6 @@ export type TransactionsEmptyVariant = 'no-data' | 'no-match'
 
 export interface TransactionsEmptyStateProps {
   variant: TransactionsEmptyVariant
-  totalCount: number
 }
 
 /**
@@ -20,15 +20,16 @@ export interface TransactionsEmptyStateProps {
  *   - no-match: filters narrow to nothing — surface the active filter count
  *     and offer a one-click reset that animates the chips back to defaults.
  */
-export function TransactionsEmptyState({ variant, totalCount }: TransactionsEmptyStateProps) {
+export function TransactionsEmptyState({ variant }: TransactionsEmptyStateProps) {
+  const { t } = useI18n()
   const reset = useTransactionsFilter((s) => s.reset)
 
   const Icon = variant === 'no-data' ? Inbox : SearchX
-  const title = variant === 'no-data' ? 'Sin movimientos aún' : 'Sin resultados'
+  const title = variant === 'no-data' ? t('transactions.noMovements') : t('transactions.noResults')
   const description =
     variant === 'no-data'
-      ? 'Aún no hay transacciones registradas en tu cuenta. Cuando realices o recibas un pago, aparecerá aquí en tiempo real.'
-      : `Tus filtros han ocultado las ${totalCount} transacciones disponibles. Ajusta los criterios o restablece los filtros para ver todo.`
+      ? t('transactions.noMovementsDescription')
+      : t('transactions.noResultsDescription')
 
   return (
     <motion.div

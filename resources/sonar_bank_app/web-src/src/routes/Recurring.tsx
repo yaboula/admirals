@@ -19,7 +19,8 @@ import { useBootstrap } from '@/data/queries'
 import type { Recurring, RecurringStatus } from '@/data/contracts'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { handleBankError } from '@/lib/bankError'
-import { cn, formatCurrency, formatRelativeTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { maskIbanCompact, maskMoneyDisplay, revealIbanDisplay, safeAriaLabel } from '@/lib/privacy'
 import { sfx } from '@/lib/sfx'
 import { usePrivacyMode } from '@/stores/privacy'
@@ -28,6 +29,7 @@ import { toast } from '@/stores/toast'
 type RecurringTab = 'active' | 'paused' | 'history'
 
 export function RecurringPayments() {
+  const { t } = useI18n()
   const { data, isLoading, isError, error } = useBootstrap()
   const [tab, setTab] = useState<RecurringTab>('active')
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -68,16 +70,16 @@ export function RecurringPayments() {
           <Card variant="glass" padding="md" className="min-h-0 flex-1 border-white/10 flex flex-col gap-4">
             <div className="flex items-center justify-between gap-3 shrink-0">
               <div>
-                <CardEyebrow>Reglas</CardEyebrow>
-                <CardTitle className="text-base">Pagos programados</CardTitle>
+                <CardEyebrow>{t('recurring.rules')}</CardEyebrow>
+                <CardTitle className="text-base">{t('recurring.scheduledPayments')}</CardTitle>
               </div>
               <Button
                 variant="secondary"
                 size="sm"
                 leftIcon={<Plus size={14} />}
-                onClick={() => toast.info('Crear regla', 'Disponible cuando el callback C028 esté conectado.')}
+                onClick={() => toast.info(t('recurring.createRule'), t('recurring.createRuleDescription'))}
               >
-                Crear
+                {t('recurring.create')}
               </Button>
             </div>
             <RecurringTabs tab={tab} counts={{ active: activeRules.length, paused: pausedRules.length, history: historyRules.length }} onChange={setTab} />
@@ -102,6 +104,7 @@ export function RecurringPayments() {
 }
 
 function RecurringHero({ stats, streamerMode }: { stats: RecurringStats; streamerMode: boolean }) {
+  const { t, money, relativeTime } = useI18n()
   return (
     <Card variant="glass" padding="none" className="relative overflow-hidden rounded-[1.75rem] border-white/10 shrink-0">
       <div
@@ -117,20 +120,20 @@ function RecurringHero({ stats, streamerMode }: { stats: RecurringStats; streame
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
               <RefreshCw size={11} strokeWidth={2.3} />
-              RECURRENTES
+              {t('recurring.eyebrow')}
             </span>
           </CardEyebrow>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">Pagos bajo control</h1>
+            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">{t('recurring.title')}</h1>
             <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
-              Revisa alquileres, cuotas y servicios antes de que salgan de tu cuenta.
+              {t('recurring.description')}
             </p>
           </div>
         </div>
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[420px]">
-          <HeroMetric label="Activos" value={String(stats.activeCount)} />
-          <HeroMetric label="Mes estimado" value={streamerMode ? maskMoneyDisplay() : formatCurrency(stats.monthlyMinor / 100)} />
-          <HeroMetric label="Próximo" value={stats.nextChargeMs ? formatRelativeTime(stats.nextChargeMs) : '—'} />
+          <HeroMetric label={t('recurring.activeCount')} value={String(stats.activeCount)} />
+          <HeroMetric label={t('recurring.monthEstimate')} value={streamerMode ? maskMoneyDisplay() : money(stats.monthlyMinor / 100)} />
+          <HeroMetric label={t('recurring.next')} value={stats.nextChargeMs ? relativeTime(stats.nextChargeMs) : '—'} />
         </div>
       </div>
     </Card>
@@ -147,14 +150,15 @@ function HeroMetric({ label, value }: { label: string; value: string }) {
 }
 
 function RecurringTabs({ tab, counts, onChange }: { tab: RecurringTab; counts: Record<RecurringTab, number>; onChange: (tab: RecurringTab) => void }) {
+  const { t } = useI18n()
   const tabs: Array<{ id: RecurringTab; label: string }> = [
-    { id: 'active', label: 'Activos' },
-    { id: 'paused', label: 'Pausados' },
-    { id: 'history', label: 'Historial' },
+    { id: 'active', label: t('recurring.active') },
+    { id: 'paused', label: t('recurring.paused') },
+    { id: 'history', label: t('recurring.history') },
   ]
 
   return (
-    <div className="grid grid-cols-3 gap-2 shrink-0" role="tablist" aria-label="Filtrar pagos recurrentes">
+    <div className="grid grid-cols-3 gap-2 shrink-0" role="tablist" aria-label={t('recurring.filterRecurring')}>
       {tabs.map((item) => (
         <button
           key={item.id}
@@ -179,10 +183,11 @@ function RecurringTabs({ tab, counts, onChange }: { tab: RecurringTab; counts: R
 }
 
 function RecurringRuleCard({ rule, index, streamerMode }: { rule: Recurring; index: number; streamerMode: boolean }) {
+  const { t, money, relativeTime } = useI18n()
   const meta = getRecurringMeta(rule)
-  const alias = streamerMode ? 'Destino oculto' : getMockAliasForIban(rule.to_iban) ?? 'Beneficiario'
-  const reason = streamerMode ? 'Concepto oculto' : rule.reason ?? 'Pago recurrente'
-  const amount = streamerMode ? maskMoneyDisplay() : formatCurrency(rule.amount_minor / 100)
+  const alias = streamerMode ? t('recurring.hiddenDestination') : getMockAliasForIban(rule.to_iban) ?? t('recurring.beneficiary')
+  const reason = streamerMode ? t('recurring.hiddenConcept') : rule.reason ?? t('recurring.recurringPayment')
+  const amount = streamerMode ? maskMoneyDisplay() : money(rule.amount_minor / 100)
   const fromIban = streamerMode ? maskIbanCompact(rule.from_iban) : revealIbanDisplay(rule.from_iban)
   const Icon = meta.icon
 
@@ -216,9 +221,9 @@ function RecurringRuleCard({ rule, index, streamerMode }: { rule: Recurring; ind
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <RuleMetric label="Próximo" value={rule.status === 'cancelled' ? 'Finalizado' : formatRelativeTime(rule.next_charge_ms)} />
-            <RuleMetric label="Último" value={rule.last_charge_ms ? formatRelativeTime(rule.last_charge_ms) : '—'} />
-            <RuleMetric label="Estado" value={statusText(rule.status)} tone={meta.color} />
+            <RuleMetric label={t('recurring.next')} value={rule.status === 'cancelled' ? t('recurring.finished') : relativeTime(rule.next_charge_ms)} />
+            <RuleMetric label={t('recurring.last')} value={rule.last_charge_ms ? relativeTime(rule.last_charge_ms) : '—'} />
+            <RuleMetric label={t('common.status')} value={statusText(rule.status)} tone={meta.color} />
           </div>
         </div>
       </div>
@@ -236,6 +241,7 @@ function RuleMetric({ label, value, tone }: { label: string; value: string; tone
 }
 
 function NextPaymentPanel({ rule, streamerMode }: { rule: Recurring | undefined; streamerMode: boolean }) {
+  const { t, money, relativeTime } = useI18n()
   if (!rule) {
     return (
       <Card variant="glass" padding="md" className="border-white/10 shrink-0">
@@ -244,9 +250,9 @@ function NextPaymentPanel({ rule, streamerMode }: { rule: Recurring | undefined;
     )
   }
 
-  const alias = streamerMode ? 'Destino oculto' : getMockAliasForIban(rule.to_iban) ?? 'Beneficiario'
-  const amount = streamerMode ? maskMoneyDisplay() : formatCurrency(rule.amount_minor / 100)
-  const reason = streamerMode ? 'Concepto oculto' : rule.reason ?? 'Pago recurrente'
+  const alias = streamerMode ? t('recurring.hiddenDestination') : getMockAliasForIban(rule.to_iban) ?? t('recurring.beneficiary')
+  const amount = streamerMode ? maskMoneyDisplay() : money(rule.amount_minor / 100)
+  const reason = streamerMode ? t('recurring.hiddenConcept') : rule.reason ?? t('recurring.recurringPayment')
 
   return (
     <Card variant="glass" padding="md" className="relative overflow-hidden border-white/10 shrink-0">
@@ -257,8 +263,8 @@ function NextPaymentPanel({ rule, streamerMode }: { rule: Recurring | undefined;
       />
       <div className="relative flex items-start justify-between gap-3">
         <div>
-          <CardEyebrow>Próxima salida</CardEyebrow>
-          <CardTitle className="text-base">{formatRelativeTime(rule.next_charge_ms)}</CardTitle>
+          <CardEyebrow>{t('recurring.nextPayment')}</CardEyebrow>
+          <CardTitle className="text-base">{relativeTime(rule.next_charge_ms)}</CardTitle>
         </div>
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.045] text-text-primary">
           <CalendarClock size={17} strokeWidth={2} />
@@ -274,47 +280,50 @@ function NextPaymentPanel({ rule, streamerMode }: { rule: Recurring | undefined;
 }
 
 function RecurringBudgetPanel({ stats, streamerMode }: { stats: RecurringStats; streamerMode: boolean }) {
+  const { t, money } = useI18n()
   return (
     <Card variant="glass" padding="md" className="border-white/10 shrink-0">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <CardEyebrow>Presupuesto</CardEyebrow>
-          <CardTitle className="text-base">Carga mensual</CardTitle>
+          <CardEyebrow>{t('recurring.budget')}</CardEyebrow>
+          <CardTitle className="text-base">{t('recurring.monthlyLoad')}</CardTitle>
         </div>
         <Wallet size={18} className="text-text-secondary" strokeWidth={2} />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <RuleMetric label="Estimado" value={streamerMode ? maskMoneyDisplay() : formatCurrency(stats.monthlyMinor / 100)} />
-        <RuleMetric label="Reglas" value={`${stats.activeCount} activas`} />
+        <RuleMetric label={t('recurring.estimated')} value={streamerMode ? maskMoneyDisplay() : money(stats.monthlyMinor / 100)} />
+        <RuleMetric label={t('recurring.rules')} value={`${stats.activeCount} ${t('recurring.activeRules')}`} />
       </div>
       <p className="mt-3 text-xs text-text-tertiary leading-relaxed">
-        Ideal para alquileres, cuotas de coches, negocios o servicios que no quieres olvidar durante el rol.
+        {t('recurring.budgetDescription')}
       </p>
     </Card>
   )
 }
 
 function RecurringSafetyPanel() {
+  const { t } = useI18n()
   return (
     <Card variant="glass" padding="md" className="border-white/10 min-h-0 flex-1">
       <div className="flex items-center gap-2 text-text-secondary mb-3">
         <ShieldCheck size={15} strokeWidth={2} />
-        <span className="text-sm font-semibold">Control del jugador</span>
+        <span className="text-sm font-semibold">{t('recurring.accountControl')}</span>
       </div>
       <div className="space-y-2 text-xs text-text-tertiary leading-relaxed">
-        <p>Los pagos se revisan desde tu cuenta, con estado visible antes del siguiente cargo.</p>
-        <p>Las acciones de crear, pausar o borrar quedan preparadas para C027-C031 cuando backend las exponga.</p>
+        <p>{t('recurring.accountControlLine1')}</p>
+        <p>{t('recurring.accountControlLine2')}</p>
       </div>
     </Card>
   )
 }
 
 function EmptyRecurring({ tab, compact }: { tab: RecurringTab; compact?: boolean }) {
+  const { t } = useI18n()
   const copy = tab === 'active'
-    ? { title: 'Sin pagos activos', description: 'Cuando programes alquileres o cuotas aparecerán aquí.' }
+    ? { title: t('recurring.noActivePayments'), description: t('recurring.noActiveDescription') }
     : tab === 'paused'
-      ? { title: 'Nada pausado', description: 'Las reglas detenidas temporalmente vivirán en esta pestaña.' }
-      : { title: 'Sin historial', description: 'Las reglas finalizadas quedarán archivadas aquí.' }
+      ? { title: t('recurring.noPaused'), description: t('recurring.noPausedDescription') }
+      : { title: t('recurring.noHistory'), description: t('recurring.noHistoryDescription') }
 
   return (
     <div className={cn('flex flex-col items-center justify-center text-center rounded-2xl border border-white/[0.06] bg-white/[0.025]', compact ? 'px-4 py-5' : 'h-full min-h-[220px] px-5 py-8')}>
@@ -326,11 +335,12 @@ function EmptyRecurring({ tab, compact }: { tab: RecurringTab; compact?: boolean
 }
 
 function RecurringLoading() {
+  const { t } = useI18n()
   return (
     <div className="h-full w-full flex items-center justify-center text-text-tertiary">
       <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4">
         <Spinner size="sm" />
-        <span className="text-sm font-medium">Cargando recurrentes</span>
+        <span className="text-sm font-medium">{t('recurring.loading')}</span>
       </div>
     </div>
   )
@@ -355,20 +365,22 @@ function estimateMonthlyMinor(rule: Recurring): number {
 }
 
 function intervalLabel(days: number): string {
-  if (days === 7) return 'Semanal'
-  if (days === 14) return 'Quincenal'
-  if (days >= 28 && days <= 31) return 'Mensual'
-  return `Cada ${days}d`
+  const { t } = useI18n()
+  if (days === 7) return t('recurring.weekly')
+  if (days === 14) return t('recurring.biweekly')
+  if (days >= 28 && days <= 31) return t('recurring.monthly')
+  return t('recurring.everyDays').replace('{days}', String(days))
 }
 
 function statusText(status: RecurringStatus): string {
+  const { t } = useI18n()
   switch (status) {
     case 'active':
-      return 'Activo'
+      return t('recurring.activeStatus')
     case 'paused':
-      return 'Pausado'
+      return t('recurring.pausedStatus')
     case 'cancelled':
-      return 'Archivado'
+      return t('recurring.cancelledStatus')
   }
 }
 

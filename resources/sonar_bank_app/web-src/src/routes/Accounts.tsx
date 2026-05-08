@@ -20,7 +20,8 @@ import { useBootstrap } from '@/data/queries'
 import type { Account, Transaction } from '@/data/contracts'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { handleBankError } from '@/lib/bankError'
-import { cn, formatCurrency, formatRelativeTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { maskIbanCompact, maskIbanDisplay, maskMoneyDisplay, maskSignedMoneyDisplay, revealIbanDisplay, safeAriaLabel } from '@/lib/privacy'
 import { sfx } from '@/lib/sfx'
 import { usePrivacyMode } from '@/stores/privacy'
@@ -106,6 +107,7 @@ interface AccountTotals {
 }
 
 function AccountsHero({ accounts, totals, streamerMode }: { accounts: Account[]; totals: AccountTotals; streamerMode: boolean }) {
+  const { t, money } = useI18n()
   return (
     <Card variant="glass" padding="none" className="relative overflow-hidden rounded-[1.75rem] border-white/10 shrink-0">
       <div
@@ -121,20 +123,20 @@ function AccountsHero({ accounts, totals, streamerMode }: { accounts: Account[];
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
               <Landmark size={11} strokeWidth={2.3} />
-              CUENTAS Y AHORRO
+              {t('accounts.eyebrow')}
             </span>
           </CardEyebrow>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">Tu dinero, ordenado</h1>
+            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">{t('accounts.title')}</h1>
             <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
-              Controla saldo, ahorro e IBANs desde una vista clara para tu día a día.
+              {t('accounts.description')}
             </p>
           </div>
         </div>
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[420px]">
-          <HeroMetric label="Total" value={streamerMode ? maskMoneyDisplay() : formatCurrency(totals.totalMinor / 100)} />
-          <HeroMetric label="Saldo" value={streamerMode ? maskMoneyDisplay() : formatCurrency(totals.balanceMinor / 100)} />
-          <HeroMetric label="Cuentas" value={String(accounts.length)} />
+          <HeroMetric label={t('common.total')} value={streamerMode ? maskMoneyDisplay() : money(totals.totalMinor / 100)} />
+          <HeroMetric label={t('common.balance')} value={streamerMode ? maskMoneyDisplay() : money(totals.balanceMinor / 100)} />
+          <HeroMetric label={t('common.accounts')} value={String(accounts.length)} />
         </div>
       </div>
     </Card>
@@ -161,11 +163,12 @@ function AccountList({
   streamerMode: boolean
   onSelect: (account: Account) => void
 }) {
+  const { t } = useI18n()
   return (
     <Card variant="glass" padding="md" className="min-h-0 border-white/10 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3 shrink-0">
         <div>
-          <CardEyebrow>Cartera</CardEyebrow>
+          <CardEyebrow>{t('accounts.wallet')}</CardEyebrow>
           <CardTitle className="text-base">Cuentas</CardTitle>
         </div>
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.045] text-text-secondary">
@@ -175,7 +178,7 @@ function AccountList({
 
       <div className="min-h-0 flex-1 overflow-y-auto -mx-1 px-1 space-y-2 scrollbar-thin">
         {accounts.length === 0 ? (
-          <EmptyPanel title="Sin cuentas" description="Cuando abras una cuenta bancaria aparecerá aquí." />
+          <EmptyPanel title={t('accounts.emptyTitle')} description={t('accounts.emptyDescription')} />
         ) : accounts.map((account, index) => (
           <AccountButton
             key={account.account_id}
@@ -192,11 +195,12 @@ function AccountList({
 }
 
 function AccountButton({ account, index, active, streamerMode, onClick }: { account: Account; index: number; active: boolean; streamerMode: boolean; onClick: () => void }) {
+  const { money, t } = useI18n()
   const name = accountName(account, index)
   const accountKind = getAccountKind(account, index)
   const ibanLabel = streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban)
   const ibanTail = streamerMode ? '••••' : account.iban.replace(/\s+/g, '').slice(-4)
-  const amountLabel = streamerMode ? maskMoneyDisplay() : formatCurrency((account.balance_minor + account.savings_minor) / 100)
+  const amountLabel = streamerMode ? maskMoneyDisplay() : money((account.balance_minor + account.savings_minor) / 100)
   const totalMinor = account.balance_minor + account.savings_minor
   const savingsRatio = totalMinor > 0 ? account.savings_minor / totalMinor : 0
   const Icon = accountKind.icon
@@ -265,7 +269,7 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
         </span>
         <span className="shrink-0 flex flex-col items-end gap-1">
           <span className="text-sm font-semibold text-text-primary tactile-tabular-nums">{amountLabel}</span>
-          <span className="text-[9px] uppercase tracking-[0.12em] text-text-tertiary">{active ? 'Activa' : 'Ver'}</span>
+          <span className="text-[9px] uppercase tracking-[0.12em] text-text-tertiary">{active ? t('accounts.active') : t('accounts.view')}</span>
         </span>
       </div>
     </button>
@@ -273,10 +277,11 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
 }
 
 function AccountDetail({ account, transactions, streamerMode }: { account: Account | undefined; transactions: Transaction[]; streamerMode: boolean }) {
+  const { t, money } = useI18n()
   if (!account) {
     return (
       <Card variant="glass" padding="md" className="border-white/10 flex items-center justify-center text-center">
-        <EmptyPanel title="Selecciona una cuenta" description="El detalle de saldo y actividad aparecerá aquí." />
+        <EmptyPanel title={t('accounts.selectAccount')} description={t('accounts.selectAccountDescription')} />
       </Card>
     )
   }
@@ -288,9 +293,9 @@ function AccountDetail({ account, transactions, streamerMode }: { account: Accou
     try {
       await navigator.clipboard.writeText(account.iban.replace(/\s+/g, ''))
       sfx.coin_clink()
-      toast.success('IBAN copiado', streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban))
+      toast.success(t('accounts.ibanCopied'), streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban))
     } catch {
-      toast.warning('No se pudo copiar', 'Permiso de portapapeles denegado.')
+      toast.warning(t('accounts.clipboardDenied'), t('accounts.clipboardDenied'))
     }
   }
 
@@ -307,7 +312,7 @@ function AccountDetail({ account, transactions, streamerMode }: { account: Accou
       <div className="relative h-full min-h-0 flex flex-col p-4 2xl:p-5">
         <div className="flex items-start justify-between gap-4 shrink-0">
           <div className="min-w-0 flex flex-col gap-2">
-            <CardEyebrow>Detalle</CardEyebrow>
+            <CardEyebrow>{t('accounts.detail')}</CardEyebrow>
             <div>
               <h2 className="text-2xl 2xl:text-3xl font-light tracking-[-0.055em] text-text-primary">{accountName(account, 0)}</h2>
               <StatusBadge account={account} />
@@ -316,11 +321,11 @@ function AccountDetail({ account, transactions, streamerMode }: { account: Accou
           <button
             type="button"
             onClick={copyIban}
-            aria-label={safeAriaLabel(`Copiar IBAN ${displayIban}`)}
+            aria-label={safeAriaLabel(`${t('accounts.copyIban')} ${displayIban}`)}
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2 text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-white/[0.075] transition-colors tactile-focus-ring"
           >
             <Copy size={13} strokeWidth={2.1} />
-            Copiar IBAN
+            {t('accounts.copyIban')}
           </button>
         </div>
 
@@ -330,19 +335,19 @@ function AccountDetail({ account, transactions, streamerMode }: { account: Accou
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-3 shrink-0">
-          <DetailMetric label="Disponible" value={streamerMode ? maskMoneyDisplay() : formatCurrency(account.balance_minor / 100)} />
-          <DetailMetric label="Ahorro" value={streamerMode ? maskMoneyDisplay() : formatCurrency(account.savings_minor / 100)} />
-          <DetailMetric label="Total" value={streamerMode ? maskMoneyDisplay() : formatCurrency(totalMinor / 100)} strong />
+          <DetailMetric label={t('accounts.available')} value={streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100)} />
+          <DetailMetric label={t('accounts.savings')} value={streamerMode ? maskMoneyDisplay() : money(account.savings_minor / 100)} />
+          <DetailMetric label={t('accounts.total')} value={streamerMode ? maskMoneyDisplay() : money(totalMinor / 100)} strong />
         </div>
 
         <div className="mt-4 min-h-0 flex-1 rounded-[1.55rem] border border-white/10 bg-black/[0.12] p-3.5 flex flex-col">
           <div className="flex items-center justify-between gap-3 pb-3 shrink-0">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary font-semibold">Actividad de la cuenta</span>
+            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary font-semibold">{t('accounts.accountActivity')}</span>
             <span className="text-xs text-text-tertiary tactile-tabular-nums">{transactions.length}</span>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
             {transactions.length === 0 ? (
-              <EmptyPanel title="Sin actividad reciente" description="Los movimientos de esta cuenta aparecerán aquí." compact />
+              <EmptyPanel title={t('accounts.noRecentActivity')} description={t('accounts.noRecentActivityDescription')} compact />
             ) : transactions.map((tx, index) => (
               <MiniTransaction key={tx.txn_id} tx={tx} ownIban={account.iban} index={index} streamerMode={streamerMode} />
             ))}
@@ -363,6 +368,7 @@ function DetailMetric({ label, value, strong }: { label: string; value: string; 
 }
 
 function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[]; totals: AccountTotals; streamerMode: boolean }) {
+  const { money, t } = useI18n()
   const ratio = totals.totalMinor > 0 ? totals.savingsMinor / totals.totalMinor : 0
   const displayRatio = streamerMode ? 0.56 : ratio
 
@@ -370,7 +376,7 @@ function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[];
     <Card variant="glass" padding="md" className="relative overflow-hidden border-white/10 shrink-0">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <CardEyebrow>Ahorro</CardEyebrow>
+          <CardEyebrow>{t('accounts.savings')}</CardEyebrow>
           <CardTitle className="text-base">Reserva protegida</CardTitle>
         </div>
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.045] text-text-primary">
@@ -379,7 +385,7 @@ function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[];
       </div>
       <div className="mt-4 flex items-end justify-between gap-3">
         <span className="text-3xl font-light tracking-[-0.055em] text-text-primary tactile-tabular-nums">
-          {streamerMode ? maskMoneyDisplay() : formatCurrency(totals.savingsMinor / 100)}
+          {streamerMode ? maskMoneyDisplay() : money(totals.savingsMinor / 100)}
         </span>
         <span className="text-xs text-text-tertiary tactile-tabular-nums">{accounts.length} cuentas</span>
       </div>
@@ -397,33 +403,35 @@ function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[];
 }
 
 function QuickActionsPanel({ onTransfer, onCards }: { onTransfer: () => void; onCards: () => void }) {
+  const { t } = useI18n()
   return (
     <Card variant="glass" padding="md" className="border-white/10 shrink-0">
       <div className="flex items-center gap-2 text-text-secondary mb-3">
         <ShieldCheck size={15} strokeWidth={2} />
-        <span className="text-sm font-semibold">Acciones rápidas</span>
+        <span className="text-sm font-semibold">{t('accounts.quickActions')}</span>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Button variant="primary" size="sm" leftIcon={<Send size={14} />} onClick={onTransfer}>Transferir</Button>
-        <Button variant="secondary" size="sm" leftIcon={<CreditCard size={14} />} onClick={onCards}>Tarjetas</Button>
+        <Button variant="primary" size="sm" leftIcon={<Send size={14} />} onClick={onTransfer}>{t('accounts.transfer')}</Button>
+        <Button variant="secondary" size="sm" leftIcon={<CreditCard size={14} />} onClick={onCards}>{t('accounts.cards')}</Button>
       </div>
     </Card>
   )
 }
 
 function AccountActivity({ transactions, ownIban, streamerMode }: { transactions: Transaction[]; ownIban: string | undefined; streamerMode: boolean }) {
+  const { t } = useI18n()
   return (
     <Card variant="glass" padding="md" className="border-white/10 min-h-0 flex-1 flex flex-col">
       <div className="flex items-center justify-between gap-3 shrink-0 mb-3">
         <div>
-          <CardEyebrow>Últimos movimientos</CardEyebrow>
-          <CardTitle className="text-base">Actividad</CardTitle>
+          <CardEyebrow>{t('accounts.latestMovements')}</CardEyebrow>
+          <CardTitle className="text-base">{t('accounts.activity')}</CardTitle>
         </div>
         <span className="text-xs text-text-tertiary tactile-tabular-nums">{transactions.length}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
         {!ownIban || transactions.length === 0 ? (
-          <EmptyPanel title="Sin movimientos" description="Aquí verás la actividad reciente de la cuenta elegida." compact />
+          <EmptyPanel title={t('accounts.noMovements')} description={t('accounts.noMovementsDescription')} compact />
         ) : transactions.map((tx, index) => (
           <MiniTransaction key={tx.txn_id} tx={tx} ownIban={ownIban} index={index} streamerMode={streamerMode} />
         ))}
@@ -433,12 +441,13 @@ function AccountActivity({ transactions, ownIban, streamerMode }: { transactions
 }
 
 function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction; ownIban: string; index: number; streamerMode: boolean }) {
+  const { money, relativeTime, t } = useI18n()
   const outgoing = isOutgoing(tx, ownIban)
   const counterpartIban = outgoing ? tx.to_iban : tx.from_iban
-  const counterpartName = getMockAliasForIban(counterpartIban) ?? (outgoing ? 'Beneficiario' : 'Remitente')
-  const displayName = streamerMode ? 'Movimiento oculto' : counterpartName
-  const reason = streamerMode ? 'Detalle oculto' : tx.reason ?? (outgoing ? 'Transferencia' : 'Recibida')
-  const amount = streamerMode ? maskSignedMoneyDisplay() : `${outgoing ? '−' : '+'}${formatCurrency(tx.amount_minor / 100)}`
+  const counterpartName = getMockAliasForIban(counterpartIban) ?? (outgoing ? t('accounts.beneficiary') : t('accounts.sender'))
+  const displayName = streamerMode ? t('accounts.hiddenMovement') : counterpartName
+  const reason = streamerMode ? t('accounts.hiddenDetail') : tx.reason ?? (outgoing ? t('accounts.transferSent') : t('accounts.transferReceived'))
+  const amount = streamerMode ? maskSignedMoneyDisplay() : `${outgoing ? '−' : '+'}${money(tx.amount_minor / 100)}`
   const Icon = outgoing ? ArrowUpRight : ArrowDownLeft
   const statusColor = tx.status === 'committed' ? 'oklch(0.72 0.16 155)' : tx.status === 'failed' || tx.status === 'reverted' ? 'oklch(0.68 0.20 25)' : 'oklch(0.78 0.16 85)'
 
@@ -457,7 +466,7 @@ function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction
       </span>
       <span className="min-w-0 flex-1 flex flex-col leading-tight">
         <span className="text-sm font-semibold text-text-primary truncate">{displayName}</span>
-        <span className="text-[11px] text-text-tertiary truncate">{reason} · {formatRelativeTime(tx.timestamp_ms)}</span>
+        <span className="text-[11px] text-text-tertiary truncate">{reason} · {relativeTime(tx.timestamp_ms)}</span>
       </span>
       <span className="shrink-0 flex flex-col items-end gap-0.5">
         <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)' }}>{amount}</span>
@@ -471,6 +480,7 @@ function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction
 }
 
 function StatusBadge({ account }: { account: Account }) {
+  const { t } = useI18n()
   const active = account.status === 'active' && !account.frozen_flag
   return (
     <span
@@ -482,7 +492,7 @@ function StatusBadge({ account }: { account: Account }) {
       }}
     >
       {active ? <Check size={10} strokeWidth={2.5} /> : <AlertTriangle size={10} strokeWidth={2.5} />}
-      {active ? 'Activa' : account.status}
+      {active ? t('accounts.activeStatus') : account.status}
     </span>
   )
 }
@@ -498,20 +508,22 @@ function EmptyPanel({ title, description, compact }: { title: string; descriptio
 }
 
 function AccountsLoading() {
+  const { t } = useI18n()
   return (
     <div className="h-full w-full flex items-center justify-center text-text-tertiary">
       <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4">
         <Spinner size="sm" />
-        <span className="text-sm font-medium">Cargando cuentas</span>
+        <span className="text-sm font-medium">{t('accounts.loading')}</span>
       </div>
     </div>
   )
 }
 
 function accountName(account: Account, index: number): string {
-  if (account.savings_minor > account.balance_minor && account.balance_minor === 0) return 'Ahorro protegido'
-  if (index === 0) return 'Cuenta principal'
-  return `Cuenta ${index + 1}`
+  const { t } = useI18n()
+  if (account.savings_minor > account.balance_minor && account.balance_minor === 0) return t('accounts.protectedSavings')
+  if (index === 0) return t('accounts.primaryAccount')
+  return t('accounts.accountNumber').replace('{number}', String(index + 1))
 }
 
 function getAccountKind(account: Account, index: number): {
@@ -520,9 +532,10 @@ function getAccountKind(account: Account, index: number): {
   accent: string
   glow: string
 } {
+  const { t } = useI18n()
   if (account.savings_minor > account.balance_minor && account.balance_minor === 0) {
     return {
-      label: 'Reserva',
+      label: t('accounts.reserveLabel'),
       icon: PiggyBank,
       accent: 'oklch(0.76 0.15 155)',
       glow: 'oklch(0.76 0.15 155 / 0.42)',
@@ -530,17 +543,17 @@ function getAccountKind(account: Account, index: number): {
   }
   if (index === 0) {
     return {
-      label: 'Diaria',
+      label: t('accounts.dailyLabel'),
       icon: Wallet,
       accent: 'oklch(0.70 0.22 40)',
       glow: 'oklch(0.70 0.22 40 / 0.42)',
     }
   }
   return {
-    label: 'Extra',
-    icon: Landmark,
-    accent: 'oklch(0.72 0.13 235)',
-    glow: 'oklch(0.72 0.13 235 / 0.42)',
+    label: t('accounts.extraLabel'),
+    icon: CreditCard,
+    accent: 'oklch(0.78 0.16 85)',
+    glow: 'oklch(0.78 0.16 85 / 0.42)',
   }
 }
 

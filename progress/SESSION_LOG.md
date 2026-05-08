@@ -1647,3 +1647,66 @@ R1 findings inherited 100% closed (per BANK-BE.LOCK.R1 entry).
 - Trigger: founder green-light explícito iniciar UI build (per directive final BANK-BE.LOCK.R2 close).
 
 — **Backend Money & Compatibility Lead BANK-BE.LOCK.R2 close 2026-05-06. Round 2 amendment cycle CLOSED. 48 archivos / ~8,500 LOC implementación Steps A→F MERGED. `sonar_bank_app` v1.0.1-r1-step-f BOOTABLE. 49 callbacks live + REQ-FE-001/002 contractually delivered + privileged path bug-fix MERGED. R1 hardened rules (H001+H004+H006+M002..M007) implementadas. Backend Lead Standby ACTIVE awaiting BANK-SEC.2 re-audit + DevOps harness p99/p95 + Frontend Lead UI build (BANK-FE.1 next). Hibernación Absoluta ENGAGED.**
+
+---
+
+### BANK-A.FE.POLISH — Frontend & UX Premium Lead — ATM final polish + palette alignment + handoff
+
+- **Fecha:** 2026-05-08
+- **Duración:** ~2h
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.5)
+- **Sprint / Phase:** Phase A / bank-A.FE
+- **Perfil:** FE — Frontend & UX Premium
+- **Goal:** Aplicar touch final al ATM: alinear paleta black/orange del Home, retirar `ClientPresencePanel` (imagen 1 screenshot), corregir layout de tarjeta 3D post-remoción, normalizar todos los tokens a `oklch(0.65 0.22 40)` + `var(--gradient-primary)` en las 3 pantallas del flujo (PIN access, card selector, cash ATM). Commitear y preparar prompt handoff para próximo Lead FE.
+- **Status:** ✅ Done
+
+#### Outcomes
+
+- ✅ `ClientPresencePanel` eliminado completamente — tarjeta 3D ocupa el espacio con `max-w-[500px]` centrada y giro suavizado `rotateX(6) rotateY(-7)`.
+- ✅ Paleta Home exacta aplicada en las 3 pantallas: sin `orange-300`, sin `amber`, sin `rgba(255,95,0)`, sin `oklch(0.69...)`. Todo normalizado a `oklch(0.65 0.22 40)` y CSS variables `var(--gradient-primary)` / `var(--gradient-primary-hover)`.
+- ✅ Botones CTA usan `text-text-primary` (no `text-black`) consistente con `tactile.css` del Home.
+- ✅ Fondos de secciones usan gradientes OKLCH alpha (no RGBA legacy).
+- ✅ Claves i18n obsoletas `atm.cashRoute/balanceRoute/limitRoute/terminalRoute/privateSession/cardRecognized` eliminadas.
+- ✅ Commit `03334be BANK-A.FE polish ATM premium flow` en `feature/bank-security-phase-a`.
+- ✅ Prompt handoff creado: `docs/agents/teams/prompts/05_frontend_ux_premium_lead.md`.
+
+#### Done criteria
+
+- [x] Grep final limpio — sin `CashRoute`, `ClientPresencePanel`, `orange-300`, `orange-500`, `amber`, `255,95,0`, `251,146,60`, `0.69_0.22_40` en `Atm.tsx` / `i18n.ts` ✅
+- [x] `npm run typecheck` exit 0 ✅
+- [x] `git diff --check` exit 0 ✅
+- [x] `npm run build` exit 0 (warning chunk grande pre-existente) ✅
+- [x] Commit `03334be` solo sobre `Atm.tsx` + `i18n.ts` ✅
+- [x] Prompt handoff `05_frontend_ux_premium_lead.md` creado ✅
+
+#### Anti-tech-debt verification
+
+- [x] NO colores fuera de paleta SONAR.
+- [x] NO texto hardcodeado en JSX (todo via `t()`).
+- [x] NO scope creep — solo `Atm.tsx` e `i18n.ts` tocados.
+- [x] NO `text-black` en CTAs orange.
+- [x] Orange scarcity doctrine respetada (max 1 por categoría por vista).
+
+#### Files in scope respetados
+
+- ✅ NO toco: contratos LOCKED, backend `server/**`, otros routes.
+- ✅ Modificados: `resources/sonar_bank_app/web-src/src/routes/Atm.tsx` + `src/lib/i18n.ts`.
+- ✅ Creado: `docs/agents/teams/prompts/05_frontend_ux_premium_lead.md`.
+
+#### Pendientes próximos
+
+1. Verificar estado de rutas untracked: `Investments.tsx`, `Business.tsx`, `Compliance.tsx`, `Audit.tsx`.
+2. Lazy loading por ruta en `src/router.tsx` — reducir chunk bundle 1358 kB.
+3. i18n FR + DE — pendientes (solo ES + EN operativos actualmente).
+4. WCAG 2.2 AA — audit `aria-*` en componentes interactivos críticos.
+5. Backend Lead H3 emission ceremony → C-FE-03 endorsement (cuando Frontend Lead listo).
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-FE.NEXT**
+- Goal: Continuar con rutas untracked + lazy loading + i18n FR/DE
+- Modelo sugerido: Cascade (continuity)
+- Files in scope: `src/routes/Investments.tsx`, `src/routes/Business.tsx`, `src/router.tsx`
+- Activación: usar prompt `docs/agents/teams/prompts/05_frontend_ux_premium_lead.md`
+
+— **Frontend & UX Premium Lead BANK-A.FE.POLISH close 2026-05-08. ATM 3-step flow polished + paleta Home exacta aplicada + ClientPresencePanel removido + tarjeta 3D layout corregida. Commit `03334be` merged. Prompt handoff `05_frontend_ux_premium_lead.md` entregado. Branch `feature/bank-security-phase-a`. Standby hasta founder green-light próxima sesión FE.**

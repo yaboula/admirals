@@ -4,6 +4,7 @@ import type { BankCard, BankCardMock } from '@/data/contracts'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { maskPanDisplay, revealPanDisplay } from '@/lib/privacy'
+import { useI18n } from '@/lib/i18n'
 import { resolveCardDesign, type CardDesign, type CardDesignMotif } from './cardDesigns'
 
 /**
@@ -53,6 +54,7 @@ export function CardVisual({
   className,
   onClick,
 }: CardVisualProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const design = designOverride ?? resolveCardDesign(card.design_id)
 
@@ -156,7 +158,7 @@ export function CardVisual({
                 'group flex items-center gap-2 text-left',
                 !onToggleReveal && 'cursor-default',
               )}
-              aria-label={revealed ? 'Ocultar número de tarjeta' : 'Revelar número de tarjeta'}
+              aria-label={revealed ? t('cards.hideNumber') : t('cards.revealNumber')}
             >
               <span
                 className={cn(
@@ -194,7 +196,7 @@ export function CardVisual({
                   className="text-[8px] uppercase tracking-[0.18em] font-semibold"
                   style={{ color: design.textTertiary }}
                 >
-                  Titular
+                  {t('cards.holder')}
                 </span>
                 <span
                   className="text-[11px] font-semibold tracking-wide truncate max-w-[18ch]"
@@ -208,7 +210,7 @@ export function CardVisual({
                   className="text-[8px] uppercase tracking-[0.18em] font-semibold"
                   style={{ color: design.textTertiary }}
                 >
-                  Caduca
+                  {t('cards.expires')}
                 </span>
                 <span
                   className="text-[11px] font-semibold tracking-wide tactile-tabular-nums"
@@ -261,6 +263,7 @@ function FrostOverlay({
   textPrimary: string
   reduced: boolean
 }) {
+  const { t } = useI18n()
   const isFrozen = status === 'locked'
   return (
     <motion.div
@@ -322,12 +325,12 @@ function FrostOverlay({
           {isFrozen ? (
             <>
               <Lock size={12} strokeWidth={2.6} />
-              Congelada
+              {t('cards.frozen')}
             </>
           ) : (
             <>
               <Clock3 size={12} strokeWidth={2.4} />
-              Caducada
+              {t('cards.expired')}
             </>
           )}
         </motion.div>

@@ -40,7 +40,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'noir',
     name: 'Noir',
-    tagline: 'Puro minimalismo',
+    tagline: 'Pure minimalism',
     tier: 'default',
     surface:
       'linear-gradient(135deg, oklch(0.14 0.010 270) 0%, oklch(0.08 0.008 270) 50%, oklch(0.04 0.006 270) 100%)',
@@ -52,7 +52,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'sonar_signature',
     name: 'Sonar Signature',
-    tagline: 'La tarjeta insignia · #FF5100',
+    tagline: 'The flagship card · #FF5100',
     tier: 'signature',
     surface:
       'linear-gradient(135deg, oklch(0.16 0.012 270) 0%, oklch(0.10 0.010 270) 50%, oklch(0.06 0.008 270) 100%)',
@@ -66,7 +66,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'aurora',
     name: 'Aurora',
-    tagline: 'Boreal · teal → violeta',
+    tagline: 'Boreal · teal → violet',
     tier: 'premium',
     surface:
       'linear-gradient(135deg, oklch(0.22 0.10 195) 0%, oklch(0.18 0.14 260) 55%, oklch(0.14 0.10 290) 100%)',
@@ -80,7 +80,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'sunset',
     name: 'Sunset',
-    tagline: 'Ámbar profundo · rosa crepuscular',
+    tagline: 'Deep amber · dusk rose',
     tier: 'premium',
     surface:
       'linear-gradient(135deg, oklch(0.22 0.12 55) 0%, oklch(0.16 0.14 25) 50%, oklch(0.10 0.12 355) 100%)',
@@ -94,7 +94,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'titanium',
     name: 'Titanium',
-    tagline: 'Metal claro · precisión ejecutiva',
+    tagline: 'Light metal · executive precision',
     tier: 'premium',
     surface:
       'linear-gradient(135deg, oklch(0.88 0.010 250) 0%, oklch(0.74 0.014 250) 48%, oklch(0.50 0.018 250) 100%)',
@@ -108,7 +108,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'deep_space',
     name: 'Deep Space',
-    tagline: 'Azul gravitacional · núcleo violeta',
+    tagline: 'Gravitational blue · violet core',
     tier: 'signature',
     surface:
       'linear-gradient(135deg, oklch(0.055 0.010 270) 0%, oklch(0.11 0.09 265) 48%, oklch(0.055 0.025 300) 100%)',
@@ -122,7 +122,7 @@ export const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'emerald_vault',
     name: 'Emerald Vault',
-    tagline: 'Verde privado · bóveda nocturna',
+    tagline: 'Private green · night vault',
     tier: 'premium',
     surface:
       'linear-gradient(135deg, oklch(0.12 0.035 165) 0%, oklch(0.16 0.070 155) 52%, oklch(0.055 0.018 170) 100%)',

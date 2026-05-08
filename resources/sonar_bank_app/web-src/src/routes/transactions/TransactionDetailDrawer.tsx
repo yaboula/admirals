@@ -13,7 +13,8 @@ import {
   Receipt,
 } from 'lucide-react'
 import type { Transaction } from '@/data/contracts'
-import { cn, formatRelativeTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { getMockAliasForIban, getMockInitialsForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
 import { maskIbanDisplay, maskMoneyDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode, safeAriaLabel } from '@/lib/privacy'
@@ -37,6 +38,7 @@ export interface TransactionDetailDrawerProps {
 }
 
 export function TransactionDetailDrawer({ tx, ownIban, onClose }: TransactionDetailDrawerProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
 
   // Esc to close.
@@ -72,7 +74,7 @@ export function TransactionDetailDrawer({ tx, ownIban, onClose }: TransactionDet
             key="panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Detalle de transacción"
+            aria-label={t('transactions.transactionDetail')}
             initial={reduced ? { opacity: 0 } : { x: '100%', opacity: 0.85 }}
             animate={{ x: 0, opacity: 1 }}
             exit={reduced ? { opacity: 0 } : { x: '100%', opacity: 0 }}
@@ -113,6 +115,7 @@ function DrawerBody({
   ownIban: string | undefined
   onClose: () => void
 }) {
+  const { t, signedMoney, relativeTime, dateTime } = useI18n()
   const fromCompact = tx.from_iban.replace(/\s+/g, '')
   const toCompact = tx.to_iban.replace(/\s+/g, '')
   const isOutgoing = ownIban
@@ -120,28 +123,27 @@ function DrawerBody({
     : tx.direction === 'out'
   const counterpartIban = isOutgoing ? tx.to_iban : tx.from_iban
   const counterpartName =
-    getMockAliasForIban(counterpartIban) ?? (isOutgoing ? 'Beneficiario' : 'Remitente')
+    getMockAliasForIban(counterpartIban) ?? (isOutgoing ? t('accounts.beneficiary') : t('accounts.sender'))
   const initials = getMockInitialsForIban(counterpartIban)
-  const sign = isOutgoing ? '−' : '+'
   const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const displayName = streamerMode ? 'Movimiento oculto' : counterpartName
-  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (isOutgoing ? 'Transferencia' : 'Pago recibido')
+  const displayName = streamerMode ? t('transactions.hiddenMovement') : counterpartName
+  const displayReason = streamerMode ? t('transactions.hiddenDetail') : tx.reason ?? (isOutgoing ? t('transactions.transfer') : t('transactions.received'))
 
   const handleCopyIban = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(counterpartIban.replace(/\s+/g, ''))
       sfx.coin_clink()
-      toast.success('IBAN copiado', counterpartName)
+      toast.success(t('transactions.ibanCopied'), counterpartName)
     } catch {
-      toast.warning('No se pudo copiar', 'Permiso de portapapeles denegado.')
+      toast.warning(t('transactions.copyFailed'), t('transactions.clipboardDenied'))
     }
   }
 
   const handleAction = (label: string) => () => {
     sfx.console_tap()
-    toast.info(label, 'Disponible cuando el backend BANK-BE.3 esté operativo.')
+    toast.info(label, t('transactions.backendNotReady'))
   }
 
   return (
@@ -165,7 +167,7 @@ function DrawerBody({
           </span>
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-              {isOutgoing ? 'Enviado a' : 'Recibido de'}
+              {isOutgoing ? t('transactions.sentTo') : t('transactions.receivedFrom')}
             </span>
             <span className="text-base font-semibold text-text-primary truncate tactile-wght-breathing">
               {displayName}
@@ -175,7 +177,7 @@ function DrawerBody({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Cerrar detalle"
+          aria-label={t('transactions.closeDetail')}
           className="inline-flex items-center justify-center h-9 w-9 rounded-full text-text-tertiary hover:text-text-primary hover:bg-surface-card-elevated/50 transition-colors tactile-focus-ring"
         >
           <X size={16} strokeWidth={2} />
@@ -212,13 +214,13 @@ function DrawerBody({
           <div className="relative flex items-end justify-between gap-4">
             <div className="flex flex-col gap-1">
               <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-                Importe
+                {t('transactions.amount')}
               </span>
               <span
                 className="text-3xl font-semibold tracking-tight tactile-display-balance"
                 style={{ color: amountColor }}
               >
-                {streamerMode ? maskMoneyDisplay() : `${sign}€${formatEur(tx.amount_minor / 100)}`}
+                {streamerMode ? maskMoneyDisplay() : signedMoney((isOutgoing ? -1 : 1) * tx.amount_minor / 100)}
               </span>
             </div>
             <span
@@ -239,19 +241,19 @@ function DrawerBody({
       {/* Body grid */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 flex flex-col gap-4 2xl:px-6 2xl:pb-6 2xl:gap-5">
         <DetailRow
-          label="Concepto"
+          label={t('transactions.concept')}
           value={displayReason}
         />
 
         <div className="flex flex-col gap-1.5">
           <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-            IBAN del {isOutgoing ? 'beneficiario' : 'remitente'}
+            {t('transactions.counterpartyIban')}
           </span>
           <button
             type="button"
             onClick={handleCopyIban}
             className="group flex items-center gap-2 text-left"
-            aria-label={safeAriaLabel(`Copiar IBAN ${counterpartIban}`)}
+            aria-label={safeAriaLabel(t('transactions.copyIbanAria').replace('{iban}', counterpartIban))}
           >
             <span className="text-sm font-mono font-medium text-text-primary tracking-wider tactile-tabular-nums">
               {streamerMode ? maskIbanDisplay(counterpartIban) : revealIbanDisplay(counterpartIban)}
@@ -265,22 +267,22 @@ function DrawerBody({
         </div>
 
         <DetailRow
-          label="Fecha"
-          value={`${new Date(tx.timestamp_ms).toLocaleString('es-ES', {
+          label={t('common.date')}
+          value={`${dateTime(tx.timestamp_ms, {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-          })} · ${formatRelativeTime(tx.timestamp_ms)}`}
+          })} · ${relativeTime(tx.timestamp_ms)}`}
         />
 
-        <DetailRow label="ID transacción" mono value={streamerMode ? maskOperationCode(tx.txn_id) : revealOperationCode(tx.txn_id)} />
+        <DetailRow label={t('transactions.transactionId')} mono value={streamerMode ? maskOperationCode(tx.txn_id) : revealOperationCode(tx.txn_id)} />
 
         {/* Status timeline */}
         <div className="flex flex-col gap-2">
           <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-            Estado
+            {t('common.status')}
           </span>
           <StatusTimeline status={tx.status} timestampMs={tx.timestamp_ms} />
         </div>
@@ -290,22 +292,22 @@ function DrawerBody({
       <div className="px-4 pb-4 pt-3 border-t border-white/06 flex flex-col gap-2 2xl:px-6 2xl:pb-6 2xl:pt-4">
         <ActionButton
           icon={<Repeat size={14} strokeWidth={2.2} />}
-          label="Repetir transferencia"
+          label={t('transactions.repeatTransfer')}
           tone="primary"
-          onClick={handleAction('Repetir transferencia')}
+          onClick={handleAction(t('transactions.repeatTransfer'))}
         />
         <div className="grid grid-cols-2 gap-2">
           <ActionButton
             icon={<Receipt size={14} strokeWidth={2.2} />}
-            label="Recibo"
+            label={t('transactions.receiptLabel')}
             tone="secondary"
-            onClick={handleAction('Compartir recibo')}
+            onClick={handleAction(t('transactions.shareReceipt'))}
           />
           <ActionButton
             icon={<Flag size={14} strokeWidth={2.2} />}
-            label="Reportar"
+            label={t('transactions.reportTransaction')}
             tone="ghost"
-            onClick={handleAction('Reportar transacción')}
+            onClick={handleAction(t('transactions.reportTransaction'))}
           />
         </div>
       </div>
@@ -342,16 +344,17 @@ function StatusTimeline({
   status: Transaction['status']
   timestampMs: number
 }) {
+  const { t, relativeTime } = useI18n()
   const steps: Array<{
     key: string
     label: string
     state: 'done' | 'current' | 'pending' | 'failed'
     icon: typeof Check
   }> = [
-    { key: 'init', label: 'Iniciada', state: 'done', icon: Check },
+    { key: 'init', label: t('transactions.statusInitiated'), state: 'done', icon: Check },
     {
       key: 'process',
-      label: 'En proceso',
+      label: t('transactions.statusInProcess'),
       state:
         status === 'pending' || status === 'reconciling'
           ? 'current'
@@ -364,14 +367,14 @@ function StatusTimeline({
       key: 'final',
       label:
         status === 'committed'
-          ? 'Confirmada'
+          ? t('transactions.statusCommitted')
           : status === 'pending'
-            ? 'Pendiente confirmación'
+            ? t('transactions.statusPendingConfirmation')
             : status === 'reverted'
-              ? 'Revertida'
+              ? t('transactions.statusReverted')
               : status === 'failed'
-                ? 'Fallida'
-                : 'Reconciliando',
+                ? t('transactions.statusFailed')
+                : t('transactions.statusReconciling'),
       state:
         status === 'committed'
           ? 'done'
@@ -420,7 +423,7 @@ function StatusTimeline({
               </span>
               {i === 0 && (
                 <span className="text-[10px] text-text-tertiary tactile-tabular-nums">
-                  {formatRelativeTime(timestampMs)}
+                  {relativeTime(timestampMs)}
                 </span>
               )}
             </div>
@@ -471,11 +474,4 @@ function ActionButton({
       </span>
     </button>
   )
-}
-
-function formatEur(major: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(major)
 }

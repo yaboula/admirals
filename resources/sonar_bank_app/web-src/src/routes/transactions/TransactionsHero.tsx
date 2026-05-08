@@ -2,6 +2,7 @@ import { useMemo, useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { TrendingUp, TrendingDown, Sigma } from 'lucide-react'
 import type { Transaction, Account } from '@/data/contracts'
+import { useI18n } from '@/lib/i18n'
 import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { maskMoneyDisplay } from '@/lib/privacy'
@@ -27,6 +28,7 @@ export function TransactionsHero({
   totalCount,
   filteredCount,
 }: TransactionsHeroProps) {
+  const { signedMoney, t } = useI18n()
   const own = account?.iban.replace(/\s+/g, '')
   const totals = useMemo(() => computeTotals(transactions, own), [transactions, own])
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -65,31 +67,34 @@ export function TransactionsHero({
 
         <div className="grid grid-cols-3 gap-3 2xl:gap-4">
           <Stat
-            label="Ingresos"
+            label={t('transactions.income')}
             icon={<TrendingUp size={14} strokeWidth={2.2} />}
             value={totals.income}
             hidden={streamerMode}
             color="oklch(0.78 0.16 155)"
             accentBg="oklch(0.72 0.16 155 / 0.10)"
             tone="positive"
+            signedMoney={signedMoney}
           />
           <Stat
-            label="Gastos"
+            label={t('transactions.expense')}
             icon={<TrendingDown size={14} strokeWidth={2.2} />}
             value={totals.expense}
             hidden={streamerMode}
             color="oklch(0.74 0.20 25)"
             accentBg="oklch(0.68 0.20 25 / 0.10)"
             tone="negative"
+            signedMoney={signedMoney}
           />
           <Stat
-            label="Neto"
+            label={t('transactions.net')}
             icon={<Sigma size={14} strokeWidth={2.2} />}
             value={totals.net}
             hidden={streamerMode}
             color={totals.net >= 0 ? 'oklch(0.78 0.16 155)' : 'oklch(0.74 0.20 25)'}
             accentBg="oklch(1 0 0 / 0.06)"
             tone={totals.net >= 0 ? 'positive' : 'negative'}
+            signedMoney={signedMoney}
             highlighted
           />
         </div>
@@ -106,10 +111,12 @@ interface StatProps {
   color: string
   accentBg: string
   tone: 'positive' | 'negative'
+  signedMoney: (value: number, options?: Intl.NumberFormatOptions) => string
   highlighted?: boolean
 }
 
-function Stat({ label, icon, value, hidden, color, accentBg, tone, highlighted }: StatProps) {
+function Stat({ label, icon, value, hidden, color, accentBg, tone, signedMoney, highlighted }: StatProps) {
+  const displayValue = tone === 'negative' && value > 0 ? -value : value
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -141,14 +148,14 @@ function Stat({ label, icon, value, hidden, color, accentBg, tone, highlighted }
         className="truncate text-xl 2xl:text-2xl font-semibold tracking-[-0.045em] tactile-tabular-nums"
         style={{ color }}
       >
-        {hidden ? maskMoneyDisplay() : <AnimatedAmount value={value} prefix={tone === 'negative' && value > 0 ? '−' : tone === 'positive' && value > 0 ? '+' : ''} />}
+        {hidden ? maskMoneyDisplay() : <AnimatedAmount value={displayValue} formatter={signedMoney} />}
       </div>
     </motion.div>
   )
 }
 
 /* Smooth counter — interpolates between the previous render and the new one. */
-function AnimatedAmount({ value, prefix }: { value: number; prefix: string }) {
+function AnimatedAmount({ value, formatter }: { value: number; formatter: (value: number, options?: Intl.NumberFormatOptions) => string }) {
   const reduced = useReducedMotion()
   const elRef = useRef<HTMLSpanElement | null>(null)
   const prevRef = useRef<number>(value)
@@ -157,14 +164,14 @@ function AnimatedAmount({ value, prefix }: { value: number; prefix: string }) {
     const el = elRef.current
     if (!el) return
     if (reduced) {
-      el.textContent = formatEur(value)
+      el.textContent = formatter(value)
       prevRef.current = value
       return
     }
     const start = prevRef.current
     const delta = value - start
     if (Math.abs(delta) < 0.005) {
-      el.textContent = formatEur(value)
+      el.textContent = formatter(value)
       return
     }
     const duration = 480
@@ -174,27 +181,19 @@ function AnimatedAmount({ value, prefix }: { value: number; prefix: string }) {
       const k = Math.min(1, (t - t0) / duration)
       const eased = 1 - Math.pow(1 - k, 3)
       const cur = start + delta * eased
-      el.textContent = formatEur(cur)
+      el.textContent = formatter(cur)
       if (k < 1) raf = requestAnimationFrame(tick)
       else prevRef.current = value
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [value, reduced])
+  }, [formatter, value, reduced])
 
   return (
     <>
-      <span className="text-text-tertiary mr-0.5">{prefix}</span>
-      <span ref={elRef}>{formatEur(value)}</span>
+      <span ref={elRef}>{formatter(value)}</span>
     </>
   )
-}
-
-function formatEur(major: number): string {
-  return `€${new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(major))}`
 }
 
 function computeTotals(

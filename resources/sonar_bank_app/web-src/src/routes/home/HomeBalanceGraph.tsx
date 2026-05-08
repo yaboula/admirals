@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipProps } from 'recharts'
 import type { Account, Transaction } from '@/data/contracts'
 import { Card } from '@/components/ui'
-import { formatCurrency } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { maskMoneyDisplay } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 
@@ -28,12 +28,13 @@ const PERIODS = [
 type PeriodKey = (typeof PERIODS)[number]['key']
 
 export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProps) {
+  const { t, money, number, intlLocale } = useI18n()
   const [period, setPeriod] = useState<PeriodKey>('6m')
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const activePeriod = PERIODS.find((item) => item.key === period) ?? PERIODS[1]
   const data = useMemo(
-    () => buildGraph(account, transactions, activePeriod.days),
-    [account, activePeriod.days, transactions],
+    () => buildGraph(account, transactions, activePeriod.days, intlLocale),
+    [account, activePeriod.days, transactions, intlLocale],
   )
   const balance = account ? account.balance_minor / 100 : 0
   const monthDelta = computeMonthDelta(transactions, account?.iban)
@@ -52,16 +53,16 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
       <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
         <div className="flex items-start justify-between gap-4 shrink-0">
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm text-text-secondary font-medium">Total Balance</span>
+            <span className="text-sm text-text-secondary font-medium">{t('home.totalBalance')}</span>
             <div className="flex items-baseline gap-2.5">
               <span className="text-3xl 2xl:text-4xl font-light tracking-[-0.04em] tactile-tabular-nums text-text-primary">
-                {streamerMode ? maskMoneyDisplay() : formatCurrency(balance)}
+                {streamerMode ? maskMoneyDisplay() : money(balance)}
               </span>
               <span
                 className="text-xs font-semibold tactile-tabular-nums"
                 style={{ color: deltaPct >= 0 ? 'oklch(0.78 0.16 150)' : 'oklch(0.72 0.18 25)' }}
               >
-                {streamerMode ? '•••%' : `${deltaPct >= 0 ? '↑' : '↓'} ${Math.abs(deltaPct).toLocaleString('es-ES', { maximumFractionDigits: 2 })}%`}
+                {streamerMode ? '•••%' : `${deltaPct >= 0 ? '↑' : '↓'} ${number(Math.abs(deltaPct), { maximumFractionDigits: 2 })}%`}
               </span>
             </div>
           </div>
@@ -139,10 +140,10 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
         </div>
 
         <div className="shrink-0 flex items-center justify-between gap-4 pt-2 text-[11px] text-text-tertiary">
-          <span>Average annual rate · {streamerMode ? maskMoneyDisplay() : formatCurrency(Math.max(balance * 0.12, 840))}</span>
+          <span>{t('home.averageAnnualRate')} · {streamerMode ? maskMoneyDisplay() : money(Math.max(balance * 0.12, 840))}</span>
           <span className="inline-flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-white" />Actual balance</span>
-            <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm" style={{ background: ORANGE }} />Projected flow</span>
+            <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-white" />{t('home.actualBalance')}</span>
+            <span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm" style={{ background: ORANGE }} />{t('home.projectedFlow')}</span>
           </span>
         </div>
       </div>
@@ -151,17 +152,18 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
 }
 
 function BalanceTooltip({ active, payload, label, hidden }: TooltipProps<number, string> & { hidden: boolean }) {
+  const { money } = useI18n()
   if (!active || !payload?.length) return null
   const value = payload[0]?.value ?? 0
   return (
     <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'oklch(0.98 0 0)', color: 'oklch(0.08 0.01 270)', boxShadow: '0 18px 34px -20px oklch(0 0 0 / 0.8)' }}>
       <div className="text-xs font-semibold">{label}</div>
-      <div className="text-sm font-bold tactile-tabular-nums">{hidden ? maskMoneyDisplay() : formatCurrency(Number(value))}</div>
+      <div className="text-sm font-bold tactile-tabular-nums">{hidden ? maskMoneyDisplay() : money(Number(value))}</div>
     </div>
   )
 }
 
-function buildGraph(account: Account | undefined, transactions: Transaction[], periodDays: number): GraphPoint[] {
+function buildGraph(account: Account | undefined, transactions: Transaction[], periodDays: number, locale: string): GraphPoint[] {
   const balance = account ? account.balance_minor / 100 : 0
   const own = account?.iban.replace(/\s+/g, '')
   const bucketCount = 6
@@ -191,7 +193,7 @@ function buildGraph(account: Account | undefined, transactions: Transaction[], p
   buckets.forEach((bucket, index) => {
     rolling += bucketNet[index] ?? 0
     points.push({
-      label: bucket.date.toLocaleDateString('es-ES', periodDays <= 45 ? { day: '2-digit', month: 'short' } : { month: 'short' }).replace('.', ''),
+      label: bucket.date.toLocaleDateString(locale, periodDays <= 45 ? { day: '2-digit', month: 'short' } : { month: 'short' }).replace('.', ''),
       balance: Math.max(0, rolling),
     })
   })

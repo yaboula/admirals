@@ -1,11 +1,20 @@
 import { registerMockHandler } from '@/lib/nui'
 import {
+  buildMockAuditQuery,
+  buildMockAtmSession,
   buildMockBootstrap,
+  buildMockBusinessTreasury,
   buildMockClientConfig,
+  buildMockComplianceFlagsQuery,
+  buildMockLoanInstallments,
+  buildMockLoanList,
+  buildMockPayrollPreview,
   buildMockRecentRecipientsResponse,
+  buildMockStockList,
+  buildMockStockPortfolio,
   simulateLatency,
 } from './seed'
-import type { BootstrapSnapshot, ClientConfigSnapshot, RecentRecipientsResponse } from '@/data/contracts'
+import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, PayrollPreviewRequest, PayrollPreviewResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
 import type { BankStateBagKey } from '@/lib/bankStateBags'
 
 let installed = false
@@ -29,6 +38,51 @@ export function installMockHandlers(): void {
     return buildMockClientConfig()
   })
 
+  registerMockHandler<AuditQueryResponse>('sonar:bank:audit:query', async (payload) => {
+    await simulateLatency(90, 220)
+    return buildMockAuditQuery(payload as unknown as AuditQueryRequest)
+  })
+
+  registerMockHandler<ComplianceFlagsQueryResponse>('sonar:bank:compliance:flags', async (payload) => {
+    await simulateLatency(110, 260)
+    return buildMockComplianceFlagsQuery(payload as unknown as ComplianceFlagsQueryRequest)
+  })
+
+  registerMockHandler<BusinessTreasurySnapshot>('sonar:bank:business:treasury', async (payload) => {
+    await simulateLatency(90, 220)
+    return buildMockBusinessTreasury(payload as unknown as BusinessTreasuryQueryRequest)
+  })
+
+  registerMockHandler<PayrollPreviewResponse>('sonar:bank:business:payroll:preview', async (payload) => {
+    await simulateLatency(80, 180)
+    return buildMockPayrollPreview(payload as unknown as PayrollPreviewRequest)
+  })
+
+  registerMockHandler<StockListResponse>('sonar:bank:stocks:list', async () => {
+    await simulateLatency(80, 180)
+    return buildMockStockList()
+  })
+
+  registerMockHandler<StockPortfolioResponse>('sonar:bank:stocks:portfolio', async () => {
+    await simulateLatency(90, 210)
+    return buildMockStockPortfolio()
+  })
+
+  registerMockHandler<LoanListResponse>('sonar:bank:loans:list', async () => {
+    await simulateLatency(80, 180)
+    return buildMockLoanList()
+  })
+
+  registerMockHandler<LoanInstallmentsResponse>('sonar:bank:loans:installments', async (payload) => {
+    await simulateLatency(80, 190)
+    return buildMockLoanInstallments(payload as unknown as LoanInstallmentsRequest)
+  })
+
+  registerMockHandler<AtmSessionResponse>('sonar:bank:atm:session', async () => {
+    await simulateLatency(70, 160)
+    return buildMockAtmSession()
+  })
+
   registerMockHandler<{ key: BankStateBagKey; value: unknown; fetched_at_ms: number }>('sonar:bank:statebag:get', async (payload) => {
     await simulateLatency(30, 90)
     return {
@@ -38,7 +92,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (4 endpoints) — VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (13 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

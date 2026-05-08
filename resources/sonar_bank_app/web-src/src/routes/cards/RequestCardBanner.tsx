@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { CARD_DESIGNS } from './cardDesigns'
+import { useI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { useCardsUi } from '@/stores/cardsUi'
@@ -10,6 +11,7 @@ export interface RequestCardBannerProps {
 }
 
 export function RequestCardBanner({ className }: RequestCardBannerProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const selectedCardId = useCardsUi((s) => s.selectedCardId)
   const openDialog = useCardsUi((s) => s.openDialog)
@@ -54,22 +56,22 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
         <div className="inline-flex items-center gap-1.5">
           <Sparkles size={10} strokeWidth={2} className="text-white/70" />
           <span className="text-[9px] uppercase tracking-[0.18em] text-white/70 font-semibold">
-            Personaliza tu tarjeta
+            {t('cards.personalizeCard')}
           </span>
         </div>
         <p className="text-xs 2xl:text-sm font-semibold text-white tactile-wght-breathing tracking-tight truncate">
-          Elige un diseño con la misma seguridad
+          {t('cards.chooseDesignSecurity')}
         </p>
         <p className="hidden 2xl:block text-[11px] text-white/60 mt-0.5">
-          {CARD_DESIGNS.length} acabados disponibles para tu tarjeta activa
+          {CARD_DESIGNS.length} {t('cards.designsAvailable')}
         </p>
       </div>
       <button
         type="button"
         onClick={handleStart}
         disabled={ctaDisabled}
-        title={ctaDisabled ? 'Selecciona una tarjeta primero' : undefined}
-        aria-label="Abrir selector de diseño"
+        title={ctaDisabled ? t('cards.selectCardFirst') : undefined}
+        aria-label={t('cards.openDesignSelector')}
         className={cn(
           'relative inline-flex items-center gap-1.5 px-3 py-2 rounded-lg shrink-0',
           'text-xs font-semibold transition-all duration-180',
@@ -84,7 +86,7 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
           boxShadow: ctaDisabled ? 'none' : '0 14px 24px -18px oklch(0 0 0 / 0.85)',
         }}
       >
-        <span>Diseñar</span>
+        <span>{t('cards.design')}</span>
         <ArrowRight size={12} strokeWidth={2} />
       </button>
     </motion.div>

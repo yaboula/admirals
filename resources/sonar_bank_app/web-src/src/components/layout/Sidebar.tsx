@@ -8,17 +8,23 @@ import {
   RefreshCw,
   Settings,
   Receipt,
+  ShieldCheck,
+  Building2,
+  ChartNoAxesColumnIncreasing,
+  LandmarkIcon,
+  MonitorSmartphone,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { useAceGate } from '@/components/security'
 import { ACE_PERMS } from '@/lib/ace'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import type { AcePerm } from '@/stores/session'
 import sonarMonogramUrl from '@/assets/branding/monogram_s.svg'
 
 interface NavItem {
   to: string
-  label: string
+  labelKey: TranslationKey
   icon: typeof LayoutDashboard
   end?: boolean
   disabled?: boolean
@@ -27,16 +33,21 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true, requiredPerm: ACE_PERMS.P01.perm },
-  { to: '/cuentas', label: 'Cuentas', icon: Landmark, requiredPerm: ACE_PERMS.P01.perm },
-  { to: '/transacciones', label: 'Transacciones', icon: Receipt, requiredPerm: ACE_PERMS.P01.perm },
-  { to: '/transferir', label: 'Transferir', icon: ArrowLeftRight, requiredPerm: ACE_PERMS.P01.perm },
-  { to: '/recurrentes', label: 'Recurrentes', icon: RefreshCw, requiredPerm: ACE_PERMS.P01.perm },
-  { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/', labelKey: 'nav.home', icon: LayoutDashboard, end: true, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/cuentas', labelKey: 'nav.accounts', icon: Landmark, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/transacciones', labelKey: 'nav.transactions', icon: Receipt, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/transferir', labelKey: 'nav.transfer', icon: ArrowLeftRight, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/recurrentes', labelKey: 'nav.recurring', icon: RefreshCw, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/tarjetas', labelKey: 'nav.cards', icon: CreditCard, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/auditoria', labelKey: 'nav.audit', icon: ShieldCheck, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/empresas', labelKey: 'nav.business', icon: Building2, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/inversiones', labelKey: 'nav.investments', icon: ChartNoAxesColumnIncreasing, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/creditos', labelKey: 'nav.loans', icon: LandmarkIcon, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/atm', labelKey: 'nav.atm', icon: MonitorSmartphone, requiredPerm: ACE_PERMS.P01.perm },
 ]
 
 const FOOTER_ITEMS: NavItem[] = [
-  { to: '/ajustes', label: 'Ajustes', icon: Settings, requiredPerm: ACE_PERMS.P01.perm },
+  { to: '/ajustes', labelKey: 'nav.settings', icon: Settings, requiredPerm: ACE_PERMS.P01.perm },
 ]
 
 export interface SidebarProps {
@@ -113,7 +124,9 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
  */
 function SidebarItem({ item }: { item: NavItem }) {
   const Icon = item.icon
+  const { t } = useI18n()
   const granted = useAceGate({ require: item.requiredPerm })
+  const label = t(item.labelKey)
   if (item.disabled || !granted) {
     return (
       <div
@@ -121,7 +134,7 @@ function SidebarItem({ item }: { item: NavItem }) {
           'group relative flex h-11 w-11 items-center justify-center rounded-2xl',
           'cursor-not-allowed opacity-50 select-none',
         )}
-        title={item.disabled ? `${item.label} (próximamente)` : `${item.label} (permiso requerido)`}
+        title={item.disabled ? `${label} (${t('nav.comingSoon')})` : `${label} (${t('nav.permissionRequired')})`}
         style={{ color: 'oklch(0.55 0.01 270 / 0.6)' }}
       >
         <Icon size={18} strokeWidth={1.8} className="shrink-0" />

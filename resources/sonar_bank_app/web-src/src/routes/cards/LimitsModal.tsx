@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { X, Check, AlertTriangle } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
+import { useI18n } from '@/lib/i18n'
 import { useUpdateCardLimits } from '@/data/mutations'
 import { resolveCardDesign } from './cardDesigns'
 import { cn } from '@/lib/utils'
@@ -41,6 +42,7 @@ const MONTHLY_MIN = 0
 const MONTHLY_MAX = 10_000_000 // 100 000 €
 
 export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
+  const { t, money } = useI18n()
   const reduced = useReducedMotion()
   const mutation = useUpdateCardLimits()
 
@@ -75,6 +77,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
 
   const invalid = monthly < daily
   const dirty = card !== null && (daily !== card.daily_limit_minor || monthly !== card.monthly_limit_minor)
+  const formatLimit = (minor: number) => money(minor / 100, { maximumFractionDigits: 0, minimumFractionDigits: 0 })
 
   const handleSave = () => {
     if (!card || invalid || !dirty) return
@@ -83,7 +86,10 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
       { cardId: card.card_id, daily_limit_minor: daily, monthly_limit_minor: monthly },
       {
         onSuccess: () => {
-          toast.success('Límites actualizados', `Diario ${formatEur(daily)} · Mensual ${formatEur(monthly)}`)
+          toast.success(
+            t('cards.limitsUpdated'),
+            t('cards.limitsUpdatedDescription').replace('{daily}', formatLimit(daily)).replace('{monthly}', formatLimit(monthly))
+          )
           onClose()
         },
         onError: (err) => {
@@ -117,7 +123,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
             key="limits-panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Editar límites de la tarjeta"
+            aria-label={t('cards.editCardLimits')}
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.97 }}
@@ -143,7 +149,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
             <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
               <div className="flex flex-col leading-tight min-w-0">
                 <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-                  Límites de gasto
+                  {t('cards.spendingLimits')}
                 </span>
                 <h2 className="text-base font-semibold text-text-primary tactile-wght-breathing tracking-tight truncate">
                   {design.name} · ···· {card.pan_last_four}
@@ -152,7 +158,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Cerrar"
+                aria-label={t('cards.close')}
                 className="inline-flex items-center justify-center h-7 w-7 rounded-full text-text-tertiary hover:text-text-primary hover:bg-white/5 transition-colors"
               >
                 <X size={14} strokeWidth={2} />
@@ -162,25 +168,27 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
             {/* Body */}
             <div className="px-5 pb-3 flex flex-col gap-4">
               <LimitSlider
-                label="Diario"
-                helper={`Gastado hoy: ${formatEur(card.daily_spent_minor)} · ${dailyPct.toFixed(0)}% del nuevo tope`}
+                label={t('cards.daily')}
+                helper={t('cards.dailyHelper').replace('{spent}', formatLimit(card.daily_spent_minor)).replace('{pct}', dailyPct.toFixed(0))}
                 value={daily}
                 min={DAILY_MIN}
                 max={DAILY_MAX}
                 step={STEP_MINOR}
                 accent={design.accent}
                 pct={dailyPct}
+                formatValue={formatLimit}
                 onChange={setDaily}
               />
               <LimitSlider
-                label="Mensual"
-                helper={`Gastado este mes: ${formatEur(card.monthly_spent_minor)} · ${monthlyPct.toFixed(0)}% del nuevo tope`}
+                label={t('cards.monthly')}
+                helper={t('cards.monthlyHelper').replace('{spent}', formatLimit(card.monthly_spent_minor)).replace('{pct}', monthlyPct.toFixed(0))}
                 value={monthly}
                 min={MONTHLY_MIN}
                 max={MONTHLY_MAX}
                 step={STEP_MINOR * 10}
                 accent={design.accent}
                 pct={monthlyPct}
+                formatValue={formatLimit}
                 onChange={setMonthly}
                 invalid={invalid}
               />
@@ -197,7 +205,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
                   }}
                 >
                   <AlertTriangle size={12} strokeWidth={2} className="shrink-0 mt-0.5" />
-                  <span>El límite mensual no puede ser inferior al diario.</span>
+                  <span>{t('cards.monthlyBelowDailyError')}</span>
                 </motion.div>
               )}
             </div>
@@ -217,7 +225,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
                   'transition-colors disabled:opacity-50',
                 )}
               >
-                Cancelar
+                {t('cards.cancel')}
               </button>
               <button
                 type="button"
@@ -237,7 +245,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
                 }}
               >
                 <Check size={12} strokeWidth={2.4} />
-                {mutation.isPending ? 'Guardando…' : 'Guardar'}
+                {mutation.isPending ? t('cards.saving') : t('cards.save')}
               </button>
             </div>
           </motion.div>
@@ -266,6 +274,7 @@ function LimitSlider({
   step,
   accent,
   pct,
+  formatValue,
   onChange,
   invalid = false,
 }: {
@@ -277,9 +286,11 @@ function LimitSlider({
   step: number
   accent: string
   pct: number
+  formatValue: (minor: number) => string
   onChange: (v: number) => void
   invalid?: boolean
 }) {
+  const { t } = useI18n()
   const fillPct = max > min ? ((value - min) / (max - min)) * 100 : 0
   const sliderId = `slider-${label.toLowerCase()}`
   const usagePct = Math.min(100, Math.max(0, pct))
@@ -297,7 +308,7 @@ function LimitSlider({
           )}
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {formatEur(value)}
+          {formatValue(value)}
         </span>
       </div>
 
@@ -317,7 +328,7 @@ function LimitSlider({
               '--slider-accent': accent,
             } as React.CSSProperties
           }
-          aria-valuetext={formatEur(value)}
+          aria-valuetext={formatValue(value)}
         />
       </div>
 
@@ -334,18 +345,10 @@ function LimitSlider({
               border: `1px solid ${accent}`,
             }}
           >
-            Cerca del tope
+            {t('cards.nearLimit')}
           </span>
         )}
       </div>
     </div>
   )
-}
-
-function formatEur(minor: number): string {
-  return (minor / 100).toLocaleString('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  })
 }

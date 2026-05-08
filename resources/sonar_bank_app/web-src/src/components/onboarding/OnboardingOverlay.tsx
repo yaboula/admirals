@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, Check, Copy, Landmark, Send, ShieldCheck, Wallet, X } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { useI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { maskIbanDisplay, revealIbanDisplay, safeAriaLabel } from '@/lib/privacy'
 import { sfx } from '@/lib/sfx'
@@ -14,40 +15,35 @@ import { toast } from '@/stores/toast'
 const STORAGE_PREFIX = 'sonar-bank:onboarding-completed:'
 
 export interface OnboardingOverlayProps {
+  citizenId: string
   primaryIban?: string | null
 }
 
-export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
+export function OnboardingOverlay({ citizenId, primaryIban }: OnboardingOverlayProps) {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const reduced = useReducedMotion()
-  const citizenId = useBankSession((s) => s.citizenId)
-  const onboardingCompletedAt = useBankSession((s) => s.onboardingCompletedAt)
-  const setSession = useBankSession((s) => s.setSession)
-  const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const active = useOnboarding((s) => s.active)
+  const { active, start: startOnboarding, next, skipStep, skipAll, finish } = useOnboarding()
+  const { setSession } = useBankSession()
+  const { onboardingCompletedAt } = useBankSession((s) => s)
   const completed = useOnboarding((s) => s.completed)
-  const skipped = useOnboarding((s) => s.skipped)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const step = useOnboarding((s) => s.step)
-  const start = useOnboarding((s) => s.start)
-  const next = useOnboarding((s) => s.next)
-  const skipStep = useOnboarding((s) => s.skipStep)
-  const skipAll = useOnboarding((s) => s.skipAll)
-  const finish = useOnboarding((s) => s.finish)
 
   const storageKey = citizenId ? `${STORAGE_PREFIX}${citizenId}` : null
 
   useEffect(() => {
     if (!citizenId || onboardingCompletedAt || active || completed || !storageKey) return
     if (window.localStorage.getItem(storageKey) === 'done') return
-    start()
+    startOnboarding()
     sfx.signal_emerge()
-  }, [active, citizenId, completed, onboardingCompletedAt, start, storageKey])
+  }, [active, citizenId, completed, onboardingCompletedAt, startOnboarding, storageKey])
 
   useEffect(() => {
-    if (!storageKey || (!completed && !skipped)) return
+    if (!storageKey || !completed) return
     window.localStorage.setItem(storageKey, 'done')
     setSession({ onboardingCompletedAt: Date.now() })
-  }, [completed, skipped, setSession, storageKey])
+  }, [completed, setSession, storageKey])
 
   const displayIban = useMemo(() => {
     if (!primaryIban) return 'ES•• •••• •••• ••••'
@@ -59,9 +55,9 @@ export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
     try {
       await navigator.clipboard.writeText(primaryIban.replace(/\s+/g, ''))
       sfx.coin_clink()
-      toast.success('IBAN copiado', streamerMode ? maskIbanDisplay(primaryIban) : revealIbanDisplay(primaryIban))
+      toast.success(t('onboarding.copyIban'), streamerMode ? maskIbanDisplay(primaryIban) : revealIbanDisplay(primaryIban))
     } catch {
-      toast.warning('No se pudo copiar', 'Permiso de portapapeles denegado.')
+      toast.warning(t('onboarding.clipboardDenied'), '')
     }
   }
 
@@ -121,7 +117,7 @@ export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
             <button
               type="button"
               onClick={handleSkipAll}
-              aria-label="Saltar bienvenida"
+              aria-label={t('onboarding.skipWelcome')}
               className="absolute right-5 top-5 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.045] text-text-tertiary hover:text-text-primary hover:bg-white/[0.075] tactile-focus-ring"
             >
               <X size={16} strokeWidth={2} />
@@ -137,9 +133,9 @@ export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
                 <div className="space-y-3">
                   {step === 3 && (
                     <div className="grid grid-cols-3 gap-2">
-                      <MiniAction icon={<Send size={14} />} label="Transferir" onClick={() => completeAndGo('/transferir')} />
-                      <MiniAction icon={<Wallet size={14} />} label="Cuentas" onClick={() => completeAndGo('/cuentas')} />
-                      <MiniAction icon={<ShieldCheck size={14} />} label="Privacidad" onClick={() => completeAndGo()} />
+                      <MiniAction icon={<Send size={14} />} label={t('onboarding.transfer')} onClick={() => completeAndGo('/transferir')} />
+                      <MiniAction icon={<Wallet size={14} />} label={t('onboarding.accounts')} onClick={() => completeAndGo('/cuentas')} />
+                      <MiniAction icon={<ShieldCheck size={14} />} label={t('onboarding.privacy')} onClick={() => completeAndGo()} />
                     </div>
                   )}
                   <div className="flex items-center justify-between gap-3">
@@ -148,7 +144,7 @@ export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
                       onClick={step === 1 ? handleSkipAll : handleSkipStep}
                       className="text-xs font-semibold text-text-tertiary hover:text-text-secondary underline-offset-4 hover:underline tactile-focus-ring rounded-md px-1 py-1"
                     >
-                      {step === 1 ? 'Saltar todo' : 'Saltar este paso'}
+                      {step === 1 ? t('onboarding.skipAll') : t('onboarding.skipStep')}
                     </button>
                     <Button
                       variant="secondary"
@@ -156,7 +152,7 @@ export function OnboardingOverlay({ primaryIban }: OnboardingOverlayProps) {
                       rightIcon={step < 3 ? <ArrowRight size={15} /> : <Check size={15} />}
                       onClick={handlePrimary}
                     >
-                      {step === 1 ? 'Ver mi IBAN' : step === 2 ? 'Explorar opciones' : 'Entrar'}
+                      {step === 1 ? t('onboarding.viewMyIban') : step === 2 ? t('onboarding.exploreOptions') : t('onboarding.enter')}
                     </Button>
                   </div>
                 </div>
@@ -222,33 +218,41 @@ function OnboardingVisual({ step, displayIban, onCopyIban }: { step: OnboardingS
         )}
       </div>
 
-      <div className="relative grid grid-cols-3 gap-2">
-        {['Transferir', 'Controlar', 'Ahorrar'].map((label, index) => (
+      <ProgressPips step={step} />
+    </div>
+  )
+}
+
+function ProgressPips({ step }: { step: OnboardingStep }) {
+  const { t } = useI18n()
+  return (
+    <div className="relative grid grid-cols-3 gap-2">
+      {t('onboarding.transferControlSave').split(',').map((label: string, index: number) => (
           <div key={label} className={cn('rounded-2xl border px-2.5 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em]', index + 1 <= step ? 'border-white/14 bg-white/[0.06] text-text-secondary' : 'border-white/[0.055] bg-white/[0.02] text-text-tertiary')}>
             {label}
           </div>
         ))}
-      </div>
     </div>
   )
 }
 
 function OnboardingCopy({ step }: { step: OnboardingStep }) {
+  const { t } = useI18n()
   const copy = {
     1: {
-      eyebrow: 'Bienvenido',
-      title: 'SONAR Bank está listo',
-      description: 'Tu banca diaria: saldo claro, transferencias rápidas, tarjetas y movimientos siempre a mano.',
+      eyebrow: t('onboarding.step1Eyebrow'),
+      title: t('onboarding.step1Title'),
+      description: t('onboarding.step1Description'),
     },
     2: {
-      eyebrow: 'Recibir dinero',
-      title: 'Este es tu IBAN',
-      description: 'Compártelo para alquileres, trabajos, negocios o reembolsos. Con privacidad activa lo mantenemos oculto en pantalla.',
+      eyebrow: t('onboarding.step2Eyebrow'),
+      title: t('onboarding.step2Title'),
+      description: t('onboarding.step2Description'),
     },
     3: {
-      eyebrow: 'Primeros pasos',
-      title: 'Tres cosas útiles',
-      description: 'Envía dinero, revisa movimientos y separa ahorro. Todo queda listo para tu día a día financiero.',
+      eyebrow: t('onboarding.step3Eyebrow'),
+      title: t('onboarding.step3Title'),
+      description: t('onboarding.step3Description'),
     },
   }[step]
 
@@ -259,19 +263,6 @@ function OnboardingCopy({ step }: { step: OnboardingStep }) {
         {copy.title}
       </h1>
       <p className="mt-4 text-sm text-text-secondary leading-relaxed max-w-[44ch]">{copy.description}</p>
-    </div>
-  )
-}
-
-function ProgressPips({ step }: { step: OnboardingStep }) {
-  return (
-    <div className="flex items-center gap-2" aria-label={`Paso ${step} de 3`}>
-      {[1, 2, 3].map((value) => (
-        <span
-          key={value}
-          className={cn('h-1.5 rounded-full transition-all', value === step ? 'w-9 bg-brand-signal-orange' : value < step ? 'w-5 bg-white/35' : 'w-5 bg-white/12')}
-        />
-      ))}
     </div>
   )
 }

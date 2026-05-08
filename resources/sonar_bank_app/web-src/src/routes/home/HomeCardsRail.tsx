@@ -4,7 +4,7 @@ import { ArrowDownLeft, ArrowUpRight, Plus } from 'lucide-react'
 import type { Account, BankCardMock, Transaction } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { BankAvatar } from '@/components/brand/BankAvatar'
-import { formatCurrency, formatRelativeTime } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { useTransferWizard } from '@/stores/transferWizard'
 import { usePrivacyMode } from '@/stores/privacy'
@@ -19,6 +19,7 @@ export interface HomeCardsRailProps {
 }
 
 export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailProps) {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const initWizard = useTransferWizard((s) => s.init)
   const activeCards = cards.filter((card) => card.status === 'active')
@@ -47,7 +48,7 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
       />
       <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
         <div className="flex items-center justify-between shrink-0">
-          <h2 className="text-lg font-semibold text-white tracking-tight">My cards</h2>
+          <h2 className="text-lg font-semibold text-white tracking-tight">{t('common.cards')}</h2>
           <button
             type="button"
             onClick={() => navigate('/tarjetas')}
@@ -55,7 +56,7 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
             style={{ background: 'oklch(1 0 0 / 0.13)', border: '1px solid oklch(1 0 0 / 0.14)' }}
           >
             <Plus size={13} strokeWidth={2} />
-            Add new
+            {t('home.new')}
           </button>
         </div>
 
@@ -78,14 +79,14 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
         </div>
 
         <div className="grid grid-cols-2 gap-3 mt-4 shrink-0">
-          <RailAction label="Request" icon={<ArrowDownLeft size={15} strokeWidth={2} />} onClick={openTransfer} muted />
-          <RailAction label="Transfer" icon={<ArrowUpRight size={15} strokeWidth={2} />} onClick={openTransfer} />
+          <RailAction label={t('home.railRequest')} icon={<ArrowDownLeft size={15} strokeWidth={2} />} onClick={openTransfer} muted />
+          <RailAction label={t('nav.transfer')} icon={<ArrowUpRight size={15} strokeWidth={2} />} onClick={openTransfer} />
         </div>
 
         <div className="mt-4 flex items-center justify-between shrink-0">
-          <h3 className="text-base font-semibold text-white tracking-tight">Recent Transactions</h3>
+          <h3 className="text-base font-semibold text-white tracking-tight">{t('home.recentActivity')}</h3>
           <button type="button" onClick={() => navigate('/transacciones')} className="text-xs font-medium text-white/72 hover:text-white">
-            View All
+            {t('home.viewAll')}
           </button>
         </div>
 
@@ -119,13 +120,13 @@ function RailAction({ label, icon, onClick, muted }: { label: string; icon: Reac
 }
 
 function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: string | undefined; index: number }) {
+  const { t, signedMoney, relativeTime } = useI18n()
   const own = ownIban?.replace(/\s+/g, '')
   const outgoing = own ? tx.from_iban.replace(/\s+/g, '') === own : tx.direction === 'out'
   const counterpart = outgoing ? tx.to_iban : tx.from_iban
-  const name = getMockAliasForIban(counterpart) ?? tx.reason ?? 'Movimiento'
-  const amount = tx.amount_minor / 100
+  const name = getMockAliasForIban(counterpart) ?? tx.reason ?? t('home.movements')
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const displayName = streamerMode ? 'Movimiento oculto' : name
+  const displayName = streamerMode ? t('transactions.hiddenMovement') : name
 
   return (
     <div
@@ -138,10 +139,10 @@ function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: str
       <BankAvatar name={displayName} size="md" seed={index} />
       <div className="min-w-0 flex-1 flex flex-col leading-tight">
         <span className="text-sm font-semibold text-white truncate">{displayName}</span>
-        <span className="text-[11px] text-white/46 truncate">{formatRelativeTime(tx.timestamp_ms)}</span>
+        <span className="text-[11px] text-white/46 truncate">{relativeTime(tx.timestamp_ms)}</span>
       </div>
       <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'oklch(0.72 0.16 25)' : 'oklch(0.78 0.16 150)' }}>
-        {streamerMode ? maskSignedMoneyDisplay() : `${outgoing ? '-' : '+'}${formatCurrency(amount)}`}
+        {streamerMode ? maskSignedMoneyDisplay() : signedMoney((outgoing ? -1 : 1) * tx.amount_minor / 100)}
       </span>
     </div>
   )

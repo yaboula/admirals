@@ -1,4 +1,6 @@
 import type { BankErrorPayload } from '@/data/contracts'
+import { translate, type TranslationKey } from '@/lib/i18n'
+import { useBankSession } from '@/stores/session'
 import { toast } from '@/stores/toast'
 
 export type CanonicalBankErrorCode =
@@ -57,6 +59,12 @@ export interface BankErrorUserMessage {
   tone: 'success' | 'warning' | 'danger' | 'info'
 }
 
+interface BankErrorUserMessageDefinition {
+  titleKey: TranslationKey
+  descriptionKey: TranslationKey
+  tone: BankErrorUserMessage['tone']
+}
+
 const BANK_ERROR_CODE_ALIASES: Record<string, CanonicalBankErrorCode> = {
   VALIDATION_FAILED: 'VALIDATION_FAIL',
   INVALID_CITIZEN_ID: 'AUTH_REQUIRED',
@@ -79,115 +87,119 @@ const BANK_ERROR_CODE_ALIASES: Record<string, CanonicalBankErrorCode> = {
   INTERNAL_ERROR: 'INTERNAL_SERVER_ERROR',
 }
 
-export const BANK_ERROR_USER_MESSAGES: Record<CanonicalBankErrorCode, BankErrorUserMessage> = {
+export const BANK_ERROR_USER_MESSAGE_DEFINITIONS: Record<CanonicalBankErrorCode, BankErrorUserMessageDefinition> = {
   BANK_DISABLED: {
-    title: 'Banco no disponible',
-    description: 'El servicio bancario está desactivado temporalmente.',
+    titleKey: 'bankError.bankDisabledTitle',
+    descriptionKey: 'bankError.bankDisabledDescription',
     tone: 'danger',
   },
   AUTH_REQUIRED: {
-    title: 'Autenticación requerida',
-    description: 'Tu sesión ha caducado. Reabre la app del banco.',
+    titleKey: 'bankError.authRequiredTitle',
+    descriptionKey: 'bankError.authRequiredDescription',
     tone: 'warning',
   },
   AUTH_FORBIDDEN: {
-    title: 'Acceso no permitido',
-    description: 'No puedes realizar esta operación con la sesión actual.',
+    titleKey: 'bankError.authForbiddenTitle',
+    descriptionKey: 'bankError.authForbiddenDescription',
     tone: 'danger',
   },
   AUTH_ACE_DENIED: {
-    title: 'Permiso insuficiente',
-    description: 'No tienes el permiso ACE necesario para esta acción.',
+    titleKey: 'bankError.authAceDeniedTitle',
+    descriptionKey: 'bankError.authAceDeniedDescription',
     tone: 'danger',
   },
   RATE_LIMIT_EXCEEDED: {
-    title: 'Demasiadas operaciones',
-    description: 'Has superado el límite temporal. Espera unos segundos.',
+    titleKey: 'bankError.rateLimitExceededTitle',
+    descriptionKey: 'bankError.rateLimitExceededDescription',
     tone: 'warning',
   },
   IDEMPOTENCY_INFLIGHT: {
-    title: 'Operación en proceso',
-    description: 'Ya estamos procesando esta acción. Espera la confirmación.',
+    titleKey: 'bankError.idempotencyInflightTitle',
+    descriptionKey: 'bankError.idempotencyInflightDescription',
     tone: 'info',
   },
   VALIDATION_FAIL: {
-    title: 'Datos no válidos',
-    description: 'Revisa los campos del formulario y vuelve a intentarlo.',
+    titleKey: 'bankError.validationFailTitle',
+    descriptionKey: 'bankError.validationFailDescription',
     tone: 'danger',
   },
   INSUFFICIENT_FUNDS: {
-    title: 'Fondos insuficientes',
-    description: 'No hay saldo disponible para completar esta operación.',
+    titleKey: 'bankError.insufficientFundsTitle',
+    descriptionKey: 'bankError.insufficientFundsDescription',
     tone: 'warning',
   },
   INSUFFICIENT_QUORUM: {
-    title: 'Faltan firmantes',
-    description: 'La operación necesita más aprobaciones antes de ejecutarse.',
+    titleKey: 'bankError.insufficientQuorumTitle',
+    descriptionKey: 'bankError.insufficientQuorumDescription',
     tone: 'info',
   },
   INVALID_TRANSITION: {
-    title: 'Operación no permitida',
-    description: 'El estado actual no permite realizar esta acción.',
+    titleKey: 'bankError.invalidTransitionTitle',
+    descriptionKey: 'bankError.invalidTransitionDescription',
     tone: 'danger',
   },
   INVALID_ACCOUNT_CLASS: {
-    title: 'Cuenta incompatible',
-    description: 'Esta cuenta no admite la operación seleccionada.',
+    titleKey: 'bankError.invalidAccountClassTitle',
+    descriptionKey: 'bankError.invalidAccountClassDescription',
     tone: 'danger',
   },
   RESOURCE_NOT_FOUND: {
-    title: 'Recurso no encontrado',
-    description: 'No localizamos el recurso indicado. Actualiza e inténtalo de nuevo.',
+    titleKey: 'bankError.resourceNotFoundTitle',
+    descriptionKey: 'bankError.resourceNotFoundDescription',
     tone: 'warning',
   },
   RESOURCE_LOCKED: {
-    title: 'Recurso bloqueado',
-    description: 'El recurso está ocupado temporalmente. Reintenta en unos segundos.',
+    titleKey: 'bankError.resourceLockedTitle',
+    descriptionKey: 'bankError.resourceLockedDescription',
     tone: 'info',
   },
   LIMIT_EXCEEDED_DAILY: {
-    title: 'Límite diario superado',
-    description: 'La operación supera el límite diario configurado.',
+    titleKey: 'bankError.limitExceededDailyTitle',
+    descriptionKey: 'bankError.limitExceededDailyDescription',
     tone: 'warning',
   },
   LIMIT_EXCEEDED_MONTHLY: {
-    title: 'Límite mensual superado',
-    description: 'La operación supera el límite mensual configurado.',
+    titleKey: 'bankError.limitExceededMonthlyTitle',
+    descriptionKey: 'bankError.limitExceededMonthlyDescription',
     tone: 'warning',
   },
   COMPLIANCE_FLAG_BLOCK: {
-    title: 'Operación bloqueada',
-    description: 'Compliance ha bloqueado esta acción. Revisa los avisos de tu cuenta.',
+    titleKey: 'bankError.complianceFlagBlockTitle',
+    descriptionKey: 'bankError.complianceFlagBlockDescription',
     tone: 'danger',
   },
   EXTERNAL_DEPENDENCY_FAIL: {
-    title: 'Error de comunicación',
-    description: 'La conexión con el servicio bancario falló. Reintenta.',
+    titleKey: 'bankError.externalDependencyFailTitle',
+    descriptionKey: 'bankError.externalDependencyFailDescription',
     tone: 'warning',
   },
   INTERNAL_SERVER_ERROR: {
-    title: 'Error interno',
-    description: 'Algo ha fallado en el servidor. Si persiste, contacta soporte.',
+    titleKey: 'bankError.internalServerErrorTitle',
+    descriptionKey: 'bankError.internalServerErrorDescription',
     tone: 'danger',
   },
   UNSUPPORTED_PHASE_A: {
-    title: 'No disponible en Phase A',
-    description: 'Esta función está preparada visualmente pero aún no está activa.',
+    titleKey: 'bankError.unsupportedFeatureTitle',
+    descriptionKey: 'bankError.unsupportedFeatureDescription',
     tone: 'info',
   },
 }
 
 export function normalizeBankErrorCode(code: string | undefined): CanonicalBankErrorCode {
   if (!code) return 'INTERNAL_SERVER_ERROR'
-  if (code in BANK_ERROR_USER_MESSAGES) return code as CanonicalBankErrorCode
+  if (code in BANK_ERROR_USER_MESSAGE_DEFINITIONS) return code as CanonicalBankErrorCode
   return BANK_ERROR_CODE_ALIASES[code] ?? 'INTERNAL_SERVER_ERROR'
 }
 
 export function getUserMessage(code: string | undefined): BankErrorUserMessage {
   const normalized = normalizeBankErrorCode(code)
-  return (
-    BANK_ERROR_USER_MESSAGES[normalized] ?? BANK_ERROR_USER_MESSAGES.INTERNAL_SERVER_ERROR
-  )
+  const definition = BANK_ERROR_USER_MESSAGE_DEFINITIONS[normalized] ?? BANK_ERROR_USER_MESSAGE_DEFINITIONS.INTERNAL_SERVER_ERROR
+  const locale = useBankSession.getState().locale
+  return {
+    title: translate(locale, definition.titleKey),
+    description: translate(locale, definition.descriptionKey),
+    tone: definition.tone,
+  }
 }
 
 export function handleBankError(error: unknown): BankErrorUserMessage {

@@ -3,6 +3,7 @@ import type { Transaction } from '@/data/contracts'
 import { TransactionRow } from './TransactionRow'
 import { TransactionsEmptyState, type TransactionsEmptyVariant } from './TransactionsEmptyState'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { maskSignedMoneyDisplay } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 
@@ -23,7 +24,6 @@ export interface TransactionsListProps {
   selectedTxnId: string | null
   onSelect: (tx: Transaction) => void
   emptyVariant: TransactionsEmptyVariant
-  totalCount: number
 }
 
 export function TransactionsList({
@@ -32,13 +32,18 @@ export function TransactionsList({
   selectedTxnId,
   onSelect,
   emptyVariant,
-  totalCount,
 }: TransactionsListProps) {
-  const groups = useMemo(() => groupByDay(transactions), [transactions])
+  const { t, signedMoney, dateTime } = useI18n()
+  const groups = useMemo(() => groupByDay(transactions, {
+    today: t('common.today'),
+    yesterday: t('common.yesterday'),
+    signedMoney,
+    dateTime,
+  }), [dateTime, signedMoney, t, transactions])
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   if (transactions.length === 0) {
-    return <TransactionsEmptyState variant={emptyVariant} totalCount={totalCount} />
+    return <TransactionsEmptyState variant={emptyVariant} />
   }
 
   let runningIndex = 0
@@ -228,7 +233,15 @@ interface DayGroup {
   netLabel: string
 }
 
-function groupByDay(transactions: Transaction[]): DayGroup[] {
+function groupByDay(
+  transactions: Transaction[],
+  formatters: {
+    today: string
+    yesterday: string
+    signedMoney: (value: number) => string
+    dateTime: (timestamp: number, options?: Intl.DateTimeFormatOptions) => string
+  },
+): DayGroup[] {
   const map = new Map<string, Transaction[]>()
   for (const t of transactions) {
     const d = new Date(t.timestamp_ms)
@@ -248,10 +261,10 @@ function groupByDay(transactions: Transaction[]): DayGroup[] {
     const first = items[0]!
     const d = new Date(first.timestamp_ms)
     let label: string
-    if (key === todayKey) label = 'Hoy'
-    else if (key === yesterdayKey) label = 'Ayer'
+    if (key === todayKey) label = formatters.today
+    else if (key === yesterdayKey) label = formatters.yesterday
     else
-      label = d.toLocaleDateString('es-ES', {
+      label = formatters.dateTime(d.getTime(), {
         weekday: 'long',
         day: 'numeric',
         month: 'short',
@@ -263,19 +276,11 @@ function groupByDay(transactions: Transaction[]): DayGroup[] {
       if (t.status !== 'committed' && t.status !== 'pending') continue
       netMinor += t.direction === 'in' ? t.amount_minor : -t.amount_minor
     }
-    const sign = netMinor >= 0 ? '+' : '−'
-    const netLabel = `${sign}€${formatEur(Math.abs(netMinor) / 100)}`
+    const netLabel = formatters.signedMoney(netMinor / 100)
 
     result.push({ dayKey: key, label, items, netLabel })
   }
   // Newest day first.
   result.sort((a, b) => b.items[0]!.timestamp_ms - a.items[0]!.timestamp_ms)
   return result
-}
-
-function formatEur(major: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(major)
 }

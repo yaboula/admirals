@@ -5,6 +5,7 @@ import { useBankNetEvent } from './lib/bankEvents'
 import { useBankStatus } from './stores/status'
 import { toast } from './stores/toast'
 import { useInvalidateBootstrap } from './data/queries'
+import { useI18n } from './lib/i18n'
 
 export function App() {
   const [queryClient] = useState(
@@ -38,6 +39,7 @@ export function App() {
  * provider would throw "No QueryClient set".
  */
 function NetEventBridge() {
+  const { t } = useI18n()
   const setStatus = useBankStatus((s) => s.setStatus)
   const invalidateBootstrap = useInvalidateBootstrap()
 
@@ -57,11 +59,11 @@ function NetEventBridge() {
 
   useBankNetEvent('sonar:bank:transfer:committed', () => {
     invalidateBootstrap()
-    toast.success('Transferencia confirmada', 'Tu saldo se ha actualizado.')
+    toast.success(t('app.transferCommittedToastTitle'), t('app.transferCommittedToastBody'))
   })
 
   useBankNetEvent('sonar:bank:notice:new', () => {
-    toast.warning('Nuevo aviso', 'Revisa la sección de avisos pendientes.')
+    toast.warning(t('app.newNoticeToastTitle'), t('app.newNoticeToastBody'))
   })
 
 

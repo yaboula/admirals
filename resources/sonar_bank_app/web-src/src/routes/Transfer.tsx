@@ -26,25 +26,30 @@ import { useBootstrap, useInvalidateBootstrap, useInvalidateRecentRecipients, us
 import type { Account, RecentRecipient } from '@/data/contracts'
 import { getUserMessage, handleBankError } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { maskIbanCompact, maskIbanDisplay, maskMoneyDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
 import { toast } from '@/stores/toast'
 import { useTransferWizard, type TransferWizardStep } from '@/stores/transferWizard'
 import { usePrivacyMode } from '@/stores/privacy'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 
-const STEPS: Array<{ id: TransferWizardStep; label: string; helper: string }> = [
-  { id: 'amount', label: 'Importe', helper: 'Saldo' },
-  { id: 'recipient', label: 'Destino', helper: 'Cuenta' },
-  { id: 'review', label: 'Firma', helper: 'Revisión' },
-  { id: 'confirm', label: 'Recibo', helper: 'Listo' },
-]
-
 const EXPRESS_STEPS: TransferWizardStep[] = ['review', 'confirm']
 const HOLD_TO_CONFIRM_MS = 1500
 const POST_CONFIRM_REFETCH_MS = 3000
 
+// Define STEPS as a function that gets the translated labels
+function getTransferSteps(t: (key: TranslationKey) => string): Array<{ id: TransferWizardStep; label: string; helper: string }> {
+  return [
+    { id: 'amount', label: t('transfer.steps.amount'), helper: t('transfer.steps.amountHelper') },
+    { id: 'recipient', label: t('transfer.steps.recipient'), helper: t('transfer.steps.recipientHelper') },
+    { id: 'review', label: t('transfer.steps.review'), helper: t('transfer.steps.reviewHelper') },
+    { id: 'confirm', label: t('transfer.steps.confirm'), helper: t('transfer.steps.confirmHelper') },
+  ]
+}
+
 export function Transfer() {
+  const { t, money } = useI18n()
   const navigate = useNavigate()
   const reduced = useReducedMotion()
   const { data } = useBootstrap()
@@ -68,6 +73,9 @@ export function Transfer() {
   const clearOperationIds = useTransferWizard((s) => s.clearOperationIds)
   const reset = useTransferWizard((s) => s.reset)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
+
+  // Get STEPS with translations
+  const STEPS = getTransferSteps(t)
 
   useEffect(() => {
     if (step !== 'confirm' && (!idempotencyKey || !correlationId)) init(false)
@@ -95,7 +103,7 @@ export function Transfer() {
 
   const handleExecute = async (): Promise<void> => {
     if (!primaryAccount || !amount || !recipientIban || !idempotencyKey || !correlationId) {
-      toast.warning('Transferencia incompleta', 'Revisa el importe y el destinatario antes de enviar.')
+      toast.warning(t('transfer.incompleteTitle'), t('transfer.incompleteBody'))
       return
     }
 
@@ -114,7 +122,7 @@ export function Transfer() {
       setReceipt(nextReceipt)
       clearOperationIds()
       sfx.vault_close()
-      toast.success('Transferencia enviada', `${streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100)} → ${streamerMode ? 'destinatario oculto' : recipientAlias ?? revealIbanDisplay(recipientIban)}`)
+      toast.success(t('transfer.sentToastTitle'), `${streamerMode ? maskMoneyDisplay() : money(amount / 100)} → ${streamerMode ? t('transfer.hiddenRecipient') : recipientAlias ?? revealIbanDisplay(recipientIban)}`)
 
       if (fallbackRefetchTimerRef.current) {
         window.clearTimeout(fallbackRefetchTimerRef.current)
@@ -226,12 +234,13 @@ function TransferHero({
   recipientAlias: string | null
   recipientIban: string | null
 }) {
+  const { t, money } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const destination = recipientIban
     ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
-    : 'Pendiente'
-  const availableLabel = account ? streamerMode ? maskMoneyDisplay() : formatCurrency(account.balance_minor / 100) : '—'
-  const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100) : '—'
+    : t('transfer.pendingDestination')
+  const availableLabel = account ? streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100) : '—'
+  const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : money(amount / 100) : '—'
 
   return (
     <Card variant="glass" padding="none" className="relative overflow-hidden border-white/10 shrink-0 rounded-[1.75rem]">
@@ -248,20 +257,20 @@ function TransferHero({
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
               {expressMode ? <Zap size={12} strokeWidth={2.4} /> : <SendHorizontal size={12} strokeWidth={2.4} />}
-              {expressMode ? 'ENVÍO RÁPIDO' : 'TRANSFERENCIA SEGURA'}
+              {expressMode ? t('transfer.expressQuick') : t('transfer.secureTransfer')}
             </span>
           </CardEyebrow>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">Transferir dinero</h1>
+            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">{t('transfer.transferMoney')}</h1>
             <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
-              Envía con revisión clara, firma sostenida y recibo descargable al momento.
+              {t('transfer.transferDescriptionFull')}
             </p>
           </div>
         </div>
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[430px]">
-          <HeroMetric label="Disponible" value={availableLabel} />
-          <HeroMetric label="Importe" value={amountLabel} />
-          <HeroMetric label="Destino" value={streamerMode ? 'Oculto' : recipientAlias ?? destination} />
+          <HeroMetric label={t('transfer.available')} value={availableLabel} />
+          <HeroMetric label={t('transfer.amountLabel')} value={amountLabel} />
+          <HeroMetric label={t('transfer.destination')} value={streamerMode ? t('common.hidden') : recipientAlias ?? destination} />
         </div>
       </div>
     </Card>
@@ -277,7 +286,7 @@ function HeroMetric({ label, value }: { label: string; value: string }) {
   )
 }
 
-function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: typeof STEPS }) {
+function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: Array<{ id: TransferWizardStep; label: string; helper: string }> }) {
   const activeIndex = Math.max(0, steps.findIndex((s) => s.id === step))
 
   return (
@@ -323,6 +332,7 @@ function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: typ
 }
 
 function AmountStep({ account, expressMode }: { account: Account | null; expressMode: boolean }) {
+  const { t, money, currencySymbol } = useI18n()
   const storeAmount = useTransferWizard((s) => s.amount)
   const storeMemo = useTransferWizard((s) => s.memo)
   const setAmount = useTransferWizard((s) => s.setAmount)
@@ -338,15 +348,15 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
 
   const submit = (): void => {
     if (!account) {
-      setError('No se pudo cargar la cuenta origen.')
+      setError(t('transfer.sourceAccountError'))
       return
     }
     if (!amountMinor || amountMinor <= 0) {
-      setError('Introduce un importe válido.')
+      setError(t('transfer.validAmountError'))
       return
     }
     if (amountMinor > account.balance_minor) {
-      setError('El importe supera tu saldo disponible.')
+      setError(t('transfer.insufficientFundsError'))
       return
     }
 
@@ -358,15 +368,15 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_280px] gap-4 2xl:gap-5 pb-1">
       <div className="flex flex-col gap-4 2xl:gap-5">
-        <StepHeader icon={<CircleDollarSign size={18} />} title="Elige el importe" description="Te mostramos el saldo final antes de revisar el envío." />
+        <StepHeader icon={<CircleDollarSign size={18} />} title={t('transfer.amountTitle')} description={t('transfer.amountDescription')} />
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <Input
-            label="Importe"
+            label={t('transfer.amountLabel')}
             inputMode="decimal"
             value={amountText}
             onChange={(e) => setAmountText(e.target.value.replace(',', '.'))}
             placeholder="0.00"
-            leftAdornment={<span className="text-lg font-semibold">€</span>}
+            leftAdornment={<span className="text-lg font-semibold">{currencySymbol}</span>}
             error={error}
             inputSize="lg"
             className="text-3xl font-semibold tracking-[-0.04em] tactile-tabular-nums"
@@ -382,22 +392,22 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
                 }}
                 className="rounded-xl border border-border-subtle bg-white/[0.035] px-3 py-2 text-sm font-semibold tactile-tabular-nums text-text-secondary hover:bg-white/[0.075] hover:text-text-primary transition-colors tactile-focus-ring"
               >
-                {streamerMode ? maskMoneyDisplay() : formatCurrency(preset / 100)}
+                {streamerMode ? maskMoneyDisplay() : money(preset / 100)}
               </button>
             ))}
           </div>
           <Input
-            label="Concepto"
+            label={t('transfer.memoLabel')}
             value={memoText}
             onChange={(e) => setMemoText(e.target.value.slice(0, 140))}
-            placeholder="Cena, alquiler, reembolso..."
+            placeholder={t('transfer.memoPlaceholder')}
             maxLength={140}
             hint={`${memoText.length}/140`}
           />
         </div>
         <div className="flex items-center justify-end gap-2 pb-1">
           <Button variant="secondary" rightIcon={<ArrowRight size={16} />} onClick={submit}>
-            Revisar destino
+            {t('transfer.reviewDestination')}
           </Button>
         </div>
       </div>
@@ -407,6 +417,7 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
 }
 
 function AmountInsight({ account, amountMinor }: { account: Account | null; amountMinor: number | null }) {
+  const { t, money } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const remaining = account && amountMinor ? account.balance_minor - amountMinor : account?.balance_minor ?? 0
   const risk = amountMinor ? Math.min(1, amountMinor / Math.max(account?.balance_minor ?? 1, 1)) : 0
@@ -415,18 +426,18 @@ function AmountInsight({ account, amountMinor }: { account: Account | null; amou
     <div className="rounded-3xl border border-border-subtle bg-white/[0.03] p-4 flex flex-col gap-3 2xl:gap-4 h-fit">
       <div className="flex items-center gap-2 text-text-secondary">
         <ShieldCheck size={16} strokeWidth={1.8} />
-        <span className="text-sm font-semibold">Vista segura</span>
+        <span className="text-sm font-semibold">{t('transfer.safeView')}</span>
       </div>
       <div className="space-y-3">
-        <Metric label="Disponible" value={account ? streamerMode ? maskMoneyDisplay() : formatCurrency(account.balance_minor / 100) : '—'} />
-        <Metric label="Después del envío" value={account ? streamerMode ? maskMoneyDisplay() : formatCurrency(Math.max(0, remaining) / 100) : '—'} />
+        <Metric label={t('transfer.available')} value={account ? streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100) : '—'} />
+        <Metric label={t('transfer.afterSend')} value={account ? streamerMode ? maskMoneyDisplay() : money(Math.max(0, remaining) / 100) : '—'} />
       </div>
       <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
         <div className="h-full rounded-full bg-white/35" style={{ width: `${Math.round(risk * 100)}%` }} />
       </div>
       {amountMinor && isLargeTransfer(amountMinor) ? (
         <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] p-3 text-xs text-amber-100 leading-relaxed">
-          Te pediremos una confirmación más consciente por el importe elegido.
+          {t('transfer.largeAmountWarning')}
         </div>
       ) : null}
     </div>
@@ -434,6 +445,7 @@ function AmountInsight({ account, amountMinor }: { account: Account | null; amou
 }
 
 function RecipientStep({ account }: { account: Account | null }) {
+  const { t } = useI18n()
   const { data, isLoading } = useRecentRecipients()
   const storeIban = useTransferWizard((s) => s.recipientIban)
   const storeAlias = useTransferWizard((s) => s.recipientAlias)
@@ -458,11 +470,11 @@ function RecipientStep({ account }: { account: Account | null }) {
 
   const submit = (): void => {
     if (!isValidSpanishIban(iban)) {
-      setError('Introduce un IBAN español válido.')
+      setError(t('transfer.validSpanishIban'))
       return
     }
     if (account && normalizeIban(account.iban) === normalized) {
-      setError('El destinatario no puede ser tu cuenta origen.')
+      setError(t('transfer.cannotBeSameAccount'))
       return
     }
     setRecipient(formatIban(iban), alias.trim() || null)
@@ -480,20 +492,20 @@ function RecipientStep({ account }: { account: Account | null }) {
 
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4 2xl:gap-5 pb-1">
-      <StepHeader icon={<UserRound size={18} />} title="Elige destinatario" description="Selecciona un contacto reciente o introduce un IBAN manualmente." />
+      <StepHeader icon={<UserRound size={18} />} title={t('transfer.recipientStepTitle')} description={t('transfer.recipientStepDescription')} />
       <div className="grid grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-4 2xl:gap-5">
         <Card variant="elevated" padding="md" className="border-white/10 min-h-[300px] 2xl:min-h-[360px]">
           <CardContent className="gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-text-primary">Contactos</span>
+              <span className="text-sm font-semibold text-text-primary">{t('transfer.contacts')}</span>
               <span className="text-[11px] text-text-tertiary tactile-tabular-nums">{filteredRecipients.length}</span>
             </div>
             <Input
               type="search"
-              aria-label="Buscar contacto o IBAN"
+              aria-label={t('transfer.searchAriaLabel')}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Buscar contacto o IBAN"
+              placeholder={t('transfer.searchPlaceholder')}
               inputSize="sm"
               leftAdornment={<Search size={15} />}
               autoComplete="off"
@@ -504,7 +516,7 @@ function RecipientStep({ account }: { account: Account | null }) {
               </div>
             ) : filteredRecipients.length === 0 ? (
               <div className="flex min-h-[180px] items-center justify-center rounded-3xl border border-border-subtle bg-white/[0.025] px-4 text-center text-sm text-text-tertiary">
-                No encontramos coincidencias.
+                {t('transfer.noMatches')}
               </div>
             ) : (
               <div className="max-h-[300px] overflow-y-auto pr-1 space-y-2 scrollbar-thin">
@@ -522,26 +534,26 @@ function RecipientStep({ account }: { account: Account | null }) {
         </Card>
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-4">
           <Input
-            label="IBAN destino"
+            label={t('transfer.destinationLabel')}
             value={iban}
             onChange={(e) => setIban(formatIban(e.target.value))}
-            placeholder="ES00 0000 0000 0000 0000 0000"
+            placeholder={t('transfer.ibanPlaceholder')}
             error={error}
             inputSize="lg"
             className="font-mono tracking-[0.06em]"
           />
           <Input
-            label="Alias opcional"
+            label={t('transfer.aliasLabel')}
             value={alias}
             onChange={(e) => setAlias(e.target.value.slice(0, 48))}
-            placeholder="Nombre visible en revisión"
+            placeholder={t('transfer.aliasPlaceholder')}
           />
           <div className="mt-auto flex items-center justify-between gap-2 pt-3 2xl:pt-4">
             <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep('amount')}>
-              Atrás
+              {t('transfer.back')}
             </Button>
             <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={submit}>
-              Revisar
+              {t('transfer.review')}
             </Button>
           </div>
         </div>
@@ -551,9 +563,10 @@ function RecipientStep({ account }: { account: Account | null }) {
 }
 
 function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipient; active: boolean; onClick: () => void }) {
+  const { t } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const ibanLabel = streamerMode ? maskIbanCompact(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)
-  const label = streamerMode ? 'Destinatario oculto' : recipient.alias ?? ibanLabel
+  const label = streamerMode ? t('transfer.hiddenRecipientChip') : recipient.alias ?? ibanLabel
   return (
     <button
       type="button"
@@ -576,6 +589,7 @@ function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipi
 }
 
 function ReviewStep({ account, canExecute, onExecute }: { account: Account | null; canExecute: boolean; onExecute: () => void }) {
+  const { t, money } = useI18n()
   const amount = useTransferWizard((s) => s.amount)
   const memo = useTransferWizard((s) => s.memo)
   const recipientIban = useTransferWizard((s) => s.recipientIban)
@@ -587,26 +601,26 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
   const large = Boolean(amount && isLargeTransfer(amount))
   const fromIban = account ? streamerMode ? maskIbanDisplay(account.iban) : revealIbanDisplay(account.iban) : '—'
   const toIban = recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : undefined
-  const recipientLabel = streamerMode ? 'Destinatario oculto' : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : '—')
-  const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100) : '—'
+  const recipientLabel = streamerMode ? t('transfer.hiddenRecipient') : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : '—')
+  const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : money(amount / 100) : '—'
 
   return (
     <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 2xl:gap-5 pb-1">
       <div className="flex flex-col gap-4 2xl:gap-5">
-        <StepHeader icon={<ReceiptText size={18} />} title="Revisa y firma" description="Comprueba los datos antes de autorizar el envío." />
+        <StepHeader icon={<ReceiptText size={18} />} title={t('transfer.reviewStepTitle')} description={t('transfer.reviewStepDescription')} />
         <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
           <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">Código de seguridad</span>
+            <span className="text-[11px] uppercase tracking-[0.14em] text-text-tertiary pt-0.5">{t('transfer.securityCode')}</span>
             <span className="text-xs font-mono text-text-tertiary text-right">{streamerMode ? maskOperationCode(correlationId) : revealOperationCode(correlationId)}</span>
           </div>
-          <ReviewRow label="Desde" value={fromIban} />
-          <ReviewRow label="Para" value={recipientLabel} helper={toIban} />
-          <ReviewRow label="Importe" value={amountLabel} strong />
-          <ReviewRow label="Concepto" value={streamerMode ? 'Oculto' : memo.trim() || 'Sin concepto'} />
+          <ReviewRow label={t('common.from')} value={fromIban} />
+          <ReviewRow label={t('common.to')} value={recipientLabel} helper={toIban} />
+          <ReviewRow label={t('transfer.amountLabel')} value={amountLabel} strong />
+          <ReviewRow label={t('transfer.concept')} value={streamerMode ? t('transfer.hiddenConcept') : memo.trim() || t('transfer.noConcept')} />
         </div>
         <div className="flex items-center justify-between gap-2 pb-1">
           <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep(expressMode ? 'recipient' : 'recipient')}>
-            Editar destino
+            {t('transfer.editDestination')}
           </Button>
           <HoldToConfirmButton disabled={!canExecute} onConfirm={onExecute} />
         </div>
@@ -617,9 +631,9 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
           <CardContent className="gap-2">
             <div className="flex items-center gap-2 text-text-secondary">
               <Clock3 size={15} />
-              <span className="text-sm font-semibold">Protección anti-duplicados</span>
+              <span className="text-sm font-semibold">{t('transfer.duplicateProtection')}</span>
             </div>
-            <p className="text-xs text-text-tertiary leading-relaxed">Si la conexión se interrumpe, evitamos repetir el envío.</p>
+            <p className="text-xs text-text-tertiary leading-relaxed">{t('transfer.duplicateProtectionDescription')}</p>
           </CardContent>
         </Card>
       </div>
@@ -628,16 +642,17 @@ function ReviewStep({ account, canExecute, onExecute }: { account: Account | nul
 }
 
 function LargeTransferWarning({ amount }: { amount: number }) {
+  const { t, money } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   return (
     <Card variant="elevated" padding="md" className="border-amber-300/20 bg-amber-300/[0.06]">
       <CardContent className="gap-3">
         <div className="flex items-center gap-2 text-amber-100">
           <AlertTriangle size={17} strokeWidth={2} />
-          <span className="text-sm font-semibold">Confirmación reforzada</span>
+          <span className="text-sm font-semibold">{t('transfer.confirmationReinforced')}</span>
         </div>
         <p className="text-xs text-amber-100/80 leading-relaxed">
-          Vas a enviar {streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100)}. Revisa el destino con calma antes de firmar.
+          {t('transfer.confirmationDescription').replace('{amount}', streamerMode ? maskMoneyDisplay() : money(amount / 100))}
         </p>
       </CardContent>
     </Card>
@@ -645,20 +660,22 @@ function LargeTransferWarning({ amount }: { amount: number }) {
 }
 
 function SecurityPanel() {
+  const { t } = useI18n()
   return (
     <Card variant="elevated" padding="md" className="border-emerald-300/20 bg-emerald-300/[0.045]">
       <CardContent className="gap-3">
         <div className="flex items-center gap-2 text-emerald-100">
           <ShieldCheck size={17} strokeWidth={2} />
-          <span className="text-sm font-semibold">Operación protegida</span>
+          <span className="text-sm font-semibold">{t('transfer.operationProtected')}</span>
         </div>
-        <p className="text-xs text-emerald-100/75 leading-relaxed">Todo listo para confirmar con firma sostenida.</p>
+        <p className="text-xs text-emerald-100/75 leading-relaxed">{t('transfer.operationDescription')}</p>
       </CardContent>
     </Card>
   )
 }
 
 function HoldToConfirmButton({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
+  const { t } = useI18n()
   const [holding, setHolding] = useState(false)
   const [progress, setProgress] = useState(0)
   const timerRef = useRef<number | null>(null)
@@ -709,7 +726,7 @@ function HoldToConfirmButton({ disabled, onConfirm }: { disabled: boolean; onCon
       <span className="absolute inset-y-0 left-0 bg-white/20" style={{ width: `${Math.round(progress * 100)}%` }} />
       <span className="relative inline-flex items-center justify-center gap-2">
         <LockKeyhole size={16} />
-        {holding ? 'Mantén...' : 'Mantén para enviar'}
+        {holding ? t('transfer.holding') : t('transfer.holdToSend')}
       </span>
     </button>
   )
@@ -736,6 +753,7 @@ function ConfirmStep({
   onDone: () => void
   onNew: () => void
 }) {
+  const { t, money, dateTime } = useI18n()
   const [pdfPending, setPdfPending] = useState(false)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
@@ -747,19 +765,41 @@ function ConfirmStep({
       const { downloadTransferReceiptPdf } = await import('./transfer/receipt-pdf')
       await downloadTransferReceiptPdf({
         receipt,
-        recipientLabel: streamerMode ? 'Destinatario oculto' : recipientAlias ?? (recipientIban
+        recipientLabel: streamerMode ? t('transfer.hiddenRecipient') : recipientAlias ?? (recipientIban
           ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
           : streamerMode ? maskIbanCompact(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)),
-        amountLabel: streamerMode ? maskMoneyDisplay() : formatCurrency((amount ?? receipt.amount_minor) / 100),
+        amountLabel: streamerMode ? maskMoneyDisplay() : money((amount ?? receipt.amount_minor) / 100),
+        availableBalanceLabel: streamerMode ? maskMoneyDisplay() : money(receipt.available_balance_minor / 100),
         fromIbanMasked: streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban),
         toIbanMasked: streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban),
-        timestampLabel: formatReceiptTime(receipt.committed_at_ms),
+        timestampLabel: dateTime(receipt.committed_at_ms, { dateStyle: 'medium', timeStyle: 'short' }),
         streamerMode,
+        labels: {
+          receiptTitle: t('transfer.pdfReceiptTitle'),
+          sentAmount: t('transfer.pdfSentAmount'),
+          receiptNumber: t('transfer.pdfReceiptNumber'),
+          securityCode: t('transfer.pdfSecurityCode'),
+          from: t('common.from'),
+          to: t('common.to'),
+          memo: t('transfer.concept'),
+          hiddenMemo: t('transfer.hiddenConcept'),
+          noMemo: t('transfer.noConcept'),
+          date: t('common.date'),
+          availableBalance: t('transfer.availableBalance'),
+          bankReference: t('transfer.pdfBankReference'),
+          receiptWatermark: t('common.receipt').toUpperCase(),
+          footerLine1: t('transfer.pdfFooterLine1'),
+          footerLine2: t('transfer.pdfFooterLine2'),
+          committedStatus: t('transfer.pdfCommittedStatus'),
+          pendingStatus: t('common.pending').toUpperCase(),
+          revertedStatus: t('transactions.reverted').toUpperCase(),
+          failedStatus: t('transactions.failed').toUpperCase(),
+        },
       })
       sfx.coin_clink()
-      toast.success('Recibo PDF generado', streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id))
+      toast.success(t('transfer.receiptPdfGenerated'), streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id))
     } catch {
-      toast.warning('No se pudo generar el PDF', 'Inténtalo de nuevo en unos segundos.')
+      toast.warning(t('transfer.pdfErrorTitle'), t('transfer.pdfErrorDescription'))
     } finally {
       setPdfPending(false)
     }
@@ -767,7 +807,7 @@ function ConfirmStep({
 
   if (pending) {
     return (
-      <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title="Enviando transferencia" description="Estamos verificando la operación." />
+      <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title={t('transfer.sendingTransfer')} description={t('transfer.sendingDescription')} />
     )
   }
 
@@ -777,33 +817,33 @@ function ConfirmStep({
     return (
       <ResultShell tone="error" icon={<AlertTriangle size={38} />} title={message.title} description={message.description}>
         <div className="flex justify-center gap-2">
-          <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={onBack}>Volver</Button>
-          <Button variant="primary" onClick={onBack}>Revisar datos</Button>
+          <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={onBack}>{t('transfer.back')}</Button>
+          <Button variant="primary" onClick={onBack}>{t('transfer.reviewData')}</Button>
         </div>
       </ResultShell>
     )
   }
 
   if (!receipt) {
-    return <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title="Preparando recibo" description="Un momento." />
+    return <ResultShell tone="pending" icon={<Spinner size="lg" variant="brand" />} title={t('transfer.preparingReceipt')} description={t('transfer.momentDescription')} />
   }
 
   return (
     <ResultShell
       tone="success"
       icon={<CheckCircle2 size={38} strokeWidth={1.8} />}
-      title="Transferencia completada"
-      description={`${streamerMode ? maskMoneyDisplay() : formatCurrency((amount ?? receipt.amount_minor) / 100)} enviado a ${streamerMode ? 'destinatario oculto' : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : 'destinatario')}.`}
+      title={t('transfer.completedTitle')}
+      description={`${streamerMode ? maskMoneyDisplay() : money((amount ?? receipt.amount_minor) / 100)} → ${streamerMode ? t('transfer.hiddenRecipient') : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : t('transfer.hiddenRecipient'))}.`}
     >
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border-subtle bg-white/[0.035] p-3.5 text-left">
-        <ReceiptRow label="Recibo" value={streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id)} mono />
-        <ReceiptRow label="Código de seguridad" value={streamerMode ? maskOperationCode(receipt.correlation_id) : revealOperationCode(receipt.correlation_id)} mono />
-        <ReceiptRow label="Origen" value={streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban)} />
-        <ReceiptRow label="Destino" value={streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)} helper={streamerMode ? undefined : recipientAlias ?? undefined} />
-        <ReceiptRow label="Concepto" value={streamerMode ? 'Oculto' : receipt.reason?.trim() || 'Sin concepto'} />
-        <ReceiptRow label="Fecha" value={formatReceiptTime(receipt.committed_at_ms)} />
-        <ReceiptRow label="Balance disponible" value={streamerMode ? maskMoneyDisplay() : formatCurrency(receipt.available_balance_minor / 100)} />
-        <ReceiptRow label="Estado" value="Confirmada" />
+        <ReceiptRow label={t('common.receipt')} value={streamerMode ? maskOperationCode(receipt.transaction_id) : revealOperationCode(receipt.transaction_id)} mono />
+        <ReceiptRow label={t('transfer.securityCode')} value={streamerMode ? maskOperationCode(receipt.correlation_id) : revealOperationCode(receipt.correlation_id)} mono />
+        <ReceiptRow label={t('common.from')} value={streamerMode ? maskIbanDisplay(receipt.from_iban) : revealIbanDisplay(receipt.from_iban)} />
+        <ReceiptRow label={t('common.to')} value={streamerMode ? maskIbanDisplay(receipt.to_iban) : revealIbanDisplay(receipt.to_iban)} helper={streamerMode ? undefined : recipientAlias ?? undefined} />
+        <ReceiptRow label={t('transfer.concept')} value={streamerMode ? t('common.hidden') : receipt.reason?.trim() || t('transfer.noConcept')} />
+        <ReceiptRow label={t('common.date')} value={dateTime(receipt.committed_at_ms, { dateStyle: 'medium', timeStyle: 'short' })} />
+        <ReceiptRow label={t('transfer.availableBalance')} value={streamerMode ? maskMoneyDisplay() : money(receipt.available_balance_minor / 100)} />
+        <ReceiptRow label={t('common.status')} value={t('transfer.confirmed')} />
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         <Button
@@ -812,9 +852,9 @@ function ConfirmStep({
           disabled={pdfPending}
           onClick={handleDownloadReceiptPdf}
         >
-          {pdfPending ? 'Generando PDF' : 'Descargar PDF'}
+          {pdfPending ? 'Generating PDF' : t('transfer.pdf')}
         </Button>
-        <Button variant="secondary" onClick={onNew}>Nueva transferencia</Button>
+        <Button variant="secondary" onClick={onNew}>{t('transfer.newTransfer')}</Button>
         <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={onDone}>Volver a inicio</Button>
       </div>
     </ResultShell>
@@ -863,8 +903,9 @@ function TransferRail({
   recipientAlias: string | null
   recipientIban: string | null
 }) {
+  const { t, money } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const destinationLabel = streamerMode ? 'Destinatario oculto' : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : 'Selecciona destino')
+  const destinationLabel = streamerMode ? t('transfer.hiddenRecipient') : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : t('transfer.selectDestination'))
   const hasDestination = Boolean(recipientAlias || recipientIban)
   const hasAmount = Boolean(amount)
   return (
@@ -882,40 +923,40 @@ function TransferRail({
           <div className="flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-white/72" />
-              <CardTitle className="text-base text-white">Tu envío</CardTitle>
+              <CardTitle className="text-base text-white">{t('transfer.railTitle')}</CardTitle>
             </div>
             <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/68" style={{ background: 'oklch(1 0 0 / 0.10)' }}>
-              Secure
+              {t('transfer.secureBadge')}
             </span>
           </div>
 
           <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-white/[0.045] px-4 py-4">
-            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">Importe</span>
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">{t('transfer.amountLabel')}</span>
             <span className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums text-white">
-              {amount ? streamerMode ? maskMoneyDisplay() : formatCurrency(amount / 100) : '—'}
+              {amount ? streamerMode ? maskMoneyDisplay() : money(amount / 100) : '—'}
             </span>
           </div>
 
           <div className="mt-4 rounded-[1.55rem] border border-white/10 bg-white/[0.035] p-3.5">
-            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 mb-3">Destino</span>
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 mb-3">{t('transfer.destination')}</span>
             <div className="flex items-center gap-3">
               <BankAvatar name={destinationLabel} size="lg" />
               <span className="min-w-0 flex flex-col">
                 <span className="text-sm font-semibold text-white truncate">{destinationLabel}</span>
-                <span className="text-[11px] text-white/46 truncate">{recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : 'Pendiente de seleccionar'}</span>
+                <span className="text-[11px] text-white/46 truncate">{recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : t('transfer.destinationPending')}</span>
               </span>
             </div>
           </div>
 
           <div className="mt-4 space-y-2">
-            <RailCheck done={hasAmount} label="Importe elegido" />
-            <RailCheck done={hasDestination} label="Destino verificado" />
-            <RailCheck done={hasAmount && hasDestination} label="Listo para revisión" />
+            <RailCheck done={hasAmount} label={t('transfer.amountSelected')} />
+            <RailCheck done={hasDestination} label={t('transfer.destinationVerified')} />
+            <RailCheck done={hasAmount && hasDestination} label={t('transfer.readyForReview')} />
           </div>
 
           <div className="mt-auto pt-4 space-y-2">
-            <Metric label="Origen" value={account ? streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban) : '—'} />
-            {memo.trim() ? <Metric label="Concepto" value={streamerMode ? 'Oculto' : memo.trim()} /> : null}
+            <Metric label={t('common.from')} value={account ? streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban) : '—'} />
+            {memo.trim() ? <Metric label={t('transfer.concept')} value={streamerMode ? t('transfer.hiddenConcept') : memo.trim()} /> : null}
           </div>
         </div>
       </Card>
@@ -1003,12 +1044,6 @@ function formatMajorInput(amountMinor: number): string {
   return (amountMinor / 100).toFixed(2)
 }
 
-function formatReceiptTime(timestampMs: number): string {
-  return new Intl.DateTimeFormat('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(timestampMs))
-}
 
 function normalizeRecipientSearch(value: string): string {
   return value

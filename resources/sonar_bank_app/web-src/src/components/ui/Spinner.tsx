@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 
 export interface SpinnerProps {
   size?: 'xs' | 'sm' | 'md' | 'lg'
@@ -31,8 +32,9 @@ export function Spinner({
   size = 'md',
   variant = 'brand',
   className,
-  'aria-label': ariaLabel = 'Cargando',
+  'aria-label': ariaLabel,
 }: SpinnerProps) {
+  const { t } = useI18n()
   const px = SIZE_PX[size]
   const stroke = STROKE[size]
   const color = VARIANT_COLOR[variant]
@@ -41,7 +43,7 @@ export function Spinner({
   return (
     <span
       role="status"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? t('common.loading')}
       className={cn('inline-flex items-center justify-center', className)}
       style={{ width: px, height: px }}
     >

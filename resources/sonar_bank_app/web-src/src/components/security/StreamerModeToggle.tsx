@@ -1,10 +1,12 @@
 import { Eye, RadioTower, ShieldCheck } from 'lucide-react'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
 
 export function StreamerModeToggle() {
+  const { t } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const setStreamerMode = usePrivacyMode((s) => s.setStreamerMode)
 
@@ -13,9 +15,9 @@ export function StreamerModeToggle() {
     setStreamerMode(next)
     sfx.console_tap()
     if (next) {
-      toast.info('Streamer Mode activo', 'Tus datos sensibles vuelven a estar protegidos en pantalla.')
+      toast.info(t('settings.privacyOnToastTitle'), t('settings.privacyOnToastBody'))
     } else {
-      toast.warning('Datos revelados', 'Streamer Mode pausado. Vuelve a activarlo antes de compartir pantalla.')
+      toast.warning(t('settings.privacyOffToastTitle'), t('settings.privacyOffToastBody'))
     }
   }
 
@@ -24,7 +26,7 @@ export function StreamerModeToggle() {
       type="button"
       onClick={handleToggle}
       aria-pressed={streamerMode}
-      aria-label={streamerMode ? 'Desactivar Streamer Mode y revelar datos' : 'Activar Streamer Mode y ocultar datos'}
+      aria-label={streamerMode ? t('settings.disableStreamerMode') : t('settings.enableStreamerMode')}
       className={cn(
         'tactile-focus-ring inline-flex h-8 items-center gap-2 rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.14em] transition-all duration-180',
         streamerMode ? 'text-brand-signal-orange-light' : 'text-text-primary',
@@ -40,7 +42,7 @@ export function StreamerModeToggle() {
       }}
     >
       {streamerMode ? <RadioTower size={13} strokeWidth={2.2} /> : <Eye size={13} strokeWidth={2.2} />}
-      <span className="hidden xl:inline">Streamer</span>
+      <span className="hidden xl:inline">{t('settings.streamerMode')}</span>
       <span
         className="inline-flex h-4 min-w-8 items-center justify-center rounded-full px-1.5 text-[9px] tracking-[0.12em]"
         style={{
@@ -48,7 +50,7 @@ export function StreamerModeToggle() {
           color: streamerMode ? 'oklch(0.82 0.18 45)' : 'oklch(0.86 0.006 270)',
         }}
       >
-        {streamerMode ? 'ON' : 'OFF'}
+        {streamerMode ? t('settings.streamerModeOnLabel') : t('settings.streamerModeOffLabel')}
       </span>
       {streamerMode ? <ShieldCheck size={12} strokeWidth={2.2} className="opacity-75" /> : null}
     </button>

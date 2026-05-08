@@ -3,6 +3,7 @@ import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye,
 import type { BankCardMock } from '@/data/contracts'
 import { Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
 import { toast } from '@/stores/toast'
 import { handleBankError } from '@/lib/bankError'
@@ -33,6 +34,7 @@ export interface CardDetailsProps {
 }
 
 export function CardDetails({ card, className }: CardDetailsProps) {
+  const { t } = useI18n()
   const flippedIds = useCardsUi((s) => s.flippedCardIds)
   const toggleFlip = useCardsUi((s) => s.toggleFlip)
   const openDialog = useCardsUi((s) => s.openDialog)
@@ -46,9 +48,9 @@ export function CardDetails({ card, className }: CardDetailsProps) {
     return (
       <Card variant="glass" padding="md" className={cn('border-white/10 flex flex-col items-center justify-center text-center', className)}>
         <Sparkles size={20} className="text-text-tertiary mb-2" strokeWidth={1.6} />
-        <p className="text-sm font-semibold text-text-primary mb-1">Selecciona una tarjeta</p>
+        <p className="text-sm font-semibold text-text-primary mb-1">{t('cards.selectCardTitle')}</p>
         <p className="text-xs text-text-tertiary max-w-[28ch]">
-          Toca una tarjeta del carrusel para ver sus detalles.
+          {t('cards.selectCardDescription')}
         </p>
       </Card>
     )
@@ -68,11 +70,11 @@ export function CardDetails({ card, className }: CardDetailsProps) {
       hide()
       setStreamerMode(true)
       sfx.console_tap()
-      toast.info('Streamer Mode activo', 'Número de tarjeta oculto para compartir pantalla.')
+      toast.info(t('cards.streamerModeOnTitle'), t('cards.streamerModeOnBody'))
     } else {
       if (streamerMode) {
         setStreamerMode(false)
-        toast.warning('Streamer Mode pausado', 'Número de tarjeta visible durante unos segundos.')
+        toast.warning(t('cards.streamerModeOffTitle'), t('cards.streamerModeOffBody'))
       }
       reveal()
       sfx.panel_open()
@@ -88,10 +90,10 @@ export function CardDetails({ card, className }: CardDetailsProps) {
       {
         onSuccess: () => {
           toast.success(
-            freeze ? 'Tarjeta congelada' : 'Tarjeta reactivada',
+            freeze ? t('cards.cardFrozenTitle') : t('cards.cardUnfrozenTitle'),
             freeze
-              ? 'Hemos bloqueado todos los pagos. Puedes descongelarla cuando quieras.'
-              : 'Tu tarjeta vuelve a estar operativa.',
+              ? t('cards.cardFrozenBody')
+              : t('cards.cardUnfrozenBody'),
           )
         },
         onError: (err) => {
@@ -149,7 +151,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
                   }}
                 />
                 <span className="text-[10px] uppercase tracking-[0.2em] text-text-tertiary font-semibold">
-                  Diseño activo
+                  {t('cards.activeDesign')}
                 </span>
               </div>
               <div className="flex min-w-0 flex-col gap-1">
@@ -161,19 +163,19 @@ export function CardDetails({ card, className }: CardDetailsProps) {
                 </span>
               </div>
             </div>
-            <StatusPill status={card.status} />
+            <StatusPill status={card.status} t={t} />
           </div>
         </motion.div>
 
       {/* Meta grid — holder · expiry · linked iban · type */}
         <dl className="grid grid-cols-2 gap-2.5">
-          <MetaItem icon={User2} label="Titular" value={card.holder_name} accent={design.accent} />
-          <MetaItem icon={CalendarDays} label="Caduca" value={expiryStr} accent={design.accent} mono />
-          <MetaItem icon={Wallet} label="Vinculada" value={streamerMode ? maskIbanCompact(card.iban) : revealIbanDisplay(card.iban)} accent={design.accent} mono />
+          <MetaItem icon={User2} label={t('cards.holder')} value={card.holder_name} accent={design.accent} />
+          <MetaItem icon={CalendarDays} label={t('cards.expires')} value={expiryStr} accent={design.accent} mono />
+          <MetaItem icon={Wallet} label={t('cards.linked')} value={streamerMode ? maskIbanCompact(card.iban) : revealIbanDisplay(card.iban)} accent={design.accent} mono />
           <MetaItem
             icon={Sparkles}
-            label="Tipo"
-            value={typeLabel(card.card_type)}
+            label={t('cards.type')}
+            value={typeLabel(card.card_type, t)}
             accent={design.accent}
           />
         </dl>
@@ -189,15 +191,15 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-semibold">
-              Límites
+              {t('cards.limits')}
             </span>
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-text-tertiary">
-              vista segura
+              {t('cards.safeView')}
             </span>
           </div>
 
           <Meter
-            label="Hoy"
+            label={t('common.today')}
             spent={card.daily_spent_minor}
             limit={card.daily_limit_minor}
             pct={dailyPct}
@@ -205,7 +207,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
             hidden={streamerMode}
           />
           <Meter
-            label="Este mes"
+            label={t('cards.thisMonth')}
             spent={card.monthly_spent_minor}
             limit={card.monthly_limit_minor}
             pct={monthlyPct}
@@ -228,29 +230,29 @@ export function CardDetails({ card, className }: CardDetailsProps) {
               icon={Eye}
               label={
                 effectiveRevealed
-                  ? 'Activar Streamer'
-                  : streamerMode ? 'Pausar Streamer' : 'Ocultar número'
+                  ? t('cards.activateStreamer')
+                  : streamerMode ? t('cards.pauseStreamer') : t('cards.hideNumber')
               }
               onClick={handleToggleReveal}
               active={effectiveRevealed}
             />
             <ActionButton
               icon={RotateCw}
-              label={flipped ? 'Ver frente' : 'Ver reverso'}
+              label={flipped ? t('cards.showFront') : t('cards.showBack')}
               onClick={() => toggleFlip(card.card_id)}
               active={flipped}
             />
             <ActionButton
               icon={freezePending ? Loader2 : Snowflake}
               iconClassName={freezePending ? 'animate-spin' : undefined}
-              label={isLocked ? 'Descongelar' : 'Congelar'}
+              label={isLocked ? t('cards.unfreeze') : t('cards.freeze')}
               onClick={handleToggleFreeze}
               disabled={isExpired || freezePending}
               active={isLocked}
             />
             <ActionButton
               icon={Settings2}
-              label="Límites"
+              label={t('cards.limits')}
               onClick={() => {
                 sfx.panel_open()
                 openDialog('limits', card.card_id)
@@ -273,25 +275,27 @@ export function CardDetails({ card, className }: CardDetailsProps) {
    identity so the panel reads as part of the same visual story.
    -------------------------------------------------------------------------- */
 
-const BENEFITS_BY_TIER: Record<'default' | 'premium' | 'signature', string[]> = {
-  default: [
-    'Sin comisiones de mantenimiento',
-    'Pagos contactless y por móvil',
-    'Notificaciones de gasto en tiempo real',
-  ],
-  premium: [
-    'Reembolso 0.5% en compras del día a día',
-    'Atención prioritaria 24/7',
-    'Sin comisiones de mantenimiento',
-    'Pagos contactless y por móvil',
-  ],
-  signature: [
-    'Reembolso 1% global · sin tope mensual',
-    'Concierge bancario dedicado',
-    'Acceso anticipado a nuevas ventajas',
-    'Atención prioritaria 24/7',
-    'Sin comisiones de mantenimiento',
-  ],
+function useBenefitsByTier(t: (key: TranslationKey) => string): Record<'default' | 'premium' | 'signature', string[]> {
+  return {
+    default: [
+      t('cards.benefitNoMaintenance'),
+      t('cards.benefitContactless'),
+      t('cards.benefitRealtime'),
+    ],
+    premium: [
+      t('cards.benefitCashback05'),
+      t('cards.benefitPriority247'),
+      t('cards.benefitNoMaintenance'),
+      t('cards.benefitContactless'),
+    ],
+    signature: [
+      t('cards.benefitCashback1'),
+      t('cards.benefitConcierge'),
+      t('cards.benefitEarlyAccess'),
+      t('cards.benefitPriority247'),
+      t('cards.benefitNoMaintenance'),
+    ],
+  }
 }
 
 function BenefitsPanel({
@@ -303,7 +307,9 @@ function BenefitsPanel({
   accent: string
   className?: string
 }) {
-  const items = BENEFITS_BY_TIER[tier]
+  const { t } = useI18n()
+  const benefitsMap = useBenefitsByTier(t)
+  const items = benefitsMap[tier]
   return (
     <div
       className={cn(
@@ -318,7 +324,7 @@ function BenefitsPanel({
     >
       <div className="flex items-center justify-between shrink-0">
         <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-semibold">
-          Beneficios
+          {t('cards.benefits')}
         </span>
         <TierBadge tier={tier} />
       </div>
@@ -343,7 +349,8 @@ function BenefitsPanel({
 }
 
 function TierBadge({ tier }: { tier: 'default' | 'premium' | 'signature' }) {
-  const label = tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : 'Estándar'
+  const { t } = useI18n()
+  const label = tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : t('cards.standard')
   return (
     <span
       className="text-[9px] uppercase tracking-[0.16em] font-semibold px-1.5 py-0.5 rounded"
@@ -362,8 +369,8 @@ function TierBadge({ tier }: { tier: 'default' | 'premium' | 'signature' }) {
    Sub-components
    -------------------------------------------------------------------------- */
 
-function StatusPill({ status }: { status: BankCardMock['status'] }) {
-  const config = STATUS_CONFIG[status]
+function StatusPill({ status, t }: { status: BankCardMock['status']; t: (key: TranslationKey) => string }) {
+  const config = useStatusConfig(t)[status]
   const Icon = config.icon
   return (
     <span
@@ -380,11 +387,13 @@ function StatusPill({ status }: { status: BankCardMock['status'] }) {
   )
 }
 
-const STATUS_CONFIG: Record<BankCardMock['status'], { label: string; color: string; borderColor: string; icon: typeof Lock | null }> = {
-  active: { label: 'Activa', color: 'oklch(0.85 0.14 150)', borderColor: 'oklch(0.85 0.14 150 / 0.25)', icon: null },
-  locked: { label: 'Congelada', color: 'oklch(0.78 0.10 230)', borderColor: 'oklch(0.78 0.10 230 / 0.25)', icon: Lock },
-  expired: { label: 'Caducada', color: 'oklch(0.65 0.01 270)', borderColor: 'oklch(0.65 0.01 270 / 0.20)', icon: null },
-  pending: { label: 'Emitiendo', color: 'oklch(0.78 0.10 70)', borderColor: 'oklch(0.78 0.10 70 / 0.25)', icon: null },
+function useStatusConfig(t: (key: TranslationKey) => string): Record<BankCardMock['status'], { label: string; color: string; borderColor: string; icon: typeof Lock | null }> {
+  return {
+    active: { label: t('cards.statusActive'), color: 'oklch(0.85 0.14 150)', borderColor: 'oklch(0.85 0.14 150 / 0.25)', icon: null },
+    locked: { label: t('cards.statusFrozen'), color: 'oklch(0.78 0.10 230)', borderColor: 'oklch(0.78 0.10 230 / 0.25)', icon: Lock },
+    expired: { label: t('cards.statusExpired'), color: 'oklch(0.65 0.01 270)', borderColor: 'oklch(0.65 0.01 270 / 0.20)', icon: null },
+    pending: { label: t('cards.statusPending'), color: 'oklch(0.78 0.10 70)', borderColor: 'oklch(0.78 0.10 70 / 0.25)', icon: null },
+  }
 }
 
 function MetaItem({
@@ -442,6 +451,7 @@ function Meter({
   accent: string
   hidden: boolean
 }) {
+  const { money } = useI18n()
   const isAlarm = pct > 80
   // Use color-mix to derive a softer entry stop in the same hue family. The
   // bar therefore always speaks the focused card's chromatic language; the
@@ -457,7 +467,7 @@ function Meter({
           className="text-[10px] text-text-secondary tactile-tabular-nums"
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {hidden ? `${maskMoneyDisplay()} / ${maskMoneyDisplay()}` : `${formatMinor(spent)} / ${formatMinor(limit)}`}
+          {hidden ? `${maskMoneyDisplay()} / ${maskMoneyDisplay()}` : `${money(spent / 100, { maximumFractionDigits: 0, minimumFractionDigits: 0 })} / ${money(limit / 100, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}`}
         </span>
       </div>
       <div
@@ -498,6 +508,7 @@ function ActionButton({
   active?: boolean
   fullWidth?: boolean
 }) {
+  const { t } = useI18n()
   return (
     <button
       type="button"
@@ -517,7 +528,7 @@ function ActionButton({
         border: `1px solid ${active ? 'oklch(1 0 0 / 0.16)' : 'oklch(1 0 0 / 0.07)'}`,
         color: active ? 'oklch(0.96 0 0)' : 'oklch(0.78 0.012 270)',
       }}
-      title={disabled && !onClick ? 'Disponible próximamente' : undefined}
+      title={disabled && !onClick ? t('cards.comingSoon') : undefined}
     >
       <Icon size={12} strokeWidth={1.8} className={cn('shrink-0', iconClassName)} />
       <span className="truncate">{label}</span>
@@ -529,14 +540,6 @@ function ActionButton({
    Helpers
    -------------------------------------------------------------------------- */
 
-function typeLabel(t: BankCardMock['card_type']): string {
-  return t === 'debit' ? 'Débito' : t === 'virtual' ? 'Virtual' : 'Crédito'
-}
-
-function formatMinor(minor: number): string {
-  return (minor / 100).toLocaleString('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  })
+function typeLabel(cardType: BankCardMock['card_type'], t: (key: TranslationKey) => string): string {
+  return cardType === 'debit' ? t('cards.debit') : cardType === 'virtual' ? 'Virtual' : t('cards.credit')
 }

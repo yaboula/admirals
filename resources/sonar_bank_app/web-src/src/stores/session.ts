@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { isAceGranted } from '@/lib/ace'
 
+const LOCALE_STORAGE_KEY = 'sonar-bank:locale'
+const CURRENCY_STORAGE_KEY = 'sonar-bank:currency'
+
 export type AcePerm =
   | 'sonar.bank.player'
   | 'sonar.bank.audit.self'
@@ -20,6 +23,9 @@ export interface BusinessMembership {
   role: 'owner' | 'manager' | 'employee'
 }
 
+export type BankLocale = 'en' | 'es' | 'fr' | 'de'
+export type BankCurrency = 'USD' | 'EUR'
+
 export interface BankSessionState {
   citizenId: string | null
   ibanMasked: string | null
@@ -27,18 +33,32 @@ export interface BankSessionState {
   acePerms: AcePerm[]
   memberships: BusinessMembership[]
   onboardingCompletedAt: number | null
-  locale: 'es' | 'en' | 'fr' | 'de'
+  locale: BankLocale
+  currency: BankCurrency
 
   setSession: (s: Partial<BankSessionState>) => void
-  setLocale: (locale: BankSessionState['locale']) => void
+  setLocale: (locale: BankLocale) => void
+  setCurrency: (currency: BankCurrency) => void
   hasPerm: (perm: AcePerm) => boolean
   hasMembership: (companyId: string) => BusinessMembership | undefined
   clearSession: () => void
 }
 
+function readStoredLocale(): BankLocale {
+  if (typeof window === 'undefined') return 'en'
+  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY)
+  return stored === 'en' || stored === 'es' || stored === 'fr' || stored === 'de' ? stored : 'en'
+}
+
+function readStoredCurrency(): BankCurrency {
+  if (typeof window === 'undefined') return 'USD'
+  const stored = window.localStorage.getItem(CURRENCY_STORAGE_KEY)
+  return stored === 'EUR' || stored === 'USD' ? stored : 'USD'
+}
+
 const initial: Pick<
   BankSessionState,
-  'citizenId' | 'ibanMasked' | 'isFirstSession' | 'acePerms' | 'memberships' | 'onboardingCompletedAt' | 'locale'
+  'citizenId' | 'ibanMasked' | 'isFirstSession' | 'acePerms' | 'memberships' | 'onboardingCompletedAt' | 'locale' | 'currency'
 > = {
   citizenId: null,
   ibanMasked: null,
@@ -46,13 +66,21 @@ const initial: Pick<
   acePerms: [],
   memberships: [],
   onboardingCompletedAt: null,
-  locale: 'es',
+  locale: readStoredLocale(),
+  currency: readStoredCurrency(),
 }
 
 export const useBankSession = create<BankSessionState>((set, get) => ({
   ...initial,
   setSession: (s) => set(s),
-  setLocale: (locale) => set({ locale }),
+  setLocale: (locale) => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+    set({ locale })
+  },
+  setCurrency: (currency) => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(CURRENCY_STORAGE_KEY, currency)
+    set({ currency })
+  },
   hasPerm: (perm) => isAceGranted(get().acePerms, perm),
   hasMembership: (companyId) => get().memberships.find((m) => m.company_id === companyId),
   clearSession: () => set(initial),

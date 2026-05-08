@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom'
 import { Badge, Button, Card, CardContent, CardDescription, CardEyebrow, CardHeader, CardTitle } from '@/components/ui'
+import { useI18n } from '@/lib/i18n'
 import { FE_VERSION } from '@/lib/env'
 
 export function Splash() {
+  const { t } = useI18n()
   return (
     <div className="min-h-screen bg-surface-abyss text-text-primary flex items-center justify-center p-6">
       <div className="tactile-vista-hero-light w-full max-w-2xl">
         <Card variant="glass" padding="xl" hero>
           <CardHeader divided>
             <CardEyebrow>SONAR Bank — Phase A</CardEyebrow>
-            <CardTitle>BANK-FE.1 — Capa fundacional R1</CardTitle>
+            <CardTitle>BANK-FE.1 — Foundation layer R1</CardTitle>
             <CardDescription>
-              Foundation layer activa. 5 primitives Tactile UI listos. Stores Zustand
-              canonical instanciados. Stack 2026 absolute lockeado (ADR-017 D5).
+              Foundation layer active. 5 Tactile UI primitives ready. Canonical Zustand
+              stores instantiated. Stack 2026 absolute locked (ADR-017 D5).
             </CardDescription>
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge tone="brand" variant="soft" pulse>BANK-FE.1 ACTIVE</Badge>
@@ -22,12 +24,12 @@ export function Splash() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-text-secondary">
-              Dev Showcase Page expone los 5 primitives canonical (P-01..P-05) +
-              Spinner stub para revisión visual founder/Frontend Lead.
+              Dev Showcase Page exposes the 5 canonical primitives (P-01..P-05) +
+              Spinner stub for founder / Frontend Lead visual review.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/dev/showcase">
-                <Button variant="primary">Abrir Dev Showcase</Button>
+                <Button variant="primary">{t('splash.openDevShowcase')}</Button>
               </Link>
               <Button variant="ghost" disabled>Bank Home (BANK-FE.2)</Button>
             </div>

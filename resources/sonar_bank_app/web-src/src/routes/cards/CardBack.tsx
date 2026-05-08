@@ -1,6 +1,7 @@
 import type { BankCardMock } from '@/data/contracts'
 import { maskCvvDisplay, revealCvvDisplay } from '@/lib/privacy'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { resolveCardDesign, type CardDesign } from './cardDesigns'
 
 /**
@@ -26,6 +27,7 @@ export interface CardBackProps {
 }
 
 export function CardBack({ card, design: designOverride, revealed = false, compact = false, className }: CardBackProps) {
+  const { t } = useI18n()
   const design = designOverride ?? resolveCardDesign(card.design_id)
 
   return (
@@ -89,15 +91,14 @@ export function CardBack({ card, design: designOverride, revealed = false, compa
             )}
             style={{ color: design.textTertiary, opacity: 0.85 }}
           >
-            Esta tarjeta es propiedad de SONAR Bank. Su uso está sujeto a los términos
-            del contrato del titular. En caso de pérdida, congele desde la app.
+            {t('cards.cardDisclaimer')}
           </p>
           <div className="flex flex-col items-end gap-0.5 leading-none shrink-0">
             <span
               className="text-[8px] uppercase tracking-[0.18em] font-semibold"
               style={{ color: design.textTertiary }}
             >
-              Tarjeta
+              {t('cards.cardLabel')}
             </span>
             <span
               className={cn(

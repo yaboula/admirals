@@ -61,7 +61,7 @@ export function maskOperationCode(value: string | null | undefined): string {
 }
 
 export function maskMoneyDisplay(): string {
-  return '€••••'
+  return '$••••'
 }
 
 export function maskSignedMoneyDisplay(): string {

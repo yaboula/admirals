@@ -89,7 +89,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         <Spinner
           size={size === 'lg' ? 'md' : size === 'md' ? 'sm' : 'xs'}
           variant={variant === 'primary' || variant === 'danger' ? 'inverse' : 'brand'}
-          aria-label="Cargando"
         />
       ) : (
         leftIcon && <span className="inline-flex items-center justify-center">{leftIcon}</span>

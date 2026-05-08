@@ -6,6 +6,8 @@ import { useBankSession } from '@/stores/session'
 import { BankError } from '@/lib/bankError'
 import { useWatchdog } from '@/hooks/useWatchdog'
 import { useBankCallback } from '@/lib/bankQuery'
+import { ACE_PERMS, acePermForCompany } from '@/lib/ace'
+import { isInsideFiveMNui, isMockMode } from '@/lib/env'
 
 const BOOTSTRAP_EVENT = 'sonar:bank:bootstrap:snapshot'
 const BALANCE_EVENT = 'sonar:bank:bootstrap:balance'
@@ -33,9 +35,33 @@ export function useBootstrap(options: BootstrapQueryOptions = {}) {
     const data = query.data
     if (!data) return
     const primary = data.accounts[0]
+    const mockCompanyId = 'vanilla-unicorn'
+    const unlockDevAccess = isMockMode() || !isInsideFiveMNui()
     setSession({
       citizenId: data.citizen_id,
       ibanMasked: primary ? maskIban(primary.iban) : null,
+      ...(unlockDevAccess
+        ? {
+            acePerms: [
+              ACE_PERMS.P01.perm,
+              ACE_PERMS.P02.perm,
+              ACE_PERMS.P03.perm,
+              acePermForCompany('P03', mockCompanyId),
+              ACE_PERMS.P04.perm,
+              ACE_PERMS.P05.perm,
+              acePermForCompany('P05', mockCompanyId),
+              ACE_PERMS.P06.perm,
+              acePermForCompany('P06', mockCompanyId),
+              ACE_PERMS.P07.perm,
+              ACE_PERMS.P08.perm,
+              ACE_PERMS.P09.perm,
+              ACE_PERMS.P10.perm,
+              ACE_PERMS.P11.perm,
+              ACE_PERMS.P12.perm,
+            ],
+            memberships: [{ company_id: mockCompanyId, role: 'owner' as const }],
+          }
+        : {}),
     })
   }, [query.data, setSession])
 

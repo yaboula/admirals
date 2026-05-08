@@ -5,6 +5,7 @@ import { Card } from '@/components/ui'
 import type { Account, Transaction } from '@/data/contracts'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import { maskIbanPanel, revealIbanDisplay } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 
@@ -25,6 +26,7 @@ export interface HeroBalanceCardProps {
  *  ▸ Sub-KPIs in 3 clean columns: 12px uppercase muted titles + 18px values.
  */
 export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceCardProps) {
+  const { t } = useI18n()
   const [hidden, setHidden] = useState(false)
   const [copied, setCopied] = useState(false)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -57,13 +59,13 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
       <div className="flex items-start justify-between px-4 pt-3.5 pb-1.5 2xl:px-6 2xl:pt-5">
         <div className="flex flex-col gap-1.5 min-w-0">
           <span className="text-[10px] uppercase tracking-[0.22em] text-text-tertiary font-medium">
-            Saldo disponible
+            {t('home.availableBalance')}
           </span>
           <button
             type="button"
             onClick={handleCopyIban}
             className="group inline-flex items-center gap-1.5 text-xs font-mono text-text-secondary hover:text-text-primary transition-colors w-fit"
-            aria-label="Copiar IBAN"
+            aria-label={t('home.copyIban')}
           >
             <span style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }}>
               {account ? streamerMode ? maskIbanPanel(account.iban) : revealIbanDisplay(account.iban) : '—'}
@@ -78,7 +80,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
 
         <button
           type="button"
-          aria-label={hideFinancials ? 'Mostrar saldo' : 'Ocultar saldo'}
+          aria-label={hideFinancials ? t('home.showBalance') : t('home.hideBalance')}
           aria-pressed={hideFinancials}
           onClick={() => {
             setHidden((h) => !h)
@@ -97,16 +99,16 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
 
       {/* Footer — 3-column sub-KPI grid (no compression) */}
       <div className="grid grid-cols-3 border-t border-border-subtle">
-        <SubKpi label="Ahorro" value={savingsMajor} hidden={hideFinancials} tone="neutral" />
+        <SubKpi label={t('home.savings')} value={savingsMajor} hidden={hideFinancials} tone="neutral" />
         <SubKpi
-          label="Ingresos · mes"
+          label={t('home.incomeMonth')}
           value={monthIn}
           hidden={hideFinancials}
           tone="success"
           icon={<ArrowDownRight size={12} strokeWidth={2.4} />}
         />
         <SubKpi
-          label="Gastos · mes"
+          label={t('home.expenseMonth')}
           value={monthOut}
           hidden={hideFinancials}
           tone="danger"
@@ -130,10 +132,11 @@ function BalanceDisplay({
   hidden: boolean
   loading: boolean | undefined
 }) {
+  const { money, currencySymbol, t } = useI18n()
   const reduced = useReducedMotion()
   const motionValue = useMotionValue(0)
-  const formatted = useTransform(motionValue, (latest) => formatEur(latest))
-  const [display, setDisplay] = useState('0,00')
+  const formatted = useTransform(motionValue, (latest) => money(latest).replace(currencySymbol, '').trim())
+  const [display, setDisplay] = useState('0.00')
   const lastTargetRef = useRef<number>(0)
 
   useEffect(() => {
@@ -166,7 +169,7 @@ function BalanceDisplay({
     return (
       <div className="flex items-baseline gap-2">
         <span className="text-text-tertiary font-light" style={{ fontSize: '24px' }}>
-          €
+          {currencySymbol}
         </span>
         <span
           className="tactile-skeleton rounded"
@@ -181,13 +184,13 @@ function BalanceDisplay({
       className="flex items-baseline gap-2"
       aria-live="polite"
       aria-atomic
-      aria-label={hidden ? 'Saldo oculto' : `Saldo ${display} euros`}
+      aria-label={hidden ? t('home.balanceHidden') : `${t('home.availableBalance')} ${money(value)}`}
     >
       <span
         className="text-text-tertiary font-light leading-none"
         style={{ fontSize: '24px', lineHeight: 1 }}
       >
-        €
+        {currencySymbol}
       </span>
       <span
         className="text-text-primary leading-none"
@@ -221,6 +224,7 @@ interface SubKpiProps {
 }
 
 function SubKpi({ label, value, hidden, tone, icon }: SubKpiProps) {
+  const { money } = useI18n()
   const color =
     tone === 'success'
       ? 'oklch(0.72 0.16 155)'
@@ -270,19 +274,10 @@ function SubKpi({ label, value, hidden, tone, icon }: SubKpiProps) {
           userSelect: hidden ? 'none' : 'text',
         }}
       >
-        {sign}€{formatEur(value)}
+        {sign}{money(Math.abs(value))}
       </span>
     </div>
   )
-}
-
-/* -------------------------------------------------------------------------- */
-
-function formatEur(major: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(major)
 }
 
 function sumThisMonth(

@@ -57,11 +57,58 @@ export interface SavedRecipient {
   created_ms: number
 }
 
+export type AtmSessionMode = 'read_only' | 'simulation'
+
+export interface AtmDenomination {
+  value_minor: number
+  available_count: number
+}
+
+export interface AtmSessionAccount {
+  iban_masked: string
+  balance_minor: number
+  savings_minor: number
+  status: AccountStatus
+}
+
+export interface AtmSessionCard {
+  card_id: string
+  label: string
+  pan_masked: string
+  status: 'active' | 'frozen' | 'lost'
+}
+
+export interface AtmSessionEvent {
+  event_id: string
+  label: string
+  timestamp_ms: number
+  severity: 'info' | 'warning' | 'success'
+}
+
+export interface AtmSessionResponse {
+  terminal_id: string
+  location_label: string
+  mode: AtmSessionMode
+  online: boolean
+  hmac_ready: boolean
+  camera_check: 'clear' | 'blocked'
+  cash_available_minor: number
+  daily_limit_minor: number
+  remaining_limit_minor: number
+  denominations: AtmDenomination[]
+  account: AtmSessionAccount
+  card: AtmSessionCard
+  events: AtmSessionEvent[]
+  fetched_at_ms: number
+}
+
 export type LoanStatus = 'active' | 'paid' | 'defaulted' | 'pending'
 
 export interface Loan {
   loan_id: string
   borrower_citizen_id: string
+  product_name: string
+  purpose: string
   principal_minor: number
   interest_bps: number
   term_days: number
@@ -69,7 +116,42 @@ export interface Loan {
   issued_ms: number
   due_ms: number
   outstanding_minor: number
+  next_payment_minor: number
+  next_payment_due_ms: number | null
+  paid_installments: number
+  total_installments: number
+  risk_grade: 'A' | 'B' | 'C' | 'D'
+  collateral_label: string | null
   created_ms: number
+}
+
+export type LoanInstallmentStatus = 'paid' | 'scheduled' | 'late'
+
+export interface LoanInstallment {
+  installment_id: string
+  loan_id: string
+  sequence: number
+  due_ms: number
+  amount_minor: number
+  principal_minor: number
+  interest_minor: number
+  status: LoanInstallmentStatus
+  paid_ms: number | null
+}
+
+export interface LoanListResponse {
+  items: Loan[]
+  fetched_at_ms: number
+}
+
+export interface LoanInstallmentsRequest {
+  loan_id: string
+}
+
+export interface LoanInstallmentsResponse {
+  loan_id: string
+  items: LoanInstallment[]
+  fetched_at_ms: number
 }
 
 export type RecurringStatus = 'active' | 'paused' | 'cancelled'
@@ -96,6 +178,31 @@ export interface PortfolioHolding {
   market_value_minor: number
   delta_pct: number
   created_ms: number
+}
+
+export interface StockQuote {
+  symbol: string
+  name: string
+  sector: string
+  price_minor: number
+  change_24h_pct: number
+  market_cap_minor: number
+  volume_24h: number
+  updated_ms: number
+}
+
+export interface StockListResponse {
+  items: StockQuote[]
+  fetched_at_ms: number
+}
+
+export interface StockPortfolioResponse {
+  holdings: PortfolioHolding[]
+  total_cost_basis_minor: number
+  total_market_value_minor: number
+  total_delta_minor: number
+  total_delta_pct: number
+  fetched_at_ms: number
 }
 
 export type CardStatus = 'active' | 'locked' | 'expired' | 'pending'
@@ -152,6 +259,151 @@ export interface OutstandingNotice {
   timestamp_ms: number
   details_json: string | null
   acknowledged: boolean
+}
+
+export type AuditScope = 'self' | 'business' | 'government'
+
+export type AuditEventStatus = 'committed' | 'pending' | 'reverted' | 'failed'
+
+export interface AuditEvent {
+  audit_id: string
+  event_type: string
+  timestamp_ms: number
+  actor_cid_masked: string
+  amount_minor: number | null
+  currency: 'USD' | 'EUR'
+  correlation_id: string
+  counterparty_iban_masked: string | null
+  status: AuditEventStatus
+  ace_perm: string | null
+  reason: string | null
+  scope_tag: AuditScope
+  details_json: string | null
+}
+
+export interface AuditQueryRequest {
+  scope: AuditScope
+  query?: string
+  event_type?: string
+  status?: AuditEventStatus | 'all'
+  cursor?: string | null
+  limit?: number
+}
+
+export interface AuditQueryResponse {
+  items: AuditEvent[]
+  cursor_next: string | null
+  has_more: boolean
+  fetched_at_ms: number
+}
+
+export type ComplianceFlagStatus = 'open' | 'reviewing' | 'resolved' | 'dismissed'
+
+export type ComplianceFlagSeverity = 'low' | 'medium' | 'high' | 'critical'
+
+export interface ComplianceFlag {
+  flag_id: string
+  event_type: string
+  subject_cid_masked: string
+  account_iban_masked: string
+  counterparty_iban_masked: string | null
+  amount_minor: number | null
+  currency: 'USD' | 'EUR'
+  severity: ComplianceFlagSeverity
+  status: ComplianceFlagStatus
+  created_at_ms: number
+  updated_at_ms: number
+  risk_score: number
+  reason: string
+  assigned_unit: string
+  evidence_count: number
+  correlation_id: string
+  details_json: string | null
+}
+
+export interface ComplianceFlagsQueryRequest {
+  query?: string
+  status?: ComplianceFlagStatus | 'all'
+  severity?: ComplianceFlagSeverity | 'all'
+  cursor?: string | null
+  limit?: number
+}
+
+export interface ComplianceFlagsQueryResponse {
+  items: ComplianceFlag[]
+  cursor_next: string | null
+  has_more: boolean
+  fetched_at_ms: number
+}
+
+export type BusinessMemberRole = 'owner' | 'manager' | 'employee'
+
+export interface BusinessMovement {
+  movement_id: string
+  event_type: string
+  amount_minor: number
+  currency: 'USD' | 'EUR'
+  direction: 'in' | 'out'
+  counterparty_masked: string
+  reason: string | null
+  status: AuditEventStatus
+  timestamp_ms: number
+}
+
+export interface BusinessPendingApproval {
+  approval_id: string
+  type: 'payroll' | 'withdrawal' | 'recurring' | 'loan'
+  requested_by_alias: string
+  amount_minor: number
+  currency: 'USD' | 'EUR'
+  created_at_ms: number
+  required_perm: string
+  status: 'pending' | 'approved' | 'rejected'
+}
+
+export interface BusinessTreasurySnapshot {
+  company_id: string
+  company_name: string
+  role: BusinessMemberRole
+  treasury_iban_masked: string
+  balance_minor: number
+  currency: 'USD' | 'EUR'
+  delta_4w_pct: number
+  employee_count: number
+  average_tenure_days: number
+  total_payroll_month_minor: number
+  recent_movements: BusinessMovement[]
+  pending_approvals: BusinessPendingApproval[]
+  fetched_at_ms: number
+}
+
+export interface BusinessTreasuryQueryRequest {
+  company_id: string
+}
+
+export interface PayrollPreviewLine {
+  line_id: string
+  employee_alias: string
+  department: string
+  net_amount_minor: number
+  currency: 'USD' | 'EUR'
+  status: 'ready' | 'held'
+}
+
+export interface PayrollPreviewRequest {
+  company_id: string
+}
+
+export interface PayrollPreviewResponse {
+  company_id: string
+  batch_id: string
+  employee_count: number
+  total_net_minor: number
+  currency: 'USD' | 'EUR'
+  requires_approvals: number
+  scheduled_for_ms: number
+  lines: PayrollPreviewLine[]
+  fetched_at_ms: number
 }
 
 /* ============================================================================

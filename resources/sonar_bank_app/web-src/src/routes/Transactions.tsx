@@ -7,7 +7,7 @@ import { Card } from '@/components/ui'
 import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { sfx } from '@/lib/sfx'
-import { formatCurrency } from '@/lib/utils'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { maskIbanPanel, maskMoneyDisplay, maskOperationCode, revealIbanDisplay, revealOperationCode } from '@/lib/privacy'
 import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
@@ -118,7 +118,6 @@ export function Transactions() {
                   selectedTxnId={selected?.txn_id ?? null}
                   onSelect={handleSelect}
                   emptyVariant={allTransactions.length === 0 ? 'no-data' : 'no-match'}
-                  totalCount={allTransactions.length}
                 />
               </Card>
             </section>
@@ -142,6 +141,7 @@ function TransactionInsightPanel({
   selected: boolean
   onClose: () => void
 }) {
+  const { t, signedMoney, dateTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
   if (!tx) {
@@ -152,26 +152,27 @@ function TransactionInsightPanel({
             <ReceiptText size={24} strokeWidth={1.8} />
           </span>
           <div className="flex flex-col gap-1">
-            <h2 className="text-base font-semibold text-text-primary">Sin movimiento seleccionado</h2>
-            <p className="text-sm text-text-tertiary">Elige una transacción para ver su ficha segura.</p>
+            <h2 className="text-base font-semibold text-text-primary">{t('transactions.noMovementSelected')}</h2>
+            <p className="text-sm text-text-tertiary">{t('transactions.selectTransaction')}</p>
           </div>
         </div>
       </Card>
     )
   }
 
-  const meta = getTransactionMeta(tx, ownIban)
-  const StatusIcon = STATUS_PANEL[tx.status].icon
-  const displayName = streamerMode ? 'Movimiento oculto' : meta.name
-  const displayReason = streamerMode ? 'Detalle oculto' : tx.reason ?? (meta.outgoing ? 'Transferencia enviada' : 'Transferencia recibida')
+  const meta = getTransactionMeta(tx, ownIban, t)
+  const statusPanel = useStatusPanel(t)
+  const StatusIcon = statusPanel[tx.status].icon
+  const displayName = streamerMode ? t('transactions.hiddenMovement') : meta.name
+  const displayReason = streamerMode ? t('transactions.hiddenDetail') : tx.reason ?? (meta.outgoing ? t('transactions.transfer') : t('transactions.received'))
 
   const copyIban = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(meta.counterpartIban.replace(/\s+/g, ''))
       sfx.coin_clink()
-      toast.success('IBAN copiado', meta.name)
+      toast.success(t('transactions.ibanCopied'), meta.name)
     } catch {
-      toast.warning('No se pudo copiar', 'Permiso de portapapeles denegado.')
+      toast.warning(t('transactions.copyFailed'), t('transactions.clipboardDenied'))
     }
   }
 
@@ -189,20 +190,20 @@ function TransactionInsightPanel({
         <div className="flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <ShieldCheck size={16} className="text-white/70" />
-            <h2 className="text-base font-semibold text-white">Detalle seguro</h2>
+            <h2 className="text-base font-semibold text-white">{t('transactions.secureDetail')}</h2>
           </div>
           {selected ? (
             <button
               type="button"
               onClick={onClose}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white/52 hover:text-white hover:bg-white/[0.08]"
-              aria-label="Cerrar selección"
+              aria-label={t('transactions.closeSelection')}
             >
               <X size={15} strokeWidth={2} />
             </button>
           ) : (
             <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/54" style={{ background: 'oklch(1 0 0 / 0.08)' }}>
-              Reciente
+              {t('transactions.recent')}
             </span>
           )}
         </div>
@@ -228,20 +229,20 @@ function TransactionInsightPanel({
         </div>
 
         <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-white/[0.045] px-4 py-4 text-center">
-          <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">Importe</span>
+          <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">{t('transactions.amount')}</span>
           <span
             className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums"
             style={{ color: meta.outgoing ? 'white' : 'oklch(0.78 0.16 155)' }}
           >
-            {streamerMode ? maskMoneyDisplay() : `${meta.outgoing ? '−' : '+'}${formatCurrency(tx.amount_minor / 100)}`}
+            {streamerMode ? maskMoneyDisplay() : signedMoney((meta.outgoing ? -1 : 1) * tx.amount_minor / 100)}
           </span>
         </div>
 
         <div className="mt-4 space-y-2">
-          <PanelRow label="Estado" value={STATUS_PANEL[tx.status].label} icon={<StatusIcon size={14} strokeWidth={2.3} />} />
-          <PanelRow label="Hora" value={formatPanelTime(tx.timestamp_ms)} />
+          <PanelRow label={t('common.status')} value={statusPanel[tx.status].label} icon={<StatusIcon size={14} strokeWidth={2.3} />} />
+          <PanelRow label={t('common.date')} value={dateTime(tx.timestamp_ms, { dateStyle: 'medium', timeStyle: 'short' })} />
           <PanelRow label="IBAN" value={streamerMode ? maskIbanPanel(meta.counterpartIban) : revealIbanDisplay(meta.counterpartIban)} mono action={<button type="button" onClick={copyIban} className="text-white/44 hover:text-white"><Copy size={13} /></button>} />
-          <PanelRow label="Recibo" value={streamerMode ? maskOperationCode(tx.txn_id) : revealOperationCode(tx.txn_id)} mono />
+          <PanelRow label={t('transactions.receiptLabel')} value={streamerMode ? maskOperationCode(tx.txn_id) : revealOperationCode(tx.txn_id)} mono />
         </div>
       </div>
     </Card>
@@ -277,30 +278,25 @@ function PanelRow({
   )
 }
 
-function getTransactionMeta(tx: Transaction, ownIban: string | undefined) {
+function getTransactionMeta(tx: Transaction, ownIban: string | undefined, t: (key: TranslationKey) => string) {
   const fromCompact = tx.from_iban.replace(/\s+/g, '')
   const toCompact = tx.to_iban.replace(/\s+/g, '')
   const outgoing = ownIban
     ? fromCompact === ownIban && toCompact !== ownIban
     : tx.direction === 'out'
   const counterpartIban = outgoing ? tx.to_iban : tx.from_iban
-  const name = getMockAliasForIban(counterpartIban) ?? (outgoing ? 'Beneficiario' : 'Remitente')
+  const name = getMockAliasForIban(counterpartIban) ?? (outgoing ? t('accounts.beneficiary') : t('accounts.sender'))
   return { outgoing, counterpartIban, name }
 }
 
-const STATUS_PANEL: Record<Transaction['status'], { label: string; icon: typeof Check }> = {
-  committed: { label: 'Confirmada', icon: Check },
-  pending: { label: 'Pendiente', icon: RotateCw },
-  reconciling: { label: 'Reconciliando', icon: RotateCw },
-  reverted: { label: 'Revertida', icon: AlertTriangle },
-  failed: { label: 'Fallida', icon: AlertTriangle },
-}
-
-function formatPanelTime(timestampMs: number): string {
-  return new Intl.DateTimeFormat('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(timestampMs))
+function useStatusPanel(t: (key: TranslationKey) => string): Record<Transaction['status'], { label: string; icon: typeof Check }> {
+  return {
+    committed: { label: t('transactions.statusCommitted'), icon: Check },
+    pending: { label: t('transactions.statusPending'), icon: RotateCw },
+    reconciling: { label: t('transactions.statusReconciling'), icon: RotateCw },
+    reverted: { label: t('transactions.statusReverted'), icon: AlertTriangle },
+    failed: { label: t('transactions.statusFailed'), icon: AlertTriangle },
+  }
 }
 
 /* -------------------------------------------------------------------------- */

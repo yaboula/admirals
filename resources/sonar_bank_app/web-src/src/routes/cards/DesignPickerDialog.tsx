@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { X, Check, Sparkles } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { useApplyCardDesign } from '@/data/mutations'
 import { CARD_DESIGNS, resolveCardDesign, type CardDesign } from './cardDesigns'
 import { CardVisual } from './CardVisual'
@@ -39,6 +40,7 @@ export interface DesignPickerDialogProps {
 }
 
 export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const mutation = useApplyCardDesign()
 
@@ -79,8 +81,8 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
       {
         onSuccess: () => {
           toast.success(
-            'Diseño aplicado',
-            `Tu tarjeta ahora luce el diseño ${selectedDesign.name}.`,
+            t('cards.designApplied'),
+            t('cards.designAppliedDescription').replace('{design}', selectedDesign.name)
           )
           onClose()
         },
@@ -118,7 +120,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
             key="design-panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Elegir diseño de tarjeta"
+            aria-label={t('cards.chooseCardDesign')}
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
@@ -145,7 +147,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
             <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
               <div className="flex flex-col leading-tight min-w-0">
                 <span className="text-[10px] uppercase tracking-[0.18em] text-text-tertiary font-medium">
-                  Diseño · ···· {card.pan_last_four}
+                  {t('cards.designLabel').replace('{lastFour}', card.pan_last_four)}
                 </span>
                 <AnimatePresence mode="wait">
                   <motion.h2
@@ -166,7 +168,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Cerrar"
+                aria-label={t('cards.close')}
                 className="inline-flex items-center justify-center h-7 w-7 rounded-full text-text-tertiary hover:text-text-primary hover:bg-white/5 transition-colors shrink-0"
               >
                 <X size={14} strokeWidth={2} />
@@ -230,7 +232,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
               <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary min-w-0">
                 <Sparkles size={10} strokeWidth={1.8} className="shrink-0" />
                 <span className="truncate">
-                  Cambiar el diseño no afecta a tus saldos ni tus operaciones.
+                  {t('cards.designChangeNote')}
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -244,7 +246,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
                     'transition-colors disabled:opacity-50',
                   )}
                 >
-                  Cancelar
+                  {t('cards.cancel')}
                 </button>
                 <button
                   type="button"
@@ -264,7 +266,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
                   }}
                 >
                   <Check size={12} strokeWidth={2.4} />
-                  {mutation.isPending ? 'Aplicando…' : 'Aplicar diseño'}
+                  {mutation.isPending ? t('cards.applying') : t('cards.applyDesign')}
                 </button>
               </div>
             </div>
@@ -294,12 +296,13 @@ function DesignTile({
   current: boolean
   onSelect: () => void
 }) {
+  const { t } = useI18n()
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      aria-label={`Diseño ${design.name}`}
+      aria-label={t('cards.designAria').replace('{design}', design.name)}
       className={cn(
         'relative flex flex-col gap-2 p-2 rounded-xl text-left',
         'transition-all duration-200',
@@ -346,7 +349,7 @@ function DesignTile({
             {design.name}
           </span>
           <span className="text-[9px] uppercase tracking-[0.16em] text-text-tertiary font-medium">
-            {tierLabel(design.tier)}
+            {tierLabel(design.tier, t)}
           </span>
         </div>
         {current && (
@@ -358,7 +361,7 @@ function DesignTile({
               border: '1px solid oklch(1 0 0 / 0.10)',
             }}
           >
-            Actual
+            {t('cards.current')}
           </span>
         )}
       </div>
@@ -366,6 +369,6 @@ function DesignTile({
   )
 }
 
-function tierLabel(tier: CardDesign['tier']): string {
-  return tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : 'Estándar'
+function tierLabel(tier: CardDesign['tier'], t: (key: TranslationKey) => string): string {
+  return tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : t('cards.standard')
 }

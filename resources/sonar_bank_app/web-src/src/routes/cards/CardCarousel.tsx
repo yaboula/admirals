@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { sfx } from '@/lib/sfx'
 import { useCardsUi } from '@/stores/cardsUi'
 import { usePrivacyMode } from '@/stores/privacy'
+import { useI18n } from '@/lib/i18n'
 import { CardFlip } from './CardFlip'
 
 /**
@@ -40,6 +41,7 @@ const TRANSITION_SPRING = { type: 'spring' as const, stiffness: 220, damping: 26
 const TRANSITION_TWEEN = { type: 'tween' as const, duration: 0.18, ease: [0.32, 0.72, 0, 1] as const }
 
 export function CardCarousel({ cards, className }: CardCarouselProps) {
+  const { t } = useI18n()
   const reduced = useReducedMotion()
   const selectedCardId = useCardsUi((s) => s.selectedCardId)
   const flippedIds = useCardsUi((s) => s.flippedCardIds)
@@ -90,7 +92,7 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
     <div
       className={cn('relative w-full flex flex-col items-center select-none', className)}
       role="region"
-      aria-label="Carrusel de tarjetas"
+      aria-label={t('cards.carouselAriaLabel')}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'ArrowLeft') {
@@ -180,7 +182,7 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
                   <button
                     type="button"
                     className="absolute inset-0"
-                    aria-label={`Enfocar tarjeta ${card.pan_last_four}`}
+                    aria-label={t('cards.focusCard').replace('{lastFour}', card.pan_last_four)}
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelected(card.card_id)
@@ -232,8 +234,9 @@ function CarouselButton({
   disabled: boolean
   onClick: () => void
 }) {
+  const { t } = useI18n()
   const Icon = direction === 'prev' ? ChevronLeft : ChevronRight
-  const label = direction === 'prev' ? 'Tarjeta anterior' : 'Tarjeta siguiente'
+  const label = direction === 'prev' ? t('cards.previousCard') : t('cards.nextCard')
   return (
     <button
       type="button"
@@ -266,8 +269,9 @@ function Dots({
   active: number
   onSelect: (i: number) => void
 }) {
+  const { t } = useI18n()
   return (
-    <div className="flex items-center gap-1.5" role="tablist" aria-label="Selector de tarjeta">
+    <div className="flex items-center gap-1.5" role="tablist" aria-label={t('cards.cardSelector')}>
       {Array.from({ length: count }).map((_, i) => {
         const isActive = i === active
         return (
@@ -275,7 +279,7 @@ function Dots({
             key={i}
             role="tab"
             aria-selected={isActive}
-            aria-label={`Tarjeta ${i + 1}`}
+            aria-label={t('cards.cardN').replace('{n}', String(i + 1))}
             onClick={() => onSelect(i)}
             className={cn(
               'rounded-full transition-all duration-200',
@@ -294,6 +298,7 @@ function Dots({
 }
 
 function CarouselEmpty({ className }: { className?: string }) {
+  const { t } = useI18n()
   return (
     <div
       className={cn(
@@ -307,11 +312,10 @@ function CarouselEmpty({ className }: { className?: string }) {
       }}
     >
       <p className="text-sm font-semibold text-text-primary mb-1">
-        Aún no tienes tarjetas
+        {t('cards.noCardsTitle')}
       </p>
       <p className="text-xs text-text-tertiary max-w-[36ch]">
-        Solicita tu primera SONAR Bank desde el panel lateral. Llegará lista
-        para usar en cuestión de segundos.
+        {t('cards.noCardsDescription')}
       </p>
     </div>
   )

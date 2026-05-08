@@ -16,9 +16,11 @@ import {
 } from '@/components/ui'
 import { MotionPreset } from '@/components/motion/MotionPreset'
 import { sfx } from '@/lib/sfx'
+import { useI18n } from '@/lib/i18n'
 import { FE_VERSION } from '@/lib/env'
 
 export function DevShowcase() {
+  const { t } = useI18n()
   const [loading, setLoading] = useState(false)
   const [muted, setMuted] = useState(sfx.getMuted())
   const [amount, setAmount] = useState('')
@@ -32,7 +34,7 @@ export function DevShowcase() {
 
   const validate = (v: string): void => {
     setAmount(v)
-    if (v && Number(v) > 5000) setError('Excede el límite de €5.000 por transferencia')
+    if (v && Number(v) > 5000) setError('Exceeds the $5,000 transfer limit')
     else setError(undefined)
   }
 
@@ -72,10 +74,10 @@ export function DevShowcase() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3 items-center">
-                  <Button variant="primary">Confirmar</Button>
-                  <Button variant="secondary">Cancelar</Button>
-                  <Button variant="ghost">Ver detalle</Button>
-                  <Button variant="danger" leftIcon={<ShieldAlert size={16} />}>Bloquear tarjeta</Button>
+                  <Button variant="primary">{t('dev.confirm')}</Button>
+                  <Button variant="secondary">{t('dev.cancel')}</Button>
+                  <Button variant="ghost">{t('dev.viewDetail')}</Button>
+                  <Button variant="danger" leftIcon={<ShieldAlert size={16} />}>{t('dev.blockCard')}</Button>
                 </div>
                 <div className="flex flex-wrap gap-3 items-center">
                   <Button size="sm">Small</Button>
@@ -90,11 +92,11 @@ export function DevShowcase() {
                       window.setTimeout(() => setLoading(false), 1200)
                     }}
                   >
-                    {loading ? 'Procesando…' : 'Trigger loading 1.2s'}
+                    {loading ? t('dev.processing') : t('dev.triggerLoading')}
                   </Button>
                   <Button disabled>Disabled</Button>
                   <Button fullWidth variant="primary" leftIcon={<Send size={16} />}>
-                    Transferir (full width)
+                    {t('dev.transferFullWidth')}
                   </Button>
                 </div>
               </CardContent>
@@ -113,10 +115,10 @@ export function DevShowcase() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3 items-center">
-                  <IconButton aria-label="Buscar" icon={<Search size={16} />} variant="primary" size="sm" />
-                  <IconButton aria-label="Buscar" icon={<Search size={18} />} variant="secondary" size="md" />
-                  <IconButton aria-label="Buscar" icon={<Search size={20} />} variant="ghost" size="lg" />
-                  <IconButton aria-label="Buscar" icon={<Search size={20} />} variant="danger" size="lg" shape="circle" />
+                  <IconButton aria-label={t('dev.search')} icon={<Search size={16} />} variant="primary" size="sm" />
+                  <IconButton aria-label={t('dev.search')} icon={<Search size={18} />} variant="secondary" size="md" />
+                  <IconButton aria-label={t('dev.search')} icon={<Search size={20} />} variant="ghost" size="lg" />
+                  <IconButton aria-label={t('dev.search')} icon={<Search size={20} />} variant="danger" size="lg" shape="circle" />
                   <IconButton aria-label="Mute SFX" icon={<Wallet size={18} />} variant="secondary" onClick={toggleMute} />
                   <Badge tone={muted ? 'warning' : 'success'} variant="soft">
                     SFX {muted ? 'muted' : 'on'}
@@ -138,18 +140,18 @@ export function DevShowcase() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-                  <Input label="IBAN destinatario" placeholder="ES91 2100 0418 4502 0005 1332" />
+                  <Input label={t('dev.recipientIban')} placeholder="ES91 2100 0418 4502 0005 1332" />
                   <Input
-                    label="Importe (€)"
+                    label="Amount ($)"
                     placeholder="0.00"
-                    leftAdornment={<span className="text-text-tertiary">€</span>}
+                    leftAdornment={<span className="text-text-tertiary">$</span>}
                     value={amount}
                     onChange={(e) => validate(e.target.value)}
                     error={error}
-                    hint={error ? undefined : 'Límite €5.000 por transferencia (Q5 founder)'}
+                    hint={error ? undefined : '$5,000 transfer limit'}
                     inputMode="decimal"
                   />
-                  <Input label="Concepto" placeholder="Alquiler mes en curso" hint="Máx. 64 caracteres" maxLength={64} />
+                  <Input label={t('dev.concept')} placeholder="Alquiler mes en curso" hint={t('dev.maxChars')} maxLength={64} />
                   <Input label="Disabled" placeholder="No editable" disabled />
                 </div>
               </CardContent>
@@ -185,8 +187,8 @@ export function DevShowcase() {
                   mask-composite (1px gradient). Click → console_tap SFX.
                 </CardDescription>
                 <CardFooter divided>
-                  <Button variant="ghost" size="sm">Cerrar</Button>
-                  <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>Continuar</Button>
+                  <Button variant="ghost" size="sm">{t('dev.close')}</Button>
+                  <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>{t('dev.continue')}</Button>
                 </CardFooter>
               </Card>
             </div>

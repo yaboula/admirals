@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, ChevronDown, Moon, RotateCcw, Search } from 'lucide-react'
+import { Bell, ChevronDown, Globe2, RotateCcw, Search } from 'lucide-react'
 import { IconButton } from '@/components/ui'
+import { LOCALE_NAMES, useI18n } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
 import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { toast } from '@/stores/toast'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import { StreamerModeToggle } from '@/components/security'
+import { useBankSession, type BankLocale } from '@/stores/session'
 
 export interface TopbarProps {
   greeting?: string
@@ -23,15 +25,18 @@ export interface TopbarProps {
  * dependency — fixed glass intensity since the shell no longer scrolls.
  */
 export function Topbar({
-  greeting = 'Buenos días',
+  greeting,
   subtitle = 'SONAR Bank',
   userInitials,
   profileName,
   profileHandle,
 }: TopbarProps) {
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const setTransactionQuery = useTransactionsFilter((s) => s.setQuery)
+  const locale = useBankSession((s) => s.locale)
+  const setLocale = useBankSession((s) => s.setLocale)
 
   const submitSearch = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -40,6 +45,12 @@ export function Topbar({
     setTransactionQuery(nextQuery)
     navigate('/transacciones')
     sfx.console_tap()
+  }
+
+  const changeLocale = (next: BankLocale): void => {
+    setLocale(next)
+    sfx.console_tap()
+    toast.info(t('settings.languageToastTitle'), LOCALE_NAMES[next])
   }
 
   return (
@@ -67,8 +78,8 @@ export function Topbar({
           <Search size={15} strokeWidth={2} className="text-text-tertiary shrink-0" />
           <input
             type="search"
-            placeholder="Search"
-            aria-label="Buscar movimientos"
+            placeholder={t('common.search')}
+            aria-label={t('transactions.searchAriaLabel')}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
@@ -77,47 +88,106 @@ export function Topbar({
       </form>
 
       <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-        <div
-          className="h-10 px-5 rounded-full inline-flex items-center justify-center text-xs font-semibold text-text-primary"
-          style={{
-            background: 'oklch(1 0 0 / 0.06)',
-            border: '1px solid oklch(1 0 0 / 0.09)',
-            boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.08)',
-          }}
-        >
-          ⌘ + Space
-        </div>
+        <StreamerModeToggle />
       </div>
 
       <div className="relative z-10 ml-auto flex items-center gap-2">
-        <StreamerModeToggle />
         <IconButton
           icon={<RotateCcw size={16} strokeWidth={1.9} />}
-          aria-label="Actualizar"
+          aria-label={t('topbar.refreshAriaLabel')}
           variant="ghost"
           size="sm"
-          onClick={() => toast.info('Vista actualizada', 'Tus datos están sincronizados.')}
+          onClick={() => toast.info(t('topbar.refreshToastTitle'), t('topbar.refreshToastBody'))}
         />
         <IconButton
           icon={<Bell size={16} strokeWidth={1.9} />}
-          aria-label="Notificaciones"
+          aria-label={t('topbar.notificationsAriaLabel')}
           variant="ghost"
           size="sm"
-          onClick={() => toast.info('Sin avisos pendientes', 'Tu cuenta está al día.')}
+          onClick={() => toast.info(t('topbar.notificationsToastTitle'), t('topbar.notificationsToastBody'))}
         />
-        <IconButton
-          icon={<Moon size={16} strokeWidth={1.9} />}
-          aria-label="Cambiar tema"
-          variant="ghost"
-          size="sm"
-          onClick={() => toast.info('Tema claro próximamente', 'Esta opción estará disponible en una próxima versión.')}
-        />
+        <TopbarLocaleSelector value={locale} onChange={changeLocale} label={t('settings.language')} />
         <ProfileChip
           initials={userInitials}
-          name={profileName ?? greeting}
+          name={profileName ?? greeting ?? t('greeting.goodMorning')}
           handle={profileHandle ?? subtitle}
+          ariaLabel={t('topbar.profileAriaLabel')}
         />
       </div>
+    </div>
+  )
+}
+
+function TopbarLocaleSelector({
+  value,
+  onChange,
+  label,
+}: {
+  value: BankLocale
+  onChange: (value: BankLocale) => void
+  label: string
+}) {
+  const [open, setOpen] = useState(false)
+  const options = Object.keys(LOCALE_NAMES) as BankLocale[]
+
+  const selectLocale = (next: BankLocale): void => {
+    onChange(next)
+    setOpen(false)
+  }
+
+  return (
+    <div
+      className="relative shrink-0"
+      onBlur={(event) => {
+        const nextFocus = event.relatedTarget
+        if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) setOpen(false)
+      }}
+    >
+      <button
+        type="button"
+        className={cn(
+          'tactile-focus-ring inline-flex h-8 items-center gap-1.5 rounded-full pl-2.5 pr-2',
+          'border border-white/10 bg-white/[0.065] text-[10px] font-semibold uppercase tracking-[0.14em] text-text-primary',
+          'transition-colors hover:border-white/18 hover:bg-white/[0.09]',
+        )}
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <Globe2 size={13} strokeWidth={2.1} className="text-text-tertiary" />
+        <span>{value.toUpperCase()}</span>
+        <ChevronDown size={12} strokeWidth={2} className={cn('text-text-tertiary transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open ? (
+        <div
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-40 overflow-hidden rounded-2xl border border-white/10 bg-[#0d0908]/95 p-1 shadow-2xl shadow-black/40 backdrop-blur-xl"
+          role="menu"
+        >
+          {options.map((locale) => {
+            const active = locale === value
+            return (
+              <button
+                key={locale}
+                type="button"
+                role="menuitemradio"
+                aria-checked={active}
+                className={cn(
+                  'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-colors',
+                  active ? 'bg-white/10 text-text-primary' : 'text-text-secondary hover:bg-white/[0.07] hover:text-text-primary',
+                )}
+                onClick={() => selectLocale(locale)}
+              >
+                <span>{LOCALE_NAMES[locale]}</span>
+                <span className={cn('text-[10px] font-semibold uppercase tracking-[0.14em]', active ? 'text-brand-orange' : 'text-text-tertiary')}>
+                  {locale}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -126,15 +196,17 @@ function ProfileChip({
   initials,
   name,
   handle,
+  ariaLabel,
 }: {
   initials: string | undefined
   name: string
   handle: string
+  ariaLabel: string
 }) {
   return (
     <button
       type="button"
-      aria-label="Perfil"
+      aria-label={ariaLabel}
       className={cn(
         'tactile-focus-ring shrink-0 inline-flex items-center gap-2',
         'h-11 rounded-full pl-1.5 pr-2.5 ml-1',
