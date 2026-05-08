@@ -102,7 +102,7 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
       <div
         aria-hidden
         className="w-8 h-px"
-        style={{ background: 'oklch(1 0 0 / 0.08)' }}
+        style={{ background: 'oklch(0.76 0.14 82 / 0.28)' }}
       />
 
       <nav className="flex-1 py-4 flex flex-col items-center gap-2.5">

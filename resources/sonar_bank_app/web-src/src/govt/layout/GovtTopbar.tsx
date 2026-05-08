@@ -48,8 +48,8 @@ export function GovtTopbar() {
 function StatusChip() {
   const { t } = useI18n()
   return (
-    <span className="inline-flex h-9 items-center gap-2 rounded-full border border-[oklch(0.65_0.18_155/0.30)] bg-[oklch(0.65_0.18_155/0.08)] px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[oklch(0.78_0.16_155)]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[oklch(0.65_0.18_155)]" />
+    <span className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-govt-gold-ring)] bg-[var(--color-govt-gold-subtle)] px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-gold)]">
+      <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-govt-gold)]" style={{ boxShadow: '0 0 6px var(--color-govt-gold-glow)' }} />
       {t('govt.statusOperational')}
     </span>
   )

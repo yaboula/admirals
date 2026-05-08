@@ -19,7 +19,7 @@ const PADDING_MAP: Record<GovtCardPadding, string> = {
 }
 
 const VARIANT_MAP: Record<GovtCardVariant, string> = {
-  glass: 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] backdrop-blur-xl',
+  glass: 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] backdrop-blur-xl shadow-[inset_0_1px_0_var(--color-govt-gold-subtle)]',
   elevated: 'border-[var(--color-govt-border)] bg-[var(--color-govt-elevated)]',
   hero: 'border-[var(--color-govt-border-strong)] bg-[var(--gradient-govt-hero)] shadow-[0_28px_90px_rgba(0,0,0,0.48)]',
   outline: 'border-[var(--color-govt-border-strong)] bg-transparent',

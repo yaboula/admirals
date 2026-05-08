@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { LockKeyhole } from 'lucide-react'
-import sealIrsUrl from '@/assets/branding/seal_irs.jpg'
+import sealIrsUrl from '@/assets/branding/seal_irs.png'
 import { useAceGate } from '@/components/security'
 import { useI18n } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
@@ -25,7 +25,7 @@ export function GovtSidebar() {
         <div
           aria-hidden
           className="h-px w-8"
-          style={{ background: 'oklch(1 0 0 / 0.08)' }}
+          style={{ background: 'var(--color-govt-gold-ring)' }}
         />
 
         <nav className="flex flex-1 flex-col items-center gap-2.5 py-4">

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-export type GovtPillTone = 'neutral' | 'accent' | 'seal' | 'success' | 'warning' | 'danger'
+export type GovtPillTone = 'neutral' | 'accent' | 'seal' | 'gold' | 'success' | 'warning' | 'danger'
 export type GovtPillSize = 'xs' | 'sm' | 'md'
 
 interface GovtPillProps {
@@ -16,6 +16,7 @@ const TONE_MAP: Record<GovtPillTone, string> = {
   neutral: 'border-white/10 bg-white/[0.045] text-[var(--color-govt-text-secondary)]',
   accent: 'border-[var(--color-govt-border-strong)] bg-[var(--color-govt-accent-soft)] text-[var(--color-govt-accent-light)]',
   seal: 'border-[oklch(0.78_0.14_215/0.32)] bg-[oklch(0.78_0.14_215/0.10)] text-[var(--color-govt-seal)]',
+  gold: 'border-[var(--color-govt-gold-ring)] bg-[var(--color-govt-gold-subtle)] text-[var(--color-govt-gold)]',
   success: 'border-[oklch(0.65_0.18_155/0.30)] bg-[oklch(0.65_0.18_155/0.10)] text-[oklch(0.78_0.16_155)]',
   warning: 'border-[oklch(0.78_0.16_85/0.30)] bg-[oklch(0.78_0.16_85/0.10)] text-[oklch(0.85_0.14_85)]',
   danger: 'border-[oklch(0.62_0.21_25/0.32)] bg-[oklch(0.62_0.21_25/0.10)] text-[oklch(0.78_0.16_25)]',

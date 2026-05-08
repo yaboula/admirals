@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ShieldCheck, type LucideIcon } from 'lucide-react'
-import sealIrsUrl from '@/assets/branding/seal_irs.jpg'
+import sealIrsUrl from '@/assets/branding/seal_irs.png'
 import { GovtCard } from '../components/GovtCard'
 import { GovtPill } from '../components/GovtPill'
 import { GOVT_NAV_ITEMS } from '../lib/govtNav'
@@ -28,7 +28,7 @@ export function Bureau() {
             <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(280px,0.4fr)]">
               <div className="flex min-w-0 flex-col justify-between gap-5">
                 <div>
-                  <GovtPill tone="seal" leftIcon={<ShieldCheck size={11} strokeWidth={2.4} />}>
+                  <GovtPill tone="gold" leftIcon={<ShieldCheck size={11} strokeWidth={2.4} />}>
                     {t('govt.identityEyebrow')}
                   </GovtPill>
                   <h1 className="mt-4 max-w-[20ch] text-4xl font-light leading-[0.92] tracking-[-0.06em] text-[var(--color-govt-text-primary)] md:text-5xl">
@@ -56,7 +56,7 @@ export function Bureau() {
           transition={{ duration: 0.32, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
           className="grid gap-3 lg:grid-cols-4"
         >
-          <KpiTile label={t('govt.kpi.collected')} value={money(0)} hint={t('govt.kpi.collectedHint')} />
+          <KpiTile label={t('govt.kpi.collected')} value={money(0)} hint={t('govt.kpi.collectedHint')} tone="gold" />
           <KpiTile label={t('govt.kpi.citizens')} value={number(0)} hint={t('govt.kpi.citizensHint')} />
           <KpiTile label={t('govt.kpi.businesses')} value={number(0)} hint={t('govt.kpi.businessesHint')} />
           <KpiTile label={t('govt.kpi.flags')} value={number(0)} hint={t('govt.kpi.flagsHint')} tone="warning" />
@@ -67,7 +67,7 @@ export function Bureau() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, delay: 0.10, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mb-4 flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--color-govt-border)' }}>
+          <div className="mb-4 flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--color-govt-gold-ring)' }}>
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-govt-text-tertiary)]">
               {t('govt.modulesTitle')}
             </h2>
@@ -138,7 +138,7 @@ function KpiTile({
   label: string
   value: string
   hint: string
-  tone?: 'neutral' | 'warning'
+  tone?: 'neutral' | 'warning' | 'gold'
 }) {
   return (
     <div
@@ -152,8 +152,11 @@ function KpiTile({
         aria-hidden
         className="absolute left-0 top-4 h-8 w-[3px] rounded-r-full"
         style={{
-          background: tone === 'warning' ? 'oklch(0.78 0.16 85)' : 'var(--color-govt-accent)',
-          opacity: 0.6,
+          background:
+            tone === 'warning' ? 'oklch(0.78 0.16 85)'
+            : tone === 'gold'  ? 'var(--color-govt-gold)'
+            : 'var(--color-govt-accent)',
+          opacity: tone === 'gold' ? 0.9 : 0.6,
         }}
       />
       <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-govt-text-tertiary)]">
@@ -162,7 +165,9 @@ function KpiTile({
       <span
         className={cn(
           'mt-3 block truncate text-3xl font-light tracking-[-0.04em] tabular-nums',
-          tone === 'warning' ? 'text-[oklch(0.88_0.12_85)]' : 'text-[var(--color-govt-text-primary)]',
+          tone === 'warning' ? 'text-[oklch(0.88_0.12_85)]'
+          : tone === 'gold'  ? 'text-[var(--color-govt-gold)]'
+          : 'text-[var(--color-govt-text-primary)]',
         )}
       >
         {value}
@@ -208,7 +213,7 @@ function ModuleCard({ icon: Icon, title, description, to, requiredPerm, comingSo
         'group flex flex-col items-start gap-3 rounded-[1.5rem] border p-4 text-left transition-all',
         locked
           ? 'cursor-not-allowed border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] opacity-50'
-          : 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] hover:-translate-y-0.5 hover:border-[var(--color-govt-border-strong)]',
+          : 'border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] hover:-translate-y-0.5 hover:border-[var(--color-govt-gold-ring)] hover:shadow-[0_0_16px_var(--color-govt-gold-subtle)]',
       )}
     >
       <div className="flex w-full items-center justify-between">
