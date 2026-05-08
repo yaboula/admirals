@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { LockKeyhole } from 'lucide-react'
+import sealIrsUrl from '@/assets/branding/seal_irs.jpg'
 import { useAceGate } from '@/components/security'
 import { useI18n } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
@@ -41,14 +42,20 @@ function BureauSeal() {
   return (
     <div className="flex items-center justify-center pb-4 pt-5" aria-hidden>
       <div
-        className="flex h-10 w-10 items-center justify-center rounded-2xl border"
+        className="relative overflow-hidden rounded-full"
         style={{
-          background: 'var(--gradient-govt-primary)',
-          borderColor: 'oklch(1 0 0 / 0.18)',
-          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.18)',
+          width: 52,
+          height: 52,
+          border: '2px solid var(--color-govt-gold-ring)',
+          animation: 'seal-pulse-gold 3.6s ease-in-out infinite',
         }}
       >
-        <span className="font-mono text-base font-bold tracking-[-0.06em] text-white">SB</span>
+        <img
+          src={sealIrsUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          draggable={false}
+        />
       </div>
     </div>
   )
@@ -94,7 +101,7 @@ function GovtSidebarItem({ item }: { item: GovtNavItem }) {
         cn(
           'group relative flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200',
           isActive
-            ? 'border border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)] text-white shadow-[0_0_18px_var(--color-govt-accent-glow)]'
+            ? 'border border-[var(--color-govt-gold-ring)] bg-[var(--color-govt-accent-soft)] text-white shadow-[0_0_18px_var(--color-govt-gold-glow)]'
             : 'text-[var(--color-govt-text-tertiary)] hover:bg-white/[0.05] hover:text-[var(--color-govt-text-primary)]',
         )
       }

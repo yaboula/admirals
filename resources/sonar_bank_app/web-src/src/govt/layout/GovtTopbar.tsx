@@ -5,9 +5,12 @@ export function GovtTopbar() {
   const { t } = useI18n()
 
   return (
-    <header className="flex h-[68px] flex-shrink-0 items-center gap-4 px-4">
+    <header
+      className="flex h-[68px] flex-shrink-0 items-center gap-4 px-4"
+      style={{ borderBottom: '1px solid var(--color-govt-gold-ring)', boxShadow: '0 1px 0 var(--color-govt-gold-subtle)' }}
+    >
       <div className="flex flex-col leading-tight">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-govt-seal)]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-govt-gold)' }}>
           {t('govt.identityEyebrow')}
         </span>
         <span className="text-sm font-semibold text-[var(--color-govt-text-primary)]">
@@ -70,7 +73,7 @@ function ProfileChip({ role }: { role: string }) {
     <div className="flex items-center gap-2 rounded-full border border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] py-1 pl-1 pr-3">
       <span
         className="flex h-7 w-7 items-center justify-center rounded-full text-white"
-        style={{ background: 'var(--gradient-govt-primary)' }}
+        style={{ background: 'var(--gradient-govt-primary)', border: '1px solid var(--color-govt-gold-ring)', boxShadow: '0 0 8px var(--color-govt-gold-glow)' }}
       >
         <UserCog size={14} strokeWidth={2} />
       </span>

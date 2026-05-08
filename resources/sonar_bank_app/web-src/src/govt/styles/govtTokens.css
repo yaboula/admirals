@@ -25,6 +25,13 @@
   --color-govt-seal: oklch(0.76 0.13 215);
   --color-govt-seal-glow: oklch(0.76 0.13 215 / 0.18);
 
+  /* Gold — IRS seal rope, stars and laurels. Scarce: seals + key KPIs only */
+  --color-govt-gold: oklch(0.76 0.14 82);
+  --color-govt-gold-deep: oklch(0.62 0.15 76);
+  --color-govt-gold-glow: oklch(0.76 0.14 82 / 0.28);
+  --color-govt-gold-ring: oklch(0.76 0.14 82 / 0.45);
+  --color-govt-gold-subtle: oklch(0.76 0.14 82 / 0.06);
+
   /* Borders — paper-thin, neutral */
   --color-govt-border: oklch(1 0 0 / 0.07);
   --color-govt-border-strong: oklch(1 0 0 / 0.12);
@@ -42,6 +49,7 @@
   --gradient-govt-hero:
     radial-gradient(circle at 80% 20%, oklch(0.65 0.18 252 / 0.10), transparent 40%),
     radial-gradient(circle at 18% 70%, oklch(0.76 0.13 215 / 0.05), transparent 44%),
+    radial-gradient(circle at 50% 0%, oklch(0.76 0.14 82 / 0.04), transparent 38%),
     linear-gradient(160deg, oklch(0.09 0.012 252), oklch(0.04 0.008 252));
 }
 
@@ -49,6 +57,11 @@
 [data-theme='govt'] {
   background: var(--color-govt-abyss);
   color: var(--color-govt-text-primary);
+}
+
+@keyframes seal-pulse-gold {
+  0%, 100% { box-shadow: 0 0 18px var(--color-govt-gold-glow), 0 0 4px var(--color-govt-gold-ring) inset; }
+  50%       { box-shadow: 0 0 28px var(--color-govt-gold-glow), 0 0 4px var(--color-govt-gold-ring) inset; }
 }
 
 [data-theme='govt']::before {

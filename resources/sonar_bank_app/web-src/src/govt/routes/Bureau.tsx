@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ShieldCheck, type LucideIcon } from 'lucide-react'
+import sealIrsUrl from '@/assets/branding/seal_irs.jpg'
 import { GovtCard } from '../components/GovtCard'
 import { GovtPill } from '../components/GovtPill'
 import { GOVT_NAV_ITEMS } from '../lib/govtNav'
@@ -96,23 +97,34 @@ export function Bureau() {
 function BureauSealLarge() {
   return (
     <div className="flex items-center justify-center">
+      <div aria-hidden className="relative flex items-center justify-center">
         <div
-          aria-hidden
-          className="flex h-40 w-40 flex-col items-center justify-center rounded-full border text-center"
+          className="absolute rounded-full"
           style={{
-            background: 'radial-gradient(circle at 50% 30%, oklch(0.16 0.030 252), oklch(0.06 0.010 252))',
-            borderColor: 'oklch(1 0 0 / 0.14)',
-            boxShadow: 'inset 0 1px 20px oklch(1 0 0 / 0.07)',
+            width: 200,
+            height: 200,
+            background: 'radial-gradient(circle, var(--color-govt-gold-glow) 0%, transparent 70%)',
+            filter: 'blur(18px)',
+          }}
+        />
+        <div
+          className="relative overflow-hidden rounded-full"
+          style={{
+            width: 160,
+            height: 160,
+            border: '3px solid var(--color-govt-gold-ring)',
+            boxShadow: '0 0 28px var(--color-govt-gold-glow), 0 0 56px var(--color-govt-gold-subtle), inset 0 1px 0 oklch(1 0 0 / 0.12)',
+            animation: 'seal-pulse-gold 4s ease-in-out infinite',
           }}
         >
-          <span className="font-mono text-3xl font-bold tracking-[-0.05em] text-white">SB</span>
-          <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-govt-seal)]">
-            SONAR
-          </span>
-          <span className="text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-govt-text-tertiary)]">
-            Treasury Bureau
-          </span>
+          <img
+            src={sealIrsUrl}
+            alt=""
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
         </div>
+      </div>
     </div>
   )
 }

@@ -76,18 +76,25 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
         style={{
           background: 'linear-gradient(180deg, oklch(0.08 0.018 45 / 0.86), oklch(0.045 0.010 40 / 0.78))',
           border: '1px solid oklch(1 0 0 / 0.07)',
-          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.06), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
+          boxShadow: 'inset 0 1px 0 oklch(0.76 0.14 82 / 0.14), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
           backdropFilter: 'blur(24px) saturate(150%)',
           WebkitBackdropFilter: 'blur(24px) saturate(150%)',
         }}
       >
       <div className="flex items-center justify-center pt-5 pb-4">
-        <div className="relative flex h-10 w-10 items-center justify-center" aria-hidden>
+        <div
+          className="relative flex h-11 w-11 items-center justify-center rounded-full"
+          style={{
+            border: '1.5px solid oklch(0.76 0.14 82 / 0.38)',
+            boxShadow: '0 0 14px oklch(0.76 0.14 82 / 0.22)',
+          }}
+          aria-hidden
+        >
           <img
             src={sonarMonogramUrl}
             alt=""
-            className="h-[46px] w-[46px] max-w-none object-contain"
-            style={{ filter: 'drop-shadow(0 0 14px oklch(0.72 0.22 40 / 0.66))' }}
+            className="h-[42px] w-[42px] max-w-none object-contain"
+            style={{ filter: 'drop-shadow(0 0 10px oklch(0.72 0.22 40 / 0.70)) drop-shadow(0 0 18px oklch(0.76 0.14 82 / 0.30))' }}
           />
         </div>
       </div>
