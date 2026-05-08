@@ -266,3 +266,62 @@ export interface GovtBusinessFilters {
   sector: GovtBusinessSector | 'all'
   compliance: GovtTaxCompliance | 'all'
 }
+
+/* ============================================================================
+   Treasury Movement Ledger — all government-level financial flows.
+   ACE P04: sonar.bank.govt.read.
+   ============================================================================ */
+
+export type GovtMovementType =
+  | 'tax_collection'
+  | 'transfer_in'
+  | 'transfer_out'
+  | 'payroll_disbursement'
+  | 'fine_collected'
+  | 'subsidy_issued'
+  | 'reconciliation'
+  | 'interest_accrued'
+
+export type GovtMovementStatus = 'settled' | 'pending' | 'reversed'
+
+export type GovtMovementEntityKind = 'citizen' | 'company' | 'system'
+
+export type GovtTreasuryDateRange = 'today' | 'week' | 'month' | 'quarter'
+
+export interface GovtMovement {
+  id: string
+  referenceCode: string
+  timestamp: number
+  type: GovtMovementType
+  status: GovtMovementStatus
+  entityKind: GovtMovementEntityKind
+  entityId: string
+  entityLabel: string
+  description: string
+  amount: number
+  direction: 'inflow' | 'outflow'
+}
+
+export interface GovtTreasuryStats {
+  totalInflow: number
+  totalOutflow: number
+  netBalance: number
+  movementCount: number
+  taxCollected: number
+  finesCollected: number
+  subsidiesIssued: number
+}
+
+export interface GovtTreasuryFilters {
+  search: string
+  type: GovtMovementType | 'all'
+  entityKind: GovtMovementEntityKind | 'all'
+  dateRange: GovtTreasuryDateRange
+  direction: 'inflow' | 'outflow' | 'all'
+}
+
+export interface GovtTreasuryPage {
+  items: GovtMovement[]
+  totalCount: number
+  stats: GovtTreasuryStats
+}

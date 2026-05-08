@@ -65,7 +65,6 @@ export const GOVT_NAV_ITEMS: GovtNavItem[] = [
     descriptionKey: 'govt.nav.treasuryDescription',
     icon: Banknote,
     requiredPerm: ACE_PERMS.P04.perm,
-    comingSoon: true,
   },
   {
     id: 'sanctions',
