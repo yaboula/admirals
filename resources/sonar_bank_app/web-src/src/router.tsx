@@ -22,6 +22,7 @@ const GovtShell = lazy(() => import('./govt/layout/GovtShell').then(m => ({ defa
 const Bureau = lazy(() => import('./govt/routes/Bureau').then(m => ({ default: m.Bureau })))
 const Census = lazy(() => import('./govt/routes/Census').then(m => ({ default: m.Census })))
 const Sanctions = lazy(() => import('./govt/routes/Sanctions').then(m => ({ default: m.Sanctions })))
+const TaxEngine = lazy(() => import('./govt/routes/TaxEngine').then(m => ({ default: m.TaxEngine })))
 
 function RouteLoader() {
   return (
@@ -48,6 +49,7 @@ const routes = [
           { index: true, element: <S><Bureau /></S> },
           { path: 'censo', element: <S><Census /></S> },
           { path: 'sanciones', element: <S><Sanctions /></S> },
+          { path: 'fiscal', element: <S><TaxEngine /></S> },
         ],
       },
       {

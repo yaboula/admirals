@@ -139,3 +139,56 @@ export interface GovtApplyFineRequest extends GovtSanctionRequestBase {
   relatedFlagId?: string
   amount: number
 }
+
+/* ============================================================================
+   Tax Engine — brackets, cycle stats, policy log.
+   ACE P11: sonar.bank.govt.tax.write.
+   ============================================================================ */
+
+export type GovtTaxTierId = 'basic' | 'standard' | 'premium' | 'elite'
+
+export interface GovtTaxBracket {
+  id: GovtTaxTierId
+  code: string
+  label: string
+  incomeMin: number
+  incomeMax: number | null
+  rate: number
+  populationShare: number
+  affectedCount: number
+}
+
+export interface GovtTaxDayPoint {
+  dayIndex: number
+  collectedCents: number
+  obligationCents: number
+}
+
+export interface GovtTaxCycleStats {
+  cycleId: string
+  cycleStartMs: number
+  cycleDurationDays: number
+  totalObligationCents: number
+  totalCollectedCents: number
+  collectedTodayCents: number
+  dailySeries: GovtTaxDayPoint[]
+}
+
+export interface GovtTaxPolicyChange {
+  id: string
+  operatorAlias: string
+  changedAt: number
+  delta: Array<{ tierId: GovtTaxTierId; oldRate: number; newRate: number }>
+  reason: string
+}
+
+export interface GovtSaveBracketsRequest {
+  brackets: Array<{ id: GovtTaxTierId; rate: number }>
+  reason: string
+  idempotencyKey: string
+}
+
+export interface GovtForceCollectionRequest {
+  reason: string
+  idempotencyKey: string
+}
