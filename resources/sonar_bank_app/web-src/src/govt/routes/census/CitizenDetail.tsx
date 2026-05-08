@@ -48,6 +48,13 @@ const RISK_TONE: Record<GovtRiskLevel, { color: string; key: TranslationKey }> =
   critical: { color: 'oklch(0.62 0.21 25)', key: 'govt.census.risk.critical' },
 }
 
+const RISK_SEGS = [
+  { color: 'oklch(0.65 0.18 155)', min: 0, max: 25 },
+  { color: 'oklch(0.78 0.16 85)', min: 26, max: 50 },
+  { color: 'oklch(0.72 0.20 35)', min: 51, max: 75 },
+  { color: 'oklch(0.62 0.21 25)', min: 76, max: 100 },
+] as const
+
 const ACTIVITY_ICON: Record<GovtActivityType, typeof ArrowUpRight> = {
   transfer_out: ArrowUpRight,
   transfer_in: ArrowDownRight,
@@ -112,7 +119,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
               aria-hidden
               className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 text-white"
               style={{
-                background: 'radial-gradient(circle at 50% 30%, oklch(0.22 0.05 252), oklch(0.10 0.030 252))',
+                background: 'radial-gradient(circle at 50% 30%, oklch(0.18 0.018 252), oklch(0.08 0.010 252))',
                 borderColor: 'var(--color-govt-border-strong)',
               }}
             >
@@ -140,7 +147,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
               <Stat label={t('govt.census.detail.flagsCount')} value={number(detail.flagCount)} tone={detail.flagCount > 0 ? 'warning' : 'neutral'} />
             </div>
           </div>
-          <div className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-3">
+          <div className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-3">
             <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">
               {t('govt.census.detail.primaryIban')}
             </span>
@@ -197,7 +204,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
                 return (
                   <li
                     key={entry.id}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-2.5"
+                    className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-2.5"
                   >
                     <span
                       aria-hidden
@@ -243,7 +250,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
                 return (
                   <li
                     key={flag.id}
-                    className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-2.5"
+                    className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-2.5"
                   >
                     <div className="flex items-start gap-2">
                       <span aria-hidden className="mt-1 h-2 w-2 flex-shrink-0 rounded-full" style={{ background: sev.color }} />
@@ -315,7 +322,7 @@ function Stat({
         ? 'text-[oklch(0.85_0.14_85)]'
         : 'text-[var(--color-govt-text-primary)]'
   return (
-    <div className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-3">
+    <div className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-3">
       <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
       <span className={cn('mt-1 block truncate tactile-tabular-nums', prominent ? 'text-2xl font-semibold tracking-[-0.02em]' : 'text-sm font-medium', toneClass)}>
         {value}
@@ -326,29 +333,56 @@ function Stat({
 
 function RiskGauge({ score, color, levelLabel }: { score: number; color: string; levelLabel: string }) {
   const { t, number } = useI18n()
-  const angle = Math.max(0, Math.min(100, score)) * 1.8
+  const pct = Math.max(0, Math.min(100, score))
+  const r = 36
+  const cx = 48
+  const cy = 48
+  const circ = 2 * Math.PI * r
+  const sweepArc = (270 / 360) * circ
+  const fillArc = (pct / 100) * sweepArc
   return (
     <div className="mt-3 flex items-center gap-4">
-      <div
-        className="relative flex h-24 w-24 items-center justify-center rounded-full"
-        style={{
-          background: `conic-gradient(${color} ${angle}deg, oklch(1 0 0 / 0.06) 0deg)`,
-        }}
-        aria-hidden
-      >
-        <span
-          className="flex h-[72px] w-[72px] flex-col items-center justify-center rounded-full"
-          style={{ background: 'oklch(0.07 0.025 252)' }}
-        >
-          <span className="text-2xl font-semibold tactile-tabular-nums" style={{ color }}>{number(score)}</span>
-          <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-govt-text-tertiary)]">
-            {t('govt.census.detail.riskScoreLabel')}
-          </span>
-        </span>
+      <div className="relative flex-shrink-0" style={{ width: 96, height: 96 }}>
+        <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden>
+          <circle
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke="oklch(1 0 0 / 0.07)"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={`${sweepArc} ${circ - sweepArc}`}
+            transform={`rotate(135 ${cx} ${cy})`}
+          />
+          {pct > 0 ? (
+            <circle
+              cx={cx} cy={cy} r={r}
+              fill="none"
+              stroke={color}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${fillArc} ${circ - fillArc}`}
+              transform={`rotate(135 ${cx} ${cy})`}
+              style={{ filter: `drop-shadow(0 0 5px ${color}55)`, transition: 'stroke-dasharray 0.6s ease' }}
+            />
+          ) : null}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center" aria-label={`${t('govt.census.detail.riskScoreLabel')}: ${pct}`}>
+          <span className="text-xl font-semibold tabular-nums leading-none tracking-[-0.03em]" style={{ color }}>{number(score)}</span>
+          <span className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{t('govt.census.detail.riskScoreLabel')}</span>
+        </div>
       </div>
-      <div>
-        <p className="text-xs uppercase tracking-[0.14em]" style={{ color }}>{levelLabel}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold uppercase tracking-[0.06em]" style={{ color }}>{levelLabel}</p>
         <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-govt-text-tertiary)]">{t('govt.census.detail.riskHint')}</p>
+        <div className="mt-3 flex gap-1" aria-hidden>
+          {RISK_SEGS.map((seg) => (
+            <div
+              key={seg.min}
+              className="h-1.5 flex-1 rounded-full transition-colors duration-300"
+              style={{ background: pct >= seg.min && pct <= seg.max ? seg.color : 'oklch(1 0 0 / 0.07)' }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

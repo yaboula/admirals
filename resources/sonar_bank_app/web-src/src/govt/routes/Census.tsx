@@ -51,40 +51,49 @@ export function Census() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 pt-2">
+    <div className="relative flex h-full flex-col gap-3 pt-2">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -top-4 h-56"
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+      />
       <motion.header
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="space-y-3 border-b pb-4"
-        style={{ borderColor: 'var(--color-govt-border)' }}
+        className="relative space-y-2.5 border-b pb-3"
+        style={{ borderColor: 'var(--color-govt-border)', zIndex: 1 }}
       >
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border"
-            style={{ background: 'var(--color-govt-glass)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
-            aria-hidden
-          >
-            <Users size={17} strokeWidth={1.8} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border"
+              style={{ background: 'oklch(0.06 0.018 252 / 0.70)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
+              aria-hidden
+            >
+              <Users size={16} strokeWidth={1.8} />
+            </div>
+            <div>
+              <h1 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-govt-text-primary)]">{t('govt.census.title')}</h1>
+              <p className="text-[11px] text-[var(--color-govt-text-tertiary)]">{t('govt.census.subtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-govt-text-primary)]">{t('govt.census.title')}</h1>
-            <p className="text-[11px] text-[var(--color-govt-text-tertiary)]">{t('govt.census.subtitle')}</p>
+          <div className="flex flex-wrap items-center gap-3 text-[11px]">
+            <InlineStat value={number(totalsByStatus.active)} label={t('govt.census.status.active')} color="oklch(0.72 0.17 155)" />
+            <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
+            <InlineStat value={number(totalsByStatus.flagged)} label={t('govt.census.status.flagged')} color="oklch(0.82 0.14 85)" />
+            <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
+            <InlineStat value={number(totalsByStatus.sanctioned)} label={t('govt.census.status.sanctioned')} color="oklch(0.78 0.16 25)" />
+            <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
+            <InlineStat value={number(totalsByStatus.exempt)} label={t('govt.census.status.exempt')} color="var(--color-govt-text-tertiary)" />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <CensusStatTile value={number(totalsByStatus.active)} label={t('govt.census.status.active')} color="oklch(0.72 0.17 155)" />
-          <CensusStatTile value={number(totalsByStatus.flagged)} label={t('govt.census.status.flagged')} color="oklch(0.82 0.14 85)" />
-          <CensusStatTile value={number(totalsByStatus.sanctioned)} label={t('govt.census.status.sanctioned')} color="oklch(0.78 0.16 25)" />
-          <CensusStatTile value={number(totalsByStatus.exempt)} label={t('govt.census.status.exempt')} color="var(--color-govt-text-tertiary)" />
-        </div>
+        <CensusFilters
+          value={filters}
+          onChange={setFilters}
+          resultCount={listQuery.isLoading ? undefined : list.length}
+        />
       </motion.header>
-
-      <CensusFilters
-        value={filters}
-        onChange={setFilters}
-        resultCount={listQuery.isLoading ? undefined : list.length}
-      />
 
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(300px,0.42fr)_minmax(0,0.58fr)]">
         <GovtCard variant="glass" padding="none" className="flex min-h-0 flex-col overflow-hidden">
@@ -168,15 +177,13 @@ function DetailLoading() {
   )
 }
 
-function CensusStatTile({ value, label, color }: { value: string; label: string; color: string }) {
+function InlineStat({ value, label, color }: { value: string; label: string; color: string }) {
   return (
-    <div
-      className="flex items-baseline gap-2 rounded-xl border px-3 py-1.5"
-      style={{ background: 'oklch(1 0 0 / 0.04)', borderColor: 'var(--color-govt-border)' }}
-    >
-      <span className="text-lg font-light tabular-nums leading-none tracking-[-0.04em]" style={{ color }}>{value}</span>
-      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
-    </div>
+    <span>
+      <span className="font-semibold tabular-nums" style={{ color }}>{value}</span>
+      {' '}
+      <span className="uppercase tracking-[0.12em] text-[var(--color-govt-text-tertiary)]">{label}</span>
+    </span>
   )
 }
 

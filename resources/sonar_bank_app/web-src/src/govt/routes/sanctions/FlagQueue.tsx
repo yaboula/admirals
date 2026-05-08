@@ -76,41 +76,28 @@ export function FlagQueue({ filters, onFiltersChange, flags, selectedFlagId, onS
 
   return (
     <GovtCard variant="glass" padding="none" className="flex min-h-0 flex-col overflow-hidden">
-      <div className="space-y-3 border-b border-[var(--color-govt-border)] p-3">
-        <div className="relative">
-          <Search size={14} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-govt-text-tertiary)]" />
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b border-[var(--color-govt-border)] px-3 py-2.5">
+        <div className="relative min-w-[160px]">
+          <Search size={13} strokeWidth={2} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-govt-text-tertiary)]" />
           <input
             type="text"
             value={filters.search}
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
             placeholder={t('govt.sanctions.searchPlaceholder')}
             aria-label={t('govt.sanctions.searchPlaceholder')}
-            className="h-9 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] pl-9 pr-9 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
+            className="h-8 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.55)] pl-7 pr-7 text-[12px] text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
           />
           {filters.search ? (
-            <button
-              type="button"
-              onClick={() => onFiltersChange({ ...filters, search: '' })}
-              aria-label={t('govt.census.searchClear')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-[var(--color-govt-text-tertiary)] hover:bg-white/[0.06] hover:text-[var(--color-govt-text-primary)]"
-            >
-              <X size={12} strokeWidth={2.2} />
+            <button type="button" onClick={() => onFiltersChange({ ...filters, search: '' })} aria-label={t('govt.census.searchClear')}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-[var(--color-govt-text-tertiary)] hover:text-[var(--color-govt-text-primary)]">
+              <X size={11} strokeWidth={2.4} />
             </button>
           ) : null}
         </div>
-
-        <ChipRow
-          label={t('govt.sanctions.filters.severityLabel')}
-          options={SEVERITY_OPTS}
-          selected={filters.severity}
-          onSelect={(v) => handle('severity', v)}
-        />
-        <ChipRow
-          label={t('govt.sanctions.filters.statusLabel')}
-          options={STATUS_OPTS}
-          selected={filters.status}
-          onSelect={(v) => handle('status', v)}
-        />
+        <span aria-hidden className="hidden h-3.5 w-px bg-[oklch(1_0_0/0.10)] sm:block" />
+        <ChipRow label={t('govt.sanctions.filters.severityLabel')} options={SEVERITY_OPTS} selected={filters.severity} onSelect={(v) => handle('severity', v)} />
+        <span aria-hidden className="hidden h-3.5 w-px bg-[oklch(1_0_0/0.10)] sm:block" />
+        <ChipRow label={t('govt.sanctions.filters.statusLabel')} options={STATUS_OPTS} selected={filters.status} onSelect={(v) => handle('status', v)} />
       </div>
 
       <div className="flex items-center justify-between gap-2 border-b border-[var(--color-govt-border)] px-3 py-2">
@@ -174,11 +161,11 @@ function FlagRow({ flag, active, onSelect }: FlagRowProps) {
       className={cn(
         'group flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition-all',
         active
-          ? 'border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)] shadow-[0_0_18px_var(--color-govt-accent-glow)]'
-          : 'border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.45)] hover:border-[var(--color-govt-border-strong)] hover:bg-[oklch(0.10_0.030_252/0.55)]',
+          ? 'border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)]'
+          : 'border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.55)] hover:border-[var(--color-govt-border-strong)] hover:bg-[oklch(0.07_0.008_252/0.60)]',
       )}
     >
-      <span aria-hidden className="mt-1 h-2 w-2 flex-shrink-0 rounded-full" style={{ background: sev.color, boxShadow: `0 0 8px ${sev.color}` }} />
+      <span aria-hidden className="mt-1 h-2 w-2 flex-shrink-0 rounded-full" style={{ background: sev.color }} />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">

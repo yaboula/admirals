@@ -43,7 +43,12 @@ export function Sanctions() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 pt-2">
+    <div className="relative flex h-full flex-col gap-4 pt-2">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -top-4 h-56"
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+      />
       <motion.header
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
