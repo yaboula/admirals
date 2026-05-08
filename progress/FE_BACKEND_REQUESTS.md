@@ -3,7 +3,7 @@
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
 > **Status:** 🟡 **OPEN — DRAFTING active BANK-FE.0** — añade requests durante drafting C-FE-01/02/03 v0.1.
-> **Versionado:** v0.1 (BANK-FE.0 inicial). Bump v0.2/v0.3 cada vez que añada/cierre items.
+> **Versionado:** v0.3 (BANK-A.GOVT NODOs 1-4 shipped). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -348,6 +348,81 @@ Cada request sigue:
 
 ---
 
+### REQ-FE-011 — `gov.business.list` + `gov.business.detail` callbacks (Business Registry — NODO 3)
+
+- **Severity:** 🔴 HIGH
+- **Detected during:** BANK-A.GOVT NODO 3 implementation 2026-05-08 (`src/govt/routes/GovtBusiness.tsx` + `data/queries/govtBusiness.ts` mock-backed).
+- **Backend contract afectado:** NEW callbacks. Auth: existing ACE `sonar.bank.govt.read` (P04) per C-BE-02 §2.2.
+- **Gap concreto:** Business Registry NODO 3 muestra empresas registradas con tesorería, sector, status (active/frozen/liquidating/dissolved), risk score, employee count, directors, recent activity, flags y tax status. Sin endpoints, NODO 3 vive sobre mock layer (`src/govt/data/mock/govtBusiness.ts` 15 empresas seed determinístico). Para entrega Phase A.GOVT funcional con datos vivos del server, requiere 2 callbacks read-only.
+- **Workaround mock UI:** Implementado completo — `useGovtBusinessListQuery` + `useGovtBusinessDetailQuery` con 15 empresas, sectores (farming/milling/bakery/retail/logistics/services/finance/other), risk levels y flags. UI completa funcional (filtros, list, detail, gauge SVG, directors grid, activity, tax). Swap mock→real = cambiar 2 funciones internas del query layer (signatures públicas estables).
+- **Propuesta resolución:**
+  ```
+  Callbacks NEW (2):
+  1. sonar:bank:gov:business:list
+     Auth: AUTH-ACE 'sonar.bank.govt.read' (P04).
+     Request: { filters?: { status?, sector?, compliance? }, search?: string<=64, limit?: number<=100, cursor?: string }
+     Response: { items: GovtBusinessSummary[], cursor_next?: string, total_estimate: number }
+     GovtBusinessSummary fields per `src/govt/data/contracts.ts` §Business Registry: companyId, name, status, sector, foundedAt, employeeCount, treasury (cents), taxCompliance, riskLevel, riskScore, flagCount, lastActivityAt.
+     Rate-limit: budget HIGH (capacity 30, refill 5/sec).
+     Idempotency: NO (read-only).
+     Perf p99: <= 80ms.
+  2. sonar:bank:gov:business:detail
+     Auth: AUTH-ACE 'sonar.bank.govt.read' (P04).
+     Request: { company_id: string }
+     Response: GovtBusinessDetail extends Summary + { ibanPrimary, directors[], recentActivity[8..15], flags[], payrollMonthly (cents), taxStatus, operatingDays }.
+     Side effects: append audit ledger { action: 'GOVT_BUSINESS_DETAIL_VIEW', actor_cid, target_company_id }.
+     Rate-limit: budget HIGH.
+     Perf p99: <= 100ms.
+  ```
+- **Criterio aceptación:** 2 callbacks LOCKED + audit ledger entries por detail view + payload shape matches `src/govt/data/contracts.ts` types 1:1. Frontend swap = 2-line config en `src/govt/data/queries/govtBusiness.ts`.
+- **Path recomendado:** Path A (Phase A.GOVT cycle) — NODO 3 ya entregado UI-side mock-only, requiere backend para go-live.
+- **Status:** OPEN — awaiting Backend Lead reactivation.
+
+---
+
+### REQ-FE-012 — `gov.treasury.movements` callback con stats agregadas (Treasury Ledger — NODO 4)
+
+- **Severity:** 🔴 HIGH
+- **Detected during:** BANK-A.GOVT NODO 4 implementation 2026-05-08 (`src/govt/routes/GovtTreasury.tsx` + `data/queries/govtTreasury.ts` mock-backed).
+- **Backend contract afectado:** NEW callback. Auth: existing ACE `sonar.bank.govt.read` (P04). Reuses ledger table primitives ya existentes en C-BE-02 schema.
+- **Gap concreto:** Treasury Ledger NODO 4 muestra movement ledger paginado con 7 stats agregadas (inflow/outflow/net/count/tax/fines/subsidies) y filtros por date range (today/week/month/quarter), type (8 categorías), entity kind (citizen/company/system) y direction. Sin endpoint, NODO 4 vive sobre mock (`src/govt/data/mock/govtTreasury.ts` 60 movimientos seed). Single callback puede servir tanto la lista paginada como las stats agregadas precomputadas server-side (evita over-fetch para totales).
+- **Workaround mock UI:** Implementado completo — `useGovtTreasuryQuery` con `placeholderData` para transición suave entre páginas, 60 movements deterministico mix tax/transfer/payroll/fine/subsidy/reconciliation/interest. UI completa con tabla styled, sticky header, pagination, 7 stat pills.
+- **Propuesta resolución:**
+  ```
+  Callback NEW (1):
+  sonar:bank:gov:treasury:movements
+  Auth: AUTH-ACE 'sonar.bank.govt.read' (P04).
+  Request: {
+    filters: {
+      type?: GovtMovementType | 'all',
+      entity_kind?: 'citizen'|'company'|'system'|'all',
+      direction?: 'inflow'|'outflow'|'all',
+      date_range: 'today'|'week'|'month'|'quarter',
+      search?: string<=64
+    },
+    page: number >= 0,
+    per_page: number<=50 (default 15)
+  }
+  Response: {
+    items: GovtMovement[] (per `src/govt/data/contracts.ts` §Treasury),
+    total_count: number,
+    stats: {
+      total_inflow: cents, total_outflow: cents, net_balance: cents,
+      movement_count: number, tax_collected: cents, fines_collected: cents, subsidies_issued: cents
+    }
+  }
+  Stats computed server-side over filtered set (NOT just current page) — crítico para totales correctos al paginar.
+  Side effects: append audit ledger { action: 'GOVT_TREASURY_QUERY', actor_cid, filter_hash } — 1 entry por query (no per-row).
+  Rate-limit: budget HIGH (capacity 20, refill 3/sec) — explorer-style usage.
+  Idempotency: NO (read-only).
+  Perf p99: <= 120ms para month range con stats agregadas.
+  ```
+- **Criterio aceptación:** 1 callback LOCKED + payload shape matches `GovtTreasuryPage` 1:1 + stats precomputed server-side sobre filtered set completo + audit ledger entry per query. Index DB sobre `(timestamp DESC, type, entity_kind)` para queries rápidas.
+- **Path recomendado:** Path A (Phase A.GOVT cycle) — NODO 4 ya entregado UI-side mock-only, requiere backend para go-live.
+- **Status:** OPEN — awaiting Backend Lead reactivation.
+
+---
+
 ## 2. Items resueltos / cerrados
 
 _(empty — drafting BANK-FE.0)_
@@ -358,12 +433,12 @@ _(empty — drafting BANK-FE.0)_
 
 | Métrica | Valor |
 |---|---|
-| Total items | 10 |
-| HIGH abiertos | 4 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010) |
+| Total items | 12 |
+| HIGH abiertos | 6 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012) |
 | MEDIUM abiertos | 3 (REQ-FE-001, REQ-FE-002, REQ-FE-008) |
 | LOW abiertos | 3 (REQ-FE-003, REQ-FE-004, REQ-FE-005) |
 | RESOLVED | 0 (REQ-FE-005 path-C self-resolved) |
-| Path A target (Backend amendment / Phase A.GOVT cycle) | 6 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010) |
+| Path A target (Backend amendment / Phase A.GOVT cycle) | 8 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012) |
 | Path A/B target (joint spec) | 1 (REQ-FE-008) |
 | Path B target (Phase B defer) | 2 (REQ-FE-003, REQ-FE-004) |
 | Path C target (UI workaround) | 1 (REQ-FE-005) |
@@ -385,7 +460,8 @@ _(empty — drafting BANK-FE.0)_
 |---|---|---|
 | v0.1 | 2026-05-06 | BANK-FE.0 inicial — 5 items registrados (2 MEDIUM Path A + 2 LOW Path B + 1 LOW Path C self-resolved). |
 | v0.2 | 2026-05-08 | BANK-A.GOVT NODO 1+2 closing — 5 nuevos items govt-scope (REQ-FE-006..010): 4 HIGH (Census list/detail + Sanctions + Subsidies callbacks) + 1 MEDIUM (joint risk score spec con Security Lead). Govt panel mock-only hasta Backend Lead reactivación Phase A.GOVT cycle. |
+| v0.3 | 2026-05-08 | BANK-A.GOVT NODO 3+4 shipped — 2 nuevos items HIGH (REQ-FE-011 Business Registry list+detail callbacks, REQ-FE-012 Treasury Movements callback con stats agregadas server-side). Ambos módulos UI completos sobre mock layer; NODO 3 (`/tesoreria/empresas`) y NODO 4 (`/tesoreria/movimientos`) operativos. Total 12 items — 6 HIGH, 3 MEDIUM, 3 LOW. |
 
 ---
 
-**FIN `FE_BACKEND_REQUESTS.md` v0.2 — BANK-A.GOVT drafting active.** Govt panel (Treasury Bureau) requiere Backend Lead Phase A.GOVT cycle para items HIGH. Frontend continúa drafting NODOs siguientes con mock layer.
+**FIN `FE_BACKEND_REQUESTS.md` v0.3 — BANK-A.GOVT NODOs 1-4 shipped sobre mock.** Govt panel (Census + Sanctions + TaxEngine + Empresas + Movimientos) requiere Backend Lead Phase A.GOVT cycle para 6 items HIGH (REQ-FE-006/007/009/010/011/012). Frontend continúa drafting NODOs siguientes (Subsidios + Informes) con mock layer.
