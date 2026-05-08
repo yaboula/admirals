@@ -192,3 +192,77 @@ export interface GovtForceCollectionRequest {
   reason: string
   idempotencyKey: string
 }
+
+/* ============================================================================
+   Business Registry — company listings, detail, risk and activity.
+   ACE P04: sonar.bank.govt.read (same as Census).
+   ============================================================================ */
+
+export type GovtBusinessStatus = 'active' | 'frozen' | 'liquidating' | 'dissolved'
+
+export type GovtBusinessSector =
+  | 'farming'
+  | 'milling'
+  | 'bakery'
+  | 'retail'
+  | 'logistics'
+  | 'services'
+  | 'finance'
+  | 'other'
+
+export type GovtBusinessActivityType =
+  | 'payroll_processed'
+  | 'tax_payment'
+  | 'transfer_in'
+  | 'transfer_out'
+  | 'employee_hired'
+  | 'employee_fired'
+  | 'flag_raised'
+  | 'sanction_applied'
+
+export interface GovtBusinessSummary {
+  companyId: string
+  name: string
+  status: GovtBusinessStatus
+  sector: GovtBusinessSector
+  foundedAt: number
+  employeeCount: number
+  treasury: number
+  taxCompliance: GovtTaxCompliance
+  riskLevel: GovtRiskLevel
+  riskScore: number
+  flagCount: number
+  lastActivityAt: number
+}
+
+export interface GovtBusinessDirector {
+  cid: string
+  alias: string
+  role: 'founder' | 'director' | 'co-founder'
+  joinedAt: number
+}
+
+export interface GovtBusinessActivity {
+  id: string
+  timestamp: number
+  type: GovtBusinessActivityType
+  amount: number
+  description: string
+}
+
+export interface GovtBusinessDetail extends GovtBusinessSummary {
+  ibanPrimary: string
+  directors: GovtBusinessDirector[]
+  recentActivity: GovtBusinessActivity[]
+  flags: GovtCitizenFlag[]
+  payrollMonthly: number
+  taxStatus: GovtCitizenTaxStatus
+  operatingDays: number
+}
+
+export interface GovtBusinessFilters {
+  search: string
+  status: GovtBusinessStatus | 'all'
+  sector: GovtBusinessSector | 'all'
+  compliance: GovtTaxCompliance | 'all'
+}

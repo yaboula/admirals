@@ -49,7 +49,6 @@ export const GOVT_NAV_ITEMS: GovtNavItem[] = [
     descriptionKey: 'govt.nav.businessDescription',
     icon: BriefcaseBusiness,
     requiredPerm: ACE_PERMS.P04.perm,
-    comingSoon: true,
   },
   {
     id: 'tax',
