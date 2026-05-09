@@ -129,17 +129,7 @@ export function Auth() {
               {t('auth.loginCta')}
             </Button>
 
-            <div className="mt-5 rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-              <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary"><Landmark size={14} className="text-text-tertiary" />{t('auth.signal')}</span>
-                <span className="rounded-full border border-semantic-success-deep/25 bg-semantic-success-glow px-2 py-1 text-xs font-semibold text-semantic-success-deep tactile-tabular-nums">+2.8%</span>
-              </div>
-              <div className="mt-4 flex h-12 items-end gap-1.5">
-                {[34, 48, 28, 66, 54, 78, 62, 88, 74, 92, 81, 96].map((height, index) => (
-                  <span key={index} className="flex-1 rounded-full" style={{ height: `${height}%`, background: index > 8 ? 'oklch(0.72 0.17 154 / 0.74)' : 'oklch(1 0 0 / 0.115)' }} />
-                ))}
-              </div>
-            </div>
+            <MarketSignalPreview />
           </div>
         </motion.div>
       </section>
@@ -156,6 +146,48 @@ function FeatureCard({ icon: Icon, title, description, tone }: { icon: LucideIco
       </div>
       <p className="mt-4 text-sm font-semibold text-text-primary">{t(title)}</p>
       <p className="mt-1.5 text-xs leading-5 text-text-tertiary">{t(description)}</p>
+    </div>
+  )
+}
+
+function MarketSignalPreview() {
+  const { t } = useI18n()
+  const bars = [34, 48, 28, 66, 54, 78, 62, 88, 74, 92, 81, 96]
+
+  return (
+    <div className="mt-5 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,oklch(1_0_0/0.045),oklch(1_0_0/0.018))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary">
+            <Landmark size={14} className="text-text-tertiary" />
+            {t('auth.signal')}
+          </span>
+          <div className="mt-1 h-px w-20 bg-gradient-to-r from-white/18 to-transparent" />
+        </div>
+        <span className="rounded-full border border-semantic-success-deep/25 bg-semantic-success-glow px-2.5 py-1 text-xs font-semibold text-semantic-success-deep shadow-[0_10px_24px_-18px_currentColor] tactile-tabular-nums">+2.8%</span>
+      </div>
+
+      <div className="relative mt-4 h-14">
+        <div className="absolute inset-x-0 bottom-2 h-px bg-white/[0.07]" />
+        <div className="absolute inset-x-0 bottom-2 flex h-12 items-end gap-1.5">
+          {bars.map((height, index) => {
+            const active = index > 8
+            return (
+              <span key={index} className="flex flex-1 items-end justify-center">
+                <span
+                  className={cn('w-full max-w-[18px] rounded-full transition-colors', active ? 'shadow-[0_10px_22px_-15px_oklch(0.72_0.17_154)]' : '')}
+                  style={{
+                    height: `${height}%`,
+                    background: active
+                      ? 'linear-gradient(180deg, oklch(0.74 0.17 154), oklch(0.56 0.16 154))'
+                      : 'linear-gradient(180deg, oklch(1 0 0 / 0.16), oklch(1 0 0 / 0.08))',
+                  }}
+                />
+              </span>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
