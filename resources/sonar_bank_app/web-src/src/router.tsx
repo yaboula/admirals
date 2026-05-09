@@ -1,9 +1,11 @@
 import { lazy, Suspense } from 'react'
-import { createBrowserRouter, createHashRouter } from 'react-router-dom'
+import { createBrowserRouter, createHashRouter, Navigate, useLocation } from 'react-router-dom'
 import { App } from './App'
 import { AppShell } from './components/layout/AppShell'
 import { isInsideFiveMNui } from './lib/env'
+import { useAuthGate } from './stores/authGate'
 
+const Auth = lazy(() => import('./routes/Auth').then(m => ({ default: m.Auth })))
 const Home = lazy(() => import('./routes/Home').then(m => ({ default: m.Home })))
 const Accounts = lazy(() => import('./routes/Accounts').then(m => ({ default: m.Accounts })))
 const Transactions = lazy(() => import('./routes/Transactions').then(m => ({ default: m.Transactions })))
@@ -40,15 +42,25 @@ function S({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<RouteLoader />}>{children}</Suspense>
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const location = useLocation()
+  const unlocked = useAuthGate((s) => s.unlocked)
+  if (!unlocked) {
+    return <Navigate to="/auth" replace state={{ from: `${location.pathname}${location.search}` }} />
+  }
+  return children
+}
+
 const routes = [
   {
     path: '/',
     element: <App />,
     children: [
-      { path: 'atm', element: <S><Atm /></S> },
+      { path: 'auth', element: <S><Auth /></S> },
+      { path: 'atm', element: <ProtectedRoute><S><Atm /></S></ProtectedRoute> },
       {
         path: 'tesoreria',
-        element: <S><GovtShell /></S>,
+        element: <ProtectedRoute><S><GovtShell /></S></ProtectedRoute>,
         children: [
           { index: true, element: <S><Bureau /></S> },
           { path: 'censo', element: <S><Census /></S> },
@@ -62,7 +74,7 @@ const routes = [
       },
       {
         path: '/',
-        element: <AppShell />,
+        element: <ProtectedRoute><AppShell /></ProtectedRoute>,
         children: [
           { index: true, element: <S><Home /></S> },
           { path: 'cuentas', element: <S><Accounts /></S> },

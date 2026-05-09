@@ -1,0 +1,164 @@
+import { motion } from 'motion/react'
+import { ArrowRight, Bitcoin, BriefcaseBusiness, Eye, EyeOff, Fingerprint, Landmark, LockKeyhole, RadioTower, ShieldCheck, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
+import { useAuthGate } from '@/stores/authGate'
+import { usePrivacyMode } from '@/stores/privacy'
+
+interface AuthLocationState {
+  from?: string
+}
+
+const FEATURE_CARDS: Array<{ icon: LucideIcon; title: TranslationKey; description: TranslationKey; tone: string }> = [
+  { icon: TrendingUp, title: 'auth.investments', description: 'auth.investmentsDescription', tone: 'oklch(0.72 0.17 154)' },
+  { icon: Bitcoin, title: 'auth.crypto', description: 'auth.cryptoDescription', tone: 'oklch(0.70 0.14 255)' },
+  { icon: BriefcaseBusiness, title: 'auth.business', description: 'auth.businessDescription', tone: 'oklch(0.76 0.14 80)' },
+]
+
+const TRUST_ITEMS: Array<{ icon: LucideIcon; label: TranslationKey }> = [
+  { icon: ShieldCheck, label: 'auth.secureSession' },
+  { icon: LockKeyhole, label: 'auth.noSnapshot' },
+  { icon: Sparkles, label: 'auth.privateByDesign' },
+]
+
+export function Auth() {
+  const { t } = useI18n()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const unlock = useAuthGate((s) => s.unlock)
+  const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const setStreamerMode = usePrivacyMode((s) => s.setStreamerMode)
+  const state = location.state as AuthLocationState | null
+  const target = state?.from && state.from !== '/auth' ? state.from : '/'
+
+  const handleEnter = () => {
+    unlock()
+    navigate(target, { replace: true })
+  }
+
+  return (
+    <main className="relative flex h-[100dvh] w-screen overflow-hidden bg-surface-abyss text-text-primary">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,oklch(0.65_0.22_40/0.14),transparent_30%),radial-gradient(circle_at_84%_20%,oklch(0.70_0.14_255/0.16),transparent_32%),radial-gradient(circle_at_55%_92%,oklch(0.72_0.17_154/0.12),transparent_34%)]" />
+      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(oklch(1_0_0/0.16)_1px,transparent_1px),linear-gradient(90deg,oklch(1_0_0/0.16)_1px,transparent_1px)] [background-size:28px_28px]" />
+      <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/[0.018] blur-3xl" />
+
+      <section className="relative z-10 mx-auto grid h-full w-full max-w-[1180px] grid-cols-[minmax(0,1fr)_390px] items-center gap-8 px-8 py-7 max-lg:grid-cols-1 max-lg:overflow-y-auto">
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="min-w-0 space-y-7">
+          <div className="space-y-5">
+            <Badge tone="brand" variant="soft" size="md" leftIcon={<RadioTower size={14} strokeWidth={2.2} />} className="w-fit">
+              {t('auth.eyebrow')}
+            </Badge>
+            <div className="max-w-2xl space-y-4">
+              <h1 className="text-5xl font-semibold leading-[0.98] tracking-[-0.055em] text-text-primary max-md:text-4xl">
+                {t('auth.title')}
+              </h1>
+              <p className="max-w-xl text-sm leading-6 text-text-secondary">
+                {t('auth.description')}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid max-w-3xl grid-cols-3 gap-3 max-md:grid-cols-1">
+            {FEATURE_CARDS.map((item) => (
+              <FeatureCard key={item.title} {...item} />
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {TRUST_ITEMS.map((item) => (
+              <TrustPill key={item.label} icon={item.icon} label={t(item.label)} />
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, scale: 0.98, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }} className="relative">
+          <div className="absolute -inset-8 rounded-[2.4rem] bg-brand-signal-orange/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-surface-card/80 p-5 shadow-[0_26px_80px_-42px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
+            <div className="absolute right-5 top-5">
+              <Badge tone={streamerMode ? 'success' : 'warning'} variant="soft" size="sm" pulse={streamerMode}>
+                {streamerMode ? t('auth.streamerOn') : t('auth.streamerOff')}
+              </Badge>
+            </div>
+
+            <div className="pt-7">
+              <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-surface-abyss/80">
+                  <Fingerprint size={54} strokeWidth={1.3} className="text-brand-signal-orange-light" />
+                </div>
+              </div>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm font-semibold text-text-primary">{t('auth.biometric')}</p>
+                <p className="mt-1 text-xs text-text-tertiary">SONAR ID · M004</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={streamerMode}
+              onClick={() => setStreamerMode(!streamerMode)}
+              className="tactile-focus-ring mt-6 w-full rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-3 text-left transition-colors hover:bg-white/[0.065]"
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border', streamerMode ? 'border-semantic-success-deep/40 bg-semantic-success-glow text-semantic-success-deep' : 'border-semantic-warning-deep/35 bg-semantic-warning-glow text-semantic-warning-deep')}>
+                  {streamerMode ? <EyeOff size={18} strokeWidth={2.2} /> : <Eye size={18} strokeWidth={2.2} />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-text-primary">{t('auth.streamerLabel')}</span>
+                    <span className={cn('relative h-6 w-11 shrink-0 rounded-full border transition-colors', streamerMode ? 'border-semantic-success-deep/45 bg-semantic-success-glow' : 'border-white/10 bg-white/[0.07]')}>
+                      <span className={cn('absolute top-1 h-4 w-4 rounded-full bg-current transition-transform', streamerMode ? 'translate-x-5 text-semantic-success-deep' : 'translate-x-1 text-text-tertiary')} />
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-text-tertiary">{t('auth.streamerDescription')}</p>
+                </div>
+              </div>
+            </button>
+
+            <Button size="lg" fullWidth rightIcon={<ArrowRight size={18} strokeWidth={2.3} />} onClick={handleEnter} className="mt-4 rounded-2xl">
+              {t('auth.loginCta')}
+            </Button>
+
+            <div className="mt-5 rounded-[1.25rem] border border-white/10 bg-white/[0.025] p-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary"><Landmark size={14} />{t('auth.signal')}</span>
+                <span className="text-xs font-semibold text-semantic-success tactile-tabular-nums">+2.8%</span>
+              </div>
+              <div className="mt-3 flex h-12 items-end gap-1.5">
+                {[34, 48, 28, 66, 54, 78, 62, 88, 74, 92, 81, 96].map((height, index) => (
+                  <span key={index} className="flex-1 rounded-full bg-white/10" style={{ height: `${height}%`, background: index > 8 ? 'oklch(0.72 0.17 154 / 0.72)' : 'oklch(1 0 0 / 0.10)' }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    </main>
+  )
+}
+
+function FeatureCard({ icon: Icon, title, description, tone }: { icon: LucideIcon; title: TranslationKey; description: TranslationKey; tone: string }) {
+  const { t } = useI18n()
+  return (
+    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.045]" style={{ color: tone }}>
+        <Icon size={19} strokeWidth={2.1} />
+      </div>
+      <p className="mt-4 text-sm font-semibold text-text-primary">{t(title)}</p>
+      <p className="mt-1.5 text-xs leading-5 text-text-tertiary">{t(description)}</p>
+    </div>
+  )
+}
+
+function TrustPill({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-medium text-text-secondary">
+      <Icon size={14} strokeWidth={2.1} className="text-text-tertiary" />
+      {label}
+    </span>
+  )
+}
