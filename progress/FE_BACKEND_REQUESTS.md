@@ -3,7 +3,7 @@
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
 > **Status:** 🟡 **OPEN — DRAFTING active BANK-FE.0** — añade requests durante drafting C-FE-01/02/03 v0.1.
-> **Versionado:** v0.5 (BANK-A.GOVT NODOs 1-6 shipped — TODOS LOS NODOs A.GOVT COMPLETADOS). Bump cada vez que añada/cierre items.
+> **Versionado:** v0.6 (BANK-A.BUSINESS cockpit polish — Business app dashboard enhanced, mutations gap documented). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -491,6 +491,45 @@ Cada request sigue:
 
 ---
 
+### REQ-FE-015 — `business.approval.decide` + `business.payroll.execute` mutations (Bank Business Dashboard)
+
+- **Severity:** 🔴 HIGH
+- **Detected during:** BANK-A.BUSINESS dashboard polish 2026-05-09 (`src/routes/Business.tsx` cockpit/action center).
+- **Backend contract afectado:** C-BE-02 v1.0.1 R1 §9 callbacks actuales cubren read surfaces (`sonar:bank:business:treasury`, `sonar:bank:business:payroll:preview`) pero no mutations operativas para aprobar/rechazar operaciones ni ejecutar payroll real desde UI.
+- **Gap concreto:** Business dashboard Phase A ahora muestra action center, approval queue y payroll readiness. La UI puede calcular runway, score operativo, cashflow pulse y exposure con datos existentes, pero **no puede convertir acciones en operaciones reales**: approve/reject pending approval, execute payroll batch idempotente, create withdrawal request. Sin mutations, botones quedan disabled/preview-only; esto bloquea funcionalidad core de "Business cockpit" comercial FiveM.
+- **Workaround mock UI:** Implementado cockpit completo con botones disabled para no simular operaciones inexistentes. Payroll readiness y approval exposure se calculan client-side desde `BusinessTreasurySnapshot` + `PayrollPreviewResponse`. UX es presentable pero no ejecutable.
+- **Propuesta resolución (Backend amendment):**
+  ```
+  Callbacks NEW (3):
+
+  1. sonar:bank:business:approval:decide
+     Auth: AUTH-BUSINESS-ROLE owner|manager with perm company scoped.
+     Request: { company_id, approval_id, decision: 'approved'|'rejected', reason?: string<=180, idempotency_key }
+     Response: { approval_id, status, decided_at_ms, resulting_operation_id?: string, audit_id, correlation_id }
+     Side effects: atomic status update + audit ledger { action: 'BUSINESS_APPROVAL_DECIDE', company_id, approval_id, decision }.
+     Rate-limit: budget MEDIUM. Idempotency MANDATORY.
+
+  2. sonar:bank:business:payroll:execute
+     Auth: AUTH-BUSINESS-ROLE owner|manager with payroll perm.
+     Request: { company_id, batch_id, idempotency_key }
+     Response: { batch_id, status: 'executed'|'queued'|'held', executed_lines, held_lines, total_net_minor, audit_id, correlation_id }
+     Side effects: debit company treasury, credit employee main accounts, append ledger rows both sides, publish StateBag balance updates, audit payroll execution.
+     Errors: INSUFFICIENT_TREASURY, BATCH_STALE, APPROVAL_REQUIRED, EMPLOYEE_ACCOUNT_FROZEN.
+     Rate-limit: budget LOW/MEDIUM (capacity 5, refill 0.5/sec). Idempotency MANDATORY.
+
+  3. sonar:bank:business:withdrawal:request
+     Auth: AUTH-BUSINESS-ROLE owner only.
+     Request: { company_id, amount_minor > 0, reason: string<=180, idempotency_key }
+     Response: { approval_id, status: 'pending', required_perm, audit_id, correlation_id }
+     Side effects: create approval queue item, no funds movement until approval.
+     Rate-limit: budget MEDIUM. Idempotency MANDATORY.
+  ```
+- **Criterio aceptación:** 3 callbacks LOCKED + idempotency + audit ledger + permission matrix company-scoped. Frontend cambia disabled buttons → real mutations con optimistic pending state y toast. Payroll execute debe actualizar `business:treasury` query cache o emitir StateBag/evento para refresh.
+- **Path recomendado:** Path A — sin esto Business Dashboard queda read-only/preview-only y no cumple "completo en funciones".
+- **Status:** OPEN — awaiting Backend Lead reactivation.
+
+---
+
 ## 2. Items resueltos / cerrados
 
 _(empty — drafting BANK-FE.0)_
@@ -501,12 +540,12 @@ _(empty — drafting BANK-FE.0)_
 
 | Métrica | Valor |
 |---|---|
-| Total items | 14 |
-| HIGH abiertos | 7 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013) |
+| Total items | 15 |
+| HIGH abiertos | 8 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
 | MEDIUM abiertos | 4 (REQ-FE-001, REQ-FE-002, REQ-FE-008, REQ-FE-014) |
 | LOW abiertos | 3 (REQ-FE-003, REQ-FE-004, REQ-FE-005) |
 | RESOLVED | 0 (REQ-FE-005 path-C self-resolved) |
-| Path A target (Backend amendment / Phase A.GOVT cycle) | 9 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013) |
+| Path A target (Backend amendment / Phase A.GOVT cycle) | 10 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
 | Path A/B target (joint spec) | 2 (REQ-FE-008, REQ-FE-014) |
 | Path B target (Phase B defer) | 2 (REQ-FE-003, REQ-FE-004) |
 | Path C target (UI workaround) | 1 (REQ-FE-005) |
@@ -531,7 +570,8 @@ _(empty — drafting BANK-FE.0)_
 | v0.3 | 2026-05-08 | BANK-A.GOVT NODO 3+4 shipped — 2 nuevos items HIGH (REQ-FE-011 Business Registry list+detail callbacks, REQ-FE-012 Treasury Movements callback con stats agregadas server-side). Ambos módulos UI completos sobre mock layer; NODO 3 (`/tesoreria/empresas`) y NODO 4 (`/tesoreria/movimientos`) operativos. Total 12 items — 6 HIGH, 3 MEDIUM, 3 LOW. |
 | v0.4 | 2026-05-09 | BANK-A.GOVT NODO 5 shipped — 1 nuevo item HIGH (REQ-FE-013 Subsidy list+detail read callbacks). Nota: write mutations ya cubiertas en REQ-FE-010. NODO 5 (`/tesoreria/subsidios`) operativo con 7 programas, tipos, status, budget gauges, disbursements recientes. Total 13 items — 7 HIGH, 3 MEDIUM, 3 LOW. |
 | v0.5 | 2026-05-09 | BANK-A.GOVT NODO 6 shipped — Último nodo A.GOVT. 1 nuevo item MEDIUM/Path A-B (REQ-FE-014 Reports analytics aggregation callback). NODO 6 (`/tesoreria/informes`) operativo: 4 KPI cards, SVG bar chart Revenue vs Obligation, ComplianceRing donut, SectorBars, TopContributors ranked, RiskDistribution. **TODOS LOS NODOs A.GOVT COMPLETADOS** (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes). Total 14 items — 7 HIGH, 4 MEDIUM, 3 LOW. |
+| v0.6 | 2026-05-09 | BANK-A.BUSINESS cockpit polish — 1 nuevo item HIGH (REQ-FE-015 Business Dashboard mutations: approval decide + payroll execute + withdrawal request). Dashboard `src/routes/Business.tsx` mejorado con hero company mark, role/live badges, ops score, payroll runway, inflow/outflow, cashflow pulse, payroll readiness ring, approval exposure y action center preview-only hasta backend. Total 15 items — 8 HIGH, 4 MEDIUM, 3 LOW. |
 
 ---
 
-**FIN `FE_BACKEND_REQUESTS.md` v0.5 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Requiere Backend Lead Phase A.GOVT cycle para 7 items HIGH + 1 MEDIUM (REQ-FE-006/007/009/010/011/012/013 + REQ-FE-014) para go-live con datos reales.
+**FIN `FE_BACKEND_REQUESTS.md` v0.6 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS + BANK BUSINESS COCKPIT POLISHED.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Bank Business Dashboard completo en UX, con action center preview-only hasta Backend Lead implemente REQ-FE-015. Requiere Backend Lead cycle para 8 items HIGH + 1 MEDIUM prioritario (REQ-FE-006/007/009/010/011/012/013/015 + REQ-FE-014) para go-live con datos/acciones reales.
