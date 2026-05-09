@@ -213,9 +213,9 @@ export function Business() {
                         <Spinner size="sm" />
                       </div>
                     ) : payrollPreview ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         <PayrollReadiness payroll={payrollPreview} ready={readyPayroll} held={heldPayroll} />
-                        <div className="max-h-[240px] space-y-2 overflow-y-auto pr-1 scrollbar-thin">
+                        <div className="max-h-[250px] space-y-1.5 overflow-y-auto pr-1 scrollbar-thin">
                           {payrollPreview.lines.map((line) => (
                             <PayrollLine key={line.line_id} line={line} />
                           ))}
@@ -295,7 +295,7 @@ function PayrollReadiness({ payroll, ready, held }: { payroll: PayrollPreviewRes
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const readyPct = payroll.lines.length > 0 ? Math.round((ready / payroll.lines.length) * 100) : 0
   return (
-    <div className="grid grid-cols-[82px_minmax(0,1fr)] gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.035] p-3">
+    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-[1.2rem] border border-white/10 bg-white/[0.035] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
       <ReadinessRing pct={readyPct} />
       <div className="min-w-0">
         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -305,8 +305,8 @@ function PayrollReadiness({ payroll, ready, held }: { payroll: PayrollPreviewRes
           </div>
           <Badge tone={held > 0 ? 'warning' : 'success'} variant="soft" className="shrink-0">{held > 0 ? t('business.reviewNeeded') : t('business.readyToExecute')}</Badge>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <PayrollMetric label={t('business.totalNet')} value={streamerMode ? maskMoneyDisplay() : money(payroll.total_net_minor / 100)} />
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_56px_56px] gap-2">
+          <PayrollMetric label={t('business.totalNet')} value={streamerMode ? maskMoneyDisplay() : money(payroll.total_net_minor / 100)} emphasis />
           <PayrollMetric label={t('business.readyLines')} value={number(ready)} />
           <PayrollMetric label={t('business.heldLines')} value={number(held)} />
         </div>
@@ -316,16 +316,16 @@ function PayrollReadiness({ payroll, ready, held }: { payroll: PayrollPreviewRes
 }
 
 function ReadinessRing({ pct }: { pct: number }) {
-  const radius = 30
+  const radius = 26
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (pct / 100) * circumference
   return (
-    <div className="relative flex h-[82px] w-[82px] items-center justify-center">
-      <svg width="82" height="82" viewBox="0 0 82 82" aria-hidden>
-        <circle cx="41" cy="41" r={radius} fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="7" />
+    <div className="relative flex h-[72px] w-[72px] items-center justify-center">
+      <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden>
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="7" />
         <circle
-          cx="41"
-          cy="41"
+          cx="36"
+          cy="36"
           r={radius}
           fill="none"
           stroke="oklch(0.72 0.17 154)"
@@ -333,19 +333,19 @@ function ReadinessRing({ pct }: { pct: number }) {
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          transform="rotate(-90 41 41)"
+          transform="rotate(-90 36 36)"
         />
       </svg>
-      <span className="absolute text-base font-semibold text-text-primary tactile-tabular-nums">{pct}%</span>
+      <span className="absolute text-sm font-semibold text-text-primary tactile-tabular-nums">{pct}%</span>
     </div>
   )
 }
 
-function PayrollMetric({ label, value }: { label: string; value: string }) {
+function PayrollMetric({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
   return (
-    <div className="min-w-0 rounded-[1rem] border border-white/10 bg-white/[0.04] px-2.5 py-2.5">
-      <span className="block truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-text-tertiary">{label}</span>
-      <span className="mt-1 block truncate text-base font-semibold text-text-primary tactile-tabular-nums">{value}</span>
+    <div className={cn('min-w-0 rounded-[0.95rem] border border-white/10 bg-white/[0.04] px-2.5 py-2', emphasis ? 'text-left' : 'text-center')}>
+      <span className="block truncate text-[9px] font-semibold uppercase tracking-[0.10em] text-text-tertiary">{label}</span>
+      <span className={cn('mt-1 block truncate font-semibold text-text-primary tactile-tabular-nums', emphasis ? 'text-sm' : 'text-base')}>{value}</span>
     </div>
   )
 }
@@ -354,14 +354,14 @@ function PayrollLine({ line }: { line: PayrollPreviewLine }) {
   const { t, money } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-white/10 bg-white/[0.03] px-3 py-2.5">
+    <div className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-white/8 bg-white/[0.025] px-3 py-2.5">
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-text-primary">{line.employee_alias}</p>
         <p className="mt-0.5 truncate text-xs text-text-tertiary">{line.department}</p>
       </div>
-      <div className="shrink-0 text-right">
+      <div className="shrink-0 text-right leading-tight">
         <p className="text-sm font-semibold text-text-primary tactile-tabular-nums">{streamerMode ? maskMoneyDisplay() : money(line.net_amount_minor / 100)}</p>
-        <Badge tone={line.status === 'ready' ? 'success' : 'warning'} variant="soft" size="sm">{line.status === 'ready' ? t('business.payrollReady') : t('business.payrollHeld')}</Badge>
+        <Badge tone={line.status === 'ready' ? 'success' : 'warning'} variant="soft" size="xs" className="mt-1">{line.status === 'ready' ? t('business.payrollReady') : t('business.payrollHeld')}</Badge>
       </div>
     </div>
   )
