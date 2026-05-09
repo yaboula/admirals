@@ -295,20 +295,20 @@ function PayrollReadiness({ payroll, ready, held }: { payroll: PayrollPreviewRes
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const readyPct = payroll.lines.length > 0 ? Math.round((ready / payroll.lines.length) * 100) : 0
   return (
-    <div className="grid grid-cols-[92px_minmax(0,1fr)] gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.035] p-3">
+    <div className="grid grid-cols-[82px_minmax(0,1fr)] gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.035] p-3">
       <ReadinessRing pct={readyPct} />
       <div className="min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-text-primary">{t('business.payrollReadiness')}</p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-text-primary">{t('business.payrollReadiness')}</p>
             <p className="mt-0.5 text-xs text-text-tertiary">{dateTime(payroll.scheduled_for_ms, { dateStyle: 'short', timeStyle: 'short' })}</p>
           </div>
-          <Badge tone={held > 0 ? 'warning' : 'success'} variant="soft">{held > 0 ? t('business.reviewNeeded') : t('business.readyToExecute')}</Badge>
+          <Badge tone={held > 0 ? 'warning' : 'success'} variant="soft" className="shrink-0">{held > 0 ? t('business.reviewNeeded') : t('business.readyToExecute')}</Badge>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <HeroMetric label={t('business.totalNet')} value={streamerMode ? maskMoneyDisplay() : money(payroll.total_net_minor / 100)} />
-          <HeroMetric label={t('business.readyLines')} value={number(ready)} />
-          <HeroMetric label={t('business.heldLines')} value={number(held)} />
+          <PayrollMetric label={t('business.totalNet')} value={streamerMode ? maskMoneyDisplay() : money(payroll.total_net_minor / 100)} />
+          <PayrollMetric label={t('business.readyLines')} value={number(ready)} />
+          <PayrollMetric label={t('business.heldLines')} value={number(held)} />
         </div>
       </div>
     </div>
@@ -316,27 +316,36 @@ function PayrollReadiness({ payroll, ready, held }: { payroll: PayrollPreviewRes
 }
 
 function ReadinessRing({ pct }: { pct: number }) {
-  const radius = 34
+  const radius = 30
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (pct / 100) * circumference
   return (
-    <div className="relative flex h-[92px] w-[92px] items-center justify-center">
-      <svg width="92" height="92" viewBox="0 0 92 92" aria-hidden>
-        <circle cx="46" cy="46" r={radius} fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="8" />
+    <div className="relative flex h-[82px] w-[82px] items-center justify-center">
+      <svg width="82" height="82" viewBox="0 0 82 82" aria-hidden>
+        <circle cx="41" cy="41" r={radius} fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="7" />
         <circle
-          cx="46"
-          cy="46"
+          cx="41"
+          cy="41"
           r={radius}
           fill="none"
           stroke="oklch(0.72 0.17 154)"
-          strokeWidth="8"
+          strokeWidth="7"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          transform="rotate(-90 46 46)"
+          transform="rotate(-90 41 41)"
         />
       </svg>
-      <span className="absolute text-lg font-semibold text-text-primary tactile-tabular-nums">{pct}%</span>
+      <span className="absolute text-base font-semibold text-text-primary tactile-tabular-nums">{pct}%</span>
+    </div>
+  )
+}
+
+function PayrollMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 rounded-[1rem] border border-white/10 bg-white/[0.04] px-2.5 py-2.5">
+      <span className="block truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-text-tertiary">{label}</span>
+      <span className="mt-1 block truncate text-base font-semibold text-text-primary tactile-tabular-nums">{value}</span>
     </div>
   )
 }
@@ -372,16 +381,16 @@ function CashflowPulse({ movements }: { movements: BusinessMovement[] }) {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const max = Math.max(...movements.map((movement) => movement.amount_minor), 1)
   return (
-    <div className="p-5">
-      <div className="flex h-36 items-end gap-2">
+    <div className="px-5 pb-5 pt-4">
+      <div className="flex h-32 items-end gap-2">
         {movements.slice().reverse().map((movement) => {
-          const height = Math.max(18, Math.round((movement.amount_minor / max) * 100))
+          const height = Math.max(14, Math.round((movement.amount_minor / max) * 100))
           const color = movement.direction === 'in' ? FLOW_COLORS.in : FLOW_COLORS.out
           return (
             <div key={movement.movement_id} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-              <div className="flex h-28 w-full items-end rounded-full bg-white/[0.035] px-1.5 py-1">
+              <div className="flex h-24 w-full max-w-8 items-end justify-center rounded-full bg-white/[0.035] px-1.5 py-1">
                 <div
-                  className="w-full rounded-full"
+                  className="w-full rounded-full shadow-[0_8px_20px_-14px_currentColor]"
                   style={{
                     height: `${height}%`,
                     background: color,
