@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ShieldCheck, type LucideIcon } from 'lucide-react'
-import { SonarBureauSeal } from '../components/SonarBureauSeal'
+import sealIrsUrl from '@/assets/branding/seal_irs.png'
 import { GovtCard } from '../components/GovtCard'
 import { GovtPill } from '../components/GovtPill'
 import { GOVT_NAV_ITEMS } from '../lib/govtNav'
@@ -98,13 +98,21 @@ function BureauSealLarge() {
   return (
     <div className="flex items-center justify-center py-2" aria-hidden>
       <div
+        className="overflow-hidden rounded-full"
         style={{
-          filter:
-            'drop-shadow(0 0 20px oklch(0.76 0.14 82 / 0.35)) drop-shadow(0 0 48px oklch(0.76 0.14 82 / 0.14))',
+          width: 168,
+          height: 168,
+          border: '3px solid var(--color-govt-gold-ring)',
+          boxShadow: '0 0 28px var(--color-govt-gold-glow), 0 0 56px var(--color-govt-gold-subtle)',
           animation: 'seal-pulse-gold 4s ease-in-out infinite',
         }}
       >
-        <SonarBureauSeal size={168} showText />
+        <img
+          src={sealIrsUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          draggable={false}
+        />
       </div>
     </div>
   )

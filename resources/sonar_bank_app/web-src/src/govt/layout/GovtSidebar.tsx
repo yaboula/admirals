@@ -42,12 +42,12 @@ function BureauSeal() {
   return (
     <div className="flex items-center justify-center pb-4 pt-5" aria-hidden>
       <div
+        className="flex items-center justify-center rounded-full"
         style={{
-          filter: 'drop-shadow(0 0 8px oklch(0.76 0.14 82 / 0.50))',
-          animation: 'seal-pulse-gold 3.6s ease-in-out infinite',
+          border: '1.5px solid var(--color-govt-gold-ring)',
         }}
       >
-        <SonarBureauSeal size={54} showText={false} />
+        <SonarBureauSeal size={52} showText={false} />
       </div>
     </div>
   )
