@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { LockKeyhole } from 'lucide-react'
-import sealIrsUrl from '@/assets/branding/seal_irs.png'
+import { SonarBureauSeal } from '../components/SonarBureauSeal'
 import { useAceGate } from '@/components/security'
 import { useI18n } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
@@ -42,20 +42,12 @@ function BureauSeal() {
   return (
     <div className="flex items-center justify-center pb-4 pt-5" aria-hidden>
       <div
-        className="relative overflow-hidden rounded-full"
         style={{
-          width: 52,
-          height: 52,
-          border: '2px solid var(--color-govt-gold-ring)',
+          filter: 'drop-shadow(0 0 8px oklch(0.76 0.14 82 / 0.50))',
           animation: 'seal-pulse-gold 3.6s ease-in-out infinite',
         }}
       >
-        <img
-          src={sealIrsUrl}
-          alt=""
-          className="h-full w-full object-cover"
-          draggable={false}
-        />
+        <SonarBureauSeal size={54} showText={false} />
       </div>
     </div>
   )

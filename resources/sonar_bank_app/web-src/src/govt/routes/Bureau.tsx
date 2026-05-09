@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ShieldCheck, type LucideIcon } from 'lucide-react'
-import sealIrsUrl from '@/assets/branding/seal_irs.png'
+import { SonarBureauSeal } from '../components/SonarBureauSeal'
 import { GovtCard } from '../components/GovtCard'
 import { GovtPill } from '../components/GovtPill'
 import { GOVT_NAV_ITEMS } from '../lib/govtNav'
@@ -96,34 +96,15 @@ export function Bureau() {
 
 function BureauSealLarge() {
   return (
-    <div className="flex items-center justify-center">
-      <div aria-hidden className="relative flex items-center justify-center">
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 200,
-            height: 200,
-            background: 'radial-gradient(circle, var(--color-govt-gold-glow) 0%, transparent 70%)',
-            filter: 'blur(18px)',
-          }}
-        />
-        <div
-          className="relative overflow-hidden rounded-full"
-          style={{
-            width: 160,
-            height: 160,
-            border: '3px solid var(--color-govt-gold-ring)',
-            boxShadow: '0 0 28px var(--color-govt-gold-glow), 0 0 56px var(--color-govt-gold-subtle), inset 0 1px 0 oklch(1 0 0 / 0.12)',
-            animation: 'seal-pulse-gold 4s ease-in-out infinite',
-          }}
-        >
-          <img
-            src={sealIrsUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
-        </div>
+    <div className="flex items-center justify-center py-2" aria-hidden>
+      <div
+        style={{
+          filter:
+            'drop-shadow(0 0 20px oklch(0.76 0.14 82 / 0.35)) drop-shadow(0 0 48px oklch(0.76 0.14 82 / 0.14))',
+          animation: 'seal-pulse-gold 4s ease-in-out infinite',
+        }}
+      >
+        <SonarBureauSeal size={168} showText />
       </div>
     </div>
   )
