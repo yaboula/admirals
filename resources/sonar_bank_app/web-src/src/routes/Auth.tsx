@@ -132,9 +132,9 @@ export function Auth() {
               onClick={handleEnter}
               className="mt-4 rounded-2xl"
               style={{
-                background: 'linear-gradient(135deg, oklch(0.54 0.17 36), oklch(0.64 0.13 52))',
-                borderColor: 'oklch(0.68 0.14 48 / 0.44)',
-                boxShadow: '0 16px 38px -25px oklch(0.58 0.17 40 / 0.78), inset 0 1px 0 oklch(1 0 0 / 0.24)',
+                background: 'linear-gradient(135deg, var(--color-brand-signal-orange), var(--color-brand-signal-orange-light))',
+                borderColor: 'oklch(0.78 0.18 55 / 0.48)',
+                boxShadow: '0 16px 38px -25px oklch(0.65 0.22 40 / 0.82), inset 0 1px 0 oklch(1 0 0 / 0.26)',
               }}
             >
               {t('auth.loginCta')}
