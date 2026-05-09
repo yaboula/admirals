@@ -1,14 +1,14 @@
 # 🗄️ SONAR — Schema de Base de Datos `sonar_*` (post-migration-009) / `sonar_*` (pre-migration-009 legacy)
 
-> **Versión:** **2.0 LOCKED PROVISIONAL** (Bank Phase A schema DDL complete — DB Lead sign-off BANK-DB.4 2026-05-06) post v1.2 LOCKED (S1.10.x Phase 8+9 namespace migration). **SSoT vigente** — filosofía + ERD + DDL + índices + queries hot path + migrations strategy + particionado + backup + diccionario foundational (v1.2 LOCKED) + **§22-§29 Bank Phase A extends LOCKED PROVISIONAL** (audit ledger + compliance + status FSM + tax + government + Tier 4 + empresas + idempotency + 30+ tablas + 19 migrations + 100% Q-DB-A→J coverage). **Real benchmark execution post-handoff H1 mandatory** para AMENDMENT v2.1 si targets fail.
+> **Versión:** **2.1 DRAFT AMENDMENT** (Issue #002 — Phase A.GOVT + Business persistence gaps) sobre v2.0 LOCKED PROVISIONAL. **SSoT vigente** — v1.2 foundational + §22-§29 LOCKED PROVISIONAL + **§30 DRAFT AMENDMENT** (`sonar_companies`, company members, subsidy programs, payroll batches/lines, GOVT risk scores 0-100, treasury movement categories). **No cambia semántica LOCKED previa; sólo añade persistencia requerida para mock→real GOVT/BUSINESS.**
 > **Engine canonical (Q-DB-A LOCKED 2026-05-06):** **MariaDB 12.x primary** + MySQL 8 best-effort compat. Adaptación features MariaDB-specific (CHECK constraint workarounds + INT UNSIGNED `ON UPDATE` MariaDB-illegal + system-versioned tables descartado audit ledger).
 > **Documento padre:** `00_PRODUCT_BIBLE.md` v1.4 (post-pivot)
 > **Documento técnico padre:** `01_architecture.md` v1.0 (§3 define el schema lógico).
 > **Documento hermano:** `02_events_catalog.md` v1.1+ (post-pivot).
 > **ADRs relacionados:** ADR-010 (hybrid audit_log) + ADR-011 (pivot) + ADR-012 (refinement) + **ADR-013 (namespace migration Phase 8+9 scheduled)** + **ADR-018 🟡 proposed (Bank Lite mode hybrid 3-layer + cut ESX legacy + 8 CP integrated)**.
-> **Estado v1.2:** firmado (S1.10.x). **DRAFTs v1.3+v1.4+v1.5:** founder approved 2026-05-06 (BANK-DB.1+2+3). **Estado v2.0 LOCKED PROVISIONAL:** 🔒 **DB Lead self-signed + Founder APPROVED 2026-05-06 (BANK-DB.4 close ceremony — Opción A: real benchmarks post-H1 Backend harness)**. Backend Lead + Security Lead consumer sign-offs pendientes (H1 + H2 ceremonies). **Condicional clauses LOCKED PROVISIONAL:** ver §28 + `progress/BENCHMARK_BANK_DB_v1.md` §8.
+> **Estado v1.2:** firmado (S1.10.x). **DRAFTs v1.3+v1.4+v1.5:** founder approved 2026-05-06 (BANK-DB.1+2+3). **Estado v2.0 LOCKED PROVISIONAL:** 🔒 DB Lead self-signed + Founder APPROVED 2026-05-06. **Estado v2.1:** 🟡 DRAFT AMENDMENT emitido 2026-05-09 por Issue #002; requiere Backend Lead consumer review + Security Lead risk-score review antes de LOCKED MEASURED/AMENDMENT promotion.
 
-> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.6, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled), **`docs/agents/teams/01_SHARED_BRIEF.md`** v1.0 (Q1-Q16 + CP1-CP8 founder decisions), **`docs/agents/teams/slices/slice_database.md`** v1.0 (DB cherry-pick blueprint), **`docs/agents/teams/issues/issue_001_sonar_companies_pending.md`** (FK deferred Q-DB-E).
+> **Lectura previa obligatoria:** `agents/00_BOOTSTRAP.md` v1.6, `01_architecture.md` §3 (Schema DB compartido), §12 (Persistence patterns), §16 (Seguridad), **`planning/02_decision_log.md` ADR-013** (DB migration execution), **`planning/01_roadmap.md` v1.5** (Phase 9 scheduled), **`docs/agents/teams/01_SHARED_BRIEF.md`** v1.0 (Q1-Q16 + CP1-CP8 founder decisions), **`docs/agents/teams/slices/slice_database.md`** v1.0 (DB cherry-pick blueprint), **`docs/agents/teams/issues/issue_001_sonar_companies_pending.md`** (FK deferred Q-DB-E), **`docs/agents/teams/issues/issue_002_phase_a_govt_business_persistence_gaps.md`** (AMENDMENT v2.1 trigger).
 
 ---
 
@@ -69,6 +69,12 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | §26 | `sonar_bank_business_treasury_approvals` (m-of-n FSM) | DB Lead | ✅ DRAFT v0.3 |
 | §26 | `sonar_bank_escrow_releases` (escrow partial release log) | DB Lead | ✅ DRAFT v0.3 |
 | §27 | `sonar_bank_idempotency_keys` (TTL 7d) | DB Lead | ✅ DRAFT v0.3 |
+| §30 | `sonar_companies` (registro mercantil) | DB Lead | 🟡 DRAFT AMENDMENT v2.1 |
+| §30 | `sonar_company_members` (membresías/directores) | DB Lead | 🟡 DRAFT AMENDMENT v2.1 |
+| §30 | `sonar_bank_subsidy_programs` (catálogo programas) | DB Lead | 🟡 DRAFT AMENDMENT v2.1 |
+| §30 | `sonar_bank_business_payroll_batches` | DB Lead | 🟡 DRAFT AMENDMENT v2.1 |
+| §30 | `sonar_bank_business_payroll_lines` | DB Lead | 🟡 DRAFT AMENDMENT v2.1 |
+| §30 | `sonar_bank_govt_risk_scores` (0-100 materialized) | DB Lead + Security Lead consumer | 🟡 DRAFT AMENDMENT v2.1 |
 
 ### Tablas existing extends Bank Phase A
 
@@ -80,6 +86,8 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | `sonar_bank_movements` | REORGANIZE PARTITIONS extend Sep 2026 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
 | `sonar_bank_audit_ledger` | REORGANIZE PARTITIONS extend Jan 2027 → Dec 2027 (Q-DB-G) | 013 | ✅ DRAFT v0.1 |
 | `sonar_escrows` | ADD `release_log_count TINYINT UNSIGNED NOT NULL DEFAULT 0` (FSM 6-states extends Q12) | 027 | ✅ DRAFT v0.3 |
+| `sonar_bank_subsidies` | ADD `program_id CHAR(36) NULL` + index `(program_id, issued_at)` | 030 | 🟡 DRAFT AMENDMENT v2.1 |
+| `sonar_bank_movements` | ALTER ENUM `category` add `fine_collected`, `payroll_disbursement`, `reconciliation`, `interest_accrued` + treasury rollup index | 032 | 🟡 DRAFT AMENDMENT v2.1 |
 
 ### Migrations files DRAFT v0.1 (BANK-DB.1)
 
@@ -104,6 +112,10 @@ Bloques `### 🟡 Deviation from blueprint` documentando razones técnicas + imp
 | `026_bank_business_treasuries.sql` | Empresas extends — multi-signer policy + signers + approvals m-of-n | ✅ DRAFT v0.3 |
 | `027_bank_escrow_releases.sql` | Escrow partial release log + ALTER sonar_escrows ADD release_log_count | ✅ DRAFT v0.3 |
 | `028_bank_idempotency_keys.sql` | Idempotency keys table + TTL cron cleanup hint | ✅ DRAFT v0.3 |
+| `029_company_registry.sql` | Issue #002 — `sonar_companies` + `sonar_company_members` registry | 🟡 DRAFT AMENDMENT v2.1 |
+| `030_subsidy_programs.sql` | Issue #002 — subsidy program catalog + link `sonar_bank_subsidies.program_id` | 🟡 DRAFT AMENDMENT v2.1 |
+| `031_business_payroll_persistence.sql` | Issue #002 — payroll batches + payroll lines durable execution state | 🟡 DRAFT AMENDMENT v2.1 |
+| `032_govt_risk_scores_and_treasury_movements.sql` | Issue #002 — GOVT risk scores 0-100 + treasury categories/index | 🟡 DRAFT AMENDMENT v2.1 |
 
 ### Drift corrections SSoT v1.1 → v1.2
 
@@ -3557,6 +3569,185 @@ WHERE expires_at < UNIX_TIMESTAMP() LIMIT 10000;
 
 ---
 
+## 30. AMENDMENT v2.1 DRAFT — Issue #002 GOVT/BUSINESS persistence gaps
+
+> **Status:** 🟡 DRAFT AMENDMENT — DB Lead reactivation 2026-05-09.
+>
+> **Trigger:** `docs/agents/teams/issues/issue_002_phase_a_govt_business_persistence_gaps.md`.
+>
+> **Migrations:** `029_company_registry.sql` + `030_subsidy_programs.sql` + `031_business_payroll_persistence.sql` + `032_govt_risk_scores_and_treasury_movements.sql`.
+
+### 30.1 Scope
+
+Issue #002 detecta que Phase A UI GOVT/BUSINESS cerró mock-driven, pero varios endpoints mock→real necesitan persistencia que no existía en migrations 001-028. Este amendment es **aditivo** y no modifica semántica LOCKED v2.0:
+
+- `sonar_companies` + `sonar_company_members` para Business Registry y company-scoped permissions.
+- `sonar_bank_subsidy_programs` para separar catálogo/program budget de desembolsos reales.
+- `sonar_bank_business_payroll_batches` + `sonar_bank_business_payroll_lines` para ejecutar payroll auditable.
+- `sonar_bank_govt_risk_scores` para materializar risk score GOVT 0-100.
+- Extensión `sonar_bank_movements.category` para Treasury Ledger: `fine_collected`, `payroll_disbursement`, `reconciliation`, `interest_accrued`.
+
+### 30.2 sonar_companies + sonar_company_members
+
+**Migration:** `029_company_registry.sql`.
+
+**Decisions:**
+
+- **D1.** `sonar_companies` resuelve el blocker de Issue #001 a nivel tabla, pero **NO promueve FKs legacy automáticamente**.
+- **D2.** FK promotion desde tablas ya existentes (`sonar_bank_accounts.owner_company_id`, `sonar_bank_business_treasuries.company_id`, etc.) queda diferida hasta orphan audit real. Motivo: añadir FK sin auditar datos existentes puede romper despliegues con company_id opacos ya persistidos.
+- **D3.** `employee_count_cached` + `director_count_cached` materializan métricas de lista GOVT Business p99. Backend Lead mantiene counters en writes o cron nightly.
+- **D4.** `sonar_company_members.role` distingue director/manager/employee. Treasury signers siguen siendo sólo firmantes financieros, no registro laboral.
+
+**Queries hot path:**
+
+```sql
+-- Q1: GOVT Business list.
+SELECT id, name, sector, status, founded_at, employee_count_cached, director_count_cached
+FROM sonar_companies
+WHERE status IN ('active','frozen')
+ORDER BY name ASC
+LIMIT 100;
+-- Index: idx_sonar_companies_status_sector + idx_sonar_companies_name.
+
+-- Q2: Company directors.
+SELECT account_id, role, title, joined_at
+FROM sonar_company_members
+WHERE company_id = ? AND active = TRUE AND role IN ('founder','co-founder','director','manager')
+ORDER BY role, joined_at ASC;
+-- Index: idx_sonar_company_members_company_role.
+```
+
+### 30.3 sonar_bank_subsidy_programs + subsidies.program_id
+
+**Migration:** `030_subsidy_programs.sql`.
+
+**Decisions:**
+
+- **D1.** `sonar_bank_subsidy_programs` = catálogo + budget + status. `sonar_bank_subsidies` = desembolsos individuales.
+- **D2.** `program_id` en `sonar_bank_subsidies` es nullable para compatibilidad con UBI/legacy rows anteriores al amendment.
+- **D3.** FK program_id → programs queda app-layer por particionado `sonar_bank_subsidies` y por compatibilidad MariaDB/InnoDB partition constraints.
+- **D4.** `disbursed_amount` + `beneficiary_count_cached` permiten `gov.subsidy:list` sin SUM/COUNT masivo por cada programa.
+
+**Queries hot path:**
+
+```sql
+-- Q1: GOVT subsidy programs list.
+SELECT id, code, name, program_type, status, budget_amount, disbursed_amount, beneficiary_count_cached
+FROM sonar_bank_subsidy_programs
+WHERE status IN ('active','paused','proposed')
+ORDER BY status, program_type, code;
+-- Index: idx_sonar_bank_subsidy_programs_status_type.
+
+-- Q2: Program detail disbursements.
+SELECT id, beneficiary_account_id, company_id, amount, issued_at, reason_note
+FROM sonar_bank_subsidies
+WHERE program_id = ?
+ORDER BY issued_at DESC
+LIMIT 15;
+-- Index: idx_sonar_bank_subsidies_program_issued.
+```
+
+### 30.4 Business payroll batches + lines
+
+**Migration:** `031_business_payroll_persistence.sql`.
+
+**Decisions:**
+
+- **D1.** Payroll batch = executable unit. Approval queue remains `sonar_bank_business_treasury_approvals`.
+- **D2.** Payroll line = per-employee durable state (`ready`, `held`, `paid`, `failed`, `cancelled`).
+- **D3.** `idempotency_key CHAR(64)` UNIQUE at batch level; Backend still uses central `sonar_bank_idempotency_keys` first, then batch lock.
+- **D4.** `related_movement_id` remains logical because `sonar_bank_movements` primary key is composite `(id, occurred_at)` due partitioning.
+
+**Queries hot path:**
+
+```sql
+-- Q1: Business payroll queue.
+SELECT id, state, total_net_amount, line_count, held_line_count, scheduled_for, created_at
+FROM sonar_bank_business_payroll_batches
+WHERE company_id = ? AND state IN ('draft','pending_approval','queued','held')
+ORDER BY created_at DESC
+LIMIT 20;
+-- Index: idx_sonar_bank_business_payroll_batches_company_state.
+
+-- Q2: Batch lines for execution.
+SELECT id, employee_account_id, destination_bank_account_id, net_amount, state
+FROM sonar_bank_business_payroll_lines
+WHERE batch_id = ? AND state IN ('ready','held')
+ORDER BY created_at ASC;
+-- Index: idx_sonar_bank_business_payroll_lines_batch_state.
+```
+
+### 30.5 GOVT risk scores 0-100
+
+**Migration:** `032_govt_risk_scores_and_treasury_movements.sql`.
+
+**Decision:** Option A accepted for DB amendment: materialized snapshot table `sonar_bank_govt_risk_scores`.
+
+**Rationale:** `sonar_bank_credit_scores.score` (0-1000 creditworthiness) is not equivalent to compliance/government risk (0-100). GOVT Census and Reports are read-heavy and must not recompute risk ad hoc per row.
+
+**Contract v1:**
+
+- `subject_type`: `citizen` | `company`.
+- `score`: 0-100.
+- `risk_level`: `low`, `medium`, `high`, `critical`.
+- Buckets:
+  - `low`: 0-24.
+  - `medium`: 25-54.
+  - `high`: 55-79.
+  - `critical`: 80-100.
+- Backend/Security recompute cadence target: every 5 minutes for active subjects + on-demand after sanctions/critical flags.
+
+**Queries hot path:**
+
+```sql
+-- Q1: Census list risk join.
+SELECT subject_id, score, risk_level, computed_at
+FROM sonar_bank_govt_risk_scores
+WHERE subject_type = 'citizen'
+ORDER BY score DESC
+LIMIT 100;
+-- Index: idx_sonar_bank_govt_risk_scores_level_score.
+
+-- Q2: Business registry risk join.
+SELECT subject_id, score, risk_level
+FROM sonar_bank_govt_risk_scores
+WHERE subject_type = 'company' AND subject_id = ?;
+-- PK: (subject_type, subject_id).
+```
+
+### 30.6 Treasury movement categories + rollup index
+
+**Migration:** `032_govt_risk_scores_and_treasury_movements.sql`.
+
+**Added categories:**
+
+- `fine_collected`
+- `payroll_disbursement`
+- `reconciliation`
+- `interest_accrued`
+
+**Index:** `idx_sonar_bank_movements_treasury_rollup (category, occurred_at DESC, bank_account_id)`.
+
+**Mapping guidance Backend Lead:**
+
+- `fine_collected` — sanctions fine debit/credit pair.
+- `payroll_disbursement` — company payroll outgoing + employee incoming rows.
+- `reconciliation` — CP3 manual/async reconciliation adjustment.
+- `interest_accrued` — loan/savings/treasury interest accrual.
+
+### 30.7 Backend/Security handoff obligations
+
+- Backend Lead updates endpoints REQ-FE-006..015 to consume §30 tables.
+- Security Lead reviews `sonar_bank_govt_risk_scores` formula before promotion from DRAFT to LOCKED.
+- Backend Lead must run orphan audit before any FK promotion from legacy company_id columns:
+
+```sql
+SELECT company_id FROM sonar_bank_business_treasuries
+WHERE company_id NOT IN (SELECT id FROM sonar_companies);
+```
+
+---
+
 ## 21. Changelog
 
 | Versión | Fecha | Autor | Cambios |
@@ -3567,8 +3758,9 @@ WHERE expires_at < UNIX_TIMESTAMP() LIMIT 10000;
 | 1.3 DRAFT v0.1 | 2026-05-06 | DB Lead (Cascade Sonnet 4.6) + Founder | **✅ DRAFT v0.1 Bank Phase A extends — BANK-DB.1 (founder approved 2026-05-06).** Founder green-light Q-DB-A→J 2026-05-06 (sesión BANK-DB.0 onboarding + handshake + cuestionamientos). NEW §22 (audit ledger inmutable + compliance flags + queries hot path) + NEW §23 (status FSM single-row CP8) + §24-§28 roadmap pending v0.2-v0.3 (tax + government + Tier 4 + empresas + idempotency) + NEW §29 deviations from blueprint (10 Q-DB-* resolutions documented). Header v1.2→v1.3 + changelog table tablas NEW + tablas existing extends + drift corrections SSoT v1.1 vs realidad migrations. **Migrations files DRAFT v0.1:** `010_bank_audit_ledger.sql` + `011_bank_compliance_flags.sql` + `012_bank_status_fsm.sql` + `013_bank_movements_partitions_extend.sql`. **Issue #001** `sonar_companies` pending (Q-DB-E opaque company_id deferred). **NO touched:** §1-§20 SSoT v1.2 LOCKED foundational. Pending sign-off triple (founder + Backend consumer post-H1 + Security consumer post-H2). |
 | 1.4 DRAFT v0.2 | 2026-05-06 | DB Lead | **✅ DRAFT v0.2 Tax + Government — BANK-DB.2 (founder approved).** §24 NEW (7 tablas: brackets + history append-only + subsidies PARTITIONED + elections FSM + candidates + votes hashed + votes_audit raw). Q-DB-H dual-layer privacy. ALTER bank_accounts split + bank_movements ENUM extend. Migrations 014-017. |
 | 1.5 DRAFT v0.3 | 2026-05-06 | DB Lead | **✅ DRAFT v0.3 Tier 4 + Empresas + Idempotency — BANK-DB.3 (founder approved).** §25 NEW Tier 4 (15 tablas) + §26 NEW Empresas (4 tablas + ALTER) + §27 NEW Idempotency keys. Migrations 018-028 (11 archivos). Schema DDL Phase A complete. |
-| **2.0 LOCKED PROVISIONAL** | 2026-05-06 | **DB Lead sign-off + Founder pending** | **🔒 LOCKED PROVISIONAL — Bank Phase A schema DDL complete (BANK-DB.4).** Schema design + DDL + indexes + queries + migrations 010-028 + 30+ tablas + 100% Q-DB-A→J coverage **APROBADOS estructuralmente**. **Real benchmark execution pendiente post-handoff H1** (Backend Lead implementa harness Lua + ejecuta chaos test 200 concurrent + reporta resultados verificables). **`progress/BENCHMARK_BANK_DB_v1.md` v0.5** análisis estructural completo + estimaciones fundadas (NO números medidos — anti-pattern hallucination evitado). **Condicional clauses LOCKED PROVISIONAL** (§28 + BENCHMARK §8): si target Q3 "Todas" 5 años >200ms real → AMENDMENT v2.1 add materialized summary view; si reconciliation 200 concurrent >500ms p99 real → AMENDMENT v2.1 add per-account lock queue Backend; si pool sustained >85% → upgrade 30→50. **Handoff package H1** (`docs/agents/teams/handoffs/h1_db_to_backend/`) ready para sign-off ceremony. **NO touched:** §1-§29 preservados intactos. |
+| **2.0 LOCKED PROVISIONAL** | 2026-05-06 | **DB Lead + Founder** | **🔒 LOCKED PROVISIONAL — Bank Phase A schema DDL complete (BANK-DB.4).** Schema design + DDL + indexes + queries + migrations 010-028 + 30+ tablas + 100% Q-DB-A→J coverage **APROBADOS estructuralmente**. Founder APPROVED 2026-05-06; real benchmark execution delegado a Backend Lead harness Lua post-H1. |
+| **2.1 DRAFT AMENDMENT** | 2026-05-09 | **DB Lead reactivation** | **🟡 Issue #002 — Phase A.GOVT + Business persistence gaps.** NEW §30 + migrations 029-032: `sonar_companies`, `sonar_company_members`, `sonar_bank_subsidy_programs`, `sonar_bank_business_payroll_batches`, `sonar_bank_business_payroll_lines`, `sonar_bank_govt_risk_scores`; ALTER `sonar_bank_subsidies.program_id`; ALTER `sonar_bank_movements.category` add `fine_collected`, `payroll_disbursement`, `reconciliation`, `interest_accrued` + treasury rollup index. Requires Backend Lead consumer review + Security Lead risk-score formula review before promotion. |
 
 ---
 
-**FIN DEL DOCUMENTO `technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL (Bank Phase A schema DDL complete — DB Lead sign-off 2026-05-06 BANK-DB.4)**
+**FIN DEL DOCUMENTO `technical/03_db_schema.md` v2.1 DRAFT AMENDMENT (Issue #002 GOVT/BUSINESS persistence gaps — DB Lead reactivation 2026-05-09)**

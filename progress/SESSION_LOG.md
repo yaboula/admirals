@@ -1786,3 +1786,75 @@ R1 findings inherited 100% closed (per BANK-BE.LOCK.R1 entry).
 - Files in scope: `progress/FE_BACKEND_REQUESTS.md` + `server/callbacks/**` + `web-src/src/govt/data/queries/**`.
 
 — **Frontend Lead BANK-A.GOVT.FINAL close 2026-05-09. TODA la UI Phase A completa — 8 nodos Treasury Bureau + 6 rutas Bank App. Gold token family `--color-govt-gold` aplicado equilibradamente. SonarBureauSeal SVG custom `f6c0cd2`. IRS PNG hero + S monogram sidebar `419a779`. FE_BACKEND_REQUESTS v0.5 14 items. Branch `feature/bank-security-phase-a`. Frontend Lead Standby. Próxima acción: BANK-A.H3 Handoff ceremony o Backend Lead reactivación para integración real.**
+
+---
+
+### BANK-DB.AMEND.1 — Issue #002 GOVT/BUSINESS persistence gaps — v2.1 DRAFT AMENDMENT emitted
+
+- **Fecha:** 2026-05-09 (~05:45 UTC+02)
+- **Founder + Agent:** yaboula + Cascade (DB Lead reactivation)
+- **Sprint / Phase:** Phase A — Post-frontend mock→real readiness amendment.
+- **Trigger:** `docs/agents/teams/issues/issue_002_phase_a_govt_business_persistence_gaps.md` — Backend Lead detectó gaps DB para REQ-FE-006..015 tras Frontend Phase A GOVT/BUSINESS mock close.
+- **Status:** ✅ **DB AMENDMENT EMITTED** — Backend/Security consumer review pending.
+
+#### Acciones ejecutadas
+
+- ✅ **Migration 029** — `resources/sonar_core/migrations/029_company_registry.sql`
+  - Crea `sonar_companies`.
+  - Crea `sonar_company_members`.
+  - Resuelve Issue #001 a nivel tabla, pero FK promotion legacy queda diferida hasta orphan audit.
+- ✅ **Migration 030** — `resources/sonar_core/migrations/030_subsidy_programs.sql`
+  - Crea `sonar_bank_subsidy_programs`.
+  - Añade `sonar_bank_subsidies.program_id CHAR(36) NULL`.
+  - Añade índice `idx_sonar_bank_subsidies_program_issued`.
+- ✅ **Migration 031** — `resources/sonar_core/migrations/031_business_payroll_persistence.sql`
+  - Crea `sonar_bank_business_payroll_batches`.
+  - Crea `sonar_bank_business_payroll_lines`.
+  - Añade persistencia durable para `business.payroll.execute` y approvals resultantes.
+- ✅ **Migration 032** — `resources/sonar_core/migrations/032_govt_risk_scores_and_treasury_movements.sql`
+  - Crea `sonar_bank_govt_risk_scores` materialized snapshot 0-100 para citizen/company.
+  - Extiende `sonar_bank_movements.category` con `fine_collected`, `payroll_disbursement`, `reconciliation`, `interest_accrued`.
+  - Añade `idx_sonar_bank_movements_treasury_rollup`.
+- ✅ **SSoT** — `docs/technical/03_db_schema.md` v2.0 LOCKED PROVISIONAL → **v2.1 DRAFT AMENDMENT**
+  - Header actualizado.
+  - Tablas NEW + existing extends + migrations index actualizados.
+  - §30 NEW con decisions + queries hot path + handoff obligations.
+  - Changelog + FIN actualizados.
+- ✅ **Issue #002** actualizado:
+  - Status → `DB AMENDMENT EMITTED`.
+  - Acceptance criteria DB Lead marcados completed.
+  - Estado registra migrations 029-032 + SSoT §30.
+- ✅ **Issue #001** actualizado:
+  - Status → `Partially resolved`.
+  - `sonar_companies` materializada por migration 029.
+  - FK promotion sigue OPEN hasta orphan audit + consumer review.
+
+#### Decisiones críticas
+
+- **No se promueven FKs legacy automáticamente** desde columnas `company_id` ya existentes. Motivo: riesgo de romper datos opacos previos sin orphan audit real.
+- **Risk score GOVT Option A aceptada** — tabla materializada `sonar_bank_govt_risk_scores`; Security Lead debe revisar fórmula antes de LOCKED promotion.
+- **Subsidy programs separados de disbursements** — catálogo/budget/status en `sonar_bank_subsidy_programs`; ledger real sigue en `sonar_bank_subsidies`.
+- **Payroll durable line-level** — Business Cockpit puede pasar de preview-only a ejecución real con trazabilidad por empleado/línea.
+
+#### FE requests desbloqueados por persistencia
+
+| FE request | Estado tras amendment |
+|---|---|
+| REQ-FE-006 `gov.census.list` | ✅ risk materialized + indexes |
+| REQ-FE-007 `gov.census.detail` | ✅ risk + registry joins |
+| REQ-FE-008 risk score contract | ✅ DB storage decision emitted, Security formula review pending |
+| REQ-FE-010 subsidy write | ✅ program validation + company registry |
+| REQ-FE-011 business registry | ✅ companies + members/directors |
+| REQ-FE-012 treasury movements | ✅ categories + rollup index |
+| REQ-FE-013 subsidy read | ✅ program catalog |
+| REQ-FE-014 reports analytics | ✅ company sector + risk breakdown persistence |
+| REQ-FE-015 business mutations | ✅ payroll batches/lines + role registry |
+
+#### Pendientes próximos
+
+1. **Backend Lead consumer review** de migrations 029-032 + SSoT §30.
+2. **Security Lead review** de risk score formula/cadence antes de LOCKED promotion.
+3. **Backend Lead implementar endpoints REQ-FE-006..015** contra tablas v2.1 DRAFT.
+4. **Orphan audit** antes de cualquier FK promotion de company_id legacy.
+
+— **DB Lead AMENDMENT v2.1 DRAFT emitted 2026-05-09. Ready for Backend/Security consumer review.**

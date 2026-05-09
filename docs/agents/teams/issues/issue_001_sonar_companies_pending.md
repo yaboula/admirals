@@ -1,7 +1,7 @@
 # Issue #001 — `sonar_companies` table pending — opaque `company_id` deferred FK
 
 > **Tipo:** Cross-team — DB Lead reporta + Backend Lead acción.
-> **Status:** 🟡 Open — workaround applied DB Phase A.
+> **Status:** 🟡 Partially resolved — `sonar_companies` created by Issue #002 amendment; FK promotion still deferred pending orphan audit.
 > **Severidad:** Media (no blocker DB Phase A pero blocker referential integrity post Phase A coding).
 > **Reporter:** DB Lead (BANK-DB.0).
 > **Owner pendiente:** Backend Lead (post-H1 onboarding).
@@ -19,7 +19,7 @@ El blueprint v1.2 §5.2 + slice DB §3.4 + prompt §4.2.4 referencian operacione
 - `sonar_bank_stocks_holdings` con `company_id` (acciones empresas player-driven Tier 4).
 - `sonar_bank_movements.related_doc_id` futuras facturas B2B.
 
-**La tabla canónica `sonar_companies` no existe en producción.**
+**La tabla canónica `sonar_companies` no existía en migrations 001-028.** Issue #002 la materializa en `resources/sonar_core/migrations/029_company_registry.sql`, pero la promoción de FKs desde columnas opacas existentes sigue diferida hasta orphan audit real.
 
 `@resources/sonar_core/migrations/003_bank_schema.sql:36-40` documenta D3:
 
@@ -40,7 +40,7 @@ El "S2+" mencionado nunca se materializó — la transition Admirals → Bank-on
 
 **Implicaciones:**
 
-- DB Lead **NO** crea `sonar_companies` en Phase A.
+- DB Lead **NO** creó `sonar_companies` en Phase A inicial; Issue #002 habilita AMENDMENT v2.1 para crearla de forma aditiva por necesidad mock→real GOVT/BUSINESS.
 - Todas las columnas que referenciarían `sonar_companies(id)` se declaran como `company_id CHAR(36) NULL` (o `NOT NULL` según semántica) **sin FOREIGN KEY constraint**.
 - Validación application-layer obligatoria en Backend Lead — UUID v4 well-formed + existence check si Backend mantiene cache empresas en memoria.
 - Migration aditiva futura post-Phase A añadirá FKs vía `ALTER TABLE ADD CONSTRAINT` cuando `sonar_companies` se cree.
@@ -108,10 +108,10 @@ company_id CHAR(36) NOT NULL COMMENT 'FK sonar_companies(id) DEFERRED — issue 
 
 Cuando `sonar_companies` se cree (sea Phase B o Phase C — fuera del scope DB Phase A):
 
-1. **Crear migration aditiva** `migrations/0NN_sonar_companies_create.sql` con:
+1. ✅ **Crear migration aditiva** `migrations/029_company_registry.sql` con:
    - DDL `sonar_companies` table.
-   - Reference data seeds si aplica.
-2. **Crear migration aditiva** `migrations/0NN+1_promote_company_fks.sql` con:
+   - DDL `sonar_company_members` registry.
+2. 🟡 **Crear migration aditiva futura** `migrations/0NN_promote_company_fks.sql` con:
    - Pre-flight orphan rows audit query.
    - `ALTER TABLE sonar_bank_accounts ADD CONSTRAINT fk_sonar_bank_accounts_owner_company FOREIGN KEY (owner_company_id) REFERENCES sonar_companies(id) ON DELETE RESTRICT ON UPDATE CASCADE;`
    - Equivalente para cada tabla §3 de este issue.
@@ -151,9 +151,9 @@ Cuando `sonar_companies` se cree (sea Phase B o Phase C — fuera del scope DB P
 | Fecha | Acción | Por |
 |---|---|---|
 | 2026-05-06 | Issue creado post Q-DB-E founder green-light | DB Lead |
-| TBD | Backend Lead onboarding H1 — accept ownership | Backend Lead |
-| TBD | `sonar_companies` migration creada | Backend Lead |
-| TBD | FK promotion migration ejecutada | Backend Lead |
-| TBD | Issue cerrado | Backend Lead |
+| 2026-05-09 | Issue #002 abre AMENDMENT v2.1 por gaps GOVT/BUSINESS | Backend Lead |
+| 2026-05-09 | `sonar_companies` + `sonar_company_members` migration creada (`029_company_registry.sql`) | DB Lead |
+| TBD | FK promotion migration ejecutada tras orphan audit | Backend Lead + DB Lead |
+| TBD | Issue cerrado full | Backend Lead + DB Lead |
 
-— **Issue #001 LOCKED open** post DB Lead Q-DB-E acceptance 2026-05-06.
+— **Issue #001 PARTIALLY RESOLVED** post Issue #002. Tabla `sonar_companies` existe vía AMENDMENT v2.1 DRAFT; FK promotion sigue OPEN hasta orphan audit + Backend/Security consumer review.
