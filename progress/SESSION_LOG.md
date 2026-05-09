@@ -2051,3 +2051,71 @@ Examples found:
 - ⚠️ Security Lead / Founder gates still apply for risk score formula/cadence and production mutation audit shapes.
 
 — **Backend Lead Tier 4 normalization complete. Issue #003 CLOSED definitively.**
+
+---
+
+### BANK-BE.GOVT.1 — REQ-FE-006..014 Government MVP server data layer
+
+- **Fecha:** 2026-05-09
+- **Founder + Agent:** yaboula + Cascade (Backend Lead)
+- **Sprint / Phase:** Phase A — Government real data layer after Issue #003 closure.
+- **Trigger:** Founder approved MVP Risk Score formula and mandatory audit shape for sensitive mutations.
+- **Status:** 🟢 **GOVT MVP SERVER CUT IMPLEMENTED** — first backend callbacks for Government reads/mutations are in place; runtime smoke pending FiveM/oxmysql environment.
+
+#### Acciones ejecutadas
+
+- ✅ Added Government repository:
+  - `resources/sonar_bank_app/server/repos/govt.lua`
+  - Reads canonical `sonar_accounts`, `sonar_bank_accounts`, `sonar_bank_movements`, `sonar_bank_compliance_flags`, `sonar_bank_govt_risk_scores`, `sonar_bank_subsidy_programs`, `sonar_bank_subsidies`.
+- ✅ Added MVP Risk Score engine:
+  - `resources/sonar_bank_app/server/services/risk_engine.lua`
+  - High: single outgoing transfer over 50000.
+  - Medium: three or more outgoing transfers inside five minutes, or outgoing transfers toward frozen accounts.
+  - Low: daily-pattern anomaly placeholder fixed score.
+  - Materializes scores into `sonar_bank_govt_risk_scores` and raises compliance flags when high/medium rules trigger.
+- ✅ Added Government service:
+  - `resources/sonar_bank_app/server/services/govt_service.lua`
+  - Exposes Census list/detail, sanctions queue/detail/frozen/actions/kpis, freeze/lift/fine/close flag, treasury page, subsidies stats/list/detail, reports data.
+- ✅ Added Government callbacks:
+  - `resources/sonar_bank_app/server/callbacks/govt.lua`
+  - Admin-gated callbacks for REQ-FE-006/007/009/012/013/014.
+  - Read ACE: `sonar.bank.govt.audit.full` with `sonar.bank.admin` fallback via `Auth.RequireAdmin`.
+  - Compliance mutation ACE: `sonar.bank.govt.compliance.admin` with `sonar.bank.admin` fallback.
+- ✅ Hardened shared helpers:
+  - `_wrap.lua` now forwards optional `admin_ace`.
+  - `auth.lua` accepts the specific ACE or the canonical `sonar.bank.admin` fallback.
+  - `audit.lua` now preserves `request_nonce`, `severity`, `actor_role`, and `related_movement_id` into queued audit entries.
+  - `enums.lua` includes `govt_fine_apply` and `govt_flag_close`; flag-close requires previous snapshot.
+
+#### Audit / idempotency shape
+
+- ✅ Sensitive Government mutations use idempotency UUID v4:
+  - freeze accounts
+  - lift freeze
+  - apply fine
+  - close flag
+- ✅ Audit entries include:
+  - actor CID
+  - actor source
+  - government actor role
+  - target CID/account/IBAN where available
+  - virtual terminal id (`fivem-src-<src>`)
+  - player endpoint/IP when FiveM exposes it
+  - idempotency key as `request_nonce`
+  - correlation id = idempotency key
+
+#### Validaciones ejecutadas
+
+- ✅ `git diff --check` passed for touched tracked files before staging.
+- ✅ Static grep confirmed no runtime SQL statements were introduced using legacy `bank_*` table names.
+- ⚠️ Lua/luac syntax check still not executed because `lua`/`luac` are not available on PATH in the current Windows environment.
+- ⚠️ Runtime smoke pending FiveM/oxmysql environment.
+
+#### Pendientes próximos
+
+1. Stage new GOVT files and run final `git diff --check --cached`.
+2. Commit `feat(bank-be): add govt mvp data layer`.
+3. Connect frontend `resources/sonar_bank_app/web-src/src/govt/data/queries/*` from mock to `useBankCallback` / `useBankMutation`.
+4. Attack Business module next: `REQ-FE-011` registry/detail and `REQ-FE-015` approval/payroll/withdrawal mutations.
+
+— **Backend Lead GOVT MVP server data layer implemented. Next recommended module: Empresas/Business.**

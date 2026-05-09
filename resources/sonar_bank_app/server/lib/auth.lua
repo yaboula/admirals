@@ -89,7 +89,7 @@ function M.RequireAdmin(src, ace_override)
 
   local ace = ace_override or DEFAULT_ADMIN_ACE
   -- IsPlayerAceAllowed: native FiveM
-  if not IsPlayerAceAllowed(src, ace) then
+  if not IsPlayerAceAllowed(src, ace) and (ace == DEFAULT_ADMIN_ACE or not IsPlayerAceAllowed(src, DEFAULT_ADMIN_ACE)) then
     return nil, Errors.New('AUTH_ACE_DENIED', {
       reason = 'ACE permission denied',
       ace    = ace,

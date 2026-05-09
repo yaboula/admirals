@@ -191,6 +191,10 @@ function M.Write(entry)
     event_data            = entry.event_data,
     cross_ref_audit_id    = entry.cross_ref_audit_id,
     correlation_id        = entry.correlation_id,
+    request_nonce         = entry.request_nonce,
+    severity              = entry.severity,
+    actor_role            = entry.actor_role,
+    related_movement_id   = entry.related_movement_id,
   }
 
   _queue_size = _queue_size + 1

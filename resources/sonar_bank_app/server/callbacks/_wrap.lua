@@ -107,6 +107,7 @@ function W.Register(name, opts, handler)
   opts = opts or {}
   local tier            = opts.tier or Enums.TIER.TIER_1_READ
   local require_admin   = opts.require_admin == true
+  local admin_ace       = opts.admin_ace
   local skip_rate_limit = opts.skip_rate_limit == true
   local cb_id           = opts.cb_id or name
 
@@ -135,7 +136,7 @@ function W.Register(name, opts, handler)
     -- §3.1 Auth gate
     local citizen_id, auth_err
     if require_admin then
-      citizen_id, auth_err = Auth.RequireAdmin(src)
+      citizen_id, auth_err = Auth.RequireAdmin(src, admin_ace)
     else
       citizen_id, auth_err = Auth.RequireCitizen(src)
     end

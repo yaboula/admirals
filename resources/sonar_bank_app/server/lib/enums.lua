@@ -81,6 +81,8 @@ M.AUDIT_EVENT_TYPE = {
   GOVT_AUDIT_RESPONSE   = 'govt_audit_response',
   GOVT_FREEZE           = 'govt_freeze',
   GOVT_UNFREEZE         = 'govt_unfreeze',
+  GOVT_FINE_APPLY       = 'govt_fine_apply',
+  GOVT_FLAG_CLOSE       = 'govt_flag_close',
 
   -- Anti-fraud
   FRAUD_REVIEW_OPEN     = 'fraud_review_open',
@@ -110,6 +112,7 @@ M.AUDIT_EVENTS_REQUIRING_FLAG_SNAPSHOT = {
   [M.AUDIT_EVENT_TYPE.ACCOUNT_UNFREEZE] = true,
   [M.AUDIT_EVENT_TYPE.GOVT_FREEZE]      = true,
   [M.AUDIT_EVENT_TYPE.GOVT_UNFREEZE]    = true,
+  [M.AUDIT_EVENT_TYPE.GOVT_FLAG_CLOSE]  = true,
   [M.AUDIT_EVENT_TYPE.KYC_APPROVE]      = true,
   [M.AUDIT_EVENT_TYPE.KYC_REJECT]       = true,
 }
