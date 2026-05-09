@@ -41,7 +41,7 @@ export function Auth() {
 
   return (
     <main className="relative flex h-[100dvh] w-screen overflow-hidden bg-surface-abyss text-text-primary">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,oklch(0.65_0.22_40/0.14),transparent_30%),radial-gradient(circle_at_84%_20%,oklch(0.70_0.14_255/0.16),transparent_32%),radial-gradient(circle_at_55%_92%,oklch(0.72_0.17_154/0.12),transparent_34%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,oklch(0.65_0.22_40/0.14),transparent_30%),radial-gradient(circle_at_84%_20%,oklch(0.70_0.14_255/0.16),transparent_32%)]" />
       <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(oklch(1_0_0/0.16)_1px,transparent_1px),linear-gradient(90deg,oklch(1_0_0/0.16)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/[0.018] blur-3xl" />
 
@@ -75,11 +75,10 @@ export function Auth() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.98, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }} className="relative lg:justify-self-end">
-          <div className="absolute -inset-10 rounded-[2.75rem] bg-[radial-gradient(circle_at_50%_16%,oklch(0.65_0.22_40/0.16),transparent_42%),radial-gradient(circle_at_80%_86%,oklch(0.72_0.17_154/0.12),transparent_34%)] blur-3xl" />
+          <div className="absolute -inset-10 rounded-[2.75rem] bg-[radial-gradient(circle_at_50%_16%,oklch(0.65_0.22_40/0.16),transparent_42%)] blur-3xl" />
           <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(145deg,oklch(0.105_0.012_270/0.92),oklch(0.045_0.006_270/0.96)_58%,oklch(0.035_0.004_270/0.98))] p-5 shadow-[0_34px_100px_-48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.11)] backdrop-blur-2xl">
             <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             <div className="absolute -right-24 -top-24 h-52 w-52 rounded-full border border-white/10 bg-white/[0.025]" />
-            <div className="absolute -bottom-28 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-semantic-success/10 blur-3xl" />
             <div className="absolute right-5 top-5">
               <Badge tone={streamerMode ? 'success' : 'warning'} variant="soft" size="sm" pulse={streamerMode} className="border border-white/10 shadow-[0_10px_28px_-18px_currentColor]">
                 {streamerMode ? t('auth.streamerOn') : t('auth.streamerOff')}
@@ -98,7 +97,7 @@ export function Auth() {
 
               <div className="mt-5 text-center">
                 <p className="text-sm font-semibold text-text-primary">{t('auth.biometric')}</p>
-                <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-text-quaternary">SONAR ID · M004</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-text-quaternary">SONAR BANK</p>
               </div>
             </div>
 
