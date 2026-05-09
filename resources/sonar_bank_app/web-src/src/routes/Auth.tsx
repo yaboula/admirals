@@ -163,41 +163,42 @@ function FeatureCard({ icon: Icon, title, description, tone }: { icon: LucideIco
 
 function MarketSignalPreview() {
   const { t } = useI18n()
-  const bars = [34, 48, 28, 66, 54, 78, 62, 88, 74, 92, 81, 96]
+  const bars = [24, 40, 22, 58, 44, 70, 50, 82, 66, 88, 78, 92]
 
   return (
-    <div className="mt-5 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,oklch(1_0_0/0.045),oklch(1_0_0/0.018))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+    <div className="mt-5 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[radial-gradient(circle_at_84%_74%,oklch(0.72_0.17_154/0.10),transparent_36%),linear-gradient(180deg,oklch(1_0_0/0.046),oklch(1_0_0/0.018))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary">
             <Landmark size={14} className="text-text-tertiary" />
             {t('auth.signal')}
           </span>
-          <div className="mt-1 h-px w-20 bg-gradient-to-r from-white/18 to-transparent" />
+          <div className="mt-1 h-px w-24 bg-gradient-to-r from-white/18 to-transparent" />
         </div>
         <span className="rounded-full border border-semantic-success-deep/25 bg-semantic-success-glow px-2.5 py-1 text-xs font-semibold text-semantic-success-deep shadow-[0_10px_24px_-18px_currentColor] tactile-tabular-nums">+2.8%</span>
       </div>
 
       <div className="relative mt-4 h-14">
-        <div className="absolute inset-x-0 bottom-2 h-px bg-white/[0.07]" />
-        <div className="absolute inset-x-0 bottom-2 flex h-12 items-end gap-1.5">
+        <div className="absolute inset-x-0 bottom-1.5 h-px bg-gradient-to-r from-white/[0.04] via-white/[0.11] to-white/[0.04]" />
+        <div className="absolute inset-x-0 bottom-1.5 grid h-12 grid-cols-12 items-end gap-1.5">
           {bars.map((height, index) => {
             const active = index > 8
             return (
-              <span key={index} className="flex h-full flex-1 items-end justify-center">
+              <span key={index} className="flex h-full items-end justify-center">
                 <span
-                  className={cn('block w-full max-w-[18px] rounded-full transition-colors', active ? 'shadow-[0_10px_22px_-15px_oklch(0.72_0.17_154)]' : '')}
+                  className={cn('block w-full max-w-[17px] rounded-t-full rounded-b-md transition-colors', active ? 'shadow-[0_12px_24px_-14px_oklch(0.72_0.17_154)]' : '')}
                   style={{
                     height: `${height}%`,
                     background: active
-                      ? 'linear-gradient(180deg, oklch(0.74 0.17 154), oklch(0.56 0.16 154))'
-                      : 'linear-gradient(180deg, oklch(1 0 0 / 0.16), oklch(1 0 0 / 0.08))',
+                      ? 'linear-gradient(180deg, oklch(0.76 0.17 154), oklch(0.52 0.14 154))'
+                      : 'linear-gradient(180deg, oklch(1 0 0 / 0.15), oklch(1 0 0 / 0.055))',
                   }}
                 />
               </span>
             )
           })}
         </div>
+        <div className="absolute bottom-1.5 right-0 h-12 w-24 bg-gradient-to-l from-semantic-success/10 to-transparent blur-xl" />
       </div>
     </div>
   )
