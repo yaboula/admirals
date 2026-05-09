@@ -155,46 +155,73 @@ function M.HashPayload(payload)
   return HMAC.SHA256(serialized)
 end
 
+local function encode_json(t)
+  if t == nil then return nil end
+  if json and json.encode then return json.encode(t) end
+  return tostring(t)
+end
+
+local function resolve_domain(opts)
+  if opts and type(opts.domain) == 'string' then return opts.domain end
+  if opts and opts.callback_id == 'C006' then return 'transfer' end
+  return 'custom'
+end
+
 -- -----------------------------------------------------------------------------
 -- §3. Acquire / Commit / Orphan / Replay
 -- -----------------------------------------------------------------------------
 
 local SQL_INSERT_IN_FLIGHT = [[
-INSERT INTO bank_idempotency_keys
-  (`key`, status, payload_hash, actor_citizen_id, callback_id, ttl_expires_at, cross_ref_audit_id)
+INSERT INTO sonar_bank_idempotency_keys
+  (idempotency_key, domain, state, initiated_by_account_id, bank_account_id,
+   request_payload, expires_at, related_correlation_id)
 VALUES
-  (?, 'in_flight', ?, ?, ?, FROM_UNIXTIME(?/1000), ?)
-ON DUPLICATE KEY UPDATE `key` = `key`
+  (?, ?, 'pending', ?, ?, ?, FLOOR(? / 1000), ?)
+ON DUPLICATE KEY UPDATE
+  request_payload = IF(state = 'failed' OR expires_at < UNIX_TIMESTAMP(), VALUES(request_payload), request_payload),
+  expires_at = IF(state = 'failed' OR expires_at < UNIX_TIMESTAMP(), VALUES(expires_at), expires_at),
+  related_correlation_id = IF(state = 'failed' OR expires_at < UNIX_TIMESTAMP(), VALUES(related_correlation_id), related_correlation_id),
+  state = IF(state = 'failed' OR expires_at < UNIX_TIMESTAMP(), 'pending', state)
 ]]
 
 local SQL_SELECT_KEY = [[
 SELECT
-  `key`, status, payload_hash, result_payload,
-  UNIX_TIMESTAMP(ttl_expires_at)*1000 AS ttl_expires_ms,
-  cross_ref_audit_id
-FROM bank_idempotency_keys
-WHERE `key` = ?
+  idempotency_key AS `key`,
+  CASE state
+    WHEN 'pending' THEN IF(expires_at < UNIX_TIMESTAMP(), 'orphan', 'in_flight')
+    WHEN 'completed' THEN 'committed'
+    WHEN 'failed' THEN 'orphan'
+    ELSE state
+  END AS status,
+  JSON_UNQUOTE(JSON_EXTRACT(request_payload, '$.payload_hash')) AS payload_hash,
+  response_payload AS result_payload,
+  expires_at * 1000 AS ttl_expires_ms,
+  related_audit_id AS cross_ref_audit_id
+FROM sonar_bank_idempotency_keys
+WHERE idempotency_key = ?
 LIMIT 1
 ]]
 
 local SQL_UPDATE_COMMIT = [[
-UPDATE bank_idempotency_keys
-SET status = 'committed',
-    result_payload = ?,
-    committed_at = CURRENT_TIMESTAMP(6)
-WHERE `key` = ? AND status = 'in_flight'
+UPDATE sonar_bank_idempotency_keys
+SET state = 'completed',
+    response_payload = ?,
+    response_code = ?,
+    completed_at = UNIX_TIMESTAMP()
+WHERE idempotency_key = ? AND state = 'pending'
 ]]
 
 local SQL_UPDATE_ORPHAN = [[
-UPDATE bank_idempotency_keys
-SET status = 'orphan'
-WHERE `key` = ? AND status = 'in_flight'
+UPDATE sonar_bank_idempotency_keys
+SET state = 'failed',
+    response_code = 'orphaned'
+WHERE idempotency_key = ? AND state = 'pending'
 ]]
 
 local SQL_PURGE_ORPHANS = [[
-DELETE FROM bank_idempotency_keys
-WHERE status IN ('orphan', 'in_flight')
-  AND ttl_expires_at < (NOW(6) - INTERVAL ? MINUTE)
+DELETE FROM sonar_bank_idempotency_keys
+WHERE state IN ('failed', 'pending')
+  AND expires_at < (UNIX_TIMESTAMP() - (? * 60))
 LIMIT 500
 ]]
 
@@ -269,13 +296,22 @@ function M.Acquire(key, payload, opts)
   end
 
   -- INSERT in_flight (idempotent via ON DUPLICATE KEY)
+  local request_payload = {
+    payload_hash = payload_hash,
+    payload = payload,
+    actor_citizen_id = opts.actor_citizen_id,
+    callback_id = opts.callback_id,
+    cross_ref_audit_id = opts.cross_ref_audit_id,
+  }
+
   local _, ins_err = DB.Execute(SQL_INSERT_IN_FLIGHT, {
     key,
-    payload_hash,
-    opts.actor_citizen_id,
-    opts.callback_id,
+    resolve_domain(opts),
+    opts.actor_account_id,
+    opts.bank_account_id,
+    encode_json(request_payload),
     ttl_expires_ms,
-    opts.cross_ref_audit_id,
+    opts.correlation_id,
   })
   if ins_err then return nil, nil, ins_err end
 
@@ -308,7 +344,7 @@ function M.Commit(key, result_payload)
     end
   end
 
-  local affected, err = DB.Execute(SQL_UPDATE_COMMIT, { json_result, key })
+  local affected, err = DB.Execute(SQL_UPDATE_COMMIT, { json_result, 'success', key })
   if err then return false, err end
   if affected == 0 then
     return false, Errors.New('IDEMPOTENCY_KEY_EXPIRED', {

@@ -1858,3 +1858,139 @@ R1 findings inherited 100% closed (per BANK-BE.LOCK.R1 entry).
 4. **Orphan audit** antes de cualquier FK promotion de company_id legacy.
 
 — **DB Lead AMENDMENT v2.1 DRAFT emitted 2026-05-09. Ready for Backend/Security consumer review.**
+
+---
+
+### BANK-BE.CONSUME.1 — DB v2.1 DRAFT consumer review + Backend schema drift blocker
+
+- **Fecha:** 2026-05-09
+- **Founder + Agent:** yaboula + Cascade (Backend Lead reactivation)
+- **Sprint / Phase:** Phase A — Post `BANK-DB.AMEND.1` consumer review.
+- **Trigger:** Review migrations `029-032`, schema v2.1 DRAFT, and FE requests `REQ-FE-006..015` before implementing mock→real callbacks.
+- **Status:** 🔴 **BLOCKED FOR PRODUCTION IMPLEMENTATION** — DB Issue #002 accepted as persistence-complete, but Backend Issue #003 opened for runtime schema drift.
+
+#### Acciones ejecutadas
+
+- ✅ Reviewed DB amendment migrations:
+  - `029_company_registry.sql`
+  - `030_subsidy_programs.sql`
+  - `031_business_payroll_persistence.sql`
+  - `032_govt_risk_scores_and_treasury_movements.sql`
+- ✅ Confirmed DB amendment covers FE persistence gaps for:
+  - Census/risk snapshots.
+  - Subsidy program catalog + disbursement linkage.
+  - Business registry + membership.
+  - Treasury movement rollups.
+  - Payroll batch/line persistence.
+- ✅ Audited backend runtime repo/libs table references.
+- ✅ Created `docs/agents/teams/issues/issue_003_backend_schema_drift_bank_aliases.md`.
+- ✅ Updated `progress/FE_BACKEND_REQUESTS.md` to v0.8 with Issue #003 blocker reference.
+
+#### Finding principal
+
+Existing backend runtime code references legacy/non-canonical `bank_*` tables while DB migrations create canonical `sonar_bank_*` tables.
+
+Examples found:
+
+| Backend file | Drift |
+|---|---|
+| `server/repos/accounts.lua` | `bank_accounts` |
+| `server/repos/transactions.lua` | `bank_transactions`, `bank_accounts` |
+| `server/repos/recipients.lua` | `bank_saved_recipients` |
+| `server/repos/loans.lua` | `bank_loans`, `bank_loan_payments` |
+| `server/repos/recurring.lua` | `bank_recurring` |
+| `server/repos/portfolio.lua` | `bank_portfolio_holdings` |
+| `server/repos/cards.lua` | `bank_cards` |
+| `server/repos/audit_query.lua` | `bank_audit_ledger` |
+| `server/lib/audit.lua` | `bank_audit_ledger` |
+| `server/lib/idempotency.lua` | `bank_idempotency_keys` |
+
+#### Decisión Backend Lead
+
+- **Do not implement production GOVT/BUSINESS mutation callbacks yet.**
+- Implementing REQ-FE-006..015 directly now would create split-brain behavior:
+  - New endpoints could use `sonar_*`.
+  - Existing audit/idempotency/accounts/movements paths still target `bank_*`.
+- Recommended path: **Path A — Backend normalization first**.
+
+#### Pendientes próximos
+
+1. **Founder decision:** approve Path A normalization, or explicitly waive into Path C read-only partial mode.
+2. **Backend Lead Path A priority:**
+   - Normalize audit writer/query to `sonar_bank_audit_ledger`.
+   - Normalize idempotency lifecycle to `sonar_bank_idempotency_keys`.
+   - Normalize accounts repo to `sonar_bank_accounts`.
+   - Normalize transaction/movement read model to `sonar_bank_movements`.
+3. **Then implement REQ-FE-006..015** against canonical DB v2.1 DRAFT.
+4. **Security Lead still required** for risk score formula/cadence before LOCKED promotion.
+5. **DB Lead consultative** if any compatibility migration/view is proposed.
+
+— **Backend Lead consumer review complete. Issue #003 OPEN. Production implementation paused until canonical schema drift is resolved or explicitly waived.**
+
+---
+
+### BANK-BE.NORMALIZE.1 — Issue #003 Path A core backend normalization
+
+- **Fecha:** 2026-05-09
+- **Founder + Agent:** yaboula + Cascade (Backend Lead)
+- **Sprint / Phase:** Phase A — Backend normalization before GOVT/BUSINESS production callbacks.
+- **Trigger:** Founder approved Path A normalization after Issue #003 schema drift blocker.
+- **Status:** 🟠 **CORE NORMALIZED / ISSUE #003 STILL OPEN** — audit, idempotency, accounts, and movements now target canonical `sonar_bank_*`; Tier 4 repos still require normalization or waiver.
+
+#### Acciones ejecutadas
+
+- ✅ Normalized audit write path:
+  - `resources/sonar_bank_app/server/lib/audit.lua`
+  - Runtime target changed from `bank_audit_ledger` to `sonar_bank_audit_ledger`.
+  - Legacy audit payload fields are preserved inside `context_data` while canonical columns (`ts`, `event_type`, `severity`, `bank_account_iban`, `actor_role`, `correlation_id`, `request_nonce`, `related_movement_id`, `source_resource`) are populated.
+- ✅ Normalized audit read path:
+  - `resources/sonar_bank_app/server/repos/audit_query.lua`
+  - Runtime target changed from `bank_audit_ledger` to `sonar_bank_audit_ledger`.
+  - Query adapter reconstructs legacy read aliases from canonical columns + `context_data`.
+- ✅ Normalized idempotency lifecycle:
+  - `resources/sonar_bank_app/server/lib/idempotency.lua`
+  - Runtime target changed from `bank_idempotency_keys` to `sonar_bank_idempotency_keys`.
+  - Adapter maps legacy runtime states `in_flight/committed/orphan` to canonical DB states `pending/completed/failed`.
+  - Expired or failed keys may be re-acquired through canonical `expires_at`.
+- ✅ Normalized accounts adapter:
+  - `resources/sonar_bank_app/server/repos/accounts.lua`
+  - Runtime target changed from `bank_accounts` to `sonar_bank_accounts` + `sonar_accounts`.
+  - Existing Lua/FE payload shape is preserved (`account_id`, `owner_citizen_id`, `balance_minor`, `savings_minor`, `status`, `frozen_flag`).
+  - `balance_minor` is derived from canonical `DECIMAL balance`.
+  - `savings_minor` is compatibility-mapped to `0` because canonical schema has no legacy `savings_minor` column.
+  - Joint owner mutation functions now fail explicitly because reviewed canonical migrations do not define joint owner persistence.
+- ✅ Normalized transaction/movement adapter:
+  - `resources/sonar_bank_app/server/repos/transactions.lua`
+  - Runtime target changed from `bank_transactions` to immutable `sonar_bank_movements`.
+  - Transfer writes insert debit/credit ledger rows using shared `related_doc_id`.
+  - Read paths reconstruct transaction payloads for list/recent-recipient/bootstrap consumers.
+- ✅ Fixed adjacent canonical format compatibility:
+  - `resources/sonar_bank_app/server/lib/validators.lua`
+  - `resources/sonar_bank_app/server/services/account_service.lua`
+  - `validators.lua` now accepts SONAR canonical `AD-XXXX-XXXX-XXXX` IBAN format and uses Lua-valid UUID v4 patterns.
+  - `OpenAccount` fallback IBAN generator now emits `AD-XXXX-XXXX-XXXX` shape instead of overlong `ES89...`.
+
+#### Validaciones ejecutadas
+
+- ✅ `git diff --check` passed for touched backend files.
+- ✅ Static grep confirmed no runtime SQL references to `bank_accounts`, `bank_transactions`, `bank_audit_ledger`, or `bank_idempotency_keys` remain in normalized core files.
+- ⚠️ Lua/luac syntax check not executed because `lua`/`luac` are not available on PATH in the current Windows environment.
+
+#### Limitaciones / riesgos restantes
+
+- Issue #003 remains open because Tier 4 repos still contain legacy runtime references:
+  - `server/repos/recipients.lua` → `bank_saved_recipients`
+  - `server/repos/loans.lua` / `server/services/loan_service.lua` → `bank_loans`, `bank_loan_payments`
+  - `server/repos/recurring.lua` → `bank_recurring`
+  - `server/repos/portfolio.lua` → `bank_portfolio_holdings`
+  - `server/repos/cards.lua` → `bank_cards`
+- Canonical savings/joint-owner persistence is not present in reviewed migrations, so savings and joint-owner flows are explicitly limited until DB contract exists or Founder accepts a scoped compatibility model.
+- Full production implementation of REQ-FE-006..015 remains gated on Tier 4 normalization or explicit Founder waiver for partial/read-only mode.
+
+#### Pendientes próximos
+
+1. Normalize Tier 4 repos to canonical `sonar_bank_*` schema or document Founder waiver.
+2. Run runtime smoke once FiveM/oxmysql environment is available.
+3. Resume REQ-FE-006..015 implementation only after remaining Issue #003 scope is resolved or explicitly waived.
+
+— **Backend Lead Path A core normalization complete. Issue #003 downgraded from core blocker to remaining Tier 4 blocker; production GOVT/BUSINESS callbacks still paused pending final normalization/waiver.**

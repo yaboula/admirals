@@ -182,6 +182,7 @@ function M.Write(entry)
     timestamp_ms          = now_ms(),
     event_type            = entry.event_type,
     actor_citizen_id      = entry.actor_citizen_id,
+    actor_account_id      = entry.actor_account_id,
     actor_src             = entry.actor_src,
     target_citizen_id     = entry.target_citizen_id,
     target_account_id     = entry.target_account_id,
@@ -214,11 +215,10 @@ end
 -- -----------------------------------------------------------------------------
 
 local INSERT_SQL = [[
-INSERT INTO bank_audit_ledger
-  (audit_id, timestamp_ms, event_type, actor_citizen_id, actor_src,
-   target_citizen_id, target_account_id, target_iban,
-   previous_flag_snapshot, event_data, cross_ref_audit_id, correlation_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO sonar_bank_audit_ledger
+  (ts, event_type, severity, bank_account_iban, actor_account_id, actor_role,
+   correlation_id, request_nonce, related_movement_id, context_data, source_resource)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ]]
 
 --- Flush: drain queue and execute batched INSERT.
@@ -238,21 +238,33 @@ function M.Flush()
   local queries = {}
   for i = 1, batch_size do
     local e = batch[i]
+    local context_data = {
+      audit_id = e.audit_id,
+      timestamp_ms = e.timestamp_ms,
+      actor_citizen_id = e.actor_citizen_id,
+      actor_account_id = e.actor_account_id,
+      actor_src = e.actor_src,
+      target_citizen_id = e.target_citizen_id,
+      target_account_id = e.target_account_id,
+      target_iban = e.target_iban,
+      previous_flag_snapshot = e.previous_flag_snapshot,
+      event_data = e.event_data,
+      cross_ref_audit_id = e.cross_ref_audit_id,
+    }
     queries[i] = {
       query = INSERT_SQL,
       values = {
-        e.audit_id,
-        e.timestamp_ms,
+        math.floor((tonumber(e.timestamp_ms) or now_ms()) / 1000),
         e.event_type,
-        e.actor_citizen_id,
-        e.actor_src,
-        e.target_citizen_id,
-        e.target_account_id,
+        e.severity or 'info',
         e.target_iban,
-        e.previous_flag_snapshot and encode_json(e.previous_flag_snapshot) or nil,
-        e.event_data and encode_json(e.event_data) or nil,
-        e.cross_ref_audit_id,
+        e.actor_account_id,
+        e.actor_role or (e.actor_citizen_id and 'citizen' or 'system'),
         e.correlation_id,
+        e.request_nonce,
+        e.related_movement_id,
+        encode_json(context_data),
+        'sonar_bank_app',
       },
     }
   end

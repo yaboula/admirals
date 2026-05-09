@@ -20,45 +20,72 @@ BankApp.repos.accounts = {}
 local R = BankApp.repos.accounts
 
 local DB = BankApp.lib.db
+local Errors = BankApp.lib.errors
+local UUID = BankApp.lib.uuid
 
 -- -----------------------------------------------------------------------------
 -- §1. SELECT
 -- -----------------------------------------------------------------------------
 
 local SQL_SELECT_BY_IBAN = [[
-SELECT account_id, iban, owner_citizen_id, joint_owners,
-       balance_minor, savings_minor, status, frozen_flag,
-       UNIX_TIMESTAMP(created_at)*1000 AS created_ms,
-       UNIX_TIMESTAMP(updated_at)*1000 AS updated_ms
-FROM bank_accounts
-WHERE iban = ?
+SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+       JSON_ARRAY() AS joint_owners,
+       CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
+       0 AS savings_minor,
+       CASE
+         WHEN a.closed_at IS NOT NULL THEN 'closed'
+         WHEN a.is_frozen = 1 THEN 'frozen'
+         ELSE 'active'
+       END AS status,
+       a.is_frozen AS frozen_flag,
+       a.created_at * 1000 AS created_ms,
+       a.updated_at * 1000 AS updated_ms
+FROM sonar_bank_accounts a
+LEFT JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+WHERE a.iban = ?
 LIMIT 1
 ]]
 
 local SQL_SELECT_BY_ID = [[
-SELECT account_id, iban, owner_citizen_id, joint_owners,
-       balance_minor, savings_minor, status, frozen_flag,
-       UNIX_TIMESTAMP(created_at)*1000 AS created_ms,
-       UNIX_TIMESTAMP(updated_at)*1000 AS updated_ms
-FROM bank_accounts
-WHERE account_id = ?
+SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+       JSON_ARRAY() AS joint_owners,
+       CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
+       0 AS savings_minor,
+       CASE
+         WHEN a.closed_at IS NOT NULL THEN 'closed'
+         WHEN a.is_frozen = 1 THEN 'frozen'
+         ELSE 'active'
+       END AS status,
+       a.is_frozen AS frozen_flag,
+       a.created_at * 1000 AS created_ms,
+       a.updated_at * 1000 AS updated_ms
+FROM sonar_bank_accounts a
+LEFT JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+WHERE a.id = ?
 LIMIT 1
 ]]
 
 local SQL_LIST_BY_CITIZEN = [[
-SELECT account_id, iban, owner_citizen_id, joint_owners,
-       balance_minor, savings_minor, status, frozen_flag,
-       UNIX_TIMESTAMP(created_at)*1000 AS created_ms
-FROM bank_accounts
-WHERE (owner_citizen_id = ?
-       OR JSON_CONTAINS(IFNULL(joint_owners, JSON_ARRAY()), JSON_QUOTE(?), '$'))
-  AND status IN ('active','frozen')
-ORDER BY created_at ASC
+SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+       JSON_ARRAY() AS joint_owners,
+       CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
+       0 AS savings_minor,
+       CASE WHEN a.is_frozen = 1 THEN 'frozen' ELSE 'active' END AS status,
+       a.is_frozen AS frozen_flag,
+       a.created_at * 1000 AS created_ms
+FROM sonar_bank_accounts a
+INNER JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+WHERE sa.char_id = ?
+  AND a.closed_at IS NULL
+ORDER BY a.created_at ASC
 LIMIT ?
 ]]
 
 local SQL_GET_BALANCE = [[
-SELECT balance_minor, savings_minor FROM bank_accounts WHERE iban = ? LIMIT 1
+SELECT CAST(ROUND(balance * 100) AS SIGNED) AS balance_minor, 0 AS savings_minor
+FROM sonar_bank_accounts
+WHERE iban = ?
+LIMIT 1
 ]]
 
 --- GetByIban
@@ -78,7 +105,7 @@ end
 ---@param limit integer max rows (defensive)
 ---@return table|nil rows, table|nil err
 function R.ListByCitizen(citizen_id, limit)
-  return DB.Query(SQL_LIST_BY_CITIZEN, { citizen_id, citizen_id, limit or 32 })
+  return DB.Query(SQL_LIST_BY_CITIZEN, { citizen_id, limit or 32 })
 end
 
 --- GetBalance — fast path (REQ-FE-001 fallback C001b).
@@ -93,9 +120,18 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_INSERT = [[
-INSERT INTO bank_accounts
-  (iban, owner_citizen_id, joint_owners, balance_minor, savings_minor, status, frozen_flag)
-VALUES (?, ?, ?, ?, ?, 'active', 0)
+INSERT INTO sonar_bank_accounts
+  (id, iban, owner_type, account_class, owner_account_id, owner_company_id,
+   balance, is_frozen, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, NULL, (? / 100.0), 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+]]
+
+local SQL_SELECT_OWNER_ACCOUNT_ID = [[
+SELECT id
+FROM sonar_accounts
+WHERE char_id = ?
+ORDER BY updated_at DESC
+LIMIT 1
 ]]
 
 --- Insert — returns insert_id.
@@ -105,17 +141,25 @@ VALUES (?, ?, ?, ?, ?, 'active', 0)
 ---@return integer|nil account_id, table|nil err
 function R.Insert(iban, owner_citizen_id, opts)
   opts = opts or {}
-  local joint_json = nil
-  if opts.joint_owners and #opts.joint_owners > 0 and json and json.encode then
-    joint_json = json.encode(opts.joint_owners)
+  if (tonumber(opts.initial_savings) or 0) > 0 then
+    return nil, Errors.New('VALIDATION_FAILED', { reason = 'canonical savings account not available' })
   end
-  return DB.Insert(SQL_INSERT, {
+  local owner, owner_err = DB.QuerySingle(SQL_SELECT_OWNER_ACCOUNT_ID, { owner_citizen_id })
+  if owner_err then return nil, owner_err end
+  if not owner or not owner.id then
+    return nil, Errors.New('ACCOUNT_NOT_FOUND', { reason = 'owner sonar account not found', citizen_id = owner_citizen_id })
+  end
+  local account_id = UUID.V4()
+  local _, err = DB.Execute(SQL_INSERT, {
+    account_id,
     iban,
-    owner_citizen_id,
-    joint_json,
+    opts.owner_type or 'personal',
+    opts.account_class or 'checking',
+    owner.id,
     opts.initial_balance or 0,
-    opts.initial_savings or 0,
   })
+  if err then return nil, err end
+  return account_id, nil
 end
 
 -- -----------------------------------------------------------------------------
@@ -126,27 +170,23 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_DEBIT_BALANCE = [[
-UPDATE bank_accounts
-SET balance_minor = balance_minor - ?, updated_at = CURRENT_TIMESTAMP(6)
-WHERE iban = ? AND balance_minor >= ? AND status = 'active' AND frozen_flag = 0
+UPDATE sonar_bank_accounts
+SET balance = balance - (? / 100.0), updated_at = UNIX_TIMESTAMP()
+WHERE iban = ? AND balance >= (? / 100.0) AND closed_at IS NULL AND is_frozen = 0
 ]]
 
 local SQL_CREDIT_BALANCE = [[
-UPDATE bank_accounts
-SET balance_minor = balance_minor + ?, updated_at = CURRENT_TIMESTAMP(6)
-WHERE iban = ? AND status IN ('active','frozen')
+UPDATE sonar_bank_accounts
+SET balance = balance + (? / 100.0), updated_at = UNIX_TIMESTAMP()
+WHERE iban = ? AND closed_at IS NULL
 ]]
 
 local SQL_DEBIT_SAVINGS = [[
-UPDATE bank_accounts
-SET savings_minor = savings_minor - ?, updated_at = CURRENT_TIMESTAMP(6)
-WHERE iban = ? AND savings_minor >= ? AND status = 'active' AND frozen_flag = 0
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'canonical savings account unavailable'
 ]]
 
 local SQL_CREDIT_SAVINGS = [[
-UPDATE bank_accounts
-SET savings_minor = savings_minor + ?, updated_at = CURRENT_TIMESTAMP(6)
-WHERE iban = ? AND status IN ('active','frozen')
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'canonical savings account unavailable'
 ]]
 
 --- BuildDebitBalanceQuery — TX descriptor (caller composes batch).
@@ -164,12 +204,12 @@ end
 
 --- BuildDebitSavingsQuery
 function R.BuildDebitSavingsQuery(iban, amount_minor)
-  return { query = SQL_DEBIT_SAVINGS, values = { amount_minor, iban, amount_minor } }
+  return { query = SQL_DEBIT_SAVINGS, values = {} }
 end
 
 --- BuildCreditSavingsQuery
 function R.BuildCreditSavingsQuery(iban, amount_minor)
-  return { query = SQL_CREDIT_SAVINGS, values = { amount_minor, iban } }
+  return { query = SQL_CREDIT_SAVINGS, values = {} }
 end
 
 -- -----------------------------------------------------------------------------
@@ -177,30 +217,21 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_SET_STATUS = [[
-UPDATE bank_accounts SET status = ?, updated_at = CURRENT_TIMESTAMP(6) WHERE iban = ?
+UPDATE sonar_bank_accounts
+SET closed_at = CASE WHEN ? = 'closed' THEN UNIX_TIMESTAMP() ELSE NULL END,
+    is_frozen = CASE WHEN ? = 'frozen' THEN 1 WHEN ? = 'active' THEN 0 ELSE is_frozen END,
+    updated_at = UNIX_TIMESTAMP()
+WHERE iban = ?
 ]]
 
 local SQL_SET_FROZEN = [[
-UPDATE bank_accounts SET frozen_flag = ?, updated_at = CURRENT_TIMESTAMP(6) WHERE iban = ?
-]]
-
-local SQL_ADD_JOINT = [[
-UPDATE bank_accounts
-SET joint_owners = JSON_ARRAY_APPEND(IFNULL(joint_owners, JSON_ARRAY()), '$', JSON_QUOTE(?)),
-    updated_at = CURRENT_TIMESTAMP(6)
-WHERE iban = ? AND owner_citizen_id <> ?
-]]
-
-local SQL_REMOVE_JOINT = [[
-UPDATE bank_accounts
-SET joint_owners = JSON_REMOVE(joint_owners,
-       JSON_UNQUOTE(JSON_SEARCH(IFNULL(joint_owners, JSON_ARRAY()), 'one', ?))),
-    updated_at = CURRENT_TIMESTAMP(6)
+UPDATE sonar_bank_accounts
+SET is_frozen = ?, updated_at = UNIX_TIMESTAMP()
 WHERE iban = ?
 ]]
 
 function R.SetStatus(iban, status)
-  return DB.Execute(SQL_SET_STATUS, { status, iban })
+  return DB.Execute(SQL_SET_STATUS, { status, status, status, iban })
 end
 
 function R.SetFrozenFlag(iban, frozen_bool)
@@ -208,11 +239,11 @@ function R.SetFrozenFlag(iban, frozen_bool)
 end
 
 function R.AddJointOwner(iban, citizen_id, primary_owner_citizen_id)
-  return DB.Execute(SQL_ADD_JOINT, { citizen_id, iban, primary_owner_citizen_id })
+  return nil, Errors.New('VALIDATION_FAILED', { reason = 'canonical joint owner table not available' })
 end
 
 function R.RemoveJointOwner(iban, citizen_id)
-  return DB.Execute(SQL_REMOVE_JOINT, { citizen_id, iban })
+  return nil, Errors.New('VALIDATION_FAILED', { reason = 'canonical joint owner table not available' })
 end
 
 -- -----------------------------------------------------------------------------
@@ -225,7 +256,7 @@ end
 function R.BuildSnapshotQuery(citizen_id)
   return {
     sql    = SQL_LIST_BY_CITIZEN,
-    params = { citizen_id, citizen_id, 32 },
+    params = { citizen_id, 32 },
     kind   = 'query',
   }
 end

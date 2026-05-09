@@ -31,10 +31,21 @@ local DB = BankApp.lib.db
 -- -----------------------------------------------------------------------------
 
 local SQL_INSERT = [[
-INSERT INTO bank_transactions
-  (txn_id, from_iban, to_iban, amount_minor, reason, direction, status,
-   timestamp_ms, idempotency_key, correlation_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO sonar_bank_movements
+  (bank_account_id, occurred_at, amount, balance_after, category,
+   counterpart_iban, concept, related_doc_id, request_nonce,
+   initiated_by_account_id, source_resource)
+VALUES
+  ((SELECT id FROM sonar_bank_accounts WHERE iban = ? LIMIT 1),
+   FLOOR(? / 1000), -(? / 100.0),
+   (SELECT balance FROM sonar_bank_accounts WHERE iban = ? LIMIT 1),
+   'transfer', ?, ?, ?, ?,
+   (SELECT id FROM sonar_bank_accounts WHERE iban = ? LIMIT 1), 'sonar_bank_app'),
+  ((SELECT id FROM sonar_bank_accounts WHERE iban = ? LIMIT 1),
+   FLOOR(? / 1000), (? / 100.0),
+   (SELECT balance FROM sonar_bank_accounts WHERE iban = ? LIMIT 1),
+   'transfer', ?, ?, ?, ?,
+   (SELECT id FROM sonar_bank_accounts WHERE iban = ? LIMIT 1), 'sonar_bank_app')
 ]]
 
 --- BuildInsertQuery — TX descriptor.
@@ -42,24 +53,22 @@ function R.BuildInsertQuery(t)
   return {
     query  = SQL_INSERT,
     values = {
-      t.txn_id, t.from_iban, t.to_iban, t.amount_minor, t.reason,
-      t.direction or 'out', t.status or 'pending', t.timestamp_ms,
-      t.idempotency_key, t.correlation_id,
+      t.from_iban, t.timestamp_ms, t.amount_minor, t.from_iban,
+      t.to_iban, t.reason, t.txn_id, t.txn_id, t.from_iban,
+      t.to_iban, t.timestamp_ms, t.amount_minor, t.to_iban,
+      t.from_iban, t.reason, t.txn_id, t.txn_id, t.from_iban,
     },
   }
 end
 
 local SQL_UPDATE_STATUS = [[
-UPDATE bank_transactions
-SET status = ?,
-    committed_ms = CASE WHEN ? = 'committed' THEN ? ELSE committed_ms END
-WHERE txn_id = ?
+DO 0
 ]]
 
 function R.BuildUpdateStatusQuery(txn_id, status, committed_ms)
   return {
     query  = SQL_UPDATE_STATUS,
-    values = { status, status, committed_ms or 0, txn_id },
+    values = {},
   }
 end
 
@@ -68,20 +77,39 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_GET_BY_ID = [[
-SELECT txn_id, from_iban, to_iban, amount_minor, reason, direction,
-       status, timestamp_ms, committed_ms, idempotency_key, correlation_id
-FROM bank_transactions
-WHERE txn_id = ?
+SELECT m.related_doc_id AS txn_id,
+       MAX(CASE WHEN m.amount < 0 THEN a.iban END) AS from_iban,
+       MAX(CASE WHEN m.amount > 0 THEN a.iban END) AS to_iban,
+       CAST(ROUND(ABS(MIN(CASE WHEN m.amount < 0 THEN m.amount END)) * 100) AS SIGNED) AS amount_minor,
+       MAX(m.concept) AS reason,
+       'out' AS direction,
+       'committed' AS status,
+       MAX(m.occurred_at) * 1000 AS timestamp_ms,
+       MAX(m.occurred_at) * 1000 AS committed_ms,
+       MAX(m.request_nonce) AS idempotency_key,
+       NULL AS correlation_id
+FROM sonar_bank_movements m
+INNER JOIN sonar_bank_accounts a ON a.id = m.bank_account_id
+WHERE m.related_doc_id = ?
+GROUP BY m.related_doc_id
 LIMIT 1
 ]]
 
 local SQL_LIST_BY_IBAN = [[
-SELECT txn_id, from_iban, to_iban, amount_minor, reason, direction,
-       status, timestamp_ms, committed_ms
-FROM bank_transactions
-WHERE (from_iban = ? OR to_iban = ?)
-  AND status IN ('committed','reconciling')
-ORDER BY timestamp_ms DESC
+SELECT m.related_doc_id AS txn_id,
+       CASE WHEN m.amount < 0 THEN a.iban ELSE m.counterpart_iban END AS from_iban,
+       CASE WHEN m.amount < 0 THEN m.counterpart_iban ELSE a.iban END AS to_iban,
+       CAST(ROUND(ABS(m.amount) * 100) AS SIGNED) AS amount_minor,
+       m.concept AS reason,
+       CASE WHEN m.amount < 0 THEN 'out' ELSE 'in' END AS direction,
+       'committed' AS status,
+       m.occurred_at * 1000 AS timestamp_ms,
+       m.occurred_at * 1000 AS committed_ms
+FROM sonar_bank_movements m
+INNER JOIN sonar_bank_accounts a ON a.id = m.bank_account_id
+WHERE a.iban = ?
+  AND m.category = 'transfer'
+ORDER BY m.occurred_at DESC
 LIMIT ?
 OFFSET ?
 ]]
@@ -92,7 +120,7 @@ end
 
 --- ListByIban — paginated history.
 function R.ListByIban(iban, limit, offset)
-  return DB.Query(SQL_LIST_BY_IBAN, { iban, iban, limit or 50, offset or 0 })
+  return DB.Query(SQL_LIST_BY_IBAN, { iban, limit or 50, offset or 0 })
 end
 
 -- -----------------------------------------------------------------------------
@@ -116,7 +144,7 @@ end
 
 local SQL_RECENT_RECIPIENTS = [[
 SELECT
-  inner_t.to_iban                                                   AS counterpart_iban,
+  inner_t.counterpart_iban                                          AS counterpart_iban,
   MAX(inner_t.timestamp_ms)                                         AS last_transfer_ms,
   COUNT(*)                                                          AS transfer_count,
   SUBSTRING_INDEX(GROUP_CONCAT(inner_t.amount_minor
@@ -126,20 +154,23 @@ SELECT
                                ORDER BY inner_t.timestamp_ms DESC
                                SEPARATOR '||'), '||', 1)            AS last_reason
 FROM (
-  SELECT t.to_iban, t.amount_minor, t.timestamp_ms, t.reason
-  FROM bank_transactions t
-  INNER JOIN bank_accounts a
-    ON a.iban = t.from_iban
-  WHERE a.owner_citizen_id = ?
-    AND a.status = 'active'
-    AND t.status = 'committed'
-    AND t.direction = 'out'
-    AND t.timestamp_ms >= ?
-    AND t.to_iban <> t.from_iban
-  ORDER BY t.timestamp_ms DESC
+  SELECT m.counterpart_iban,
+         CAST(ROUND(ABS(m.amount) * 100) AS SIGNED) AS amount_minor,
+         m.occurred_at * 1000 AS timestamp_ms,
+         m.concept AS reason
+  FROM sonar_bank_movements m
+  INNER JOIN sonar_bank_accounts a ON a.id = m.bank_account_id
+  INNER JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+  WHERE sa.char_id = ?
+    AND a.closed_at IS NULL
+    AND m.category = 'transfer'
+    AND m.amount < 0
+    AND m.occurred_at >= FLOOR(? / 1000)
+    AND m.counterpart_iban <> a.iban
+  ORDER BY m.occurred_at DESC
   LIMIT 500
 ) AS inner_t
-GROUP BY inner_t.to_iban
+GROUP BY inner_t.counterpart_iban
 ORDER BY last_transfer_ms DESC
 LIMIT ?
 ]]
@@ -175,18 +206,13 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_PENDING_COUNT = [[
-SELECT COUNT(*) AS cnt
-FROM bank_transactions t
-INNER JOIN bank_accounts a
-  ON a.iban IN (t.from_iban, t.to_iban)
-WHERE a.owner_citizen_id = ?
-  AND t.status IN ('pending','reconciling')
+SELECT 0 AS cnt
 ]]
 
 function R.BuildPendingCountQuery(citizen_id)
   return {
     sql    = SQL_PENDING_COUNT,
-    params = { citizen_id },
+    params = {},
     kind   = 'scalar',
   }
 end
@@ -196,14 +222,19 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_SNAPSHOT_RECENT_TX = [[
-SELECT t.txn_id, t.from_iban, t.to_iban, t.amount_minor, t.reason,
-       t.direction, t.status, t.timestamp_ms
-FROM bank_transactions t
-INNER JOIN bank_accounts a
-  ON a.iban IN (t.from_iban, t.to_iban)
-WHERE a.owner_citizen_id = ?
-  AND t.status IN ('committed','pending','reconciling')
-ORDER BY t.timestamp_ms DESC
+SELECT m.related_doc_id AS txn_id,
+       CASE WHEN m.amount < 0 THEN a.iban ELSE m.counterpart_iban END AS from_iban,
+       CASE WHEN m.amount < 0 THEN m.counterpart_iban ELSE a.iban END AS to_iban,
+       CAST(ROUND(ABS(m.amount) * 100) AS SIGNED) AS amount_minor,
+       m.concept AS reason,
+       CASE WHEN m.amount < 0 THEN 'out' ELSE 'in' END AS direction,
+       'committed' AS status,
+       m.occurred_at * 1000 AS timestamp_ms
+FROM sonar_bank_movements m
+INNER JOIN sonar_bank_accounts a ON a.id = m.bank_account_id
+INNER JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+WHERE sa.char_id = ?
+ORDER BY m.occurred_at DESC
 LIMIT ?
 ]]
 

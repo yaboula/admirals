@@ -96,7 +96,8 @@ end
 -- IBAN: country code (2 letters) + check digits (2) + BBAN (variable, max 30).
 -- For SONAR generated IBANs (per sonar_bank/iban.lua) the full length is fixed.
 -- Total length 15-34 chars. Format alphanumeric uppercase + spaces stripped.
-local IBAN_PATTERN = '^[A-Z]{2}[0-9]{2}[A-Z0-9]+$'
+local IBAN_PATTERN = '^%u%u%d%d[%u%d]+$'
+local SONAR_IBAN_PATTERN = '^%u%u%-[%u%d][%u%d][%u%d][%u%d]%-[%u%d][%u%d][%u%d][%u%d]%-[%u%d][%u%d][%u%d][%u%d]$'
 local IBAN_MIN_LEN = 15
 local IBAN_MAX_LEN = 34
 
@@ -109,7 +110,7 @@ function M.IsValidIBANFormat(v)
   -- Strip spaces (some users paste "ES12 1234 ...")
   local clean = v:gsub('%s', ''):upper()
   if #clean < IBAN_MIN_LEN or #clean > IBAN_MAX_LEN then return false end
-  return clean:match(IBAN_PATTERN) ~= nil
+  return clean:match(IBAN_PATTERN) ~= nil or clean:match(SONAR_IBAN_PATTERN) ~= nil
 end
 
 --- NormalizeIBAN: strip spaces + uppercase. Returns nil if invalid format.
@@ -123,7 +124,7 @@ function M.NormalizeIBAN(v)
 end
 
 -- UUID v4 canonical: 8-4-4-4-12 hex lowercase, version digit = 4, variant = 8/9/a/b.
-local UUID_V4_PATTERN = '^[0-9a-f]{8}%-[0-9a-f]{4}%-4[0-9a-f]{3}%-[89ab][0-9a-f]{3}%-[0-9a-f]{12}$'
+local UUID_V4_PATTERN = '^[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]%-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]%-4[0-9a-f][0-9a-f][0-9a-f]%-[89ab][0-9a-f][0-9a-f][0-9a-f]%-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]$'
 
 --- IsValidUUID: strict v4 canonical format (matches M008 anchored regex).
 ---@param v any

@@ -50,7 +50,7 @@ end
 
 local function generate_iban_via_bridge()
   -- Bridges.Bank.IBAN.Generate canonical (sonar_bank exports IBAN module).
-  -- Defensive fallback inline: random ES89 + 20 digits (NOT spec-compliant, dev only).
+  -- Defensive fallback inline: random AD-XXXX-XXXX-XXXX (NOT checksum-verified, dev only).
   if _G.Bridges and _G.Bridges.Bank and _G.Bridges.Bank.IBAN
      and type(_G.Bridges.Bank.IBAN.Generate) == 'function' then
     local ok, iban = pcall(_G.Bridges.Bank.IBAN.Generate)
@@ -58,8 +58,13 @@ local function generate_iban_via_bridge()
   end
   -- Defensive fallback (dev only — production REQUIRES sonar_bank IBAN module)
   local digits = {}
-  for _ = 1, 20 do digits[#digits + 1] = tostring(math.random(0, 9)) end
-  return 'ES89' .. table.concat(digits)
+  local charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  for _ = 1, 12 do
+    local i = math.random(1, #charset)
+    digits[#digits + 1] = charset:sub(i, i)
+  end
+  local s = table.concat(digits)
+  return 'AD-' .. s:sub(1, 4) .. '-' .. s:sub(5, 8) .. '-' .. s:sub(9, 12)
 end
 
 --- OpenAccount.

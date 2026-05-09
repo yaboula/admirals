@@ -2,8 +2,8 @@
 
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
-> **Status:** 🟡 **OPEN — DRAFTING active BANK-FE.0** — añade requests durante drafting C-FE-01/02/03 v0.1.
-> **Versionado:** v0.6 (BANK-A.BUSINESS cockpit polish — Business app dashboard enhanced, mutations gap documented). Bump cada vez que añada/cierre items.
+> **Status:** 🟠 **OPEN — Backend core normalization in progress 2026-05-09** — DB Issue #002 emitted; Backend Issue #003 core drift partially resolved, Tier 4 repo drift still blocks full production implementation until resolved/waived.
+> **Versionado:** v0.9 (BANK-BE Path A core normalization — audit/idempotency/accounts/movements moved to canonical `sonar_bank_*`). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -85,7 +85,7 @@ Cada request sigue:
   - Frontend `useBootstrapSnapshot()` hook mantiene mismo signature mock→real (1-line config swap).
   - Audit trail: 1 single audit ledger entry por bootstrap (vs 7 separadas) — mejora signal/noise ratio.
 - **Path recomendado:** Path A (Round 2 amendment) post BANK-FE.LOCK si founder aprueba scope expansion Phase A. Path B (Phase A.1) aceptable degradation.
-- **Status:** OPEN — anotado founder Q6 APPROVED 2026-05-06 BANK-FE.0.
+- **Status:** RESOLVED-PATH-A — implementado en Backend R2 (`sonar:bank:bootstrap:snapshot`) + `BootstrapService.BuildSnapshot` parallel queries + LRU cache.
 
 ---
 
@@ -127,7 +127,7 @@ Cada request sigue:
   - Privacy: NO leak full IBAN — siempre masked display-ready format.
   - Frontend Lead activa "Express mode" wizard si recipient seleccionado ∈ recipients ∧ `count_30d >= 2`.
 - **Path recomendado:** Path A (Round 2 amendment) — feature impactful UX founder APPROVED.
-- **Status:** OPEN — anotado founder Q5 APPROVED 2026-05-06 BANK-FE.0.
+- **Status:** RESOLVED-PATH-A — implementado en Backend R2 (`sonar:bank:transfer:recentRecipients`) + indexed query + saved-recipient alias join + LRU cache.
 
 ---
 
@@ -532,7 +532,11 @@ Cada request sigue:
 
 ## 2. Items resueltos / cerrados
 
-_(empty — drafting BANK-FE.0)_
+| Request | Resolución | Evidencia |
+|---|---|---|
+| REQ-FE-001 | RESOLVED-PATH-A | Backend R2 `sonar:bank:bootstrap:snapshot` + `server/services/bootstrap_service.lua`. |
+| REQ-FE-002 | RESOLVED-PATH-A | Backend R2 `sonar:bank:transfer:recentRecipients` + `server/services/recipients_service.lua`. |
+| REQ-FE-005 | RESOLVED-PATH-C | No Backend amendment necesario; tooltip enriquecido admin queda Phase B UI-side. |
 
 ---
 
@@ -542,10 +546,10 @@ _(empty — drafting BANK-FE.0)_
 |---|---|
 | Total items | 15 |
 | HIGH abiertos | 8 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
-| MEDIUM abiertos | 4 (REQ-FE-001, REQ-FE-002, REQ-FE-008, REQ-FE-014) |
-| LOW abiertos | 3 (REQ-FE-003, REQ-FE-004, REQ-FE-005) |
-| RESOLVED | 0 (REQ-FE-005 path-C self-resolved) |
-| Path A target (Backend amendment / Phase A.GOVT cycle) | 10 (REQ-FE-001, REQ-FE-002, REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
+| MEDIUM abiertos | 2 (REQ-FE-008, REQ-FE-014) |
+| LOW abiertos | 2 (REQ-FE-003, REQ-FE-004) |
+| RESOLVED | 3 (REQ-FE-001, REQ-FE-002, REQ-FE-005) |
+| Path A target (Backend amendment / Phase A.GOVT cycle) | 8 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
 | Path A/B target (joint spec) | 2 (REQ-FE-008, REQ-FE-014) |
 | Path B target (Phase B defer) | 2 (REQ-FE-003, REQ-FE-004) |
 | Path C target (UI workaround) | 1 (REQ-FE-005) |
@@ -558,6 +562,8 @@ _(empty — drafting BANK-FE.0)_
 - **Contrato Security upstream consumed:** `@docs/technical/08_audit_hooks.md` v0.2 RE-AUDIT PASS.
 - **Contratos Frontend en drafting:** `@docs/design/03_bank_app_ui_contracts.md` v0.1 + `@docs/design/04_bank_app_design_system.md` v0.1 + `@docs/design/05_bank_app_data_integration.md` v0.1.
 - **Manifest amendments protocol:** `@docs/agents/teams/03_CROSS_TEAM_CONTRACTS.md` §amendments.
+- **DB request Backend Lead:** `@docs/agents/teams/issues/issue_002_phase_a_govt_business_persistence_gaps.md` — persistence gaps para `sonar_companies`, subsidy programs, payroll batches y risk scores.
+- **Backend consumer blocker:** `@docs/agents/teams/issues/issue_003_backend_schema_drift_bank_aliases.md` — core audit/idempotency/accounts/movements normalized to `sonar_bank_*`; Tier 4 repos still require normalization or waiver before production.
 
 ---
 
@@ -571,7 +577,10 @@ _(empty — drafting BANK-FE.0)_
 | v0.4 | 2026-05-09 | BANK-A.GOVT NODO 5 shipped — 1 nuevo item HIGH (REQ-FE-013 Subsidy list+detail read callbacks). Nota: write mutations ya cubiertas en REQ-FE-010. NODO 5 (`/tesoreria/subsidios`) operativo con 7 programas, tipos, status, budget gauges, disbursements recientes. Total 13 items — 7 HIGH, 3 MEDIUM, 3 LOW. |
 | v0.5 | 2026-05-09 | BANK-A.GOVT NODO 6 shipped — Último nodo A.GOVT. 1 nuevo item MEDIUM/Path A-B (REQ-FE-014 Reports analytics aggregation callback). NODO 6 (`/tesoreria/informes`) operativo: 4 KPI cards, SVG bar chart Revenue vs Obligation, ComplianceRing donut, SectorBars, TopContributors ranked, RiskDistribution. **TODOS LOS NODOs A.GOVT COMPLETADOS** (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes). Total 14 items — 7 HIGH, 4 MEDIUM, 3 LOW. |
 | v0.6 | 2026-05-09 | BANK-A.BUSINESS cockpit polish — 1 nuevo item HIGH (REQ-FE-015 Business Dashboard mutations: approval decide + payroll execute + withdrawal request). Dashboard `src/routes/Business.tsx` mejorado con hero company mark, role/live badges, ops score, payroll runway, inflow/outflow, cashflow pulse, payroll readiness ring, approval exposure y action center preview-only hasta backend. Total 15 items — 8 HIGH, 4 MEDIUM, 3 LOW. |
+| v0.7 | 2026-05-09 | Backend Lead triage post Frontend Phase A close — REQ-FE-001/002 marcados RESOLVED-PATH-A por Backend R2; REQ-FE-005 RESOLVED-PATH-C; DB Issue #002 creado para persistence gaps GOVT/BUSINESS (`sonar_companies`, subsidy programs, payroll batches, govt risk scores). Open real: 8 HIGH + 2 MEDIUM + 2 LOW. |
+| v0.8 | 2026-05-09 | Backend Lead consumer review post `BANK-DB.AMEND.1` — DB Issue #002 emitido por DB Lead (`029-032`), pero se abre Issue #003 por drift runtime `bank_*` vs DB canonical `sonar_bank_*`. Producción REQ-FE-006..015 bloqueada hasta normalización Backend o waiver Founder Path C read-only parcial. |
+| v0.9 | 2026-05-09 | Backend Lead Path A core normalization aplicada: `audit`, `idempotency`, `accounts`, `transactions/movements` ahora usan tablas canónicas `sonar_bank_*` y adapter de payload legacy-compatible. `validators.lua` acepta IBAN SONAR `AD-XXXX-XXXX-XXXX`. Issue #003 permanece abierto por repos Tier 4 legacy (`recipients`, `loans`, `recurring`, `portfolio`, `cards`). |
 
 ---
 
-**FIN `FE_BACKEND_REQUESTS.md` v0.6 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS + BANK BUSINESS COCKPIT POLISHED.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Bank Business Dashboard completo en UX, con action center preview-only hasta Backend Lead implemente REQ-FE-015. Requiere Backend Lead cycle para 8 items HIGH + 1 MEDIUM prioritario (REQ-FE-006/007/009/010/011/012/013/015 + REQ-FE-014) para go-live con datos/acciones reales.
+**FIN `FE_BACKEND_REQUESTS.md` v0.9 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS + BANK BUSINESS COCKPIT POLISHED + DB Issue #002 emitido + Backend Issue #003 core normalization in progress.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Bank Business Dashboard completo en UX, con action center preview-only hasta Backend Lead implemente REQ-FE-015. Core backend (`audit`, `idempotency`, `accounts`, `transactions/movements`) ya usa `sonar_bank_*`; antes de producción completa aún debe resolverse el drift Tier 4 (`recipients`, `loans`, `recurring`, `portfolio`, `cards`) o documentar waiver Founder para Path C parcial/read-only.

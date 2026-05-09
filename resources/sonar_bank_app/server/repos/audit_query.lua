@@ -16,64 +16,95 @@ local R = BankApp.repos.audit_query
 local DB = BankApp.lib.db
 
 local SQL_LIST_BY_CITIZEN = [[
-SELECT audit_id, timestamp_ms, event_type, actor_citizen_id, target_citizen_id,
-       target_account_id, target_iban, previous_flag_snapshot, event_data,
-       cross_ref_audit_id, correlation_id
-FROM bank_audit_ledger
-WHERE (actor_citizen_id = ? OR target_citizen_id = ?)
-ORDER BY timestamp_ms DESC
+SELECT JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.audit_id')) AS audit_id,
+       ts * 1000 AS timestamp_ms, event_type,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.actor_citizen_id')) AS actor_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) AS target_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_account_id')) AS target_account_id,
+       bank_account_iban AS target_iban,
+       JSON_EXTRACT(context_data, '$.previous_flag_snapshot') AS previous_flag_snapshot,
+       JSON_EXTRACT(context_data, '$.event_data') AS event_data,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.cross_ref_audit_id')) AS cross_ref_audit_id,
+       correlation_id
+FROM sonar_bank_audit_ledger
+WHERE (actor_account_id = ?
+   OR JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.actor_citizen_id')) = ?
+   OR JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) = ?)
+ORDER BY ts DESC
 LIMIT ? OFFSET ?
 ]]
 
 local SQL_LIST_BY_TARGET = [[
-SELECT audit_id, timestamp_ms, event_type, actor_citizen_id, target_citizen_id,
-       target_account_id, target_iban, previous_flag_snapshot, event_data,
-       cross_ref_audit_id, correlation_id
-FROM bank_audit_ledger
-WHERE target_citizen_id = ?
-ORDER BY timestamp_ms DESC
+SELECT JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.audit_id')) AS audit_id,
+       ts * 1000 AS timestamp_ms, event_type,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.actor_citizen_id')) AS actor_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) AS target_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_account_id')) AS target_account_id,
+       bank_account_iban AS target_iban,
+       JSON_EXTRACT(context_data, '$.previous_flag_snapshot') AS previous_flag_snapshot,
+       JSON_EXTRACT(context_data, '$.event_data') AS event_data,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.cross_ref_audit_id')) AS cross_ref_audit_id,
+       correlation_id
+FROM sonar_bank_audit_ledger
+WHERE JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) = ?
+ORDER BY ts DESC
 LIMIT ? OFFSET ?
 ]]
 
 local SQL_LIST_BY_EVENT_TYPE = [[
-SELECT audit_id, timestamp_ms, event_type, actor_citizen_id, target_citizen_id,
-       target_iban, event_data
-FROM bank_audit_ledger
+SELECT JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.audit_id')) AS audit_id,
+       ts * 1000 AS timestamp_ms, event_type,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.actor_citizen_id')) AS actor_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) AS target_citizen_id,
+       bank_account_iban AS target_iban,
+       JSON_EXTRACT(context_data, '$.event_data') AS event_data
+FROM sonar_bank_audit_ledger
 WHERE event_type = ?
-  AND timestamp_ms >= ?
-ORDER BY timestamp_ms DESC
+  AND ts >= FLOOR(? / 1000)
+ORDER BY ts DESC
 LIMIT ? OFFSET ?
 ]]
 
 local SQL_GET_BY_ID = [[
-SELECT audit_id, timestamp_ms, event_type, actor_citizen_id, actor_src,
-       target_citizen_id, target_account_id, target_iban,
-       previous_flag_snapshot, event_data, cross_ref_audit_id, correlation_id
-FROM bank_audit_ledger
-WHERE audit_id = ?
+SELECT JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.audit_id')) AS audit_id,
+       ts * 1000 AS timestamp_ms, event_type,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.actor_citizen_id')) AS actor_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.actor_src')) AS actor_src,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) AS target_citizen_id,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_account_id')) AS target_account_id,
+       bank_account_iban AS target_iban,
+       JSON_EXTRACT(context_data, '$.previous_flag_snapshot') AS previous_flag_snapshot,
+       JSON_EXTRACT(context_data, '$.event_data') AS event_data,
+       JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.cross_ref_audit_id')) AS cross_ref_audit_id,
+       correlation_id
+FROM sonar_bank_audit_ledger
+WHERE CAST(id AS CHAR) = ? OR JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.audit_id')) = ?
 LIMIT 1
 ]]
 
 local SQL_COUNT_BY_TARGET = [[
 SELECT COUNT(*) AS cnt
-FROM bank_audit_ledger
-WHERE target_citizen_id = ? AND timestamp_ms >= ?
+FROM sonar_bank_audit_ledger
+WHERE JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) = ?
+  AND ts >= FLOOR(? / 1000)
 ]]
 
 local SQL_OUTSTANDING_FOR_CITIZEN = [[
-SELECT audit_id, event_type, timestamp_ms, event_data
-FROM bank_audit_ledger
-WHERE target_citizen_id = ?
+SELECT JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.audit_id')) AS audit_id,
+       event_type, ts * 1000 AS timestamp_ms,
+       JSON_EXTRACT(context_data, '$.event_data') AS event_data
+FROM sonar_bank_audit_ledger
+WHERE JSON_UNQUOTE(JSON_EXTRACT(context_data, '$.target_citizen_id')) = ?
   AND event_type IN ('govt_audit_request', 'fraud_review_open', 'flag_set')
-  AND timestamp_ms >= ?
-ORDER BY timestamp_ms DESC
+  AND ts >= FLOOR(? / 1000)
+ORDER BY ts DESC
 LIMIT ?
 ]]
 
 --- ListByCitizen — actor OR target. Used by C035 audit query (scope=self/other).
 function R.ListByCitizen(citizen_id, limit, offset)
   return DB.Query(SQL_LIST_BY_CITIZEN, {
-    citizen_id, citizen_id, limit or 50, offset or 0,
+    citizen_id, citizen_id, citizen_id, limit or 50, offset or 0,
   })
 end
 
@@ -93,7 +124,7 @@ end
 
 --- GetById — single entry lookup (for cross_ref chain reconstruction).
 function R.GetById(audit_id)
-  return DB.QuerySingle(SQL_GET_BY_ID, { audit_id })
+  return DB.QuerySingle(SQL_GET_BY_ID, { audit_id, audit_id })
 end
 
 --- CountByTarget — quick metric.
