@@ -2,8 +2,8 @@
 
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
-> **Status:** 🟠 **OPEN — Backend core normalization in progress 2026-05-09** — DB Issue #002 emitted; Backend Issue #003 core drift partially resolved, Tier 4 repo drift still blocks full production implementation until resolved/waived.
-> **Versionado:** v0.9 (BANK-BE Path A core normalization — audit/idempotency/accounts/movements moved to canonical `sonar_bank_*`). Bump cada vez que añada/cierre items.
+> **Status:** ✅ **OPEN REQUESTS / SCHEMA BLOCKER RESOLVED 2026-05-09** — DB Issue #002 emitted; Backend Issue #003 closed after core + Tier 4 normalization to canonical `sonar_bank_*` / `sonar_*`.
+> **Versionado:** v1.0 (BANK-BE Path A full schema normalization — Issue #003 closed). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -580,7 +580,8 @@ Cada request sigue:
 | v0.7 | 2026-05-09 | Backend Lead triage post Frontend Phase A close — REQ-FE-001/002 marcados RESOLVED-PATH-A por Backend R2; REQ-FE-005 RESOLVED-PATH-C; DB Issue #002 creado para persistence gaps GOVT/BUSINESS (`sonar_companies`, subsidy programs, payroll batches, govt risk scores). Open real: 8 HIGH + 2 MEDIUM + 2 LOW. |
 | v0.8 | 2026-05-09 | Backend Lead consumer review post `BANK-DB.AMEND.1` — DB Issue #002 emitido por DB Lead (`029-032`), pero se abre Issue #003 por drift runtime `bank_*` vs DB canonical `sonar_bank_*`. Producción REQ-FE-006..015 bloqueada hasta normalización Backend o waiver Founder Path C read-only parcial. |
 | v0.9 | 2026-05-09 | Backend Lead Path A core normalization aplicada: `audit`, `idempotency`, `accounts`, `transactions/movements` ahora usan tablas canónicas `sonar_bank_*` y adapter de payload legacy-compatible. `validators.lua` acepta IBAN SONAR `AD-XXXX-XXXX-XXXX`. Issue #003 permanece abierto por repos Tier 4 legacy (`recipients`, `loans`, `recurring`, `portfolio`, `cards`). |
+| v1.0 | 2026-05-09 | Backend Lead Path A full normalization aplicada: Tier 4 (`recipients`, `loans`, `recurring`, `portfolio`, `cards`) + `lib/auth.lua` normalizados a schema canónico. Añadida migration `033_bank_saved_recipients.sql`. Issue #003 cerrado; REQ-FE-006..015 puede reanudarse desde perspectiva data-layer, manteniendo gates Security/Founder restantes. |
 
 ---
 
-**FIN `FE_BACKEND_REQUESTS.md` v0.9 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS + BANK BUSINESS COCKPIT POLISHED + DB Issue #002 emitido + Backend Issue #003 core normalization in progress.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Bank Business Dashboard completo en UX, con action center preview-only hasta Backend Lead implemente REQ-FE-015. Core backend (`audit`, `idempotency`, `accounts`, `transactions/movements`) ya usa `sonar_bank_*`; antes de producción completa aún debe resolverse el drift Tier 4 (`recipients`, `loans`, `recurring`, `portfolio`, `cards`) o documentar waiver Founder para Path C parcial/read-only.
+**FIN `FE_BACKEND_REQUESTS.md` v1.0 — ✅ TODOS LOS NODOs A.GOVT COMPLETADOS + BANK BUSINESS COCKPIT POLISHED + DB Issue #002 emitido + Backend Issue #003 CLOSED.** Govt panel (Bureau + Census + Sanctions + TaxEngine + Empresas + Movimientos + Subsidios + Informes) — 8 nodos UI completos sobre mock layer. Bank Business Dashboard completo en UX, con action center preview-only hasta Backend Lead implemente REQ-FE-015. Core + Tier 4 backend (`audit`, `idempotency`, `accounts`, `transactions/movements`, `recipients`, `loans`, `recurring`, `portfolio`, `cards`, `auth`) ya usan `sonar_bank_*` / `sonar_*`; REQ-FE-006..015 puede reanudarse desde perspectiva data-layer, manteniendo gates Security/Founder restantes para fórmulas de riesgo, cadencia y audit shapes de mutaciones.

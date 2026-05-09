@@ -139,9 +139,9 @@ function S.ChargeDue(batch_limit)
       from_iban        = r.from_iban,
       to_iban          = r.to_iban,
       amount_minor     = amount,
-      reason           = ('recurring_charge:%d'):format(r.recurring_id),
-      idempotency_key  = ('rec_%d_%d'):format(r.recurring_id, math.floor(now / 1000)),
-      correlation_id   = ('recurring/%d/%d'):format(r.recurring_id, now),
+      reason           = ('recurring_charge:%s'):format(r.recurring_id),
+      idempotency_key  = ('rec_%s_%d'):format(r.recurring_id, math.floor(now / 1000)),
+      correlation_id   = ('recurring/%s/%d'):format(r.recurring_id, now),
       system_origin    = 'recurring',
     }
 

@@ -17,41 +17,46 @@ BankApp.repos.recipients = {}
 local R = BankApp.repos.recipients
 
 local DB = BankApp.lib.db
+local UUID = BankApp.lib.uuid
 
 local SQL_LIST = [[
-SELECT recipient_id, counterpart_iban, alias, is_favorite,
-       UNIX_TIMESTAMP(created_at)*1000 AS created_ms
-FROM bank_saved_recipients
-WHERE owner_citizen_id = ?
-ORDER BY is_favorite DESC, created_at DESC
+SELECT r.id AS recipient_id, r.counterpart_iban, r.alias, r.is_favorite,
+       r.created_at * 1000 AS created_ms
+FROM sonar_bank_saved_recipients r
+INNER JOIN sonar_accounts sa ON sa.id = r.owner_account_id
+WHERE sa.char_id = ?
+ORDER BY r.is_favorite DESC, r.created_at DESC
 LIMIT ?
 ]]
 
 local SQL_GET = [[
-SELECT recipient_id, counterpart_iban, alias, is_favorite,
-       UNIX_TIMESTAMP(created_at)*1000 AS created_ms
-FROM bank_saved_recipients
-WHERE owner_citizen_id = ? AND counterpart_iban = ?
+SELECT r.id AS recipient_id, r.counterpart_iban, r.alias, r.is_favorite,
+       r.created_at * 1000 AS created_ms
+FROM sonar_bank_saved_recipients r
+INNER JOIN sonar_accounts sa ON sa.id = r.owner_account_id
+WHERE sa.char_id = ? AND r.counterpart_iban = ?
 LIMIT 1
 ]]
 
 local SQL_INSERT = [[
-INSERT INTO bank_saved_recipients
-  (owner_citizen_id, counterpart_iban, alias, is_favorite)
-VALUES (?, ?, ?, ?)
+INSERT INTO sonar_bank_saved_recipients
+  (id, owner_account_id, counterpart_iban, alias, is_favorite)
+VALUES (?, (SELECT id FROM sonar_accounts WHERE char_id = ? LIMIT 1), ?, ?, ?)
 ON DUPLICATE KEY UPDATE
-  alias = VALUES(alias), is_favorite = VALUES(is_favorite)
+  alias = VALUES(alias), is_favorite = VALUES(is_favorite), updated_at = UNIX_TIMESTAMP()
 ]]
 
 local SQL_DELETE = [[
-DELETE FROM bank_saved_recipients
-WHERE owner_citizen_id = ? AND counterpart_iban = ?
+DELETE r FROM sonar_bank_saved_recipients r
+INNER JOIN sonar_accounts sa ON sa.id = r.owner_account_id
+WHERE sa.char_id = ? AND r.counterpart_iban = ?
 ]]
 
 local SQL_SET_FAVORITE = [[
-UPDATE bank_saved_recipients
-SET is_favorite = ?
-WHERE owner_citizen_id = ? AND counterpart_iban = ?
+UPDATE sonar_bank_saved_recipients r
+INNER JOIN sonar_accounts sa ON sa.id = r.owner_account_id
+SET r.is_favorite = ?, r.updated_at = UNIX_TIMESTAMP()
+WHERE sa.char_id = ? AND r.counterpart_iban = ?
 ]]
 
 --- ListByCitizen
@@ -64,9 +69,12 @@ function R.Get(citizen_id, counterpart_iban)
 end
 
 function R.Upsert(citizen_id, counterpart_iban, alias, is_favorite)
-  return DB.Insert(SQL_INSERT, {
-    citizen_id, counterpart_iban, alias, is_favorite and 1 or 0,
+  local recipient_id = UUID.V4()
+  local _, err = DB.Execute(SQL_INSERT, {
+    recipient_id, citizen_id, counterpart_iban, alias, is_favorite and 1 or 0,
   })
+  if err then return nil, err end
+  return recipient_id, nil
 end
 
 function R.Delete(citizen_id, counterpart_iban)

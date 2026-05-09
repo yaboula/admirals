@@ -117,8 +117,10 @@ function S.Buy(ctx)
 
   local tx_queries = {
     AccountsRepo.BuildDebitBalanceQuery(norm_iban, total_cost),
-    PortfolioRepo.BuildBuyQuery(owner_cid, ctx.asset_symbol, ctx.units, price),
   }
+  for _, q in ipairs(PortfolioRepo.BuildBuyQueries(owner_cid, norm_iban, ctx.asset_symbol, ctx.units, price, total_cost)) do
+    tx_queries[#tx_queries + 1] = q
+  end
   local ok, tx_err = DB.Transaction(tx_queries)
   if not ok then
     Idempotency.Orphan(ctx.idempotency_key)
@@ -195,10 +197,11 @@ function S.Sell(ctx)
   local price = get_market_price_minor(ctx.asset_symbol)
   local proceeds = math.floor(ctx.units * price)
 
-  local tx_queries = {
-    PortfolioRepo.BuildSellQuery(owner_cid, ctx.asset_symbol, ctx.units),
-    AccountsRepo.BuildCreditBalanceQuery(norm_iban, proceeds),
-  }
+  local tx_queries = {}
+  for _, q in ipairs(PortfolioRepo.BuildSellQueries(owner_cid, norm_iban, ctx.asset_symbol, ctx.units, price, proceeds)) do
+    tx_queries[#tx_queries + 1] = q
+  end
+  tx_queries[#tx_queries + 1] = AccountsRepo.BuildCreditBalanceQuery(norm_iban, proceeds)
   local ok, tx_err = DB.Transaction(tx_queries)
   if not ok then
     Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })

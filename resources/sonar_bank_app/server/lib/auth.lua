@@ -111,10 +111,19 @@ end
 -- -----------------------------------------------------------------------------
 
 local SQL_LOOKUP_ACCOUNT = [[
-SELECT account_id, iban, owner_citizen_id, joint_owners,
-       balance_minor, savings_minor, status, frozen_flag
-FROM bank_accounts
-WHERE iban = ? AND status = 'active'
+SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+       JSON_ARRAY() AS joint_owners,
+       CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
+       0 AS savings_minor,
+       CASE
+         WHEN a.closed_at IS NOT NULL THEN 'closed'
+         WHEN a.is_frozen = 1 THEN 'frozen'
+         ELSE 'active'
+       END AS status,
+       a.is_frozen AS frozen_flag
+FROM sonar_bank_accounts a
+LEFT JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+WHERE a.iban = ? AND a.closed_at IS NULL
 LIMIT 1
 ]]
 

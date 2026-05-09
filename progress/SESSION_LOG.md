@@ -1994,3 +1994,60 @@ Examples found:
 3. Resume REQ-FE-006..015 implementation only after remaining Issue #003 scope is resolved or explicitly waived.
 
 — **Backend Lead Path A core normalization complete. Issue #003 downgraded from core blocker to remaining Tier 4 blocker; production GOVT/BUSINESS callbacks still paused pending final normalization/waiver.**
+
+---
+
+### BANK-BE.NORMALIZE.2 — Issue #003 Tier 4 normalization + definitive closure
+
+- **Fecha:** 2026-05-09
+- **Founder + Agent:** yaboula + Cascade (Backend Lead)
+- **Sprint / Phase:** Phase A — Backend schema drift closure before GOVT/BUSINESS production callbacks.
+- **Trigger:** Founder directive to eliminate remaining Tier 4 legacy DB usage before advancing to Government/Business logic.
+- **Status:** ✅ **ISSUE #003 CLOSED** — core + Tier 4 backend runtime paths now target canonical `sonar_bank_*` / `sonar_*` schema.
+
+#### Acciones ejecutadas
+
+- ✅ Committed previous core normalization:
+  - Commit: `b14f027 fix(bank-be): normalize core schema adapters`
+- ✅ Normalized saved recipients:
+  - `resources/sonar_bank_app/server/repos/recipients.lua`
+  - Added `resources/sonar_core/migrations/033_bank_saved_recipients.sql`
+  - Runtime target: `sonar_bank_saved_recipients` + `sonar_accounts`.
+- ✅ Normalized loans:
+  - `resources/sonar_bank_app/server/repos/loans.lua`
+  - `resources/sonar_bank_app/server/services/loan_service.lua`
+  - Runtime target: `sonar_bank_loans` + loan disbursement/repayment entries in `sonar_bank_movements`.
+- ✅ Normalized recurring payments:
+  - `resources/sonar_bank_app/server/repos/recurring.lua`
+  - `resources/sonar_bank_app/server/services/recurring_service.lua`
+  - Runtime target: `sonar_bank_recurring_payments`.
+- ✅ Normalized portfolio/stocks:
+  - `resources/sonar_bank_app/server/repos/portfolio.lua`
+  - `resources/sonar_bank_app/server/services/portfolio_service.lua`
+  - Runtime target: `sonar_bank_stocks_assets`, `sonar_bank_stocks_transactions`, `sonar_bank_stocks_holdings`.
+- ✅ Normalized cards:
+  - `resources/sonar_bank_app/server/repos/cards.lua`
+  - Runtime target: `sonar_bank_physical_cards`.
+- ✅ Fixed extra runtime drift outside Tier 4:
+  - `resources/sonar_bank_app/server/lib/auth.lua`
+  - Ownership lookup now targets `sonar_bank_accounts` + `sonar_accounts`.
+
+#### Validaciones ejecutadas
+
+- ✅ `git diff --check` passed for Tier 4 normalization files and migration.
+- ✅ Static grep confirmed no runtime SQL statements remain using:
+  - `FROM bank_*`
+  - `JOIN bank_*`
+  - `INSERT INTO bank_*`
+  - `UPDATE bank_*`
+  - `DELETE FROM bank_*`
+- ℹ️ Remaining `bank_*` mentions are historical comments/header documentation or canonical `sonar_bank_*` identifiers.
+- ⚠️ Lua/luac syntax check still not executed because `lua`/`luac` are not available on PATH in the current Windows environment.
+
+#### Gate status
+
+- ✅ Issue #003 data-layer blocker closed.
+- ✅ REQ-FE-006..015 may resume from data-layer perspective.
+- ⚠️ Security Lead / Founder gates still apply for risk score formula/cadence and production mutation audit shapes.
+
+— **Backend Lead Tier 4 normalization complete. Issue #003 CLOSED definitively.**

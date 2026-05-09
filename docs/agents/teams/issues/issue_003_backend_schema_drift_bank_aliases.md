@@ -1,7 +1,7 @@
 # Issue #003 — Backend schema drift: `bank_*` runtime repos vs `sonar_bank_*` DB schema
 
 > **Tipo:** Backend consumer review finding — post BANK-DB.AMEND.1.
-> **Status:** � In progress — core audit/idempotency/accounts/movements normalized; Tier 4 legacy repos still block full production-grade REQ-FE-006..015 implementation until resolved or formally waived.
+> **Status:** ✅ Closed — core + Tier 4 runtime schema drift normalized to canonical `sonar_bank_*` / `sonar_*` tables.
 > **Severidad:** Alta — existing backend callbacks can query non-existent tables in the DB Phase A schema.
 > **Reporter:** Backend Lead consumer review.
 > **Owner requerido:** Backend Lead, with DB Lead consultative confirmation if compatibility views/migrations are considered.
@@ -21,7 +21,7 @@ DB Lead emitted `BANK-DB.AMEND.1` for Issue #002 and created the required persis
 
 Backend Lead consumer review confirms these migrations address the requested persistence gaps. However, the existing `sonar_bank_app` backend implementation has a broader schema drift: multiple repos/libs reference legacy or contract-only table names such as `bank_accounts`, `bank_transactions`, `bank_audit_ledger`, and `bank_idempotency_keys`, while the actual DB migrations create `sonar_bank_accounts`, `sonar_bank_movements`, `sonar_bank_audit_ledger`, and `sonar_bank_idempotency_keys`.
 
-**Conclusion:** Do not implement REQ-FE-006..015 production endpoints on top of the current data layer until the schema drift is resolved or explicitly waived by Founder + DB Lead + Backend Lead.
+**Conclusion:** Issue #003 is resolved. Backend runtime data access has been normalized away from legacy `bank_*` tables for the audited core and Tier 4 paths.
 
 ---
 
@@ -75,6 +75,21 @@ Path A core normalization has been applied for the first four priority areas:
 | IBAN/UUID validation compatibility | `server/lib/validators.lua`, `server/services/account_service.lua` | SONAR `AD-XXXX-XXXX-XXXX` format + canonical UUID v4 Lua patterns |
 
 Static validation confirms no runtime SQL references to `bank_accounts`, `bank_transactions`, `bank_audit_ledger`, or `bank_idempotency_keys` remain in those normalized core files. Remaining `bank_*` references in those files are documentation/header comments only.
+
+### 2.4 Tier 4 normalization closure — 2026-05-09
+
+Path A Tier 4 normalization has been applied for the remaining legacy repositories and the ownership helper:
+
+| Area | Updated files | Current canonical target |
+|---|---|---|
+| Saved recipients | `server/repos/recipients.lua`, `resources/sonar_core/migrations/033_bank_saved_recipients.sql` | `sonar_bank_saved_recipients` + `sonar_accounts` |
+| Loans | `server/repos/loans.lua`, `server/services/loan_service.lua` | `sonar_bank_loans` + `sonar_bank_movements` |
+| Recurring payments | `server/repos/recurring.lua`, `server/services/recurring_service.lua` | `sonar_bank_recurring_payments` |
+| Portfolio / stocks | `server/repos/portfolio.lua`, `server/services/portfolio_service.lua` | `sonar_bank_stocks_assets`, `sonar_bank_stocks_transactions`, `sonar_bank_stocks_holdings` |
+| Cards | `server/repos/cards.lua` | `sonar_bank_physical_cards` |
+| Ownership lookup | `server/lib/auth.lua` | `sonar_bank_accounts` + `sonar_accounts` |
+
+Static validation confirms no runtime SQL statements remain using `FROM bank_*`, `JOIN bank_*`, `INSERT INTO bank_*`, `UPDATE bank_*`, or `DELETE FROM bank_*`. Remaining `bank_*` mentions are historical comments/header documentation or canonical `sonar_bank_*` identifiers.
 
 ---
 
@@ -166,15 +181,16 @@ Minimum safe sequence:
 
 ## 6. Acceptance criteria
 
-- [ ] All `FROM bank_*`, `JOIN bank_*`, `INSERT INTO bank_*`, `UPDATE bank_*`, `DELETE FROM bank_*` references are removed or formally justified.
+- [x] All `FROM bank_*`, `JOIN bank_*`, `INSERT INTO bank_*`, `UPDATE bank_*`, `DELETE FROM bank_*` runtime references are removed or formally justified.
 - [x] Core runtime references for audit/idempotency/accounts/movements removed from SQL statements.
 - [x] Backend static check validates canonical table names in normalized core files.
 - [x] Audit writer writes to `sonar_bank_audit_ledger` with DB schema-compatible shape.
 - [x] Idempotency lib writes to `sonar_bank_idempotency_keys` with DB schema-compatible lifecycle.
 - [x] Accounts repo maps `sonar_bank_accounts` to the existing Lua/FE `Account` payload shape with documented `savings_minor=0` compatibility.
 - [x] Movements repo maps `sonar_bank_movements` to the existing transaction payload shape.
-- [ ] Tier 4 repos (`recipients`, `loans`, `recurring`, `portfolio`, `cards`) normalized to canonical schema or formally scoped out.
-- [ ] REQ-FE-006..015 implementation starts only after the above are complete or Founder explicitly accepts Path C partial mode.
+- [x] Tier 4 repos (`recipients`, `loans`, `recurring`, `portfolio`, `cards`) normalized to canonical schema.
+- [x] Ownership helper `server/lib/auth.lua` normalized to canonical `sonar_bank_accounts`.
+- [x] REQ-FE-006..015 implementation may resume from the data-layer perspective; Security Lead review gates still apply for risk score formula/cadence and mutation audit shapes.
 - [x] SESSION_LOG entry documents core normalization progress.
 
 ---
@@ -189,7 +205,9 @@ Minimum safe sequence:
 - `resources/sonar_core/migrations/030_subsidy_programs.sql`
 - `resources/sonar_core/migrations/031_business_payroll_persistence.sql`
 - `resources/sonar_core/migrations/032_govt_risk_scores_and_treasury_movements.sql`
+- `resources/sonar_core/migrations/033_bank_saved_recipients.sql`
 - `resources/sonar_bank_app/server/repos/*.lua`
+- `resources/sonar_bank_app/server/lib/auth.lua`
 - `resources/sonar_bank_app/server/lib/audit.lua`
 - `resources/sonar_bank_app/server/lib/idempotency.lua`
 
@@ -202,7 +220,8 @@ Minimum safe sequence:
 | 2026-05-09 | Issue creado durante Backend Lead consumer review post DB amendment v2.1 DRAFT | Backend Lead |
 | 2026-05-09 | Founder approved Path A normalization; core audit/idempotency/accounts/movements normalization applied | Founder + Backend Lead |
 | 2026-05-09 | Static validation: `git diff --check` passed; no runtime SQL legacy references remain in normalized core files | Backend Lead |
-| TBD | Tier 4 repos normalized or waiver documented | Backend Lead / Founder |
-| TBD | REQ-FE-006..015 implementation resumes | Backend Lead |
+| 2026-05-09 | Tier 4 repos normalized to canonical schema; `033_bank_saved_recipients.sql` added for missing saved recipients canonical table | Backend Lead |
+| 2026-05-09 | Extra runtime drift fixed in `server/lib/auth.lua`; static validation confirms no legacy `bank_*` runtime SQL statements remain | Backend Lead |
+| 2026-05-09 | Issue #003 closed; REQ-FE-006..015 may resume from data-layer perspective, subject to remaining Security/Founder gates | Backend Lead |
 
-— **Issue #003 IN PROGRESS. Core drift for audit/idempotency/accounts/movements is normalized; full production implementation remains gated on remaining Tier 4 `bank_*` repos or an explicit Founder waiver.**
+— **Issue #003 CLOSED. Backend runtime schema drift from legacy `bank_*` tables to canonical `sonar_bank_*` / `sonar_*` tables has been resolved.**

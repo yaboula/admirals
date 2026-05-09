@@ -116,15 +116,8 @@ function S.Approve(ctx)
 
   local tx_queries = {
     AccountsRepo.BuildCreditBalanceQuery(norm_iban, tonumber(loan.principal_minor) or 0),
-    -- SetStatus inline para mantener atomicidad
-    {
-      query  = [[
-UPDATE bank_loans
-SET status='active', issued_ms=?, due_ms=?, updated_at=CURRENT_TIMESTAMP(6)
-WHERE loan_id=? AND status='requested'
-]],
-      values = { issued_ms, due_ms, ctx.loan_id },
-    },
+    LoansRepo.BuildActivateQuery(ctx.loan_id, norm_iban, issued_ms, due_ms),
+    LoansRepo.BuildInsertDisbursementQuery(ctx.loan_id, norm_iban, tonumber(loan.principal_minor) or 0, issued_ms),
   }
   local ok, tx_err = DB.Transaction(tx_queries)
   if not ok then return { ok = false, error = tx_err } end
@@ -227,7 +220,7 @@ function S.MakePayment(ctx)
   local tx_queries = {
     AccountsRepo.BuildDebitBalanceQuery(norm_iban, ctx.amount_minor),
     LoansRepo.BuildReduceOutstandingQuery(ctx.loan_id, ctx.amount_minor),
-    LoansRepo.BuildInsertPaymentQuery(ctx.loan_id, ctx.amount_minor, payment_ms),
+    LoansRepo.BuildInsertPaymentQuery(ctx.loan_id, norm_iban, ctx.amount_minor, payment_ms),
   }
   local ok, tx_err = DB.Transaction(tx_queries)
   if not ok then
