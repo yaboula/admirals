@@ -74,25 +74,31 @@ export function Auth() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, scale: 0.98, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }} className="relative">
-          <div className="absolute -inset-8 rounded-[2.4rem] bg-brand-signal-orange/10 blur-3xl" />
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-surface-card/80 p-5 shadow-[0_26px_80px_-42px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
+        <motion.div initial={{ opacity: 0, scale: 0.98, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }} className="relative lg:justify-self-end">
+          <div className="absolute -inset-10 rounded-[2.75rem] bg-[radial-gradient(circle_at_50%_16%,oklch(0.65_0.22_40/0.16),transparent_42%),radial-gradient(circle_at_80%_86%,oklch(0.72_0.17_154/0.12),transparent_34%)] blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(145deg,oklch(0.105_0.012_270/0.92),oklch(0.045_0.006_270/0.96)_58%,oklch(0.035_0.004_270/0.98))] p-5 shadow-[0_34px_100px_-48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.11)] backdrop-blur-2xl">
+            <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+            <div className="absolute -right-24 -top-24 h-52 w-52 rounded-full border border-white/10 bg-white/[0.025]" />
+            <div className="absolute -bottom-28 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-semantic-success/10 blur-3xl" />
             <div className="absolute right-5 top-5">
-              <Badge tone={streamerMode ? 'success' : 'warning'} variant="soft" size="sm" pulse={streamerMode}>
+              <Badge tone={streamerMode ? 'success' : 'warning'} variant="soft" size="sm" pulse={streamerMode} className="border border-white/10 shadow-[0_10px_28px_-18px_currentColor]">
                 {streamerMode ? t('auth.streamerOn') : t('auth.streamerOff')}
               </Badge>
             </div>
 
-            <div className="pt-7">
-              <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-surface-abyss/80">
-                  <Fingerprint size={54} strokeWidth={1.3} className="text-brand-signal-orange-light" />
+            <div className="relative pt-8">
+              <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-[radial-gradient(circle,oklch(1_0_0/0.055),oklch(1_0_0/0.02)_52%,transparent_53%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
+                <div className="absolute h-32 w-32 rounded-full border border-white/10" />
+                <div className="absolute h-40 w-40 rounded-full bg-[conic-gradient(from_210deg,transparent,oklch(0.65_0.22_40/0.42),transparent_38%)] opacity-80" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-surface-abyss/90 shadow-[0_18px_46px_-30px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <span className="absolute inset-3 rounded-full bg-brand-signal-orange/10 blur-xl" />
+                  <Fingerprint size={55} strokeWidth={1.25} className="relative text-brand-signal-orange-light drop-shadow-[0_0_18px_oklch(0.65_0.22_40/0.35)]" />
                 </div>
               </div>
 
-              <div className="mt-6 text-center">
+              <div className="mt-5 text-center">
                 <p className="text-sm font-semibold text-text-primary">{t('auth.biometric')}</p>
-                <p className="mt-1 text-xs text-text-tertiary">SONAR ID · M004</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-text-quaternary">SONAR ID · M004</p>
               </div>
             </div>
 
@@ -101,17 +107,17 @@ export function Auth() {
               role="switch"
               aria-checked={streamerMode}
               onClick={() => setStreamerMode(!streamerMode)}
-              className="tactile-focus-ring mt-6 w-full rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-3 text-left transition-colors hover:bg-white/[0.065]"
+              className="tactile-focus-ring group mt-6 w-full rounded-[1.45rem] border border-white/10 bg-white/[0.045] p-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] transition-colors hover:bg-white/[0.07]"
             >
               <div className="flex items-center gap-3">
-                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border', streamerMode ? 'border-semantic-success-deep/40 bg-semantic-success-glow text-semantic-success-deep' : 'border-semantic-warning-deep/35 bg-semantic-warning-glow text-semantic-warning-deep')}>
+                <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-colors', streamerMode ? 'border-semantic-success-deep/40 bg-semantic-success-glow text-semantic-success-deep' : 'border-semantic-warning-deep/35 bg-semantic-warning-glow text-semantic-warning-deep')}>
                   {streamerMode ? <EyeOff size={18} strokeWidth={2.2} /> : <Eye size={18} strokeWidth={2.2} />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold text-text-primary">{t('auth.streamerLabel')}</span>
-                    <span className={cn('relative h-6 w-11 shrink-0 rounded-full border transition-colors', streamerMode ? 'border-semantic-success-deep/45 bg-semantic-success-glow' : 'border-white/10 bg-white/[0.07]')}>
-                      <span className={cn('absolute top-1 h-4 w-4 rounded-full bg-current transition-transform', streamerMode ? 'translate-x-5 text-semantic-success-deep' : 'translate-x-1 text-text-tertiary')} />
+                    <span className={cn('relative h-7 w-12 shrink-0 rounded-full border transition-colors', streamerMode ? 'border-semantic-success-deep/45 bg-semantic-success-glow' : 'border-white/10 bg-white/[0.08]')}>
+                      <span className={cn('absolute top-1 h-5 w-5 rounded-full bg-current shadow-[0_5px_16px_-8px_currentColor] transition-transform', streamerMode ? 'translate-x-5 text-semantic-success-deep' : 'translate-x-1 text-text-tertiary')} />
                     </span>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-text-tertiary">{t('auth.streamerDescription')}</p>
@@ -119,18 +125,18 @@ export function Auth() {
               </div>
             </button>
 
-            <Button size="lg" fullWidth rightIcon={<ArrowRight size={18} strokeWidth={2.3} />} onClick={handleEnter} className="mt-4 rounded-2xl">
+            <Button size="lg" fullWidth rightIcon={<ArrowRight size={18} strokeWidth={2.3} />} onClick={handleEnter} className="mt-4 rounded-2xl shadow-[0_18px_42px_-24px_oklch(0.65_0.22_40/0.9),inset_0_1px_0_rgba(255,255,255,0.28)]">
               {t('auth.loginCta')}
             </Button>
 
-            <div className="mt-5 rounded-[1.25rem] border border-white/10 bg-white/[0.025] p-3">
+            <div className="mt-5 rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary"><Landmark size={14} />{t('auth.signal')}</span>
-                <span className="text-xs font-semibold text-semantic-success tactile-tabular-nums">+2.8%</span>
+                <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary"><Landmark size={14} className="text-text-tertiary" />{t('auth.signal')}</span>
+                <span className="rounded-full border border-semantic-success-deep/25 bg-semantic-success-glow px-2 py-1 text-xs font-semibold text-semantic-success-deep tactile-tabular-nums">+2.8%</span>
               </div>
-              <div className="mt-3 flex h-12 items-end gap-1.5">
+              <div className="mt-4 flex h-12 items-end gap-1.5">
                 {[34, 48, 28, 66, 54, 78, 62, 88, 74, 92, 81, 96].map((height, index) => (
-                  <span key={index} className="flex-1 rounded-full bg-white/10" style={{ height: `${height}%`, background: index > 8 ? 'oklch(0.72 0.17 154 / 0.72)' : 'oklch(1 0 0 / 0.10)' }} />
+                  <span key={index} className="flex-1 rounded-full" style={{ height: `${height}%`, background: index > 8 ? 'oklch(0.72 0.17 154 / 0.74)' : 'oklch(1 0 0 / 0.115)' }} />
                 ))}
               </div>
             </div>
