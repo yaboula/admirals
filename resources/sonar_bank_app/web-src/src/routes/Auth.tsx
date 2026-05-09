@@ -125,7 +125,18 @@ export function Auth() {
               </div>
             </button>
 
-            <Button size="lg" fullWidth rightIcon={<ArrowRight size={18} strokeWidth={2.3} />} onClick={handleEnter} className="mt-4 rounded-2xl !border-brand-signal-orange/45 !bg-[linear-gradient(135deg,oklch(0.62_0.21_40),oklch(0.72_0.17_55))] shadow-[0_16px_38px_-25px_oklch(0.65_0.22_40/0.86),inset_0_1px_0_rgba(255,255,255,0.28)]">
+            <Button
+              size="lg"
+              fullWidth
+              rightIcon={<ArrowRight size={18} strokeWidth={2.3} />}
+              onClick={handleEnter}
+              className="mt-4 rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, oklch(0.58 0.19 38), oklch(0.68 0.15 54))',
+                borderColor: 'oklch(0.72 0.17 55 / 0.46)',
+                boxShadow: '0 16px 38px -25px oklch(0.65 0.22 40 / 0.82), inset 0 1px 0 oklch(1 0 0 / 0.28)',
+              }}
+            >
               {t('auth.loginCta')}
             </Button>
 
@@ -173,7 +184,7 @@ function MarketSignalPreview() {
           {bars.map((height, index) => {
             const active = index > 8
             return (
-              <span key={index} className="flex flex-1 items-end justify-center">
+              <span key={index} className="flex h-full flex-1 items-end justify-center">
                 <span
                   className={cn('block w-full max-w-[18px] rounded-full transition-colors', active ? 'shadow-[0_10px_22px_-15px_oklch(0.72_0.17_154)]' : '')}
                   style={{
