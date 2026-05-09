@@ -1710,3 +1710,79 @@ R1 findings inherited 100% closed (per BANK-BE.LOCK.R1 entry).
 - Activación: usar prompt `docs/agents/teams/prompts/05_frontend_ux_premium_lead.md`
 
 — **Frontend & UX Premium Lead BANK-A.FE.POLISH close 2026-05-08. ATM 3-step flow polished + paleta Home exacta aplicada + ClientPresencePanel removido + tarjeta 3D layout corregida. Commit `03334be` merged. Prompt handoff `05_frontend_ux_premium_lead.md` entregado. Branch `feature/bank-security-phase-a`. Standby hasta founder green-light próxima sesión FE.**
+
+---
+
+### BANK-A.GOVT.FINAL — Frontend Lead — Treasury Bureau completo + gold layer + seal final
+
+- **Fecha:** 2026-05-09
+- **Duración:** ~3h
+- **Founder + Agent:** yaboula + Cascade (Sonnet 4.5)
+- **Sprint / Phase:** Phase A / bank-A.GOVT
+- **Perfil:** FE — Frontend & UX Premium
+- **Goal:** Completar NODO 6 GovtReports, redesign ComplianceRing, añadir gold token family + efectos dorados equilibrados en toda la app, integrar IRS seal PNG + SonarBureauSeal SVG custom, ajuste logo final sidebar.
+- **Status:** ✅ Done
+
+#### Outcomes
+
+- ✅ **GovtReports NODO 6** — 4 KPI cards, RevenueChart SVG, ComplianceRing donut, SectorBars, TopContributors, RiskDistribution, range selector Month/Quarter/Year. `17cd97b`
+- ✅ **ComplianceRing redesign** — ring 172×172, 4 legend items con % + mini bars proporcionales, barra multi-segmento al fondo, elimina espacio muerto. `444c4d5`
+- ✅ **FE_BACKEND_REQUESTS v0.5** — 14 items totales (7H/4M/3L), REQ-FE-001..014, Path A/B documentado.
+- ✅ **Gold token family** — `--color-govt-gold/deep/glow/ring/subtle` + `@keyframes seal-pulse-gold`. `b7ebe20`
+- ✅ **Gold touches equilibrados** — sidebar dividers, GovtCard glass shimmer, GovtPill `gold` tone, KpiTile `gold` collected, ModuleCard hover gold, StatusChip gold, topbar eyebrow + separator gold, bank sidebar monogram ring+glow. `bc1ca46`
+- ✅ **IRS seal PNG** (fondo transparente) — Bureau hero 168px con anillo dorado animado. `bc1ca46`
+- ✅ **SonarBureauSeal.tsx** — SVG custom puro 200×200 escalable: rope ring dashed, navy fill gradient, arced text, 3 stars 5-puntas, monograma S dorado triple-layer, dots decorativos, "LOS SANTOS". `f6c0cd2`
+- ✅ **Logo final** — IRS PNG hero + SonarBureauSeal `showText=false` sidebar sin glow (misma línea que bank). `419a779`
+
+#### Done criteria
+
+- [x] 8 nodos A.GOVT todos operativos en router ✅
+- [x] `npm run typecheck` exit 0 en todos los commits ✅
+- [x] Gold token family tipado + usado sin magic values ✅
+- [x] SonarBureauSeal sin dependencias de imagen externa ✅
+- [x] FE_BACKEND_REQUESTS v0.5 completo 14 items ✅
+
+#### Anti-tech-debt verification
+
+- [x] NO colores fuera de paleta SONAR / govt tokens.
+- [x] NO texto hardcodeado — todo via `t()` + i18n keys.
+- [x] NO scope creep — solo `web-src/src/govt/**` + `components/layout/Sidebar.tsx` tocados.
+- [x] NO IDs SVG duplicados — `bureauBg_${size}` único por instancia.
+- [x] Idiomas ES + EN respetados (i18n.ts ambos bloques).
+
+#### Files in scope respetados
+
+- ✅ NO toco: contratos LOCKED, backend `server/**`, bank routes, DB/BE/SEC artefactos.
+- ✅ Modificados/creados:
+  - `src/govt/routes/GovtReports.tsx` + `reports/*.tsx` (4 sub-componentes)
+  - `src/govt/data/mock/govtReports.ts` + `queries/govtReports.ts`
+  - `src/govt/data/contracts.ts` (GovtReports types)
+  - `src/govt/styles/govtTokens.css` (gold tokens + keyframe)
+  - `src/govt/components/GovtPill.tsx` (gold tone)
+  - `src/govt/components/GovtCard.tsx` (glass shimmer)
+  - `src/govt/components/SonarBureauSeal.tsx` (NEW — SVG custom)
+  - `src/govt/layout/GovtSidebar.tsx` (seal + divider gold)
+  - `src/govt/layout/GovtTopbar.tsx` (eyebrow gold + StatusChip gold)
+  - `src/govt/routes/Bureau.tsx` (IRS hero + gold KPI + module hover)
+  - `src/components/layout/Sidebar.tsx` (bank monogram gold ring/glow)
+  - `src/lib/i18n.ts` (EN+ES keys: compliance.distribution + nuevas)
+  - `src/router.tsx` (GovtReports route wired)
+  - `src/assets/branding/seal_irs.jpg` + `seal_irs.png` + `monogram_s_white.svg`
+  - `progress/FE_BACKEND_REQUESTS.md` v0.5
+
+#### Pendientes próximos
+
+1. **Backend Lead reactivación** — 14 FE_BACKEND_REQUESTS (Path A: 9 endpoints mock→real).
+2. **H3 Handoff** formal Backend→Frontend ceremony.
+3. **DevOps BANK-DO.0** — 7 convars + runbook + harness p99/p95.
+4. **Bundle lazy loading** — chunk ~1358 kB pre-existente, deferred Phase B.
+5. **WCAG 2.2 AA audit** — aria-* componentes interactivos críticos.
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-A.H3** — Handoff ceremony H3 (Backend → Frontend formal sign-off + C-FE-03 endorsement).
+- Goal: Activar Backend Lead para REQ-FE-001..014, emitir H3, conectar mock→real los 14 endpoints.
+- Modelo sugerido: Cascade (continuity).
+- Files in scope: `progress/FE_BACKEND_REQUESTS.md` + `server/callbacks/**` + `web-src/src/govt/data/queries/**`.
+
+— **Frontend Lead BANK-A.GOVT.FINAL close 2026-05-09. TODA la UI Phase A completa — 8 nodos Treasury Bureau + 6 rutas Bank App. Gold token family `--color-govt-gold` aplicado equilibradamente. SonarBureauSeal SVG custom `f6c0cd2`. IRS PNG hero + S monogram sidebar `419a779`. FE_BACKEND_REQUESTS v0.5 14 items. Branch `feature/bank-security-phase-a`. Frontend Lead Standby. Próxima acción: BANK-A.H3 Handoff ceremony o Backend Lead reactivación para integración real.**
