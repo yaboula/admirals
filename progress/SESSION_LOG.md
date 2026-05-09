@@ -2119,3 +2119,60 @@ Examples found:
 4. Attack Business module next: `REQ-FE-011` registry/detail and `REQ-FE-015` approval/payroll/withdrawal mutations.
 
 — **Backend Lead GOVT MVP server data layer implemented. Next recommended module: Empresas/Business.**
+
+---
+
+### BANK-BE.GOVT.2 — Government vertical frontend integration
+
+- **Fecha:** 2026-05-09
+- **Founder + Agent:** yaboula + Cascade (Backend Lead)
+- **Sprint / Phase:** Phase A — Vertical integration after GOVT MVP backend cut.
+- **Trigger:** Founder directive to connect Government frontend mock layer to real callbacks before moving to Empresas/Business.
+- **Status:** ✅ **GOVT VERTICAL INTEGRATION COMPLETE** — frontend Govt queries now consume real `sonar:bank:govt:*` callbacks in FiveM NUI while preserving mock registry for local/dev mode.
+
+#### Acciones ejecutadas
+
+- ✅ Connected Census frontend queries:
+  - `resources/sonar_bank_app/web-src/src/govt/data/queries/govtCensus.ts`
+  - `useGovtCensusListQuery` → `sonar:bank:govt:census:list`
+  - `useGovtCitizenDetailQuery` → `sonar:bank:govt:census:detail`
+- ✅ Connected Sanctions frontend queries and mutations:
+  - `resources/sonar_bank_app/web-src/src/govt/data/queries/govtSanctions.ts`
+  - Queue/detail/frozen/actions/kpis now use `useBankCallback`.
+  - Close flag, freeze accounts, lift freeze, apply fine now use `useBankMutation`.
+  - Existing dialog-generated UUID `idempotencyKey` continues to flow to backend as expected.
+- ✅ Connected Treasury, Subsidies, and Reports frontend queries:
+  - `govtTreasury.ts` → `sonar:bank:govt:treasury:page`
+  - `govtSubsidies.ts` → `sonar:bank:govt:subsidies:stats/list/detail`
+  - `govtReports.ts` → `sonar:bank:govt:reports:data`
+- ✅ Preserved local/dev mode:
+  - `resources/sonar_bank_app/web-src/src/data/mock/register.ts`
+  - Registered equivalent mock handlers for all newly connected GOVT callback names.
+  - Local browser/non-FiveM mode still works through the NUI mock registry.
+- ✅ Backend/frontend shape alignment:
+  - `resources/sonar_bank_app/server/services/govt_service.lua`
+  - `GetSanctionKpis` now returns UI contract `{ open, critical, today, total }`.
+
+#### Validaciones ejecutadas
+
+- ✅ `npm run typecheck` passed in `resources/sonar_bank_app/web-src`.
+- ✅ `npm run build` passed in `resources/sonar_bank_app/web-src`.
+- ✅ `git diff --check` passed.
+- ✅ NUI bridge checked: generic allowlist already permits `sonar:bank:*`, so no client whitelist update required.
+- ✅ Query layer scan confirms Census/Sanctions/Treasury/Subsidies/Reports no longer import mocks directly.
+- ℹ️ Remaining GOVT mock-backed query files by design:
+  - `govtTax.ts` (TaxEngine callbacks not part of this backend cut).
+  - `govtBusiness.ts` (Empresas/REQ-FE-011 pending next module).
+
+#### Pendientes próximos
+
+1. Commit vertical integration.
+2. Runtime smoke in FiveM/oxmysql with ACE grants:
+   - `sonar.bank.govt.audit.full`
+   - `sonar.bank.govt.compliance.admin`
+   - fallback `sonar.bank.admin`
+3. Continue with Empresas/Business:
+   - REQ-FE-011 registry/detail.
+   - REQ-FE-015 approval/payroll/withdrawal mutations.
+
+— **Government vertical integration complete. Next recommended module remains Empresas/Business.**

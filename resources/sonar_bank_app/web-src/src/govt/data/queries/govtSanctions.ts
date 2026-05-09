@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import type {
   GovtApplyFineRequest,
   GovtCloseFlagRequest,
@@ -8,17 +8,7 @@ import type {
   GovtLiftFreezeRequest,
   GovtSanctionAction,
 } from '../contracts'
-import {
-  applyFineMock,
-  closeFlagMock,
-  freezeAccountsMock,
-  getFlagDetailMock,
-  getQueueKpisMock,
-  isCitizenFrozenMock,
-  liftFreezeMock,
-  listFlagQueueMock,
-  listSanctionActionsMock,
-} from '../mock/govtSanctions'
+import { useBankCallback, useBankMutation } from '@/lib/bankQuery'
 import { govtCensusKeys } from './govtCensus'
 
 /* ============================================================================
@@ -26,8 +16,27 @@ import { govtCensusKeys } from './govtCensus'
    Mock-backed until REQ-FE-009 callbacks ship.
    ============================================================================ */
 
-const SIMULATED_LIST_DELAY_MS = 160
-const SIMULATED_DETAIL_DELAY_MS = 180
+const FLAG_QUEUE_EVENT = 'sonar:bank:govt:sanctions:queue'
+const FLAG_DETAIL_EVENT = 'sonar:bank:govt:sanctions:flagDetail'
+const CITIZEN_FROZEN_EVENT = 'sonar:bank:govt:sanctions:frozen'
+const SANCTION_ACTIONS_EVENT = 'sonar:bank:govt:sanctions:actions'
+const SANCTION_KPIS_EVENT = 'sonar:bank:govt:sanctions:kpis'
+const CLOSE_FLAG_EVENT = 'sonar:bank:govt:sanctions:closeFlag'
+const FREEZE_ACCOUNTS_EVENT = 'sonar:bank:govt:sanctions:freezeAccounts'
+const LIFT_FREEZE_EVENT = 'sonar:bank:govt:sanctions:liftFreeze'
+const APPLY_FINE_EVENT = 'sonar:bank:govt:sanctions:applyFine'
+
+export interface GovtSanctionKpis {
+  open: number
+  critical: number
+  today: number
+  total: number
+}
+
+type CloseFlagPayload = GovtCloseFlagRequest & Record<string, unknown>
+type FreezeAccountsPayload = GovtFreezeAccountsRequest & Record<string, unknown>
+type LiftFreezePayload = GovtLiftFreezeRequest & Record<string, unknown>
+type ApplyFinePayload = GovtApplyFineRequest & Record<string, unknown>
 
 export const govtSanctionsKeys = {
   all: ['govt', 'sanctions'] as const,
@@ -40,55 +49,54 @@ export const govtSanctionsKeys = {
 }
 
 export function useFlagQueueQuery(filters: GovtFlagQueueFilters) {
-  return useQuery<GovtFlagQueueItem[]>({
-    queryKey: govtSanctionsKeys.queue(filters),
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, SIMULATED_LIST_DELAY_MS))
-      return listFlagQueueMock(filters)
-    },
-    staleTime: 15_000,
-  })
+  return useBankCallback<GovtFlagQueueItem[], Record<string, unknown>>(
+    FLAG_QUEUE_EVENT,
+    govtSanctionsKeys.queue(filters),
+    { filters },
+    { staleTime: 15_000 },
+  )
 }
 
 export function useFlagDetailQuery(flagId: string | null) {
-  return useQuery<GovtFlagQueueItem | null>({
-    queryKey: flagId ? govtSanctionsKeys.flagDetail(flagId) : ['govt', 'sanctions', 'flag', 'none'],
-    enabled: Boolean(flagId),
-    queryFn: async () => {
-      if (!flagId) return null
-      await new Promise((r) => setTimeout(r, SIMULATED_DETAIL_DELAY_MS))
-      return getFlagDetailMock(flagId) ?? null
+  return useBankCallback<GovtFlagQueueItem | null, Record<string, unknown>>(
+    FLAG_DETAIL_EVENT,
+    flagId ? govtSanctionsKeys.flagDetail(flagId) : ['govt', 'sanctions', 'flag', 'none'],
+    { flagId: flagId ?? '' },
+    {
+      enabled: Boolean(flagId),
+      staleTime: 15_000,
     },
-    staleTime: 15_000,
-  })
+  )
 }
 
 export function useCitizenFrozenQuery(cid: string | null) {
-  return useQuery<boolean>({
-    queryKey: cid ? govtSanctionsKeys.citizenFrozen(cid) : ['govt', 'sanctions', 'frozen', 'none'],
-    enabled: Boolean(cid),
-    queryFn: async () => (cid ? isCitizenFrozenMock(cid) : false),
-    staleTime: 5_000,
-  })
+  return useBankCallback<boolean, Record<string, unknown>>(
+    CITIZEN_FROZEN_EVENT,
+    cid ? govtSanctionsKeys.citizenFrozen(cid) : ['govt', 'sanctions', 'frozen', 'none'],
+    { cid: cid ?? '' },
+    {
+      enabled: Boolean(cid),
+      staleTime: 5_000,
+    },
+  )
 }
 
 export function useSanctionActionsQuery(targetCid?: string | null) {
-  return useQuery<GovtSanctionAction[]>({
-    queryKey: govtSanctionsKeys.actions(targetCid ?? undefined),
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 100))
-      return listSanctionActionsMock(targetCid ?? undefined)
-    },
-    staleTime: 10_000,
-  })
+  return useBankCallback<GovtSanctionAction[], Record<string, unknown>>(
+    SANCTION_ACTIONS_EVENT,
+    govtSanctionsKeys.actions(targetCid ?? undefined),
+    { targetCid: targetCid ?? '' },
+    { staleTime: 10_000 },
+  )
 }
 
 export function useSanctionKpisQuery() {
-  return useQuery({
-    queryKey: govtSanctionsKeys.kpis,
-    queryFn: async () => getQueueKpisMock(),
-    staleTime: 8_000,
-  })
+  return useBankCallback<GovtSanctionKpis, Record<string, unknown>>(
+    SANCTION_KPIS_EVENT,
+    govtSanctionsKeys.kpis,
+    {},
+    { staleTime: 8_000 },
+  )
 }
 
 /* ----- mutations ---------------------------------------------------------- */
@@ -103,32 +111,20 @@ function useInvalidateSanctions() {
 
 export function useCloseFlagMutation() {
   const invalidate = useInvalidateSanctions()
-  return useMutation<GovtSanctionAction, Error, GovtCloseFlagRequest>({
-    mutationFn: closeFlagMock,
-    onSuccess: invalidate,
-  })
+  return useBankMutation<GovtSanctionAction, CloseFlagPayload>(CLOSE_FLAG_EVENT, { onSuccess: invalidate })
 }
 
 export function useFreezeAccountsMutation() {
   const invalidate = useInvalidateSanctions()
-  return useMutation<GovtSanctionAction, Error, GovtFreezeAccountsRequest>({
-    mutationFn: freezeAccountsMock,
-    onSuccess: invalidate,
-  })
+  return useBankMutation<GovtSanctionAction, FreezeAccountsPayload>(FREEZE_ACCOUNTS_EVENT, { onSuccess: invalidate })
 }
 
 export function useLiftFreezeMutation() {
   const invalidate = useInvalidateSanctions()
-  return useMutation<GovtSanctionAction, Error, GovtLiftFreezeRequest>({
-    mutationFn: liftFreezeMock,
-    onSuccess: invalidate,
-  })
+  return useBankMutation<GovtSanctionAction, LiftFreezePayload>(LIFT_FREEZE_EVENT, { onSuccess: invalidate })
 }
 
 export function useApplyFineMutation() {
   const invalidate = useInvalidateSanctions()
-  return useMutation<GovtSanctionAction, Error, GovtApplyFineRequest>({
-    mutationFn: applyFineMock,
-    onSuccess: invalidate,
-  })
+  return useBankMutation<GovtSanctionAction, ApplyFinePayload>(APPLY_FINE_EVENT, { onSuccess: invalidate })
 }

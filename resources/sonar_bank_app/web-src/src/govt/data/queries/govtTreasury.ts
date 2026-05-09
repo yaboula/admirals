@@ -1,8 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
 import type { GovtTreasuryFilters, GovtTreasuryPage } from '../contracts'
-import { getTreasuryPageMock } from '../mock/govtTreasury'
+import { useBankCallback } from '@/lib/bankQuery'
 
-const SIMULATED_DELAY_MS = 140
+const TREASURY_PAGE_EVENT = 'sonar:bank:govt:treasury:page'
 export const PER_PAGE = 15
 
 export const govtTreasuryKeys = {
@@ -12,13 +11,13 @@ export const govtTreasuryKeys = {
 }
 
 export function useGovtTreasuryQuery(filters: GovtTreasuryFilters, page: number) {
-  return useQuery<GovtTreasuryPage>({
-    queryKey: govtTreasuryKeys.page(filters, page),
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_MS))
-      return getTreasuryPageMock(filters, page, PER_PAGE)
+  return useBankCallback<GovtTreasuryPage, Record<string, unknown>>(
+    TREASURY_PAGE_EVENT,
+    govtTreasuryKeys.page(filters, page),
+    { filters, page, perPage: PER_PAGE },
+    {
+      staleTime: 30_000,
+      placeholderData: (prev) => prev,
     },
-    staleTime: 30_000,
-    placeholderData: (prev) => prev,
-  })
+  )
 }

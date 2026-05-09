@@ -16,6 +16,41 @@ import {
 } from './seed'
 import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, PayrollPreviewRequest, PayrollPreviewResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
 import type { BankStateBagKey } from '@/lib/bankStateBags'
+import { getCensusDetailMock, listCensusMock } from '@/govt/data/mock/govtCensus'
+import { getReportsDataMock } from '@/govt/data/mock/govtReports'
+import {
+  applyFineMock,
+  closeFlagMock,
+  freezeAccountsMock,
+  getFlagDetailMock,
+  getQueueKpisMock,
+  isCitizenFrozenMock,
+  liftFreezeMock,
+  listFlagQueueMock,
+  listSanctionActionsMock,
+} from '@/govt/data/mock/govtSanctions'
+import { getSubsidyDetailMock, getSubsidyStatsMock, listSubsidyProgramsMock } from '@/govt/data/mock/govtSubsidies'
+import { getTreasuryPageMock } from '@/govt/data/mock/govtTreasury'
+import type {
+  GovtApplyFineRequest,
+  GovtCensusFilters,
+  GovtCitizenDetail,
+  GovtCitizenSummary,
+  GovtCloseFlagRequest,
+  GovtFlagQueueFilters,
+  GovtFlagQueueItem,
+  GovtFreezeAccountsRequest,
+  GovtLiftFreezeRequest,
+  GovtReportsData,
+  GovtReportsRange,
+  GovtSanctionAction,
+  GovtSubsidyFilters,
+  GovtSubsidyProgram,
+  GovtSubsidyProgramDetail,
+  GovtSubsidyStats,
+  GovtTreasuryFilters,
+  GovtTreasuryPage,
+} from '@/govt/data/contracts'
 
 let installed = false
 
@@ -92,7 +127,83 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (13 endpoints) — VITE_MOCK_MODE=true')
+  registerMockHandler<GovtCitizenSummary[]>('sonar:bank:govt:census:list', async (payload) => {
+    await simulateLatency(120, 240)
+    return listCensusMock((payload.filters ?? payload) as GovtCensusFilters)
+  })
+
+  registerMockHandler<GovtCitizenDetail | null>('sonar:bank:govt:census:detail', async (payload) => {
+    await simulateLatency(120, 260)
+    return getCensusDetailMock(String(payload.cid ?? '')) ?? null
+  })
+
+  registerMockHandler<GovtFlagQueueItem[]>('sonar:bank:govt:sanctions:queue', async (payload) => {
+    await simulateLatency(100, 220)
+    return listFlagQueueMock((payload.filters ?? payload) as GovtFlagQueueFilters)
+  })
+
+  registerMockHandler<GovtFlagQueueItem | null>('sonar:bank:govt:sanctions:flagDetail', async (payload) => {
+    await simulateLatency(100, 220)
+    return getFlagDetailMock(String(payload.flagId ?? payload.flag_id ?? '')) ?? null
+  })
+
+  registerMockHandler<boolean>('sonar:bank:govt:sanctions:frozen', async (payload) => {
+    await simulateLatency(60, 140)
+    return isCitizenFrozenMock(String(payload.cid ?? payload.targetCid ?? ''))
+  })
+
+  registerMockHandler<GovtSanctionAction[]>('sonar:bank:govt:sanctions:actions', async (payload) => {
+    await simulateLatency(80, 180)
+    return listSanctionActionsMock(payload.targetCid ? String(payload.targetCid) : undefined)
+  })
+
+  registerMockHandler<ReturnType<typeof getQueueKpisMock>>('sonar:bank:govt:sanctions:kpis', async () => {
+    await simulateLatency(60, 140)
+    return getQueueKpisMock()
+  })
+
+  registerMockHandler<GovtSanctionAction>('sonar:bank:govt:sanctions:closeFlag', async (payload) => {
+    return closeFlagMock(payload as unknown as GovtCloseFlagRequest)
+  })
+
+  registerMockHandler<GovtSanctionAction>('sonar:bank:govt:sanctions:freezeAccounts', async (payload) => {
+    return freezeAccountsMock(payload as unknown as GovtFreezeAccountsRequest)
+  })
+
+  registerMockHandler<GovtSanctionAction>('sonar:bank:govt:sanctions:liftFreeze', async (payload) => {
+    return liftFreezeMock(payload as unknown as GovtLiftFreezeRequest)
+  })
+
+  registerMockHandler<GovtSanctionAction>('sonar:bank:govt:sanctions:applyFine', async (payload) => {
+    return applyFineMock(payload as unknown as GovtApplyFineRequest)
+  })
+
+  registerMockHandler<GovtTreasuryPage>('sonar:bank:govt:treasury:page', async (payload) => {
+    await simulateLatency(100, 220)
+    return getTreasuryPageMock((payload.filters ?? {}) as GovtTreasuryFilters, Number(payload.page ?? 1), Number(payload.perPage ?? payload.per_page ?? 15))
+  })
+
+  registerMockHandler<GovtSubsidyStats>('sonar:bank:govt:subsidies:stats', async () => {
+    await simulateLatency(90, 180)
+    return getSubsidyStatsMock()
+  })
+
+  registerMockHandler<GovtSubsidyProgram[]>('sonar:bank:govt:subsidies:list', async (payload) => {
+    await simulateLatency(90, 180)
+    return listSubsidyProgramsMock((payload.filters ?? payload) as GovtSubsidyFilters)
+  })
+
+  registerMockHandler<GovtSubsidyProgramDetail | null>('sonar:bank:govt:subsidies:detail', async (payload) => {
+    await simulateLatency(100, 220)
+    return getSubsidyDetailMock(String(payload.programId ?? payload.program_id ?? '')) ?? null
+  })
+
+  registerMockHandler<GovtReportsData>('sonar:bank:govt:reports:data', async (payload) => {
+    await simulateLatency(120, 240)
+    return getReportsDataMock((payload.range ?? 'month') as GovtReportsRange)
+  })
+
+  console.info('[mock] handlers installed (29 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

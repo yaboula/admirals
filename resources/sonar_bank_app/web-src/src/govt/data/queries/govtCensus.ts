@@ -1,6 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import type { GovtCensusFilters, GovtCitizenDetail, GovtCitizenSummary } from '../contracts'
-import { getCensusDetailMock, listCensusMock } from '../mock/govtCensus'
+import { useBankCallback } from '@/lib/bankQuery'
 
 /* ============================================================================
    SONAR Treasury Bureau — Census query layer.
@@ -9,8 +8,8 @@ import { getCensusDetailMock, listCensusMock } from '../mock/govtCensus'
    call (useBankCallback) — the public hook signature stays stable.
    ============================================================================ */
 
-const SIMULATED_DELAY_LIST_MS = 180
-const SIMULATED_DELAY_DETAIL_MS = 220
+const CENSUS_LIST_EVENT = 'sonar:bank:govt:census:list'
+const CENSUS_DETAIL_EVENT = 'sonar:bank:govt:census:detail'
 
 export const govtCensusKeys = {
   all: ['govt', 'census'] as const,
@@ -20,25 +19,22 @@ export const govtCensusKeys = {
 }
 
 export function useGovtCensusListQuery(filters: GovtCensusFilters) {
-  return useQuery<GovtCitizenSummary[]>({
-    queryKey: govtCensusKeys.list(filters),
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_LIST_MS))
-      return listCensusMock(filters)
-    },
-    staleTime: 30_000,
-  })
+  return useBankCallback<GovtCitizenSummary[], Record<string, unknown>>(
+    CENSUS_LIST_EVENT,
+    govtCensusKeys.list(filters),
+    { filters },
+    { staleTime: 30_000 },
+  )
 }
 
 export function useGovtCitizenDetailQuery(cid: string | null) {
-  return useQuery<GovtCitizenDetail | null>({
-    queryKey: cid ? govtCensusKeys.detail(cid) : ['govt', 'census', 'detail', 'none'],
-    enabled: Boolean(cid),
-    queryFn: async () => {
-      if (!cid) return null
-      await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_DETAIL_MS))
-      return getCensusDetailMock(cid) ?? null
+  return useBankCallback<GovtCitizenDetail | null, Record<string, unknown>>(
+    CENSUS_DETAIL_EVENT,
+    cid ? govtCensusKeys.detail(cid) : ['govt', 'census', 'detail', 'none'],
+    { cid: cid ?? '' },
+    {
+      enabled: Boolean(cid),
+      staleTime: 30_000,
     },
-    staleTime: 30_000,
-  })
+  )
 }

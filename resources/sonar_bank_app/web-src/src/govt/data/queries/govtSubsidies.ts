@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
 import type { GovtSubsidyFilters, GovtSubsidyProgram, GovtSubsidyProgramDetail, GovtSubsidyStats } from '../contracts'
-import { getSubsidyDetailMock, getSubsidyStatsMock, listSubsidyProgramsMock } from '../mock/govtSubsidies'
+import { useBankCallback } from '@/lib/bankQuery'
 
-const DELAY_LIST = 130
-const DELAY_DETAIL = 180
+const SUBSIDY_STATS_EVENT = 'sonar:bank:govt:subsidies:stats'
+const SUBSIDY_LIST_EVENT = 'sonar:bank:govt:subsidies:list'
+const SUBSIDY_DETAIL_EVENT = 'sonar:bank:govt:subsidies:detail'
 
 export const govtSubsidyKeys = {
   stats: ['govt', 'subsidy', 'stats'] as const,
@@ -12,36 +12,31 @@ export const govtSubsidyKeys = {
 }
 
 export function useGovtSubsidyStatsQuery() {
-  return useQuery<GovtSubsidyStats>({
-    queryKey: govtSubsidyKeys.stats,
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, DELAY_LIST))
-      return getSubsidyStatsMock()
-    },
-    staleTime: 60_000,
-  })
+  return useBankCallback<GovtSubsidyStats, Record<string, unknown>>(
+    SUBSIDY_STATS_EVENT,
+    govtSubsidyKeys.stats,
+    {},
+    { staleTime: 60_000 },
+  )
 }
 
 export function useGovtSubsidyListQuery(filters: GovtSubsidyFilters) {
-  return useQuery<GovtSubsidyProgram[]>({
-    queryKey: govtSubsidyKeys.list(filters),
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, DELAY_LIST))
-      return listSubsidyProgramsMock(filters)
-    },
-    staleTime: 30_000,
-  })
+  return useBankCallback<GovtSubsidyProgram[], Record<string, unknown>>(
+    SUBSIDY_LIST_EVENT,
+    govtSubsidyKeys.list(filters),
+    { filters },
+    { staleTime: 30_000 },
+  )
 }
 
 export function useGovtSubsidyDetailQuery(programId: string | null) {
-  return useQuery<GovtSubsidyProgramDetail | null>({
-    queryKey: programId ? govtSubsidyKeys.detail(programId) : ['govt', 'subsidy', 'detail', 'none'],
-    enabled: Boolean(programId),
-    queryFn: async () => {
-      if (!programId) return null
-      await new Promise((r) => setTimeout(r, DELAY_DETAIL))
-      return getSubsidyDetailMock(programId) ?? null
+  return useBankCallback<GovtSubsidyProgramDetail | null, Record<string, unknown>>(
+    SUBSIDY_DETAIL_EVENT,
+    programId ? govtSubsidyKeys.detail(programId) : ['govt', 'subsidy', 'detail', 'none'],
+    { programId: programId ?? '' },
+    {
+      enabled: Boolean(programId),
+      staleTime: 30_000,
     },
-    staleTime: 30_000,
-  })
+  )
 }

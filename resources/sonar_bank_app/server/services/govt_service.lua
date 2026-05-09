@@ -240,13 +240,14 @@ end
 function S.GetSanctionKpis(ctx)
   local queue = S.ListFlagQueue({ filters = {} })
   if not queue.ok then return queue end
-  local high, medium, low = 0, 0, 0
+  local open, critical = 0, 0
   for _, item in ipairs(queue.data or {}) do
-    if item.severity == 'high' or item.severity == 'critical' then high = high + 1
-    elseif item.severity == 'medium' then medium = medium + 1
-    else low = low + 1 end
+    if item.status == 'open' then open = open + 1 end
+    if (item.severity == 'high' or item.severity == 'critical') and item.status ~= 'resolved' and item.status ~= 'dismissed' then
+      critical = critical + 1
+    end
   end
-  return { ok = true, data = { total = #(queue.data or {}), high = high, medium = medium, low = low } }
+  return { ok = true, data = { open = open, critical = critical, today = 0, total = #(queue.data or {}) } }
 end
 
 function S.CloseFlag(ctx)
