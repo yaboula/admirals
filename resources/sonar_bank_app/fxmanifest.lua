@@ -75,51 +75,54 @@ server_scripts {
   'server/repos/portfolio.lua',         -- 20.
   'server/repos/cards.lua',             -- 21.
   'server/repos/govt.lua',              -- 22.
+  'server/repos/business.lua',          -- 23.
 
   -- 4. State (statebags hook — depends on repos.accounts).
-  'server/state/statebags.lua',         -- 23. M004 §2.2.2 playerJoining lazy publish hook
+  'server/state/statebags.lua',         -- 24. M004 §2.2.2 playerJoining lazy publish hook
 
   -- 5. Services (business logic + FSM orchestration — depends repos + lib).
-  'server/services/bootstrap_service.lua',   -- 24. REQ-FE-001 (must load BEFORE other services that invalidate it)
-  'server/services/recipients_service.lua',  -- 25. REQ-FE-002
-  'server/services/transfer_service.lua',    -- 26.
-  'server/services/account_service.lua',     -- 27.
-  'server/services/loan_service.lua',        -- 28.
-  'server/services/recurring_service.lua',   -- 29.
-  'server/services/portfolio_service.lua',   -- 30.
-  'server/services/card_service.lua',        -- 31.
-  'server/services/admin_service.lua',       -- 32.
-  'server/services/risk_engine.lua',         -- 33. REQ-FE-006/009 MVP risk rules
-  'server/services/govt_service.lua',        -- 34. REQ-FE-006..014 GOVT data layer
+  'server/services/bootstrap_service.lua',   -- 25. REQ-FE-001 (must load BEFORE other services that invalidate it)
+  'server/services/recipients_service.lua',  -- 26. REQ-FE-002
+  'server/services/transfer_service.lua',    -- 27.
+  'server/services/account_service.lua',     -- 28.
+  'server/services/loan_service.lua',        -- 29.
+  'server/services/recurring_service.lua',   -- 30.
+  'server/services/portfolio_service.lua',   -- 31.
+  'server/services/card_service.lua',        -- 32.
+  'server/services/admin_service.lua',       -- 33.
+  'server/services/risk_engine.lua',         -- 34. REQ-FE-006/009 MVP risk rules
+  'server/services/govt_service.lua',        -- 35. REQ-FE-006..014 GOVT data layer
+  'server/services/business_service.lua',    -- 36. REQ-FE-011/015 Business data layer
 
   -- 6. Events (NetEvent emitters + audit emit helpers — depends lib + Enums).
-  'server/events/netevents.lua',        -- 35.
-  'server/events/audit_emit.lua',       -- 36.
+  'server/events/netevents.lua',        -- 37.
+  'server/events/audit_emit.lua',       -- 38.
 
   -- 7. NUI bridge (server stub for client config snapshot).
-  'server/nui/bridge.lua',              -- 37.
+  'server/nui/bridge.lua',              -- 39.
 
-  -- 8. Callbacks (Step E — 49 endpoints).
+  -- 8. Callbacks (Step E — canonical endpoints).
   --    _wrap.lua MUST load first (all callback files depend on Wrap.Register).
-  'server/callbacks/_wrap.lua',         -- 38.
-  'server/callbacks/bootstrap.lua',     -- 39. C001, C001b, NUI_CONFIG       (3)
-  'server/callbacks/account.lua',       -- 40. C002, C003, C015, C016, C019,
+  'server/callbacks/_wrap.lua',         -- 40.
+  'server/callbacks/bootstrap.lua',     -- 41. C001, C001b, NUI_CONFIG       (3)
+  'server/callbacks/account.lua',       -- 42. C002, C003, C015, C016, C019,
                                         --      C020, C021, C037, C038, C039 (10)
-  'server/callbacks/transfer.lua',      -- 41. C005, C006, C007, C008        (4)
-  'server/callbacks/recipients.lua',    -- 42. C009, C010, C011, C012        (4)
-  'server/callbacks/loan.lua',          -- 43. C022, C023, C024, C025, C026  (5)
-  'server/callbacks/recurring.lua',     -- 44. C013, C014, C017, C018a/b     (5)
-  'server/callbacks/portfolio.lua',     -- 45. C027, C028, C029              (3)
-  'server/callbacks/card.lua',          -- 46. C030, C032, C033, C034, C040  (5)
-  'server/callbacks/admin.lua',         -- 47. C035, C036, C036b, C031, C041,
+  'server/callbacks/transfer.lua',      -- 43. C005, C006, C007, C008        (4)
+  'server/callbacks/recipients.lua',    -- 44. C009, C010, C011, C012        (4)
+  'server/callbacks/loan.lua',          -- 45. C022, C023, C024, C025, C026  (5)
+  'server/callbacks/recurring.lua',     -- 46. C013, C014, C017, C018a/b     (5)
+  'server/callbacks/portfolio.lua',     -- 47. C027, C028, C029              (3)
+  'server/callbacks/card.lua',          -- 48. C030, C032, C033, C034, C040  (5)
+  'server/callbacks/admin.lua',         -- 49. C035, C036, C036b, C031, C041,
                                         --      C042, C043, C044, C045, C046  (10)
-  'server/callbacks/govt.lua',          -- 48. REQ-FE-006..014 GOVT callbacks
+  'server/callbacks/govt.lua',          -- 50. REQ-FE-006..014 GOVT callbacks
+  'server/callbacks/business.lua',      -- 51. REQ-FE-011/015 Business callbacks
 
   -- 9. Boot orchestration (Step F).
   --    smoke + cron must load BEFORE init (init references them in phase 1/2).
-  'server/boot/smoke.lua',              -- 49.
-  'server/boot/cron.lua',               -- 50.
-  'server/boot/init.lua',               -- 51. wires onResourceStart → Run()
+  'server/boot/smoke.lua',              -- 52.
+  'server/boot/cron.lua',               -- 53.
+  'server/boot/init.lua',               -- 54. wires onResourceStart → Run()
 }
 
 -- =============================================================================

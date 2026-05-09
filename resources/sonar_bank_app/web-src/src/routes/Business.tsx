@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useBusinessTreasuryQuery, usePayrollPreviewQuery } from '@/data/queries'
+import { useDecideBusinessApprovalMutation, useExecuteBusinessPayrollMutation } from '@/data/mutations'
 import type { BusinessMemberRole, BusinessMovement, BusinessPendingApproval, PayrollPreviewLine, PayrollPreviewResponse } from '@/data/contracts'
 import { Badge, Card, Spinner } from '@/components/ui'
 import { AceLockedState } from '@/components/security'
@@ -52,6 +53,8 @@ export function Business() {
 
   const snapshot = treasuryQuery.data
   const payrollPreview = payrollQuery.data
+  const executePayrollMutation = useExecuteBusinessPayrollMutation(companyId ?? undefined)
+  const decideApprovalMutation = useDecideBusinessApprovalMutation(companyId ?? undefined)
   const totalInMinor = snapshot?.recent_movements.filter((m) => m.direction === 'in').reduce((sum, m) => sum + m.amount_minor, 0) ?? 0
   const totalOutMinor = snapshot?.recent_movements.filter((m) => m.direction === 'out').reduce((sum, m) => sum + m.amount_minor, 0) ?? 0
   const netFlowMinor = totalInMinor - totalOutMinor
@@ -161,7 +164,14 @@ export function Business() {
                   <Badge tone={snapshot.role === 'employee' ? 'warning' : 'success'} variant="soft" size="sm">{snapshot.role === 'employee' ? t('business.limited') : t('business.operatorReady')}</Badge>
                 </div>
                 <div className="mt-4 grid gap-2">
-                  <ActionPreview icon={Banknote} label={t('business.payPayroll')} description={t('business.payPayrollHint')} locked={!snapshot.pending_approvals.some((approval) => approval.type === 'payroll')} primary />
+                  <ActionPreview
+                    icon={Banknote}
+                    label={t('business.payPayroll')}
+                    description={t('business.payPayrollHint')}
+                    locked={snapshot.role === 'employee' || executePayrollMutation.isPending}
+                    primary
+                    onClick={() => executePayrollMutation.mutate({ company_id: snapshot.company_id })}
+                  />
                   <ActionPreview icon={CircleDollarSign} label={t('business.withdraw')} description={t('business.withdrawHint')} locked />
                   <ActionPreview icon={ReceiptText} label={t('business.auditBusiness')} description={t('business.auditBusinessHint')} locked={snapshot.role === 'employee'} />
                 </div>
@@ -244,7 +254,13 @@ export function Business() {
                           </div>
                         </div>
                         {snapshot.pending_approvals.map((approval) => (
-                          <ApprovalCard key={approval.approval_id} approval={approval} />
+                          <ApprovalCard
+                            key={approval.approval_id}
+                            approval={approval}
+                            busy={decideApprovalMutation.isPending}
+                            onApprove={() => decideApprovalMutation.mutate({ approval_id: approval.approval_id, decision: 'approve' })}
+                            onReject={() => decideApprovalMutation.mutate({ approval_id: approval.approval_id, decision: 'reject' })}
+                          />
                         ))}
                       </div>
                     )}
@@ -436,7 +452,17 @@ function MovementRow({ movement }: { movement: BusinessMovement }) {
   )
 }
 
-function ApprovalCard({ approval }: { approval: BusinessPendingApproval }) {
+function ApprovalCard({
+  approval,
+  busy,
+  onApprove,
+  onReject,
+}: {
+  approval: BusinessPendingApproval
+  busy?: boolean
+  onApprove: () => void
+  onReject: () => void
+}) {
   const { t, money, dateTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   return (
@@ -453,10 +479,10 @@ function ApprovalCard({ approval }: { approval: BusinessPendingApproval }) {
         <span className="font-semibold text-text-primary tactile-tabular-nums">{streamerMode ? maskMoneyDisplay() : money(approval.amount_minor / 100)}</span>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <button type="button" disabled className="h-8 rounded-xl border border-white/8 bg-white/[0.025] text-xs font-semibold text-text-quaternary">
+        <button type="button" disabled={busy} onClick={onReject} className="h-8 rounded-xl border border-semantic-danger-deep/25 bg-semantic-danger-glow text-xs font-semibold text-semantic-danger disabled:border-white/8 disabled:bg-white/[0.025] disabled:text-text-quaternary">
           {t('business.reject')}
         </button>
-        <button type="button" disabled className="h-8 rounded-xl border border-white/8 bg-white/[0.025] text-xs font-semibold text-text-quaternary">
+        <button type="button" disabled={busy} onClick={onApprove} className="h-8 rounded-xl border border-semantic-success-deep/25 bg-semantic-success-glow text-xs font-semibold text-semantic-success disabled:border-white/8 disabled:bg-white/[0.025] disabled:text-text-quaternary">
           {t('business.approve')}
         </button>
       </div>
@@ -470,15 +496,17 @@ function ActionPreview({
   description,
   locked,
   primary,
+  onClick,
 }: {
   icon: LucideIcon
   label: string
   description: string
   locked?: boolean
   primary?: boolean
+  onClick?: () => void
 }) {
   return (
-    <div className={cn('flex items-center justify-between gap-3 rounded-[1.1rem] border px-3 py-3', locked ? 'border-white/8 bg-white/[0.025] text-text-tertiary' : primary ? 'border-border-brand-strong bg-brand-signal-orange-subtle text-text-primary' : 'border-white/10 bg-white/[0.045] text-text-primary')}>
+    <button type="button" disabled={locked} onClick={onClick} className={cn('flex w-full items-center justify-between gap-3 rounded-[1.1rem] border px-3 py-3 text-left transition disabled:cursor-not-allowed', locked ? 'border-white/8 bg-white/[0.025] text-text-tertiary' : primary ? 'border-border-brand-strong bg-brand-signal-orange-subtle text-text-primary hover:border-brand-signal-orange-light/70' : 'border-white/10 bg-white/[0.045] text-text-primary hover:border-white/20')}>
       <span className="flex min-w-0 items-center gap-3">
         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.045]">
           <Icon size={16} strokeWidth={2} />
@@ -489,7 +517,7 @@ function ActionPreview({
         </span>
       </span>
       {locked ? <LockKeyhole size={15} strokeWidth={2} /> : <FileText size={15} strokeWidth={2} />}
-    </div>
+    </button>
   )
 }
 

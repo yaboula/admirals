@@ -84,6 +84,10 @@ M.AUDIT_EVENT_TYPE = {
   GOVT_FINE_APPLY       = 'govt_fine_apply',
   GOVT_FLAG_CLOSE       = 'govt_flag_close',
 
+  BUSINESS_PAYROLL_REQUEST = 'business_payroll_request',
+  BUSINESS_PAYROLL_EXECUTE = 'business_payroll_execute',
+  BUSINESS_APPROVAL_DECIDE = 'business_approval_decide',
+
   -- Anti-fraud
   FRAUD_REVIEW_OPEN     = 'fraud_review_open',
   FRAUD_REVIEW_RESOLVE  = 'fraud_review_resolve',

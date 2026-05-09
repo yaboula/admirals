@@ -15,7 +15,9 @@ import {
   simulateLatency,
 } from './seed'
 import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, PayrollPreviewRequest, PayrollPreviewResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
+import type { BusinessApprovalDecideRequest, BusinessApprovalDecideResponse, BusinessPayrollExecuteRequest, BusinessPayrollExecuteResponse } from '@/data/contracts'
 import type { BankStateBagKey } from '@/lib/bankStateBags'
+import { getBusinessDetailMock, listBusinessMock } from '@/govt/data/mock/govtBusiness'
 import { getCensusDetailMock, listCensusMock } from '@/govt/data/mock/govtCensus'
 import { getReportsDataMock } from '@/govt/data/mock/govtReports'
 import {
@@ -33,6 +35,9 @@ import { getSubsidyDetailMock, getSubsidyStatsMock, listSubsidyProgramsMock } fr
 import { getTreasuryPageMock } from '@/govt/data/mock/govtTreasury'
 import type {
   GovtApplyFineRequest,
+  GovtBusinessDetail,
+  GovtBusinessFilters,
+  GovtBusinessSummary,
   GovtCensusFilters,
   GovtCitizenDetail,
   GovtCitizenSummary,
@@ -91,6 +96,40 @@ export function installMockHandlers(): void {
   registerMockHandler<PayrollPreviewResponse>('sonar:bank:business:payroll:preview', async (payload) => {
     await simulateLatency(80, 180)
     return buildMockPayrollPreview(payload as unknown as PayrollPreviewRequest)
+  })
+
+  registerMockHandler<BusinessPayrollExecuteResponse>('sonar:bank:business:payroll:execute', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as BusinessPayrollExecuteRequest
+    const now = Date.now()
+    return {
+      company_id: request.company_id,
+      batch_id: `mock-payroll-${now}`,
+      approval_id: `mock-approval-${now}`,
+      status: 'pending_approval',
+      total_net_minor: 1_240_000,
+      employee_count: 12,
+      requires_approvals: 2,
+      cross_ref_audit_id: `mock-audit-${now}`,
+      committed_at_ms: now,
+    }
+  })
+
+  registerMockHandler<BusinessApprovalDecideResponse>('sonar:bank:business:approval:decide', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as BusinessApprovalDecideRequest
+    const now = Date.now()
+    return {
+      company_id: 'vanilla-unicorn',
+      approval_id: request.approval_id,
+      batch_id: `mock-batch-${request.approval_id}`,
+      status: request.decision === 'approve' ? 'executed' : 'cancelled',
+      signers_approved: request.decision === 'approve' ? 2 : 1,
+      signers_required: 2,
+      paid_total_minor: request.decision === 'approve' ? 1_240_000 : 0,
+      cross_ref_audit_id: `mock-audit-${now}`,
+      committed_at_ms: now,
+    }
   })
 
   registerMockHandler<StockListResponse>('sonar:bank:stocks:list', async () => {
@@ -203,7 +242,17 @@ export function installMockHandlers(): void {
     return getReportsDataMock((payload.range ?? 'month') as GovtReportsRange)
   })
 
-  console.info('[mock] handlers installed (29 endpoints) — VITE_MOCK_MODE=true')
+  registerMockHandler<GovtBusinessSummary[]>('sonar:bank:govt:business:list', async (payload) => {
+    await simulateLatency(120, 240)
+    return listBusinessMock((payload.filters ?? payload) as GovtBusinessFilters)
+  })
+
+  registerMockHandler<GovtBusinessDetail | null>('sonar:bank:govt:business:detail', async (payload) => {
+    await simulateLatency(120, 260)
+    return getBusinessDetailMock(String(payload.companyId ?? payload.company_id ?? '')) ?? null
+  })
+
+  console.info('[mock] handlers installed (33 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

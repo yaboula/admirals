@@ -1,9 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
 import type { GovtBusinessDetail, GovtBusinessFilters, GovtBusinessSummary } from '../contracts'
-import { getBusinessDetailMock, listBusinessMock } from '../mock/govtBusiness'
+import { useBankCallback } from '@/lib/bankQuery'
 
-const SIMULATED_DELAY_LIST_MS = 160
-const SIMULATED_DELAY_DETAIL_MS = 200
+const GOVT_BUSINESS_LIST_EVENT = 'sonar:bank:govt:business:list'
+const GOVT_BUSINESS_DETAIL_EVENT = 'sonar:bank:govt:business:detail'
 
 export const govtBusinessKeys = {
   all: ['govt', 'business'] as const,
@@ -13,25 +12,22 @@ export const govtBusinessKeys = {
 }
 
 export function useGovtBusinessListQuery(filters: GovtBusinessFilters) {
-  return useQuery<GovtBusinessSummary[]>({
-    queryKey: govtBusinessKeys.list(filters),
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_LIST_MS))
-      return listBusinessMock(filters)
-    },
-    staleTime: 30_000,
-  })
+  return useBankCallback<GovtBusinessSummary[], Record<string, unknown>>(
+    GOVT_BUSINESS_LIST_EVENT,
+    govtBusinessKeys.list(filters),
+    { filters },
+    { staleTime: 30_000 },
+  )
 }
 
 export function useGovtBusinessDetailQuery(companyId: string | null) {
-  return useQuery<GovtBusinessDetail | null>({
-    queryKey: companyId ? govtBusinessKeys.detail(companyId) : ['govt', 'business', 'detail', 'none'],
-    enabled: Boolean(companyId),
-    queryFn: async () => {
-      if (!companyId) return null
-      await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_DETAIL_MS))
-      return getBusinessDetailMock(companyId) ?? null
+  return useBankCallback<GovtBusinessDetail | null, Record<string, unknown>>(
+    GOVT_BUSINESS_DETAIL_EVENT,
+    companyId ? govtBusinessKeys.detail(companyId) : ['govt', 'business', 'detail', 'none'],
+    { companyId: companyId ?? '' },
+    {
+      enabled: Boolean(companyId),
+      staleTime: 30_000,
     },
-    staleTime: 30_000,
-  })
+  )
 }

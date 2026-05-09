@@ -406,6 +406,40 @@ export interface PayrollPreviewResponse {
   fetched_at_ms: number
 }
 
+export interface BusinessPayrollExecuteRequest {
+  company_id: string
+}
+
+export interface BusinessPayrollExecuteResponse {
+  company_id: string
+  batch_id: string
+  approval_id: string | null
+  status: 'pending_approval' | 'queued' | 'executed'
+  total_net_minor: number
+  employee_count: number
+  requires_approvals: number
+  cross_ref_audit_id?: string
+  committed_at_ms: number
+}
+
+export interface BusinessApprovalDecideRequest {
+  approval_id: string
+  decision: 'approve' | 'reject'
+  note?: string
+}
+
+export interface BusinessApprovalDecideResponse {
+  company_id: string
+  approval_id: string
+  batch_id: string
+  status: 'pending_approval' | 'executed' | 'cancelled'
+  signers_approved: number
+  signers_required: number
+  paid_total_minor: number
+  cross_ref_audit_id?: string
+  committed_at_ms: number
+}
+
 /* ============================================================================
    REQ-FE-001 — sonar:bank:bootstrap:snapshot response (C001)
    ============================================================================ */
