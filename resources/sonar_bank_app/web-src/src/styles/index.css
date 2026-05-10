@@ -11,9 +11,10 @@
    GLOBAL RESETS — Dark-only mandate (ADR-016 D3 + ADR-017 D7)
    ============================================================================ */
 
-:root {
-  color-scheme: dark only;
-}
+/* REMOVED: color-scheme: dark only
+   This property forces Chromium's canvas (behind <html>) to paint black.
+   In FiveM NUI, that canvas hides the game world — causing the blackscreen.
+   Dark palette is already enforced by our design tokens + data-theme="dark". */
 
 html,
 body,
@@ -21,10 +22,13 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  background: transparent;
 }
 
 body {
-  background: var(--color-surface-abyss);
+  /* CRITICAL: body MUST stay transparent so the game world shows through.
+     The dark surface lives inside .bank-device-frame only. */
+  background: transparent;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-base);
