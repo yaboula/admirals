@@ -44,15 +44,15 @@ body {
   justify-content: center;
   padding: 24px;
   overflow: hidden;
-  pointer-events: auto;
-  /* Darkens the game world behind the frame; body is made transparent below */
-  background: rgba(0, 0, 0, 0.55);
+  /* Background MUST stay transparent — the game world renders behind it.
+     Pointer events only on the frame itself, so clicks outside fall through
+     to the game world (the user can still aim/move while bank is open). */
+  background: transparent;
+  pointer-events: none;
 }
 
-/* In FiveM NUI context the device frame is present: make body transparent
-   so the game world shows through behind the overlay/frame. */
-body:has(.bank-device-viewport) {
-  background: transparent;
+.bank-device-viewport > .bank-device-frame {
+  pointer-events: auto;
 }
 
 .bank-device-frame {
