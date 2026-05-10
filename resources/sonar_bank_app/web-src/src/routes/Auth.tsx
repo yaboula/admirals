@@ -88,8 +88,8 @@ export function Auth() {
 
             <div className="relative pt-8">
               <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(255,255,255,0.06),rgba(255,255,255,0.02)_52%,transparent_53%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
-                <div className="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
-                <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[conic-gradient(from_210deg,transparent,rgba(246,75,0,0.42),transparent_38%)] opacity-80" />
+                <div className="absolute inset-0 m-auto h-32 w-32 rounded-full border border-white/10" />
+                <div className="absolute inset-0 m-auto h-40 w-40 rounded-full bg-[conic-gradient(from_210deg,transparent,rgba(246,75,0,0.42),transparent_38%)] opacity-80" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-surface-abyss/90 shadow-[0_18px_46px_-30px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.08)]">
                   <span className="absolute inset-3 rounded-full bg-brand-signal-orange/10 blur-xl" />
                   <Fingerprint size={55} strokeWidth={1.25} className="relative text-brand-signal-orange-light drop-shadow-[0_0_18px_rgba(246,75,0,0.35)]" />
