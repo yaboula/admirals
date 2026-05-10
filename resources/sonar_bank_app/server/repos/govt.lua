@@ -2,6 +2,7 @@ BankApp.repos.govt = {}
 local R = BankApp.repos.govt
 
 local DB = BankApp.lib.db
+local Config = BankApp.Config
 
 local SQL_GET_ACCOUNT_BY_CID = [[
 SELECT id, char_id, alias
@@ -132,12 +133,12 @@ local SQL_RISK_METRICS = [[
 SELECT sa.id AS account_uuid,
        sa.char_id AS cid,
        COALESCE(MAX(CASE WHEN m.amount < 0 THEN ABS(m.amount) ELSE 0 END), 0) AS max_outgoing_amount,
-       COALESCE(SUM(CASE WHEN m.amount < 0 AND m.occurred_at >= UNIX_TIMESTAMP() - 300 THEN 1 ELSE 0 END), 0) AS outgoing_5m_count,
+       COALESCE(SUM(CASE WHEN m.amount < 0 AND m.occurred_at >= UNIX_TIMESTAMP() - ? THEN 1 ELSE 0 END), 0) AS outgoing_5m_count,
        COALESCE(SUM(CASE WHEN m.amount < 0 AND dst.is_frozen = 1 THEN 1 ELSE 0 END), 0) AS frozen_destination_count,
        MIN(ba.id) AS primary_bank_account_id
 FROM sonar_accounts sa
 LEFT JOIN sonar_bank_accounts ba ON ba.owner_account_id = sa.id AND ba.closed_at IS NULL
-LEFT JOIN sonar_bank_movements m ON m.bank_account_id = ba.id AND m.occurred_at >= UNIX_TIMESTAMP() - 86400
+LEFT JOIN sonar_bank_movements m ON m.bank_account_id = ba.id AND m.occurred_at >= UNIX_TIMESTAMP() - ?
 LEFT JOIN sonar_bank_accounts dst ON dst.iban = m.counterpart_iban
 WHERE sa.char_id = ?
 GROUP BY sa.id, sa.char_id
@@ -149,7 +150,7 @@ INSERT INTO sonar_bank_govt_risk_scores
   (subject_type, subject_id, score, risk_level, velocity_score, compliance_score,
    exposure_score, flag_score, dormancy_score, components_json, formula_version,
    computed_by, computed_at, expires_at)
-VALUES ('citizen', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'govt-risk-mvp-v1', ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP() + 300)
+VALUES ('citizen', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP() + ?)
 ON DUPLICATE KEY UPDATE
   score = VALUES(score),
   risk_level = VALUES(risk_level),
@@ -367,14 +368,21 @@ function R.ListCitizenFlags(cid, limit)
 end
 
 function R.GetRiskMetrics(cid)
-  return DB.QuerySingle(SQL_RISK_METRICS, { cid })
+  local risk = Config.RiskScore
+  return DB.QuerySingle(SQL_RISK_METRICS, {
+    risk.MEDIUM_WINDOW_SECONDS,
+    risk.DAILY_WINDOW_SECONDS,
+    cid,
+  })
 end
 
 function R.UpsertRiskScore(row)
+  local risk = Config.RiskScore
   return DB.Execute(SQL_UPSERT_RISK, {
     row.account_uuid, row.score, row.risk_level, row.velocity_score,
     row.compliance_score, row.exposure_score, row.flag_score,
-    row.dormancy_score, row.components_json, row.computed_by or 'system',
+    row.dormancy_score, row.components_json, risk.FORMULA_VERSION,
+    row.computed_by or 'system', risk.MATERIALIZED_TTL_SECONDS,
   })
 end
 

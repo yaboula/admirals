@@ -124,6 +124,7 @@ Config.AdapterResourceMap = {
   qtarget          = 'qtarget',
   -- Notify / lib
   ox_lib           = 'ox_lib',
+  qb               = 'qb-core',
 }
 
 -- -----------------------------------------------------------------------------

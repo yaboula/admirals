@@ -97,30 +97,48 @@ end
 local function _split_statements(body)
   local statements = {}
   local current = {}
+  local delimiter = ';'
+
+  local function _escape_pattern(value)
+    return (value:gsub('([^%w])', '%%%1'))
+  end
+
+  local function _ends_with_delimiter(line)
+    return line:match(_escape_pattern(delimiter) .. '%s*$') ~= nil
+  end
+
+  local function _strip_delimiter(statement)
+    return statement:gsub(_escape_pattern(delimiter) .. '%s*$', '')
+  end
 
   for line in body:gmatch('([^\n]*)\n?') do
     -- Strip full-line comments y whitespace.
     local stripped = line:gsub('^%s+', ''):gsub('%s+$', '')
     if stripped ~= '' and not stripped:match('^%-%-') then
-      current[#current + 1] = line
+      local next_delimiter = stripped:match('^DELIMITER%s+(.+)$')
+      if next_delimiter then
+        delimiter = next_delimiter
+      else
+        current[#current + 1] = line
 
-      -- Si la línea termina en ';' (tras trim) → fin de statement.
-      if line:match(';%s*$') then
-        local stmt = table.concat(current, '\n')
-        stmt = stmt:gsub('%s+$', '')
-        -- Strip trailing ';' — oxmysql añade implícito y algunos drivers fallan con doble ';'.
-        stmt = stmt:gsub(';%s*$', '')
-        if stmt ~= '' then
-          statements[#statements + 1] = stmt
+        -- Si la línea termina en ';' (tras trim) → fin de statement.
+        if _ends_with_delimiter(line) then
+          local stmt = table.concat(current, '\n')
+          stmt = stmt:gsub('%s+$', '')
+          -- Strip trailing ';' — oxmysql añade implícito y algunos drivers fallan con doble ';'.
+          stmt = _strip_delimiter(stmt)
+          if stmt ~= '' then
+            statements[#statements + 1] = stmt
+          end
+          current = {}
         end
-        current = {}
       end
     end
   end
 
   -- Último statement sin ';' trailing (edge case).
   if #current > 0 then
-    local stmt = table.concat(current, '\n'):gsub('%s+$', ''):gsub(';%s*$', '')
+    local stmt = _strip_delimiter(table.concat(current, '\n'):gsub('%s+$', ''))
     if stmt ~= '' then statements[#statements + 1] = stmt end
   end
 

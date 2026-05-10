@@ -82,7 +82,7 @@ end
 function Accounts.GetByIban(iban)
   if type(iban) ~= 'string' or iban == '' then return nil end
   return SONAR.DB.FetchOne([[
-    SELECT id, iban, type, owner_account_id, owner_company_id,
+    SELECT id, iban, owner_type AS type, owner_type, account_class, owner_account_id, owner_company_id,
            balance, daily_limit_out, is_frozen, frozen_reason,
            created_at, updated_at, closed_at
     FROM sonar_bank_accounts
@@ -109,13 +109,14 @@ end
 function Accounts.GetPersonalByCitizenId(citizen_id)
   if type(citizen_id) ~= 'string' or citizen_id == '' then return nil end
   return SONAR.DB.FetchOne([[
-    SELECT bk.id, bk.iban, bk.type, bk.owner_account_id, bk.owner_company_id,
+    SELECT bk.id, bk.iban, bk.owner_type AS type, bk.owner_type, bk.account_class, bk.owner_account_id, bk.owner_company_id,
            bk.balance, bk.daily_limit_out, bk.is_frozen, bk.frozen_reason,
            bk.created_at, bk.updated_at, bk.closed_at
     FROM sonar_bank_accounts bk
     JOIN sonar_accounts a ON a.id = bk.owner_account_id
     WHERE a.char_id = ?
-      AND bk.type = 'personal'
+      AND bk.owner_type = 'personal'
+      AND bk.account_class = 'checking'
       AND bk.closed_at IS NULL
     LIMIT 1
   ]], { citizen_id })
@@ -249,10 +250,10 @@ function Accounts.EnsureStarterAccount(citizen_id, source)
       {
         query = [[
           INSERT INTO sonar_bank_accounts
-            (id, iban, type, owner_account_id, owner_company_id,
+            (id, iban, owner_type, account_class, owner_account_id, owner_company_id,
              balance, daily_limit_out, is_frozen, frozen_reason,
              created_at, updated_at, closed_at)
-          VALUES (?, ?, 'personal', ?, NULL,
+          VALUES (?, ?, 'personal', 'checking', ?, NULL,
                   ?, NULL, 0, NULL,
                   ?, ?, NULL)
         ]],

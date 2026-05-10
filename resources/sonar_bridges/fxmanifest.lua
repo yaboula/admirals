@@ -62,6 +62,11 @@ server_scripts {
   'adapters/notify/ox_lib.lua',
   'adapters/phone/lb_phone.lua',
 
+  -- T2 external adapters (QBCore compat)
+  'adapters/bank/qbcore.lua',
+  'adapters/identity/qbcore.lua',
+  'adapters/notify/qb.lua',
+
   -- Detection + boot orchestration (LAST)
   'server/detect.lua',
   'server/init.lua',

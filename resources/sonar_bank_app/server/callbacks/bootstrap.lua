@@ -29,6 +29,35 @@ Wrap.Register('sonar:bank:bootstrap:snapshot', {
   return snapshot
 end)
 
+-- Preflight ligero sin wrapper — NO requiere citizen_id, solo verifica player online.
+-- Evita acoplar la apertura NUI a identidad; auth real ocurre en callbacks wrapped.
+if _G.lib and _G.lib.callback and type(_G.lib.callback.register) == 'function' then
+  _G.lib.callback.register('sonar:bank:nui:canOpen', function(src, payload)
+    if type(src) ~= 'number' or src <= 0 then
+      return { ok = false, error = { code = 'INVALID_SRC', message = 'Invalid player source' } }
+    end
+    local name = GetPlayerName(src)
+    if not name or name == '' then
+      return { ok = false, error = { code = 'PLAYER_OFFLINE', message = 'Player not online' } }
+    end
+    return { ok = true, ready = true }
+  end)
+else
+  RegisterNetEvent('sonar:bank:nui:canOpen', function(payload, cb)
+    local src = source
+    if type(src) ~= 'number' or src <= 0 then
+      cb({ ok = false, error = { code = 'INVALID_SRC', message = 'Invalid player source' } })
+      return
+    end
+    local name = GetPlayerName(src)
+    if not name or name == '' then
+      cb({ ok = false, error = { code = 'PLAYER_OFFLINE', message = 'Player not online' } })
+      return
+    end
+    cb({ ok = true, ready = true })
+  end)
+end
+
 -- -----------------------------------------------------------------------------
 -- C001b — sonar:bank:bootstrap:balance (lightweight fallback for legacy paths)
 -- -----------------------------------------------------------------------------

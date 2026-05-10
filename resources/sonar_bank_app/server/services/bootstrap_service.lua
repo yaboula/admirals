@@ -160,10 +160,20 @@ function S.BuildSnapshot(citizen_id)
     [QUERY_INDEX.PENDING_TX_COUNT]    = Transactions.BuildPendingCountQuery(citizen_id),
   }
 
-  local results, err = DB.Parallel(queries, { timeout_ms = Config.Bootstrap.TOTAL_TIMEOUT_MS })
+  local results, err = DB.Parallel(queries, {
+    timeout_ms = Config.Bootstrap.TOTAL_TIMEOUT_MS,
+    allow_partial = true,
+  })
   if err then
-    Perf.EndTimer(timer, 'C001b', { tier = Enums.TIER.TIER_1_READ })
+    Perf.EndTimer(timer, 'C001', { tier = Enums.TIER.TIER_1_READ })
     return nil, err
+  end
+  if results._errors and results._errors[QUERY_INDEX.ACCOUNTS] then
+    Perf.EndTimer(timer, 'C001', { tier = Enums.TIER.TIER_1_READ })
+    return nil, Errors.New('DB_TRANSACTION_FAILED', {
+      i = QUERY_INDEX.ACCOUNTS,
+      raw = results._errors[QUERY_INDEX.ACCOUNTS],
+    })
   end
 
   -- Compose payload
@@ -185,7 +195,7 @@ function S.BuildSnapshot(citizen_id)
   cache_set(citizen_id, payload)
 
   -- Stamp per-call fields
-  local elapsed_ms = Perf.EndTimer(timer, 'C001b', { tier = Enums.TIER.TIER_1_READ })
+  local elapsed_ms = Perf.EndTimer(timer, 'C001', { tier = Enums.TIER.TIER_1_READ })
   payload.server_now_ms = now_ms()
   payload.bootstrap_id  = UUID.V4()
   payload.cached        = false

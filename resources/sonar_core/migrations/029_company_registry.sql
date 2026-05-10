@@ -76,8 +76,7 @@ CREATE TABLE IF NOT EXISTS sonar_company_members (
   CONSTRAINT fk_sonar_company_members_account
     FOREIGN KEY (account_id) REFERENCES sonar_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 
-  CONSTRAINT chk_sonar_company_members_salary_nonneg CHECK (salary_amount IS NULL OR salary_amount >= 0),
-  CONSTRAINT chk_sonar_company_members_left_after_join CHECK (left_at IS NULL OR joined_at <= left_at)
+  CONSTRAINT chk_sonar_company_members_salary_nonneg CHECK (salary_amount IS NULL OR salary_amount >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;

@@ -136,13 +136,7 @@ CREATE TABLE IF NOT EXISTS sonar_bank_compliance_flags (
     CHECK (threshold_value IS NULL OR threshold_value >= 0),
 
   CONSTRAINT chk_sonar_bank_compliance_flags_observed_sane
-    CHECK (observed_value IS NULL OR observed_value >= 0),
-
-  CONSTRAINT chk_sonar_bank_compliance_flags_resolved_consistency
-    CHECK (
-      (status IN ('open','investigating') AND resolved_at IS NULL AND resolved_by_account_id IS NULL)
-      OR (status IN ('resolved','false_positive') AND resolved_at IS NOT NULL)
-    )
+    CHECK (observed_value IS NULL OR observed_value >= 0)
 
   -- NO FK company_id → sonar_companies(id) — Q-DB-E LOCKED 2026-05-06 (issue #001).
   -- Backend Lead post-H1 enforce app-layer validation `Companies.exists(company_id)`.

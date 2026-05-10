@@ -284,6 +284,7 @@ end
 function M.Parallel(queries, opts)
   opts = opts or {}
   local timeout_ms = opts.timeout_ms or Config.Bootstrap.TOTAL_TIMEOUT_MS
+  local allow_partial = opts.allow_partial == true
 
   if type(queries) ~= 'table' or #queries == 0 then
     return nil, Errors.New('VALIDATION_FAILED', { reason = 'queries must be non-empty array' })
@@ -342,7 +343,19 @@ function M.Parallel(queries, opts)
   -- Check for individual query errors
   for i = 1, n do
     if errs[i] then
-      return nil, Errors.New('DB_TRANSACTION_FAILED', { i = i, raw = errs[i] })
+      print(('[sonar_bank_app][DB][ERROR] parallel query %d/%d failed kind=%s sql=%s raw=%s'):format(
+        i,
+        n,
+        tostring((queries[i] and queries[i].kind) or 'query'),
+        tostring((queries[i] and queries[i].sql) or ''):gsub('%s+', ' '):sub(1, 180),
+        tostring(errs[i]):sub(1, 300)
+      ))
+      if allow_partial then
+        results._errors = results._errors or {}
+        results._errors[i] = errs[i]
+      else
+        return nil, Errors.New('DB_TRANSACTION_FAILED', { i = i, raw = errs[i] })
+      end
     end
   end
 

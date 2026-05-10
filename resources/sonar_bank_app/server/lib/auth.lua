@@ -2,7 +2,7 @@
 -- SONAR Bank App — lib/auth.lua
 -- =============================================================================
 -- H001 — Auth helpers canonical lib (per C-BE-02 §2.3.1).
--- AP-AUTH-1 prohibido: ningún callback handler debe inline `Bridges.Player.GetCitizenId`
+-- AP-AUTH-1 prohibido: ningún callback handler debe inline `exports.sonar_bridges:GetCitizenId`
 -- + manual checks. TODOS deben pasar por `auth.RequireCitizen` / `auth.RequireAdmin`
 -- / `auth.RequireOwnership`.
 --
@@ -16,7 +16,7 @@
 --
 -- ACE name canonical: 'sonar.bank.admin' (defined per DevOps convar policy).
 --
--- Deps: lib/errors + bridges (Bridges.Player.GetCitizenId).
+-- Deps: lib/errors + sonar_bridges exports.
 -- =============================================================================
 
 BankApp.lib.auth = {}
@@ -29,9 +29,8 @@ local Config = BankApp.Config
 -- §1. Bridges accessor (defensive)
 -- -----------------------------------------------------------------------------
 
-local function bridges_player()
-  if _G.Bridges and _G.Bridges.Player then return _G.Bridges.Player end
-  return nil
+local function bridge_get_citizen_id(src)
+  return exports.sonar_bridges:GetCitizenId(src)
 end
 
 -- -----------------------------------------------------------------------------
@@ -54,12 +53,7 @@ function M.RequireCitizen(src)
     return nil, Errors.New('AUTH_REQUIRED', { reason = 'player offline', src = src })
   end
 
-  local bp = bridges_player()
-  if not bp or type(bp.GetCitizenId) ~= 'function' then
-    return nil, Errors.New('INTERNAL_ERROR', { reason = 'Bridges.Player.GetCitizenId unavailable' })
-  end
-
-  local ok, citizen_id = pcall(bp.GetCitizenId, src)
+  local ok, citizen_id = pcall(bridge_get_citizen_id, src)
   if not ok then
     return nil, Errors.New('INTERNAL_ERROR', { reason = 'GetCitizenId raised', raw = tostring(citizen_id) })
   end
@@ -75,7 +69,7 @@ end
 -- §3. RequireAdmin (ACE check)
 -- -----------------------------------------------------------------------------
 
-local DEFAULT_ADMIN_ACE = 'sonar.bank.admin'
+local DEFAULT_ADMIN_ACE = Config.Permissions.ADMIN_ACE
 
 --- RequireAdmin: validate citizen + ACE permission. Used for Tier 3 admin
 --- callbacks (govt audit, forced operations, etc.).
@@ -198,13 +192,10 @@ end
 function M.ResolveCitizenSrc(citizen_id)
   if type(citizen_id) ~= 'string' or #citizen_id == 0 then return nil end
 
-  local bp = bridges_player()
-  if not bp or type(bp.GetCitizenId) ~= 'function' then return nil end
-
   for _, src_str in ipairs(GetPlayers()) do
     local src = tonumber(src_str)
     if src then
-      local ok, cid = pcall(bp.GetCitizenId, src)
+      local ok, cid = pcall(bridge_get_citizen_id, src)
       if ok and cid == citizen_id then
         return src
       end

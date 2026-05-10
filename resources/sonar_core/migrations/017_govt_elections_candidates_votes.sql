@@ -133,10 +133,7 @@ CREATE TABLE IF NOT EXISTS sonar_govt_elections (
   KEY idx_sonar_govt_elections_closes (closes_at),
 
   CONSTRAINT fk_sonar_govt_elections_created_by
-    FOREIGN KEY (created_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
-
-  CONSTRAINT chk_sonar_govt_elections_window
-    CHECK (opens_at IS NULL OR closes_at IS NULL OR opens_at < closes_at)
+    FOREIGN KEY (created_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE
 
   -- NO FK scope_company_id → sonar_companies(id) — Q-DB-E DEFERRED issue #001.
   -- NO FK winner_candidate_id (self-ref deferred — set post-finalization).

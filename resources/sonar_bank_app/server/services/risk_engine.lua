@@ -2,9 +2,9 @@ BankApp.services.risk_engine = {}
 local S = BankApp.services.risk_engine
 
 local Repo = BankApp.repos.govt
+local Config = BankApp.Config
 
-local HIGH_SINGLE_OUTGOING = 50000
-local MEDIUM_WINDOW_COUNT = 3
+local RISK = Config.RiskScore
 
 local function encode_json(value)
   if json and json.encode then return json.encode(value) end
@@ -12,9 +12,9 @@ local function encode_json(value)
 end
 
 local function level_for_score(score)
-  if score >= 80 then return 'critical' end
-  if score >= 55 then return 'high' end
-  if score >= 25 then return 'medium' end
+  if score >= RISK.LEVELS.CRITICAL then return 'critical' end
+  if score >= RISK.LEVELS.HIGH then return 'high' end
+  if score >= RISK.LEVELS.MEDIUM then return 'medium' end
   return 'low'
 end
 
@@ -30,28 +30,28 @@ local function compute_from_metrics(metrics)
   local dormancy_score = 0
   local rules = {}
 
-  if max_outgoing > HIGH_SINGLE_OUTGOING then
+  if max_outgoing > RISK.HIGH_SINGLE_OUTGOING_MINOR then
     exposure_score = 80
     flag_score = 70
     rules[#rules + 1] = {
       severity = 'high',
       flag_type = 'large_transfer',
-      threshold_value = HIGH_SINGLE_OUTGOING,
+      threshold_value = RISK.HIGH_SINGLE_OUTGOING_MINOR,
       observed_value = max_outgoing,
-      time_window_seconds = 86400,
-      summary = 'single outgoing transfer above 50000',
+      time_window_seconds = RISK.DAILY_WINDOW_SECONDS,
+      summary = ('single outgoing transfer above %d'):format(RISK.HIGH_SINGLE_OUTGOING_MINOR),
     }
   end
 
-  if outgoing_5m >= MEDIUM_WINDOW_COUNT then
+  if outgoing_5m >= RISK.MEDIUM_WINDOW_COUNT then
     velocity_score = math.max(velocity_score, 55)
     flag_score = math.max(flag_score, 45)
     rules[#rules + 1] = {
       severity = 'medium',
       flag_type = 'velocity',
-      threshold_value = MEDIUM_WINDOW_COUNT,
+      threshold_value = RISK.MEDIUM_WINDOW_COUNT,
       observed_value = outgoing_5m,
-      time_window_seconds = 300,
+      time_window_seconds = RISK.MEDIUM_WINDOW_SECONDS,
       summary = 'three or more outgoing transfers inside five minutes',
     }
   end
@@ -64,7 +64,7 @@ local function compute_from_metrics(metrics)
       flag_type = 'structuring',
       threshold_value = 1,
       observed_value = frozen_destinations,
-      time_window_seconds = 86400,
+      time_window_seconds = RISK.DAILY_WINDOW_SECONDS,
       summary = 'outgoing transfer to frozen or suspicious account',
     }
   end
@@ -76,7 +76,7 @@ local function compute_from_metrics(metrics)
       flag_type = nil,
       threshold_value = 0,
       observed_value = 12,
-      time_window_seconds = 86400,
+      time_window_seconds = RISK.DAILY_WINDOW_SECONDS,
       summary = 'daily-pattern anomaly placeholder fixed score',
     }
   end
@@ -108,7 +108,7 @@ function S.RecomputeCitizen(cid, computed_by)
 
   local computed = compute_from_metrics(metrics)
   local components = {
-    formula = 'govt-risk-mvp-v1',
+    formula = RISK.FORMULA_VERSION,
     max_outgoing_amount = tonumber(metrics.max_outgoing_amount) or 0,
     outgoing_5m_count = tonumber(metrics.outgoing_5m_count) or 0,
     frozen_destination_count = tonumber(metrics.frozen_destination_count) or 0,
@@ -139,7 +139,7 @@ function S.RecomputeCitizen(cid, computed_by)
         threshold_value = rule.threshold_value,
         observed_value = rule.observed_value,
         time_window_seconds = rule.time_window_seconds,
-        evidence = encode_json({ summary = rule.summary, formula = 'govt-risk-mvp-v1' }),
+        evidence = encode_json({ summary = rule.summary, formula = RISK.FORMULA_VERSION }),
       })
     end
   end

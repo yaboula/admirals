@@ -86,7 +86,8 @@ local function getHistoryDirect(citizen_id, limit)
     FROM sonar_bank_accounts bk
     JOIN sonar_accounts a ON a.id = bk.owner_account_id
     WHERE a.char_id = ?
-      AND bk.type = 'personal'
+      AND bk.owner_type = 'personal'
+      AND bk.account_class = 'checking'
       AND bk.closed_at IS NULL
     LIMIT 1
   ]], { citizen_id })

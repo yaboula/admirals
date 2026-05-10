@@ -30,13 +30,17 @@ local Config = BankApp.Config
 -- -----------------------------------------------------------------------------
 
 local function check(label, fn, fatal)
-  local ok, detail = pcall(fn)
-  if ok and detail == nil then detail = '(no detail)' end
+  local ok, passed, detail = pcall(fn)
+  if not ok then
+    detail = tostring(passed)
+    passed = false
+  end
+  if detail == nil then detail = '(no detail)' end
   return {
     label  = label,
     fatal  = fatal == true,
-    passed = ok and (detail ~= false),
-    detail = type(detail) == 'string' and detail or (ok and 'OK' or tostring(detail)):sub(1, 200),
+    passed = passed == true,
+    detail = type(detail) == 'string' and detail or tostring(detail):sub(1, 200),
   }
 end
 
@@ -126,12 +130,10 @@ end
 local function check_db_ping()
   local DB = BankApp.lib.db
   if not DB then return false, 'lib.db not loaded' end
-  -- Use Query to also confirm prepared-statement path.
-  local row, err = DB.QuerySingle('SELECT 1 AS v', {})
+  local count, err = DB.QueryScalar('SELECT COUNT(*) AS v FROM sonar_schema_versions', {})
   if err then return false, ('DB ping err: %s'):format(err.message or err.code or 'unknown') end
-  if not row then return false, 'DB ping returned no row' end
-  if tonumber(row.v) ~= 1 then return false, ('DB ping unexpected value: %s'):format(tostring(row.v)) end
-  return true, 'DB ping OK'
+  if tonumber(count) == nil then return false, ('DB ping unexpected value: %s'):format(tostring(count)) end
+  return true, ('DB ping OK (schema_versions=%d)'):format(tonumber(count))
 end
 
 local function check_uuid_generates()

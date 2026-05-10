@@ -94,7 +94,80 @@ C.Convars = {
 }
 
 -- -----------------------------------------------------------------------------
--- §3. Performance budgets per tier (milliseconds threshold p50/p95/p99)
+-- §3. Deployment surface config (commands, items, ACE, client events)
+-- -----------------------------------------------------------------------------
+C.Deployment = {
+  TARGET_FRAMEWORK = 'qbcore',
+  REQUIRED_RESOURCES = { 'oxmysql', 'sonar_core', 'sonar_bridges', 'sonar_bank' },
+}
+
+C.Permissions = {
+  PLAYER_ACE          = 'sonar.bank.player',
+  ADMIN_ACE           = 'sonar.bank.admin',
+  GOVT_READ_ACE       = 'sonar.bank.govt.audit.full',
+  GOVT_COMPLIANCE_ACE = 'sonar.bank.govt.compliance.admin',
+  GOVT_LOAN_ACE       = 'sonar.bank.govt.loan.admin',
+  GOVT_TAX_ACE        = 'sonar.bank.govt.tax.write',
+  BUSINESS_AUDIT_PREFIX    = 'sonar.bank.empresas.',
+  BUSINESS_PAYROLL_PREFIX  = 'sonar.bank.business.payroll.',
+  BUSINESS_APPROVAL_PREFIX = 'sonar.bank.business.approval.',
+}
+
+C.Commands = {
+  OPEN_BANK = {
+    name        = 'bank',
+    description = 'Open SONAR Bank',
+    key_mapping = {
+      mapper      = 'keyboard',
+      default_key = 'F6',
+    },
+  },
+}
+
+C.Items = {
+  BANK_CARD       = 'sonar_bank_card',
+  ATM_ACCESS_CARD = 'sonar_bank_atm_card',
+}
+
+C.FrameworkJobs = {
+  QBCORE_JOB_ACE_BINDINGS = {
+    GOVT_READ = {
+      ace = C.Permissions.GOVT_READ_ACE,
+      jobs = {},
+    },
+    GOVT_COMPLIANCE = {
+      ace = C.Permissions.GOVT_COMPLIANCE_ACE,
+      jobs = {},
+    },
+    GOVT_TAX = {
+      ace = C.Permissions.GOVT_TAX_ACE,
+      jobs = {},
+    },
+  },
+}
+
+C.ClientEvents = {
+  OPEN_UI   = 'sonar:bank:client:open',
+  CLOSE_UI  = 'sonar:bank:client:close',
+  TOGGLE_UI = 'sonar:bank:client:toggle',
+}
+
+C.RiskScore = {
+  FORMULA_VERSION = 'govt-risk-mvp-v1',
+  HIGH_SINGLE_OUTGOING_MINOR = 50000,
+  MEDIUM_WINDOW_COUNT = 3,
+  MEDIUM_WINDOW_SECONDS = 300,
+  DAILY_WINDOW_SECONDS = 86400,
+  MATERIALIZED_TTL_SECONDS = 300,
+  LEVELS = {
+    MEDIUM = 25,
+    HIGH = 55,
+    CRITICAL = 80,
+  },
+}
+
+-- -----------------------------------------------------------------------------
+-- §4. Performance budgets per tier (milliseconds threshold p50/p95/p99)
 --
 --   Used by lib/perf.lua para alerting + bootstrap REQ-FE-001 guarantee.
 --   Alert triggered si observed p99 > budget × C.PerfBudgets.ALERT_MULTIPLIER.
@@ -133,7 +206,7 @@ C.PerfBudgets = {
 }
 
 -- -----------------------------------------------------------------------------
--- §4. Rate-limit token bucket configs (per tier)
+-- §5. Rate-limit token bucket configs (per tier)
 --
 --   Enforced by lib/rate_limit.lua. Per-player buckets refill linearly.
 --   M003 special: C035 audit query has dual rate-limit (per-citizen + global).
@@ -167,7 +240,7 @@ C.RateLimits = {
 }
 
 -- -----------------------------------------------------------------------------
--- §5. Idempotency key TTL config (M005 orphan TTL purge)
+-- §6. Idempotency key TTL config (M005 orphan TTL purge)
 -- -----------------------------------------------------------------------------
 C.Idempotency = {
   DEFAULT_TTL_SECONDS    = 86400,           -- 24h baseline
@@ -178,7 +251,7 @@ C.Idempotency = {
 }
 
 -- -----------------------------------------------------------------------------
--- §6. Audit ledger config (C-SEC-01 §1.2 — append-only batched writes)
+-- §7. Audit ledger config (C-SEC-01 §1.2 — append-only batched writes)
 -- -----------------------------------------------------------------------------
 C.Audit = {
   BATCH_FLUSH_INTERVAL_MS = 1000,   -- flush queue every 1s
@@ -188,7 +261,7 @@ C.Audit = {
 }
 
 -- -----------------------------------------------------------------------------
--- §7. Cache TTLs (in-memory LRU caches for bootstrap snapshot REQ-FE-001)
+-- §8. Cache TTLs (in-memory LRU caches for bootstrap snapshot REQ-FE-001)
 -- -----------------------------------------------------------------------------
 C.Cache = {
   STATUS_BRIDGES_TTL_MS    = 600 * 1000,  -- 10min (rare-changing — boot only)
@@ -201,7 +274,7 @@ C.Cache = {
 }
 
 -- -----------------------------------------------------------------------------
--- §8. Bootstrap snapshot config (REQ-FE-001 mandate p99 < 80ms)
+-- §9. Bootstrap snapshot config (REQ-FE-001 mandate p99 < 80ms)
 -- -----------------------------------------------------------------------------
 C.Bootstrap = {
   PARALLEL_QUERY_TIMEOUT_MS = 60,  -- per-query timeout (must finish under p99=80ms total)
@@ -214,7 +287,7 @@ C.Bootstrap = {
 }
 
 -- -----------------------------------------------------------------------------
--- §9. Recent recipients config (REQ-FE-002 — Transfer Express Mode)
+-- §10. Recent recipients config (REQ-FE-002 — Transfer Express Mode)
 -- -----------------------------------------------------------------------------
 C.RecentRecipients = {
   WINDOW_DAYS               = 30,
@@ -224,7 +297,7 @@ C.RecentRecipients = {
 }
 
 -- -----------------------------------------------------------------------------
--- §10. DB query helpers (defaults — overridable per-call)
+-- §11. DB query helpers (defaults — overridable per-call)
 -- -----------------------------------------------------------------------------
 C.DB = {
   DEFAULT_TIMEOUT_MS        = 3000,
@@ -237,7 +310,7 @@ C.DB = {
 }
 
 -- -----------------------------------------------------------------------------
--- §11. Logging
+-- §12. Logging
 -- -----------------------------------------------------------------------------
 C.Logging = {
   LEVEL  = 'INFO',                  -- DEBUG | INFO | WARN | ERROR
@@ -245,7 +318,7 @@ C.Logging = {
 }
 
 -- -----------------------------------------------------------------------------
--- §12. Feature flags (gradual rollout per founder discretion)
+-- §13. Feature flags (gradual rollout per founder discretion)
 -- -----------------------------------------------------------------------------
 C.Features = {
   ENABLE_BOOTSTRAP_CACHE_LRU      = true,

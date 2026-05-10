@@ -16,8 +16,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: '../web',
     emptyOutDir: true,
-    target: 'chrome111',
-    cssTarget: 'chrome111',
+    target: 'chrome91',
+    cssTarget: 'chrome91',
+    cssMinify: 'lightningcss',
     sourcemap: mode !== 'production',
     rollupOptions: {
       output: {
@@ -44,6 +45,14 @@ export default defineConfig(({ mode }) => ({
             return 'vendor-react'
           }
         },
+      },
+    },
+  },
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      targets: {
+        chrome: 91 << 16,
       },
     },
   },

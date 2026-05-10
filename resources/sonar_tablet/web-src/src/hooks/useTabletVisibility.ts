@@ -9,7 +9,7 @@
  *   que Lua-side re-emite `sonar:tablet:toggle { visible: false }` pero
  *   optimista-cierra ya React-side para UX responsivo (<16ms perceived).
  */
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNUIBridge } from '@/hooks/useNUIBridge'
 import { fetchNUI, isInFiveM } from '@/lib/nui'
 import type { NUITabletToggleMessage } from '@/types/nui'
@@ -29,6 +29,11 @@ export function useTabletVisibility(): UseTabletVisibility {
       setVisible(msg.visible)
     }
   })
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('sonar-tablet-visible', visible)
+    document.body.classList.toggle('sonar-tablet-visible', visible)
+  }, [visible])
 
   const requestClose = useCallback(async () => {
     setVisible(false)

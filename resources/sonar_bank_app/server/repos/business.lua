@@ -225,7 +225,7 @@ SELECT cm.id AS line_id,
        CASE WHEN dest.id IS NULL OR dest.is_frozen = 1 THEN 'held' ELSE 'ready' END AS status
 FROM sonar_company_members cm
 INNER JOIN sonar_accounts sa ON sa.id = cm.account_id
-LEFT JOIN sonar_bank_accounts dest ON dest.owner_account_id = sa.id AND dest.closed_at IS NULL AND dest.type = 'personal'
+LEFT JOIN sonar_bank_accounts dest ON dest.owner_account_id = sa.id AND dest.closed_at IS NULL AND dest.owner_type = 'personal' AND dest.account_class = 'checking'
 WHERE cm.company_id = ? AND cm.active = 1 AND COALESCE(cm.salary_amount, 0) > 0
 ORDER BY cm.salary_amount DESC, cm.joined_at ASC
 LIMIT ?
@@ -303,7 +303,7 @@ SELECT cm.id AS member_id,
        CASE WHEN dest.id IS NULL OR dest.is_frozen = 1 THEN 'held' ELSE 'ready' END AS state
 FROM sonar_company_members cm
 INNER JOIN sonar_accounts sa ON sa.id = cm.account_id
-LEFT JOIN sonar_bank_accounts dest ON dest.owner_account_id = sa.id AND dest.closed_at IS NULL AND dest.type = 'personal'
+LEFT JOIN sonar_bank_accounts dest ON dest.owner_account_id = sa.id AND dest.closed_at IS NULL AND dest.owner_type = 'personal' AND dest.account_class = 'checking'
 WHERE cm.company_id = ? AND cm.active = 1 AND COALESCE(cm.salary_amount, 0) > 0 AND dest.id IS NOT NULL
 ORDER BY cm.salary_amount DESC, cm.joined_at ASC
 ]], { company_id })

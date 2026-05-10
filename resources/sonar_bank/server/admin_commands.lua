@@ -137,9 +137,9 @@ RegisterCommand('sonar_smoke_dump_accounts', function(source)
   if not _ace_allowed(source) then return _deny(source) end
 
   local rows = SONAR.DB.FetchAll([[
-    SELECT iban, type, balance, owner_account_id, owner_company_id, is_frozen, closed_at
+    SELECT iban, owner_type AS type, owner_type, account_class, balance, owner_account_id, owner_company_id, is_frozen, closed_at
     FROM sonar_bank_accounts
-    ORDER BY type, iban
+    ORDER BY owner_type, account_class, iban
   ]], {}) or {}
 
   _say(source, ('accounts (%d):'):format(#rows))

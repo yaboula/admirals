@@ -16,6 +16,8 @@
 -- =============================================================================
 
 local PREFIX = '[sonar_bank_app][nui_bridge]'
+local Config = BankApp.Config
+local player_loaded = false
 
 -- -----------------------------------------------------------------------------
 -- §1. Allowlist — only canonical Bank callback prefixes are forwarded.
@@ -34,6 +36,45 @@ local function is_allowed(event_name)
     end
   end
   return false
+end
+
+local function await_server_callback(event_name, payload)
+  if _G.lib and _G.lib.callback and type(_G.lib.callback.await) == 'function' then
+    return _G.lib.callback.await(event_name, false, payload)
+  end
+
+  local token = ('%s:%s:%s'):format(GetGameTimer(), math.random(100000, 999999), event_name)
+  local response_event = 'sonar:bank_app:callback:response:' .. token
+  local response_promise = promise.new()
+  local resolved = false
+  local handler
+
+  RegisterNetEvent(response_event)
+  handler = AddEventHandler(response_event, function(response)
+    if resolved then return end
+    resolved = true
+    if handler then RemoveEventHandler(handler) end
+    response_promise:resolve(response)
+  end)
+
+  TriggerServerEvent(event_name, payload, response_event)
+
+  SetTimeout(15000, function()
+    if resolved then return end
+    resolved = true
+    if handler then RemoveEventHandler(handler) end
+    response_promise:resolve({
+      ok = false,
+      error = {
+        code = 'NUI_CALLBACK_TIMEOUT',
+        category = 'timeout',
+        message = 'Server callback timed out',
+        details = { event = event_name },
+      },
+    })
+  end)
+
+  return Citizen.Await(response_promise)
 end
 
 -- -----------------------------------------------------------------------------
@@ -59,7 +100,7 @@ RegisterNUICallback('cb', function(data, cb)
 
   -- ox_lib server callback await (timeout enforced server-side per tier)
   local ok, response = pcall(function()
-    return lib.callback.await(event_name, false, payload)
+    return await_server_callback(event_name, payload)
   end)
 
   if not ok then
@@ -88,20 +129,47 @@ end)
 
 local nui_focused = false
 
-RegisterNUICallback('open', function(_, cb)
-  if not nui_focused then
-    SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(false)
-    nui_focused = true
+local function refresh_player_loaded()
+  if player_loaded then return true end
+  if LocalPlayer and LocalPlayer.state and LocalPlayer.state.isLoggedIn == true then
+    player_loaded = true
+    return true
   end
+
+  return false
+end
+
+local function open_bank_ui()
+  if nui_focused then return end
+  if not refresh_player_loaded() then return end
+  SendNUIMessage({ type = 'BANK_OPEN' })
+  SetNuiFocus(true, true)
+  SetNuiFocusKeepInput(false)
+  nui_focused = true
+end
+
+local function close_bank_ui()
+  SendNUIMessage({ type = 'BANK_CLOSE' })
+  SetNuiFocus(false, false)
+  SetNuiFocusKeepInput(false)
+  nui_focused = false
+end
+
+local function toggle_bank_ui()
+  if nui_focused then
+    close_bank_ui()
+  else
+    open_bank_ui()
+  end
+end
+
+RegisterNUICallback('open', function(_, cb)
+  open_bank_ui()
   cb({ ok = true, data = { focused = true } })
 end)
 
 RegisterNUICallback('close', function(_, cb)
-  if nui_focused then
-    SetNuiFocus(false, false)
-    nui_focused = false
-  end
+  close_bank_ui()
   cb({ ok = true, data = { focused = false } })
 end)
 
@@ -109,18 +177,26 @@ end)
 -- §4. Optional: command + key mapping to toggle Bank UI (DevOps Phase E will refine)
 -- -----------------------------------------------------------------------------
 
-RegisterCommand('bank', function()
-  if nui_focused then
-    SendNUIMessage({ type = 'BANK_CLOSE' })
-    SetNuiFocus(false, false)
-    nui_focused = false
-  else
-    SendNUIMessage({ type = 'BANK_OPEN' })
-    SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(false)
-    nui_focused = true
-  end
-end, false)
+RegisterNetEvent(Config.ClientEvents.OPEN_UI, open_bank_ui)
+RegisterNetEvent(Config.ClientEvents.CLOSE_UI, close_bank_ui)
+RegisterNetEvent(Config.ClientEvents.TOGGLE_UI, toggle_bank_ui)
+
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+  player_loaded = true
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+  player_loaded = false
+  close_bank_ui()
+end)
+
+RegisterCommand(Config.Commands.OPEN_BANK.name, toggle_bank_ui, false)
+RegisterKeyMapping(
+  Config.Commands.OPEN_BANK.name,
+  Config.Commands.OPEN_BANK.description,
+  Config.Commands.OPEN_BANK.key_mapping.mapper,
+  Config.Commands.OPEN_BANK.key_mapping.default_key
+)
 
 -- -----------------------------------------------------------------------------
 -- §5. Server-broadcast NetEvents → forward to NUI as messages.
@@ -153,5 +229,9 @@ end
 AddEventHandler('onClientResourceStart', function(resource)
   if resource ~= GetCurrentResourceName() then return end
   print(('%s ready (resource=%s)'):format(PREFIX, resource))
+  SetNuiFocus(false, false)
+  SetNuiFocusKeepInput(false)
+  SendNUIMessage({ type = 'BANK_CLOSE' })
   SendNUIMessage({ type = 'BANK_READY' })
+  refresh_player_loaded()
 end)

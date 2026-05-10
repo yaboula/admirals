@@ -99,8 +99,6 @@ CREATE TABLE IF NOT EXISTS sonar_bank_tax_brackets (
   CONSTRAINT fk_sonar_bank_tax_brackets_updated_by
     FOREIGN KEY (updated_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
 
-  CONSTRAINT chk_sonar_bank_tax_brackets_income_range
-    CHECK (income_max IS NULL OR income_min < income_max),
   CONSTRAINT chk_sonar_bank_tax_brackets_rate_pct
     CHECK (rate_pct >= 0 AND rate_pct <= 100),
   CONSTRAINT chk_sonar_bank_tax_brackets_income_min
@@ -203,13 +201,6 @@ CREATE TABLE IF NOT EXISTS sonar_bank_subsidies (
   KEY idx_sonar_bank_subsidies_period (subsidy_kind, reference_period),
   KEY idx_sonar_bank_subsidies_company (company_id),
   KEY idx_sonar_bank_subsidies_issued_by (issued_by_account_id, issued_at DESC),
-
-  CONSTRAINT fk_sonar_bank_subsidies_beneficiary
-    FOREIGN KEY (beneficiary_account_id) REFERENCES sonar_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT fk_sonar_bank_subsidies_bank_account
-    FOREIGN KEY (bank_account_id) REFERENCES sonar_bank_accounts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT fk_sonar_bank_subsidies_issued_by
-    FOREIGN KEY (issued_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
 
   CONSTRAINT chk_sonar_bank_subsidies_amount_positive CHECK (amount > 0)
 

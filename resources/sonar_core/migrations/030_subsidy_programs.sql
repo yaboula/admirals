@@ -42,8 +42,7 @@ CREATE TABLE IF NOT EXISTS sonar_bank_subsidy_programs (
     FOREIGN KEY (created_by_account_id) REFERENCES sonar_accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
 
   CONSTRAINT chk_sonar_bank_subsidy_programs_budget_nonneg CHECK (budget_amount >= 0),
-  CONSTRAINT chk_sonar_bank_subsidy_programs_disbursed_nonneg CHECK (disbursed_amount >= 0),
-  CONSTRAINT chk_sonar_bank_subsidy_programs_window CHECK (ends_at IS NULL OR starts_at < ends_at)
+  CONSTRAINT chk_sonar_bank_subsidy_programs_disbursed_nonneg CHECK (disbursed_amount >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP PROCEDURE IF EXISTS sp_apply_030_subsidy_programs;

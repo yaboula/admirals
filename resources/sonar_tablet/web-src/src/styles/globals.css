@@ -96,6 +96,7 @@
      */
     color-scheme: normal;
     background: transparent;
+    pointer-events: none;
   }
   /*
    * ⚠️  CRITICAL FiveM NUI bugfix (2026-05-05):
@@ -118,10 +119,17 @@
     min-height: 100vh;
     /* NUI scroll lock — FiveM Chromium embebido no scrollea el container root */
     overflow: hidden;
+    pointer-events: none;
   }
   #root {
     min-height: 100vh;
     background: transparent;
+    pointer-events: none;
+  }
+  html.sonar-tablet-visible,
+  body.sonar-tablet-visible,
+  body.sonar-tablet-visible #root {
+    pointer-events: auto;
   }
   /* Focus visible — brand ring orange (3-color strict, ADR-016 D3) */
   *:focus-visible {

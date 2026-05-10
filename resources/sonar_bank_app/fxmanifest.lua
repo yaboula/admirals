@@ -35,7 +35,6 @@ dependencies {
   'sonar_core',
   'sonar_bridges',
   'sonar_bank',
-  'ox_lib',
 }
 
 shared_scripts {
@@ -44,8 +43,8 @@ shared_scripts {
 
 server_scripts {
   -- 0. External helpers (loaded into sonar_bank_app VM context):
+  '@oxmysql/lib/MySQL.lua',
   '@sonar_core/lib/sonar.lua',          -- exposes SONAR.{Core,DB,Bus,Rate,Log,Metrics,Identity}
-  '@ox_lib/init.lua',                   -- lib.callback server-side + lib.crypto
 
   -- 1. Foundation lib — R1 hardened canonical helpers.
   --    Load order strict: each file depends only on lower-numbered files.
@@ -130,7 +129,6 @@ server_scripts {
 -- =============================================================================
 
 client_scripts {
-  '@ox_lib/init.lua',                   -- exposes lib.callback.await client-side
   'client/nui_bridge.lua',              -- BANK-FE.2 NUI ↔ server proxy + NetEvent forwarder
 }
 
@@ -152,9 +150,6 @@ files {
   'web/index.html',
   'web/assets/**/*.js',
   'web/assets/**/*.css',
-  'web/assets/**/*.woff',
   'web/assets/**/*.woff2',
-  'web/assets/**/*.svg',
   'web/assets/**/*.png',
-  'web/assets/**/*.jpg',
 }

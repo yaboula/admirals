@@ -16,6 +16,29 @@
 -- =============================================================================
 
 local tabletVisible = false
+local playerLoaded = false
+
+local function forceTabletClosed(reason)
+  tabletVisible = false
+  SetNuiFocus(false, false)
+  SetNuiFocusKeepInput(false)
+  SendNUIMessage({
+    action  = 'sonar:tablet:toggle',
+    visible = false,
+  })
+  if reason then
+    print(('[sonar_tablet] forced closed: %s'):format(tostring(reason)))
+  end
+end
+
+local function refreshPlayerLoaded()
+  if playerLoaded then return true end
+  if LocalPlayer and LocalPlayer.state and LocalPlayer.state.isLoggedIn == true then
+    playerLoaded = true
+    return true
+  end
+  return false
+end
 
 -- -----------------------------------------------------------------------------
 -- Core toggle
@@ -24,8 +47,14 @@ local tabletVisible = false
 ---Sets tablet visibility + syncs NUI focus + emits bridge message.
 ---@param visible boolean
 local function setTabletVisible(visible)
+  visible = visible == true
+  if visible and not refreshPlayerLoaded() then
+    forceTabletClosed('player_not_loaded')
+    return
+  end
   tabletVisible = visible
   SetNuiFocus(visible, visible)
+  SetNuiFocusKeepInput(false)
   SendNUIMessage({
     action  = 'sonar:tablet:toggle',
     visible = visible,
@@ -149,13 +178,29 @@ RegisterNetEvent('sonar:tablet:openExternal', function()
   end
 end)
 
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+  playerLoaded = true
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+  playerLoaded = false
+  forceTabletClosed('player_unloaded')
+end)
+
 -- -----------------------------------------------------------------------------
 -- Cleanup on resource stop (previene NUI focus lock si resource restart).
 -- -----------------------------------------------------------------------------
 
 AddEventHandler('onResourceStop', function(resource)
-  if resource == GetCurrentResourceName() and tabletVisible then
+  if resource == GetCurrentResourceName() then
     SetNuiFocus(false, false)
+    SetNuiFocusKeepInput(false)
     tabletVisible = false
   end
+end)
+
+AddEventHandler('onClientResourceStart', function(resource)
+  if resource ~= GetCurrentResourceName() then return end
+  forceTabletClosed('resource_start')
+  refreshPlayerLoaded()
 end)

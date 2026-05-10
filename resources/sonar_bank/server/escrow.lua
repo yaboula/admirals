@@ -335,10 +335,10 @@ function Escrow.Create(buyer_cid, buyer_iban, seller_iban, amount, contract_id, 
   local q_create_escrow_acc = {
     query = [[
       INSERT INTO sonar_bank_accounts
-        (id, iban, type, owner_account_id, owner_company_id,
+        (id, iban, owner_type, account_class, owner_account_id, owner_company_id,
          balance, daily_limit_out, is_frozen, frozen_reason,
          created_at, updated_at, closed_at)
-      VALUES (?, ?, 'escrow', NULL, NULL,
+      VALUES (?, ?, 'escrow_managed', 'escrow', NULL, NULL,
               0.00, NULL, 0, NULL,
               ?, ?, NULL)
     ]],

@@ -2,8 +2,9 @@ local Wrap  = BankApp.callbacks._wrap
 local Enums = BankApp.lib.enums
 
 local BusinessService = BankApp.services.business
+local Config = BankApp.Config
 
-local GOVT_READ_ACE = 'sonar.bank.govt.audit.full'
+local GOVT_READ_ACE = Config.Permissions.GOVT_READ_ACE
 
 Wrap.Register('sonar:bank:govt:business:list', {
   tier          = Enums.TIER.TIER_3_ADMIN,

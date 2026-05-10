@@ -167,6 +167,7 @@ end
 --   exports.sonar_bridges:IsReady()
 --   exports.sonar_bridges:WaitReady(timeout_ms)
 --   exports.sonar_bridges:GetActive()    -- { bank='qbox', ... }
+--   exports.sonar_bridges:GetCitizenId(source)
 -- -----------------------------------------------------------------------------
 exports('IsReady', Bridges.IsReady)
 exports('WaitReady', Bridges.WaitReady)
@@ -175,4 +176,7 @@ exports('GetActive', function()
   local snap = {}
   for k, v in pairs(Bridges._active or {}) do snap[k] = v end
   return snap
+end)
+exports('GetCitizenId', function(source)
+  return Bridges.Identity.GetCitizenId(source)
 end)

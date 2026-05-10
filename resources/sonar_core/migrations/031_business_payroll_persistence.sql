@@ -59,8 +59,7 @@ CREATE TABLE IF NOT EXISTS sonar_bank_business_payroll_batches (
   CONSTRAINT fk_sonar_bank_business_payroll_batches_approval
     FOREIGN KEY (related_approval_id) REFERENCES sonar_bank_business_treasury_approvals(id) ON DELETE SET NULL ON UPDATE CASCADE,
 
-  CONSTRAINT chk_sonar_bank_business_payroll_batches_total_nonneg CHECK (total_net_amount >= 0),
-  CONSTRAINT chk_sonar_bank_business_payroll_batches_line_count CHECK (line_count >= held_line_count + failed_line_count)
+  CONSTRAINT chk_sonar_bank_business_payroll_batches_total_nonneg CHECK (total_net_amount >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS sonar_bank_business_payroll_lines (

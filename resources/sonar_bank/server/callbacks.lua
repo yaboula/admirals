@@ -50,6 +50,21 @@ local Escrow = SONAR.Bank.Escrow
 local Bank = SONAR.Bank
 local Callbacks = SONAR.Bank.Callbacks
 
+local function register_callback(name, fn)
+  if _G.lib and _G.lib.callback and type(_G.lib.callback.register) == 'function' then
+    _G.lib.callback.register(name, fn)
+    return true
+  end
+  RegisterNetEvent(name, function(payload, response_event)
+    local src = source
+    local response = fn(src, payload)
+    if response_event then
+      TriggerClientEvent(response_event, src, response)
+    end
+  end)
+  return false
+end
+
 -- =============================================================================
 -- Internal — error response helper.
 -- =============================================================================
@@ -76,7 +91,7 @@ end
 -- Rate limit: bucket 'bank.read' (30/10s) ya registered en
 --             sonar_core/config.lua:122-126 (no re-register here).
 -- =============================================================================
-lib.callback.register('sonar:bank:getBalance', function(source, request)
+register_callback('sonar:bank:getBalance', function(source, request)
   request = request or {}
   local start_ms = GetGameTimer()
 
@@ -207,7 +222,7 @@ end)
 --   bucket 'bank.write' (10/60s per citizen) registered en
 --   sonar_core/config.lua:126 (no re-register here).
 -- =============================================================================
-lib.callback.register('sonar:bank:transfer', function(source, request)
+register_callback('sonar:bank:transfer', function(source, request)
   request = request or {}
   local start_ms = GetGameTimer()
 
@@ -375,7 +390,7 @@ end)
 -- sonar_core/config.lua:126).
 -- Idempotency: request_id via Bridges DB-backed sonar_bridge_idempotency table.
 -- =============================================================================
-lib.callback.register('sonar:bank:createEscrow', function(source, request)
+register_callback('sonar:bank:createEscrow', function(source, request)
   request = request or {}
   local start_ms = GetGameTimer()
 
@@ -503,7 +518,7 @@ end)
 --   any other combo                       → NOT_AUTHORIZED
 --   release_to='split'                    → NOT_IMPLEMENTED (deferred S3+)
 -- =============================================================================
-lib.callback.register('sonar:bank:releaseEscrow', function(source, request)
+register_callback('sonar:bank:releaseEscrow', function(source, request)
   request = request or {}
   local start_ms = GetGameTimer()
 

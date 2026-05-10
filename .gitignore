@@ -61,6 +61,7 @@ lerna-debug.log*
 # Cache
 # -----------------------------------------------------------------------------
 .cache/
+cache/
 .parcel-cache/
 .eslintcache
 .stylelintcache

@@ -10,7 +10,6 @@ dependencies {
   'oxmysql',
   'sonar_bridges',
   'sonar_core',
-  'ox_lib',  -- lib.callback.register para C001 getBalance
 }
 
 -- =============================================================================
@@ -24,14 +23,18 @@ dependencies {
 --                                            Expone SONAR.{Core,DB,Bus,Rate,
 --                                            Log,Metrics,Identity}.* delegando
 --                                            via exports.sonar_core.
---     3. @ox_lib/init.lua       — lib.callback global (en VM sonar_bank).
---     4. server/iban.lua        — IBAN.Generate + IBAN.Validate + checksum
+--     3. server/iban.lua        — IBAN.Generate + IBAN.Validate + checksum
 --                                 (sin DB deps — pure functions).
---     5. server/accounts.lua    — Accounts.EnsureStarterAccount + GetByIban +
+--     4. server/accounts.lua    — Accounts.EnsureStarterAccount + GetByIban +
 --                                 GetByOwnerCitizenId (DB queries via SONAR.DB).
---     6. server/callbacks.lua   — lib.callback.register('sonar:bank:getBalance')
+--     5. server/callbacks.lua   — callback bus register('sonar:bank:getBalance')
 --                                 + futuras C002-C005 (placeholders S1.2/S1.3).
---     7. server/init.lua        — Boot orchestration (LAST):
+--     6. server/movements.lua    — DB helpers sobre sonar_bank_movements (S1.2).
+--     7. server/events.lua      — Bus.Publish wrappers (S1.2). Depends SONAR.Bus only.
+--     8. server/transfer.lua    — Transfer.Execute. Depends Accounts + IBAN + DB + Events.
+--     9. server/fsm_escrow.lua  — S1.3 escrow layer (fsm_escrow pure-logic, escrow depends FSM+Accounts+IBAN+Events):
+--     10. server/escrow.lua     —
+--     11. server/init.lua       — Boot orchestration (LAST):
 --                                 a. Wait SONAR.Core.WaitReady (30s).
 --                                 b. Register Identity.OnPlayerLoaded → EnsureStarterAccount.
 --                                 c. Register rate buckets (bank.read ya default
@@ -39,7 +42,7 @@ dependencies {
 --                                    no re-registramos).
 --                                 d. Mark Bank._ready + emit sonar:bank:ready.
 --
---   No client_scripts (callbacks via ox_lib server-side; client UI llega
+--   No client_scripts (callbacks server-side; client UI llega
 --   S1.5+ con sonar_tablet).
 -- =============================================================================
 
@@ -49,18 +52,10 @@ shared_scripts {
 
 
 server_scripts {
-  -- oxmysql global helper — necesario porque sonar_bank usa SONAR.DB
-  -- which delegates to sonar_core's MySQL helper, but ox_lib callback
-  -- transactions y sonar_core's DB.Transaction expect MySQL.* available.
-  -- Actually: SONAR.DB delegates 100% via exports — no MySQL.* needed here.
-  -- Removed for cleanliness.
-
   -- Helper lib sonar_core (cargada en VM sonar_bank):
   '@sonar_core/lib/sonar.lua',
 
-  -- ox_lib (lib.callback en server):
-  '@ox_lib/init.lua',
-
+  -- Callback bus:
   -- Domain layer (depend on SONAR.* helper).
   -- Order strict:
   --   iban       — pure functions, no deps domain (DB only).
@@ -90,5 +85,5 @@ server_scripts {
   'server/admin_commands.lua',
 }
 
--- No client_scripts (callbacks via ox_lib server-side; client UI llega
+-- No client_scripts (callbacks server-side; client UI llega
 -- S1.5+ con sonar_tablet).
