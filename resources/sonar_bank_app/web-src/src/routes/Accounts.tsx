@@ -115,7 +115,7 @@ function AccountsHero({ accounts, totals, streamerMode }: { accounts: Account[];
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 14% 0%, oklch(0.70 0.22 40 / 0.12), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 56%)',
+            'radial-gradient(circle at 14% 0%, rgba(246,75,0,0.12), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%)',
         }}
       />
       <div className="relative flex items-center justify-between gap-5 p-4 2xl:p-5">
@@ -199,7 +199,7 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
   const name = accountName(account, index)
   const accountKind = getAccountKind(account, index)
   const ibanLabel = streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban)
-  const ibanTail = streamerMode ? '••••' : account.iban.replace(/\s+/g, '').slice(-4)
+  const ibanTail = streamerMode ? '••••' : compactIban(account.iban).slice(-4)
   const amountLabel = streamerMode ? maskMoneyDisplay() : money((account.balance_minor + account.savings_minor) / 100)
   const totalMinor = account.balance_minor + account.savings_minor
   const savingsRatio = totalMinor > 0 ? account.savings_minor / totalMinor : 0
@@ -218,7 +218,7 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
       )}
       style={{
         boxShadow: active
-          ? `inset 0 1px 0 oklch(1 0 0 / 0.10), 0 18px 34px -28px ${accountKind.glow}`
+          ? `inset 0 1px 0 rgba(255,255,255,0.1), 0 18px 34px -28px ${accountKind.glow}`
           : undefined,
       }}
     >
@@ -232,8 +232,8 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
           className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border shrink-0"
           style={{
             color: accountKind.accent,
-            borderColor: `${accountKind.accent.replace(')', ' / 0.24)')}`,
-            background: `${accountKind.accent.replace(')', ' / 0.08)')}`,
+            borderColor: withAlpha(accountKind.accent, 0.24),
+            background: withAlpha(accountKind.accent, 0.08),
           }}
         >
           <Icon size={18} strokeWidth={2.2} />
@@ -245,8 +245,8 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
               className="shrink-0 rounded-full border px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em]"
               style={{
                 color: accountKind.accent,
-                borderColor: `${accountKind.accent.replace(')', ' / 0.22)')}`,
-                background: `${accountKind.accent.replace(')', ' / 0.07)')}`,
+                borderColor: withAlpha(accountKind.accent, 0.22),
+                background: withAlpha(accountKind.accent, 0.07),
               }}
             >
               {accountKind.label}
@@ -291,7 +291,7 @@ function AccountDetail({ account, transactions, streamerMode }: { account: Accou
 
   const copyIban = async (): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(account.iban.replace(/\s+/g, ''))
+      await navigator.clipboard.writeText(compactIban(account.iban))
       sfx.coin_clink()
       toast.success(t('accounts.ibanCopied'), streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban))
     } catch {
@@ -306,7 +306,7 @@ function AccountDetail({ account, transactions, streamerMode }: { account: Accou
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 88% 0%, oklch(1 0 0 / 0.07), transparent 32%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 56%)',
+            'radial-gradient(circle at 88% 0%, rgba(255,255,255,0.07), transparent 32%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%)',
         }}
       />
       <div className="relative h-full min-h-0 flex flex-col p-4 2xl:p-5">
@@ -449,7 +449,7 @@ function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction
   const reason = streamerMode ? t('accounts.hiddenDetail') : tx.reason ?? (outgoing ? t('accounts.transferSent') : t('accounts.transferReceived'))
   const amount = streamerMode ? maskSignedMoneyDisplay() : `${outgoing ? '−' : '+'}${money(tx.amount_minor / 100)}`
   const Icon = outgoing ? ArrowUpRight : ArrowDownLeft
-  const statusColor = tx.status === 'committed' ? 'oklch(0.72 0.16 155)' : tx.status === 'failed' || tx.status === 'reverted' ? 'oklch(0.68 0.20 25)' : 'oklch(0.78 0.16 85)'
+  const statusColor = tx.status === 'committed' ? 'rgb(53, 193, 119)' : tx.status === 'failed' || tx.status === 'reverted' ? 'rgb(252, 88, 85)' : 'rgb(230, 173, 0)'
 
   return (
     <motion.div
@@ -460,7 +460,7 @@ function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction
     >
       <span className="relative shrink-0" aria-hidden>
         <BankAvatar name={displayName} size="md" />
-        <span className="absolute -bottom-0.5 -right-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/70" style={{ color: outgoing ? 'oklch(0.78 0.18 25)' : 'oklch(0.80 0.18 155)' }}>
+        <span className="absolute -bottom-0.5 -right-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/70" style={{ color: outgoing ? 'rgb(255, 130, 123)' : 'rgb(59, 223, 137)' }}>
           <Icon size={10} strokeWidth={2.4} />
         </span>
       </span>
@@ -469,7 +469,7 @@ function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction
         <span className="text-[11px] text-text-tertiary truncate">{reason} · {relativeTime(tx.timestamp_ms)}</span>
       </span>
       <span className="shrink-0 flex flex-col items-end gap-0.5">
-        <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)' }}>{amount}</span>
+        <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'rgb(227, 228, 232)' : 'rgb(78, 213, 137)' }}>{amount}</span>
         <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-text-tertiary">
           {tx.status === 'committed' ? <Check size={9} style={{ color: statusColor }} /> : <AlertTriangle size={9} style={{ color: statusColor }} />}
           {statusLabel(tx.status)}
@@ -486,9 +486,9 @@ function StatusBadge({ account }: { account: Account }) {
     <span
       className="mt-1 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em]"
       style={{
-        color: active ? 'oklch(0.72 0.16 155)' : 'oklch(0.78 0.16 85)',
-        borderColor: active ? 'oklch(0.72 0.16 155 / 0.22)' : 'oklch(0.78 0.16 85 / 0.22)',
-        background: active ? 'oklch(0.72 0.16 155 / 0.07)' : 'oklch(0.78 0.16 85 / 0.07)',
+        color: active ? 'rgb(53, 193, 119)' : 'rgb(230, 173, 0)',
+        borderColor: active ? 'rgba(53,193,119,0.22)' : 'rgba(230,173,0,0.22)',
+        background: active ? 'rgba(53,193,119,0.07)' : 'rgba(230,173,0,0.07)',
       }}
     >
       {active ? <Check size={10} strokeWidth={2.5} /> : <AlertTriangle size={10} strokeWidth={2.5} />}
@@ -523,7 +523,13 @@ function accountName(account: Account, index: number): string {
   const { t } = useI18n()
   if (account.savings_minor > account.balance_minor && account.balance_minor === 0) return t('accounts.protectedSavings')
   if (index === 0) return t('accounts.primaryAccount')
-  return t('accounts.accountNumber').replace('{number}', String(index + 1))
+  return String(t('accounts.accountNumber') ?? '').replace('{number}', String(index + 1))
+}
+
+function withAlpha(color: string, alpha: number): string {
+  const m = String(color ?? '').match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+  if (m) return `rgba(${m[1]}, ${m[2]}, ${m[3]}, ${alpha})`
+  return color
 }
 
 function getAccountKind(account: Account, index: number): {
@@ -537,23 +543,23 @@ function getAccountKind(account: Account, index: number): {
     return {
       label: t('accounts.reserveLabel'),
       icon: PiggyBank,
-      accent: 'oklch(0.76 0.15 155)',
-      glow: 'oklch(0.76 0.15 155 / 0.42)',
+      accent: 'rgb(82, 205, 134)',
+      glow: 'rgba(82,205,134,0.42)',
     }
   }
   if (index === 0) {
     return {
       label: t('accounts.dailyLabel'),
       icon: Wallet,
-      accent: 'oklch(0.70 0.22 40)',
-      glow: 'oklch(0.70 0.22 40 / 0.42)',
+      accent: 'var(--color-brand-signal-orange)',
+      glow: 'var(--color-brand-signal-orange-glow)',
     }
   }
   return {
     label: t('accounts.extraLabel'),
     icon: CreditCard,
-    accent: 'oklch(0.78 0.16 85)',
-    glow: 'oklch(0.78 0.16 85 / 0.42)',
+    accent: 'rgb(230, 173, 0)',
+    glow: 'rgba(230,173,0,0.42)',
   }
 }
 
@@ -568,14 +574,19 @@ function computeAccountTotals(accounts: Account[]): AccountTotals {
   )
 }
 
-function filterTransactionsForAccount(transactions: Transaction[], iban: string): Transaction[] {
-  const compact = iban.replace(/\s+/g, '')
-  return transactions.filter((tx) => tx.from_iban.replace(/\s+/g, '') === compact || tx.to_iban.replace(/\s+/g, '') === compact)
+function filterTransactionsForAccount(transactions: Transaction[], iban: string | undefined | null): Transaction[] {
+  const compact = compactIban(iban)
+  if (!compact) return []
+  return transactions.filter((tx) => compactIban(tx.from_iban) === compact || compactIban(tx.to_iban) === compact)
 }
 
 function isOutgoing(tx: Transaction, ownIban: string): boolean {
-  const own = ownIban.replace(/\s+/g, '')
-  return tx.from_iban.replace(/\s+/g, '') === own && tx.to_iban.replace(/\s+/g, '') !== own
+  const own = compactIban(ownIban)
+  return compactIban(tx.from_iban) === own && compactIban(tx.to_iban) !== own
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }
 
 function statusLabel(status: Transaction['status']): string {

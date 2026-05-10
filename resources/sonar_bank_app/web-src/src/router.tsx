@@ -33,7 +33,7 @@ const GovtReports = lazy(() => import('./govt/routes/GovtReports').then(m => ({ 
 function RouteLoader() {
   return (
     <div className="flex h-full items-center justify-center" aria-busy="true" aria-label="Loading">
-      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-[oklch(0.65_0.22_40)]" />
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-[rgb(246, 75, 0)]" />
     </div>
   )
 }

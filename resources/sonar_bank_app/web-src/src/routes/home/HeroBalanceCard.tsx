@@ -40,7 +40,7 @@ export function HeroBalanceCard({ account, transactions, loading }: HeroBalanceC
   const handleCopyIban = async (): Promise<void> => {
     if (!account) return
     try {
-      await navigator.clipboard.writeText(account.iban.replace(/\s+/g, ''))
+      await navigator.clipboard.writeText(compactIban(account.iban))
       setCopied(true)
       sfx.coin_clink()
       window.setTimeout(() => setCopied(false), 1600)
@@ -135,7 +135,7 @@ function BalanceDisplay({
   const { money, currencySymbol, t } = useI18n()
   const reduced = useReducedMotion()
   const motionValue = useMotionValue(0)
-  const formatted = useTransform(motionValue, (latest) => money(latest).replace(currencySymbol, '').trim())
+  const formatted = useTransform(motionValue, (latest) => String(money(latest) ?? '').replace(String(currencySymbol ?? ''), '').trim())
   const [display, setDisplay] = useState('0.00')
   const lastTargetRef = useRef<number>(0)
 
@@ -227,10 +227,10 @@ function SubKpi({ label, value, hidden, tone, icon }: SubKpiProps) {
   const { money } = useI18n()
   const color =
     tone === 'success'
-      ? 'oklch(0.72 0.16 155)'
+      ? 'rgb(53, 193, 119)'
       : tone === 'danger'
-        ? 'oklch(0.68 0.20 25)'
-        : 'oklch(0.92 0.005 270)'
+        ? 'rgb(252, 88, 85)'
+        : 'rgb(227, 228, 232)'
   const sign = tone === 'success' ? '+' : tone === 'danger' ? '−' : ''
 
   return (
@@ -246,9 +246,9 @@ function SubKpi({ label, value, hidden, tone, icon }: SubKpiProps) {
             className="inline-flex h-4 w-4 items-center justify-center rounded shrink-0"
             style={{
               background: tone === 'success'
-                ? 'oklch(0.72 0.16 155 / 0.10)'
+                ? 'rgba(53,193,119,0.1)'
                 : tone === 'danger'
-                  ? 'oklch(0.68 0.20 25 / 0.10)'
+                  ? 'rgba(252,88,85,0.1)'
                   : 'transparent',
               color,
             }}
@@ -286,14 +286,14 @@ function sumThisMonth(
   direction: 'in' | 'out',
 ): number {
   if (!iban) return 0
-  const compact = iban.replace(/\s+/g, '')
+  const compact = compactIban(iban)
   const startMs = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()
   let total = 0
   for (const t of transactions) {
     if (t.timestamp_ms < startMs) continue
     if (t.status !== 'committed') continue
-    const fromCompact = t.from_iban.replace(/\s+/g, '')
-    const toCompact = t.to_iban.replace(/\s+/g, '')
+    const fromCompact = compactIban(t.from_iban)
+    const toCompact = compactIban(t.to_iban)
     if (direction === 'in' && toCompact === compact && fromCompact !== compact) {
       total += t.amount_minor
     } else if (direction === 'out' && fromCompact === compact && toCompact !== compact) {
@@ -301,4 +301,8 @@ function sumThisMonth(
     }
   }
   return total
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }

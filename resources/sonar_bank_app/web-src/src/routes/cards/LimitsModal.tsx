@@ -140,9 +140,9 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
               'flex flex-col',
             )}
             style={{
-              background: 'linear-gradient(180deg, oklch(0.10 0.012 270) 0%, oklch(0.04 0.006 270) 100%)',
+              background: 'linear-gradient(180deg, rgb(2, 3, 6) 0%, rgb(0, 0, 0) 100%)',
               boxShadow:
-                '0 24px 64px -16px oklch(0 0 0 / 0.7), 0 4px 12px -4px oklch(0 0 0 / 0.5), inset 0 1px 0 oklch(1 0 0 / 0.06)',
+                '0 24px 64px -16px rgba(0,0,0,0.7), 0 4px 12px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
           >
             {/* Header */}
@@ -199,9 +199,9 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-start gap-2 rounded-lg px-3 py-2 text-[11px] leading-snug"
                   style={{
-                    background: 'oklch(0.40 0.18 30 / 0.10)',
-                    border: '1px solid oklch(0.65 0.18 30 / 0.30)',
-                    color: 'oklch(0.85 0.12 30)',
+                    background: 'rgba(144,0,0,0.1)',
+                    border: '1px solid rgba(232,90,72,0.3)',
+                    color: 'rgb(255, 175, 159)',
                   }}
                 >
                   <AlertTriangle size={12} strokeWidth={2} className="shrink-0 mt-0.5" />
@@ -213,7 +213,7 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
             {/* Footer */}
             <div
               className="flex items-center justify-end gap-2 px-5 pt-3 pb-5 border-t"
-              style={{ borderColor: 'oklch(1 0 0 / 0.06)' }}
+              style={{ borderColor: 'rgba(255,255,255,0.06)' }}
             >
               <button
                 type="button"
@@ -238,9 +238,9 @@ export function LimitsModal({ card, open, onClose }: LimitsModalProps) {
                   'enabled:hover:brightness-110 enabled:active:scale-[0.98]',
                 )}
                 style={{
-                  background: !dirty || invalid ? 'oklch(1 0 0 / 0.06)' : design.accent,
-                  color: !dirty || invalid ? 'oklch(0.78 0.012 270)' : 'oklch(0.10 0.012 270)',
-                  border: '1px solid oklch(1 0 0 / 0.10)',
+                  background: !dirty || invalid ? 'rgba(255,255,255,0.06)' : design.accent,
+                  color: !dirty || invalid ? 'rgb(180, 183, 191)' : 'rgb(2, 3, 6)',
+                  border: '1px solid rgba(255,255,255,0.1)',
                   boxShadow: !dirty || invalid ? 'none' : `0 0 18px -4px ${design.accent}`,
                 }}
               >
@@ -304,7 +304,7 @@ function LimitSlider({
         <span
           className={cn(
             'text-sm font-mono font-semibold tactile-tabular-nums',
-            invalid ? 'text-[oklch(0.85_0.12_30)]' : 'text-text-primary',
+            invalid ? 'text-[rgb(255, 175, 159)]' : 'text-text-primary',
           )}
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
@@ -341,7 +341,7 @@ function LimitSlider({
             className="text-[9px] uppercase tracking-[0.16em] font-semibold px-1.5 py-0.5 rounded"
             style={{
               color: accent,
-              background: 'oklch(1 0 0 / 0.04)',
+              background: 'rgba(255,255,255,0.04)',
               border: `1px solid ${accent}`,
             }}
           >

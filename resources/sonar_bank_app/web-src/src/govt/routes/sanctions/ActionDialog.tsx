@@ -135,8 +135,8 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
             className="relative w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-[var(--color-govt-border-strong)]"
             style={{
               background:
-                'radial-gradient(circle at 50% 0%, oklch(0.14 0.018 252 / 0.97), oklch(0.05 0.010 252 / 0.99))',
-              boxShadow: '0 40px 90px -32px oklch(0 0 0 / 0.88)',
+                'radial-gradient(circle at 50% 0%, rgba(5,10,16,0.97), rgba(0,0,1,0.99))',
+              boxShadow: '0 40px 90px -32px rgba(0,0,0,0.88)',
             }}
           >
             <div className="flex items-start justify-between gap-3 px-6 pt-5">
@@ -146,11 +146,11 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
                   className={cn(
                     'flex h-10 w-10 items-center justify-center rounded-2xl border',
                     DESTRUCTIVE[kind]
-                      ? 'border-[oklch(0.62_0.21_25/0.40)] text-[oklch(0.78_0.16_25)]'
+                      ? 'border-[rgba(234,60,63,0.4)] text-[rgb(255, 138, 130)]'
                       : 'border-[var(--color-govt-border-strong)] text-[var(--color-govt-accent-light)]',
                   )}
                   style={{
-                    background: DESTRUCTIVE[kind] ? 'oklch(0.62 0.21 25 / 0.10)' : 'var(--color-govt-accent-subtle)',
+                    background: DESTRUCTIVE[kind] ? 'rgba(234,60,63,0.1)' : 'var(--color-govt-accent-subtle)',
                   }}
                 >
                   <AlertTriangle size={18} strokeWidth={2} />
@@ -181,9 +181,9 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
               <div
                 className="mb-4 rounded-xl border px-3 py-2.5 text-[12px] leading-relaxed"
                 style={{
-                  borderColor: DESTRUCTIVE[kind] ? 'oklch(0.62 0.21 25 / 0.32)' : 'var(--color-govt-border-strong)',
-                  background: DESTRUCTIVE[kind] ? 'oklch(0.62 0.21 25 / 0.08)' : 'var(--color-govt-accent-subtle)',
-                  color: DESTRUCTIVE[kind] ? 'oklch(0.85 0.10 25)' : 'var(--color-govt-text-secondary)',
+                  borderColor: DESTRUCTIVE[kind] ? 'rgba(234,60,63,0.32)' : 'var(--color-govt-border-strong)',
+                  background: DESTRUCTIVE[kind] ? 'rgba(234,60,63,0.08)' : 'var(--color-govt-accent-subtle)',
+                  color: DESTRUCTIVE[kind] ? 'rgb(255, 180, 173)' : 'var(--color-govt-text-secondary)',
                 }}
               >
                 {t(WARNING_KEY[kind])}
@@ -221,7 +221,7 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
                       value={fineAmountInput}
                       onChange={(e) => setFineAmountInput(e.target.value.replace(/[^0-9.,]/g, ''))}
                       placeholder="0.00"
-                      className="h-11 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.008_252/0.55)] pl-7 pr-3 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)] tactile-tabular-nums"
+                      className="h-11 w-full rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,1,1,0.55)] pl-7 pr-3 text-sm text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)] tactile-tabular-nums"
                     />
                   </div>
                   {fineAmountCents > 0 ? (
@@ -236,12 +236,12 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
                   onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))}
                   placeholder={t('govt.sanctions.dialog.reasonPlaceholder')}
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.008_252/0.55)] px-3 py-2.5 text-sm leading-relaxed text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
+                  className="w-full resize-none rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,1,1,0.55)] px-3 py-2.5 text-sm leading-relaxed text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-quaternary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
                 />
               </FieldRow>
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.92)] px-6 py-3">
+            <div className="flex items-center justify-end gap-2 border-t border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.92)] px-6 py-3">
               <button
                 type="button"
                 onClick={onClose}
@@ -257,7 +257,7 @@ export function ActionDialog({ open, kind, citizenAlias, busy, onClose, onConfir
                 className={cn(
                   'inline-flex h-9 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.12em] transition-all disabled:cursor-not-allowed disabled:opacity-50',
                   DESTRUCTIVE[kind]
-                    ? 'border-[oklch(0.62_0.21_25/0.50)] bg-[oklch(0.62_0.21_25/0.18)] text-[oklch(0.92_0.06_25)] hover:bg-[oklch(0.62_0.21_25/0.30)]'
+                    ? 'border-[rgba(234,60,63,0.5)] bg-[rgba(234,60,63,0.18)] text-[rgb(255, 214, 209)] hover:bg-[rgba(234,60,63,0.3)]'
                     : 'border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)] text-[var(--color-govt-accent-light)] hover:bg-[var(--color-govt-accent-glow)]',
                 )}
               >

@@ -138,9 +138,9 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
               'flex flex-col',
             )}
             style={{
-              background: 'linear-gradient(180deg, oklch(0.10 0.012 270) 0%, oklch(0.04 0.006 270) 100%)',
+              background: 'linear-gradient(180deg, rgb(2, 3, 6) 0%, rgb(0, 0, 0) 100%)',
               boxShadow:
-                '0 24px 64px -16px oklch(0 0 0 / 0.7), 0 4px 12px -4px oklch(0 0 0 / 0.5), inset 0 1px 0 oklch(1 0 0 / 0.06)',
+                '0 24px 64px -16px rgba(0,0,0,0.7), 0 4px 12px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
           >
             {/* Header */}
@@ -227,7 +227,7 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
             {/* Footer */}
             <div
               className="flex items-center justify-between gap-2 px-5 pt-3 pb-5 border-t mt-auto"
-              style={{ borderColor: 'oklch(1 0 0 / 0.06)' }}
+              style={{ borderColor: 'rgba(255,255,255,0.06)' }}
             >
               <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary min-w-0">
                 <Sparkles size={10} strokeWidth={1.8} className="shrink-0" />
@@ -259,9 +259,9 @@ export function DesignPickerDialog({ card, open, onClose }: DesignPickerDialogPr
                     'enabled:hover:brightness-110 enabled:active:scale-[0.98]',
                   )}
                   style={{
-                    background: !dirty ? 'oklch(1 0 0 / 0.06)' : selectedDesign.accent,
-                    color: !dirty ? 'oklch(0.78 0.012 270)' : 'oklch(0.10 0.012 270)',
-                    border: '1px solid oklch(1 0 0 / 0.10)',
+                    background: !dirty ? 'rgba(255,255,255,0.06)' : selectedDesign.accent,
+                    color: !dirty ? 'rgb(180, 183, 191)' : 'rgb(2, 3, 6)',
+                    border: '1px solid rgba(255,255,255,0.1)',
                     boxShadow: !dirty ? 'none' : `0 0 18px -4px ${selectedDesign.accent}`,
                   }}
                 >
@@ -309,9 +309,9 @@ function DesignTile({
         'hover:-translate-y-0.5 active:scale-[0.98]',
       )}
       style={{
-        background: selected ? 'oklch(1 0 0 / 0.05)' : 'oklch(1 0 0 / 0.02)',
+        background: selected ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
         border: `1px solid ${
-          selected ? design.accent : 'oklch(1 0 0 / 0.08)'
+          selected ? design.accent : 'rgba(255,255,255,0.08)'
         }`,
         boxShadow: selected ? `0 0 16px -4px ${design.accent}` : 'none',
       }}
@@ -327,7 +327,7 @@ function DesignTile({
             className="absolute top-1.5 right-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full"
             style={{
               background: design.accent,
-              color: 'oklch(0.10 0.012 270)',
+              color: 'rgb(2, 3, 6)',
               boxShadow: `0 0 10px -1px ${design.accent}`,
             }}
             aria-hidden
@@ -356,9 +356,9 @@ function DesignTile({
           <span
             className="text-[8px] uppercase tracking-[0.16em] font-semibold px-1.5 py-0.5 rounded shrink-0"
             style={{
-              color: 'oklch(0.78 0.012 270)',
-              background: 'oklch(1 0 0 / 0.05)',
-              border: '1px solid oklch(1 0 0 / 0.10)',
+              color: 'rgb(180, 183, 191)',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
             }}
           >
             {t('cards.current')}

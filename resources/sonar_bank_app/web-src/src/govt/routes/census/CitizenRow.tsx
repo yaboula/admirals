@@ -14,17 +14,17 @@ interface Props {
 }
 
 const STATUS_TONE: Record<GovtCitizenStatus, { dot: string; text: string; key: TranslationKey }> = {
-  active: { dot: 'bg-[oklch(0.65_0.18_155)]', text: 'text-[oklch(0.78_0.16_155)]', key: 'govt.census.status.active' },
-  flagged: { dot: 'bg-[oklch(0.78_0.16_85)]', text: 'text-[oklch(0.85_0.14_85)]', key: 'govt.census.status.flagged' },
-  sanctioned: { dot: 'bg-[oklch(0.62_0.21_25)]', text: 'text-[oklch(0.78_0.16_25)]', key: 'govt.census.status.sanctioned' },
+  active: { dot: 'bg-[rgb(0, 173, 91)]', text: 'text-[rgb(78, 213, 137)]', key: 'govt.census.status.active' },
+  flagged: { dot: 'bg-[rgb(230, 173, 0)]', text: 'text-[rgb(248, 198, 85)]', key: 'govt.census.status.flagged' },
+  sanctioned: { dot: 'bg-[rgb(234, 60, 63)]', text: 'text-[rgb(255, 138, 130)]', key: 'govt.census.status.sanctioned' },
   exempt: { dot: 'bg-[var(--color-govt-text-tertiary)]', text: 'text-[var(--color-govt-text-tertiary)]', key: 'govt.census.status.exempt' },
 }
 
 const RISK_BAR: Record<GovtRiskLevel, { color: string; widthClass: string }> = {
-  low: { color: 'oklch(0.65 0.18 155)', widthClass: 'w-1/4' },
-  medium: { color: 'oklch(0.78 0.16 85)', widthClass: 'w-2/4' },
-  high: { color: 'oklch(0.72 0.20 35)', widthClass: 'w-3/4' },
-  critical: { color: 'oklch(0.62 0.21 25)', widthClass: 'w-full' },
+  low: { color: 'rgb(0, 173, 91)', widthClass: 'w-1/4' },
+  medium: { color: 'rgb(230, 173, 0)', widthClass: 'w-2/4' },
+  high: { color: 'rgb(255, 106, 67)', widthClass: 'w-3/4' },
+  critical: { color: 'rgb(234, 60, 63)', widthClass: 'w-full' },
 }
 
 const STATUS_ICON: Record<GovtCitizenStatus, typeof ShieldCheck> = {
@@ -67,7 +67,7 @@ export function CitizenRow({ citizen, active, onSelect }: Props) {
           'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border',
           active ? 'border-[var(--color-govt-border-active)]' : 'border-[var(--color-govt-border)]',
         )}
-        style={{ background: 'oklch(0.06 0.008 252 / 0.65)' }}
+        style={{ background: 'rgba(0,1,1,0.65)' }}
       >
         <StatusIcon size={16} strokeWidth={1.9} className={tone.text} />
       </span>

@@ -21,7 +21,7 @@ export function HomePromoCarousel() {
       text: t('home.cryptoText'),
       cta: t('home.cryptoCta'),
       icon: Bitcoin,
-      accent: 'oklch(0.72 0.22 40)',
+      accent: 'rgb(255, 100, 19)',
       to: undefined,
     },
     {
@@ -29,7 +29,7 @@ export function HomePromoCarousel() {
       text: t('home.investText'),
       cta: t('home.investCta'),
       icon: ChartNoAxesColumnIncreasing,
-      accent: 'oklch(0.74 0.15 150)',
+      accent: 'rgb(90, 197, 118)',
       to: '/inversiones',
     },
     {
@@ -37,7 +37,7 @@ export function HomePromoCarousel() {
       text: t('home.premiumText'),
       cta: t('home.premiumCta'),
       icon: Gem,
-      accent: 'oklch(0.78 0.14 75)',
+      accent: 'rgb(235, 169, 65)',
       to: undefined,
     },
   ]
@@ -59,14 +59,14 @@ export function HomePromoCarousel() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 82% 50%, oklch(0.72 0.22 40 / 0.38), transparent 38%), linear-gradient(135deg, oklch(0.20 0.07 40), oklch(0.08 0.018 35) 62%, oklch(0.045 0.010 270))',
+            'radial-gradient(circle at 82% 50%, rgba(255,100,19,0.38), transparent 38%), linear-gradient(135deg, rgb(46, 6, 0), rgb(4, 1, 0) 62%, rgb(0, 0, 1))',
         }}
       />
       <div
         aria-hidden
         className="absolute -right-10 bottom-[-22%] h-40 w-40 rounded-full"
         style={{
-          background: 'radial-gradient(circle at 40% 35%, oklch(1 0 0 / 0.14), oklch(0.18 0.06 35 / 0.58) 44%, transparent 70%)',
+          background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.14), rgba(38,5,1,0.58) 44%, transparent 70%)',
           filter: 'blur(1px)',
         }}
       />
@@ -82,7 +82,7 @@ export function HomePromoCarousel() {
           >
             <span
               className="inline-flex h-9 w-9 items-center justify-center rounded-2xl"
-              style={{ background: 'oklch(1 0 0 / 0.10)', border: '1px solid oklch(1 0 0 / 0.14)', color: slide.accent }}
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.14)', color: slide.accent }}
             >
               <Icon size={18} strokeWidth={2} />
             </span>
@@ -102,7 +102,7 @@ export function HomePromoCarousel() {
             ))}
             <span
               className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white ring-2 ring-black/40"
-              style={{ background: 'oklch(0.72 0.22 40)' }}
+              style={{ background: 'rgb(255, 100, 19)' }}
             >
               +
             </span>
@@ -121,7 +121,7 @@ export function HomePromoCarousel() {
               'inline-flex h-10 items-center justify-center gap-2 rounded-full px-5',
               'text-sm font-semibold transition-transform hover:-translate-y-0.5 active:scale-[0.98]',
             )}
-            style={{ background: 'oklch(1 0 0 / 0.92)', color: 'oklch(0.08 0.01 270)' }}
+            style={{ background: 'rgba(255,255,255,0.92)', color: 'rgb(1, 2, 3)' }}
           >
             {slide.cta}
             <ArrowRight size={14} strokeWidth={2} />

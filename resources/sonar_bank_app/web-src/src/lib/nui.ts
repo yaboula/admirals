@@ -129,6 +129,16 @@ export function nuiMutate<T>(
   })
 }
 
+export function nuiControl(action: 'open' | 'close'): Promise<void> {
+  if (!isInsideFiveMNui()) return Promise.resolve()
+  const url = `${getNuiBaseUrl()}/${action}`
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+    body: JSON.stringify({}),
+  }).then(() => undefined)
+}
+
 export interface NuiInboundListener {
   (msg: MessageEvent['data']): void
 }

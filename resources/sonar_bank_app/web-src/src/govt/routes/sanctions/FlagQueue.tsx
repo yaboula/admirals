@@ -21,17 +21,17 @@ interface Props {
 }
 
 const SEVERITY_TONE: Record<GovtFlagSeverity, { color: string; key: TranslationKey }> = {
-  info: { color: 'oklch(0.78 0.10 215)', key: 'govt.census.flags.severity.info' },
-  low: { color: 'oklch(0.65 0.18 155)', key: 'govt.census.flags.severity.low' },
-  medium: { color: 'oklch(0.78 0.16 85)', key: 'govt.census.flags.severity.medium' },
-  high: { color: 'oklch(0.72 0.20 35)', key: 'govt.census.flags.severity.high' },
-  critical: { color: 'oklch(0.62 0.21 25)', key: 'govt.census.flags.severity.critical' },
+  info: { color: 'rgb(98, 200, 223)', key: 'govt.census.flags.severity.info' },
+  low: { color: 'rgb(0, 173, 91)', key: 'govt.census.flags.severity.low' },
+  medium: { color: 'rgb(230, 173, 0)', key: 'govt.census.flags.severity.medium' },
+  high: { color: 'rgb(255, 106, 67)', key: 'govt.census.flags.severity.high' },
+  critical: { color: 'rgb(234, 60, 63)', key: 'govt.census.flags.severity.critical' },
 }
 
 const STATUS_TONE: Record<GovtFlagStatus, { fg: string; bg: string; key: TranslationKey }> = {
   open: {
-    fg: 'oklch(0.85 0.14 85)',
-    bg: 'oklch(0.78 0.16 85 / 0.10)',
+    fg: 'rgb(248, 198, 85)',
+    bg: 'rgba(230,173,0,0.1)',
     key: 'govt.census.flags.status.open',
   },
   reviewing: {
@@ -40,13 +40,13 @@ const STATUS_TONE: Record<GovtFlagStatus, { fg: string; bg: string; key: Transla
     key: 'govt.census.flags.status.reviewing',
   },
   resolved: {
-    fg: 'oklch(0.78 0.16 155)',
-    bg: 'oklch(0.65 0.18 155 / 0.10)',
+    fg: 'rgb(78, 213, 137)',
+    bg: 'rgba(0,173,91,0.1)',
     key: 'govt.census.flags.status.resolved',
   },
   dismissed: {
     fg: 'var(--color-govt-text-tertiary)',
-    bg: 'oklch(1 0 0 / 0.04)',
+    bg: 'rgba(255,255,255,0.04)',
     key: 'govt.census.flags.status.dismissed',
   },
 }
@@ -85,7 +85,7 @@ export function FlagQueue({ filters, onFiltersChange, flags, selectedFlagId, onS
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
             placeholder={t('govt.sanctions.searchPlaceholder')}
             aria-label={t('govt.sanctions.searchPlaceholder')}
-            className="h-8 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.55)] pl-7 pr-7 text-[12px] text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
+            className="h-8 w-full rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.55)] pl-7 pr-7 text-[12px] text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
           />
           {filters.search ? (
             <button type="button" onClick={() => onFiltersChange({ ...filters, search: '' })} aria-label={t('govt.census.searchClear')}
@@ -94,9 +94,9 @@ export function FlagQueue({ filters, onFiltersChange, flags, selectedFlagId, onS
             </button>
           ) : null}
         </div>
-        <span aria-hidden className="hidden h-3.5 w-px bg-[oklch(1_0_0/0.10)] sm:block" />
+        <span aria-hidden className="hidden h-3.5 w-px bg-[rgba(255,255,255,0.1)] sm:block" />
         <ChipRow label={t('govt.sanctions.filters.severityLabel')} options={SEVERITY_OPTS} selected={filters.severity} onSelect={(v) => handle('severity', v)} />
-        <span aria-hidden className="hidden h-3.5 w-px bg-[oklch(1_0_0/0.10)] sm:block" />
+        <span aria-hidden className="hidden h-3.5 w-px bg-[rgba(255,255,255,0.1)] sm:block" />
         <ChipRow label={t('govt.sanctions.filters.statusLabel')} options={STATUS_OPTS} selected={filters.status} onSelect={(v) => handle('status', v)} />
       </div>
 
@@ -162,7 +162,7 @@ function FlagRow({ flag, active, onSelect }: FlagRowProps) {
         'group flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition-all',
         active
           ? 'border-[var(--color-govt-border-active)] bg-[var(--color-govt-accent-soft)]'
-          : 'border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.55)] hover:border-[var(--color-govt-border-strong)] hover:bg-[oklch(0.07_0.008_252/0.60)]',
+          : 'border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.55)] hover:border-[var(--color-govt-border-strong)] hover:bg-[rgba(1,1,2,0.6)]',
       )}
     >
       <span aria-hidden className="mt-1 h-2 w-2 flex-shrink-0 rounded-full" style={{ background: sev.color }} />

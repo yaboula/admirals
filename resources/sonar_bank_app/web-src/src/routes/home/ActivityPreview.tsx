@@ -35,7 +35,7 @@ export interface ActivityPreviewProps {
  */
 export function ActivityPreview({ transactions, account, loading, compact }: ActivityPreviewProps) {
   const { t } = useI18n()
-  const own = account?.iban.replace(/\s+/g, '')
+  const own = compactIban(account?.iban)
   // BANK-FE.3.5: 3 rows in compact mode releases ~50px vertical for the chart
   // at 1280×800 / 1024×768. Full-screen 2xl users see 4 rows via prop override.
   const limit = compact ? 3 : 8
@@ -64,7 +64,7 @@ export function ActivityPreview({ transactions, account, loading, compact }: Act
               'hover:text-text-primary hover:bg-surface-card-elevated/60 transition-colors',
               'tactile-focus-ring',
             )}
-            aria-label={t('home.viewAllMovements').replace('{count}', String(transactions.length))}
+            aria-label={String(t('home.viewAllMovements') ?? '').replace('{count}', String(transactions.length))}
           >
             {t('home.viewAll')}
             <ArrowRight
@@ -112,9 +112,9 @@ function ActivityEmptyState({ compact }: { compact: boolean | undefined }) {
       <div
         className="inline-flex h-10 w-10 items-center justify-center rounded-full"
         style={{
-          background: 'oklch(1 0 0 / 0.04)',
+          background: 'rgba(255,255,255,0.04)',
           border: '1px solid var(--color-border-subtle)',
-          color: 'oklch(0.55 0.012 270 / 0.7)',
+          color: 'rgba(111,113,121,0.7)',
         }}
         aria-hidden
       >
@@ -155,14 +155,14 @@ function Row({
 }) {
   const { t, signedMoney, relativeTime } = useI18n()
   const statusMeta = getStatusMeta((key: string) => t(key as any))
-  const fromCompact = tx.from_iban.replace(/\s+/g, '')
-  const toCompact = tx.to_iban.replace(/\s+/g, '')
+  const fromCompact = compactIban(tx.from_iban)
+  const toCompact = compactIban(tx.to_iban)
   const isOutgoing = ownIban
     ? fromCompact === ownIban && toCompact !== ownIban
     : tx.direction === 'out'
   const counterpartIban = isOutgoing ? tx.to_iban : tx.from_iban
   const counterpartName = getMockAliasForIban(counterpartIban) ?? (isOutgoing ? t('transactions.beneficiary') : t('transactions.sender'))
-  const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.72 0.16 155)'
+  const amountColor = isOutgoing ? 'rgb(227, 228, 232)' : 'rgb(53, 193, 119)'
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const displayName = streamerMode ? t('transactions.hiddenMovement') : counterpartName
   const displayReason = streamerMode ? t('transactions.hiddenDetail') : tx.reason ?? (isOutgoing ? t('transactions.transfer') : t('transactions.received'))
@@ -188,8 +188,8 @@ function Row({
           compact ? 'h-7 w-7' : 'h-9 w-9',
         )}
         style={{
-          background: isOutgoing ? 'oklch(0.68 0.20 25 / 0.10)' : 'oklch(0.72 0.16 155 / 0.10)',
-          color: isOutgoing ? 'oklch(0.68 0.20 25)' : 'oklch(0.72 0.16 155)',
+          background: isOutgoing ? 'rgba(252,88,85,0.1)' : 'rgba(53,193,119,0.1)',
+          color: isOutgoing ? 'rgb(252, 88, 85)' : 'rgb(53, 193, 119)',
         }}
         aria-hidden
       >
@@ -246,10 +246,14 @@ function getStatusMeta(t: (key: string) => string): Record<
   { icon: typeof Check; label: string; color: string }
 > {
   return {
-    committed: { icon: Check, label: t('transactions.statusCommitted'), color: 'oklch(0.72 0.16 155)' },
-    pending: { icon: RotateCw, label: t('transactions.statusPending'), color: 'oklch(0.78 0.16 85)' },
-    reconciling: { icon: RotateCw, label: t('transactions.statusReconciling'), color: 'oklch(0.78 0.16 85)' },
-    reverted: { icon: AlertTriangle, label: t('transactions.statusReverted'), color: 'oklch(0.68 0.20 25)' },
-    failed: { icon: AlertTriangle, label: t('transactions.statusFailed'), color: 'oklch(0.68 0.20 25)' },
+    committed: { icon: Check, label: t('transactions.statusCommitted'), color: 'rgb(53, 193, 119)' },
+    pending: { icon: RotateCw, label: t('transactions.statusPending'), color: 'rgb(230, 173, 0)' },
+    reconciling: { icon: RotateCw, label: t('transactions.statusReconciling'), color: 'rgb(230, 173, 0)' },
+    reverted: { icon: AlertTriangle, label: t('transactions.statusReverted'), color: 'rgb(252, 88, 85)' },
+    failed: { icon: AlertTriangle, label: t('transactions.statusFailed'), color: 'rgb(252, 88, 85)' },
   }
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }

@@ -41,8 +41,8 @@ export function Auth() {
 
   return (
     <main className="relative flex h-full w-full overflow-hidden bg-surface-abyss text-text-primary">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(246, 75, 0, 0.14),transparent_30%),radial-gradient(circle_at_84%_20%,rgba(95, 161, 243, 0.16),transparent_32%),radial-gradient(circle_at_55%_92%,rgba(41, 194, 113, 0.12),transparent_34%)]" />
-      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255, 255, 255, 0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255, 255, 255, 0.16)_1px,transparent_1px)] [background-size:28px_28px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(246,75,0,0.14),transparent_30%),radial-gradient(circle_at_84%_20%,rgba(95,161,243,0.16),transparent_32%),radial-gradient(circle_at_55%_92%,rgba(41,194,113,0.12),transparent_34%)]" />
+      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/[0.018] blur-3xl" />
 
       <section className="relative z-10 mx-auto grid h-full w-full max-w-[1180px] grid-cols-[minmax(0,1fr)_390px] items-center gap-8 px-8 py-7 max-lg:grid-cols-1 max-lg:overflow-y-auto">
@@ -75,8 +75,8 @@ export function Auth() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.98, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }} className="relative lg:justify-self-end">
-          <div className="absolute -inset-10 rounded-[2.75rem] bg-[radial-gradient(circle_at_50%_16%,rgba(246, 75, 0, 0.16),transparent_42%),radial-gradient(circle_at_80%_86%,rgba(41, 194, 113, 0.12),transparent_34%)] blur-3xl" />
-          <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(145deg,rgba(3, 4, 7, 0.92),rgba(0, 0, 1, 0.96)_58%,rgba(0, 0, 0, 0.98))] p-5 shadow-[0_34px_100px_-48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.11)] backdrop-blur-2xl">
+          <div className="absolute -inset-10 rounded-[2.75rem] bg-[radial-gradient(circle_at_50%_16%,rgba(246,75,0,0.16),transparent_42%),radial-gradient(circle_at_80%_86%,rgba(41,194,113,0.12),transparent_34%)] blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(145deg,rgba(3,4,7,0.92),rgba(0,0,1,0.96)_58%,rgba(0,0,0,0.98))] p-5 shadow-[0_34px_100px_-48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.11)] backdrop-blur-2xl">
             <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             <div className="absolute -right-24 -top-24 h-52 w-52 rounded-full border border-white/10 bg-white/[0.025]" />
             <div className="absolute -bottom-28 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-semantic-success/10 blur-3xl" />
@@ -87,12 +87,12 @@ export function Auth() {
             </div>
 
             <div className="relative pt-8">
-              <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(255, 255, 255, 0.06),rgba(255, 255, 255, 0.02)_52%,transparent_53%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
+              <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(255,255,255,0.06),rgba(255,255,255,0.02)_52%,transparent_53%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
                 <div className="absolute h-32 w-32 rounded-full border border-white/10" />
-                <div className="absolute h-40 w-40 rounded-full bg-[conic-gradient(from_210deg,transparent,rgba(246, 75, 0, 0.42),transparent_38%)] opacity-80" />
+                <div className="absolute h-40 w-40 rounded-full bg-[conic-gradient(from_210deg,transparent,rgba(246,75,0,0.42),transparent_38%)] opacity-80" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-surface-abyss/90 shadow-[0_18px_46px_-30px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.08)]">
                   <span className="absolute inset-3 rounded-full bg-brand-signal-orange/10 blur-xl" />
-                  <Fingerprint size={55} strokeWidth={1.25} className="relative text-brand-signal-orange-light drop-shadow-[0_0_18px_rgba(246, 75, 0, 0.35)]" />
+                  <Fingerprint size={55} strokeWidth={1.25} className="relative text-brand-signal-orange-light drop-shadow-[0_0_18px_rgba(246,75,0,0.35)]" />
                 </div>
               </div>
 
@@ -133,8 +133,8 @@ export function Auth() {
               className="mt-4 rounded-2xl"
               style={{
                 background: 'linear-gradient(135deg, var(--color-brand-signal-orange), var(--color-brand-signal-orange-light))',
-                borderColor: 'rgba(255, 147, 42, 0.48)',
-                boxShadow: '0 16px 38px -25px rgba(246, 75, 0, 0.82), inset 0 1px 0 rgba(255, 255, 255, 0.26)',
+                borderColor: 'rgba(255,147,42,0.48)',
+                boxShadow: '0 16px 38px -25px rgba(246,75,0,0.82), inset 0 1px 0 rgba(255,255,255,0.26)',
               }}
             >
               {t('auth.loginCta')}
@@ -166,7 +166,7 @@ function MarketSignalPreview() {
   const bars = [24, 40, 22, 58, 44, 70, 50, 82, 66, 88, 78, 92]
 
   return (
-    <div className="mt-5 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255, 255, 255, 0.05),rgba(255, 255, 255, 0.02))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+    <div className="mt-5 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary">
@@ -191,7 +191,7 @@ function MarketSignalPreview() {
                     height: `${height}%`,
                     background: active
                       ? 'linear-gradient(180deg, rgb(61, 207, 125), rgb(0, 127, 65))'
-                      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.06))',
+                      : 'linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06))',
                   }}
                 />
               </span>

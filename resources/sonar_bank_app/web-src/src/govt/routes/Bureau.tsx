@@ -142,7 +142,7 @@ function KpiTile({
         className="absolute left-0 top-4 h-8 w-[3px] rounded-r-full"
         style={{
           background:
-            tone === 'warning' ? 'oklch(0.78 0.16 85)'
+            tone === 'warning' ? 'rgb(230, 173, 0)'
             : tone === 'gold'  ? 'var(--color-govt-gold)'
             : 'var(--color-govt-accent)',
           opacity: tone === 'gold' ? 0.9 : 0.6,
@@ -154,7 +154,7 @@ function KpiTile({
       <span
         className={cn(
           'mt-3 block truncate text-3xl font-light tracking-[-0.04em] tabular-nums',
-          tone === 'warning' ? 'text-[oklch(0.88_0.12_85)]'
+          tone === 'warning' ? 'text-[rgb(252, 209, 118)]'
           : tone === 'gold'  ? 'text-[var(--color-govt-gold)]'
           : 'text-[var(--color-govt-text-primary)]',
         )}

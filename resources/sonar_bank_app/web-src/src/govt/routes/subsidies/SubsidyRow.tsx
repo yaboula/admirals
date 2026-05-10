@@ -17,10 +17,10 @@ interface Props {
 }
 
 const STATUS_TONE: Record<GovtSubsidyStatus, { dot: string; text: string; key: TranslationKey }> = {
-  active:    { dot: 'bg-[oklch(0.65_0.18_155)]', text: 'text-[oklch(0.78_0.16_155)]', key: 'govt.subsidies.status.active' },
-  paused:    { dot: 'bg-[oklch(0.78_0.16_85)]',  text: 'text-[oklch(0.85_0.14_85)]',  key: 'govt.subsidies.status.paused' },
+  active:    { dot: 'bg-[rgb(0, 173, 91)]', text: 'text-[rgb(78, 213, 137)]', key: 'govt.subsidies.status.active' },
+  paused:    { dot: 'bg-[rgb(230, 173, 0)]',  text: 'text-[rgb(248, 198, 85)]',  key: 'govt.subsidies.status.paused' },
   completed: { dot: 'bg-[var(--color-govt-text-tertiary)]', text: 'text-[var(--color-govt-text-tertiary)]', key: 'govt.subsidies.status.completed' },
-  proposed:  { dot: 'bg-[oklch(0.78_0.12_215)]', text: 'text-[oklch(0.82_0.10_215)]', key: 'govt.subsidies.status.proposed' },
+  proposed:  { dot: 'bg-[rgb(67, 202, 231)]', text: 'text-[rgb(112, 213, 237)]', key: 'govt.subsidies.status.proposed' },
 }
 
 const STATUS_ICON: Record<GovtSubsidyStatus, LucideIcon> = {
@@ -31,13 +31,13 @@ const STATUS_ICON: Record<GovtSubsidyStatus, LucideIcon> = {
 }
 
 const TYPE_COLOR: Record<GovtSubsidyType, string> = {
-  food:         'oklch(0.72 0.18 155)',
-  housing:      'oklch(0.72 0.15 215)',
-  employment:   'oklch(0.78 0.16 85)',
-  medical:      'oklch(0.74 0.18 10)',
-  education:    'oklch(0.72 0.15 265)',
-  emergency:    'oklch(0.72 0.20 35)',
-  agricultural: 'oklch(0.72 0.18 135)',
+  food:         'rgb(0, 196, 112)',
+  housing:      'rgb(0, 187, 223)',
+  employment:   'rgb(230, 173, 0)',
+  medical:      'rgb(255, 115, 145)',
+  education:    'rgb(118, 161, 255)',
+  emergency:    'rgb(255, 106, 67)',
+  agricultural: 'rgb(112, 188, 57)',
 }
 
 const TYPE_KEY: Record<GovtSubsidyType, TranslationKey> = {
@@ -80,7 +80,7 @@ export function SubsidyRow({ program, active, onSelect }: Props) {
           'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border',
           active ? 'border-[var(--color-govt-border-active)]' : 'border-[var(--color-govt-border)]',
         )}
-        style={{ background: 'oklch(0.06 0.008 252 / 0.65)', color: typeColor }}
+        style={{ background: 'rgba(0,1,1,0.65)', color: typeColor }}
       >
         <Sprout size={15} strokeWidth={1.9} />
       </span>

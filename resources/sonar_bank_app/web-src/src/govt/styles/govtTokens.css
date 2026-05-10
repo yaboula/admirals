@@ -6,51 +6,51 @@
 
 @theme {
   /* Authority Black ladder — near-pure black, blue DNA at 0.008-0.012 chroma */
-  --color-govt-abyss: oklch(0.04 0.008 252);
-  --color-govt-void: oklch(0.07 0.010 252);
-  --color-govt-base: oklch(0.10 0.012 252);
-  --color-govt-elevated: oklch(0.13 0.010 252);
-  --color-govt-glass: oklch(0.09 0.010 252 / 0.70);
-  --color-govt-glass-strong: oklch(0.12 0.010 252 / 0.88);
+  --color-govt-abyss: rgb(0, 0, 1);
+  --color-govt-void: rgb(1, 1, 2);
+  --color-govt-base: rgb(2, 3, 6);
+  --color-govt-elevated: rgb(5, 8, 11);
+  --color-govt-glass: rgba(1, 3, 4, 0.7);
+  --color-govt-glass-strong: rgba(4, 6, 9, 0.88);
 
   /* Blue accent — atmospheric use only, not fills */
-  --color-govt-accent: oklch(0.65 0.18 252);
-  --color-govt-accent-strong: oklch(0.72 0.20 250);
-  --color-govt-accent-light: oklch(0.80 0.15 245);
-  --color-govt-accent-glow: oklch(0.65 0.18 252 / 0.12);
-  --color-govt-accent-subtle: oklch(0.65 0.18 252 / 0.06);
-  --color-govt-accent-soft: oklch(0.65 0.18 252 / 0.10);
+  --color-govt-accent: rgb(34, 145, 248);
+  --color-govt-accent-strong: rgb(17, 168, 255);
+  --color-govt-accent-light: rgb(95, 198, 255);
+  --color-govt-accent-glow: rgba(34, 145, 248, 0.12);
+  --color-govt-accent-subtle: rgba(34, 145, 248, 0.06);
+  --color-govt-accent-soft: rgba(34, 145, 248, 0.1);
 
   /* Seal — cyan-leaning, for identity marks only */
-  --color-govt-seal: oklch(0.76 0.13 215);
-  --color-govt-seal-glow: oklch(0.76 0.13 215 / 0.18);
+  --color-govt-seal: rgb(30, 197, 228);
+  --color-govt-seal-glow: rgba(30, 197, 228, 0.18);
 
   /* Gold — IRS seal rope, stars and laurels. Scarce: seals + key KPIs only */
-  --color-govt-gold: oklch(0.76 0.14 82);
-  --color-govt-gold-deep: oklch(0.62 0.15 76);
-  --color-govt-gold-glow: oklch(0.76 0.14 82 / 0.28);
-  --color-govt-gold-ring: oklch(0.76 0.14 82 / 0.45);
-  --color-govt-gold-subtle: oklch(0.76 0.14 82 / 0.06);
+  --color-govt-gold: rgb(221, 167, 52);
+  --color-govt-gold-deep: rgb(184, 118, 0);
+  --color-govt-gold-glow: rgba(221, 167, 52, 0.28);
+  --color-govt-gold-ring: rgba(221, 167, 52, 0.45);
+  --color-govt-gold-subtle: rgba(221, 167, 52, 0.06);
 
   /* Borders — paper-thin, neutral */
-  --color-govt-border: oklch(1 0 0 / 0.07);
-  --color-govt-border-strong: oklch(1 0 0 / 0.12);
-  --color-govt-border-active: oklch(0.65 0.18 252 / 0.35);
+  --color-govt-border: rgba(255, 255, 255, 0.07);
+  --color-govt-border-strong: rgba(255, 255, 255, 0.12);
+  --color-govt-border-active: rgba(34, 145, 248, 0.35);
 
   /* Authority text — near-white, minimal chroma */
-  --color-govt-text-primary: oklch(0.96 0.003 252);
-  --color-govt-text-secondary: oklch(0.96 0.003 252 / 0.68);
-  --color-govt-text-tertiary: oklch(0.96 0.003 252 / 0.44);
-  --color-govt-text-quaternary: oklch(0.96 0.003 252 / 0.26);
+  --color-govt-text-primary: rgb(240, 242, 244);
+  --color-govt-text-secondary: rgba(240, 242, 244, 0.68);
+  --color-govt-text-tertiary: rgba(240, 242, 244, 0.44);
+  --color-govt-text-quaternary: rgba(240, 242, 244, 0.26);
 
   /* Gradients */
-  --gradient-govt-primary: linear-gradient(135deg, oklch(0.55 0.18 252), oklch(0.68 0.15 240));
-  --gradient-govt-primary-hover: linear-gradient(135deg, oklch(0.62 0.20 250), oklch(0.74 0.15 240));
+  --gradient-govt-primary: linear-gradient(135deg, rgb(0, 113, 214), rgb(26, 162, 235));
+  --gradient-govt-primary-hover: linear-gradient(135deg, rgb(0, 135, 248), rgb(57, 181, 255));
   --gradient-govt-hero:
-    radial-gradient(circle at 80% 20%, oklch(0.65 0.18 252 / 0.10), transparent 40%),
-    radial-gradient(circle at 18% 70%, oklch(0.76 0.13 215 / 0.05), transparent 44%),
-    radial-gradient(circle at 50% 0%, oklch(0.76 0.14 82 / 0.04), transparent 38%),
-    linear-gradient(160deg, oklch(0.09 0.012 252), oklch(0.04 0.008 252));
+    radial-gradient(circle at 80% 20%, rgba(34, 145, 248, 0.1), transparent 40%),
+    radial-gradient(circle at 18% 70%, rgba(30, 197, 228, 0.05), transparent 44%),
+    radial-gradient(circle at 50% 0%, rgba(221, 167, 52, 0.04), transparent 38%),
+    linear-gradient(160deg, rgb(1, 3, 5), rgb(0, 0, 1));
 }
 
 /* When GovtShell mounts, body inherits Authority Black */
@@ -71,8 +71,8 @@
   pointer-events: none;
   z-index: -1;
   background-image:
-    radial-gradient(ellipse 60% 40% at 78% 8%, oklch(0.65 0.18 252 / 0.06), transparent),
-    radial-gradient(ellipse 50% 35% at 12% 82%, oklch(0.76 0.13 215 / 0.03), transparent);
+    radial-gradient(ellipse 60% 40% at 78% 8%, rgba(34, 145, 248, 0.06), transparent),
+    radial-gradient(ellipse 50% 35% at 12% 82%, rgba(30, 197, 228, 0.03), transparent);
 }
 
 [data-theme='govt'] ::selection {

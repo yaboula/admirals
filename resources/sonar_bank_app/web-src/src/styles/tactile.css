@@ -131,10 +131,10 @@
   background:
     linear-gradient(
       180deg,
-      oklch(1 0 0 / 0.04) 0%,
+      rgba(255, 255, 255, 0.04) 0%,
       transparent 30%,
       transparent 70%,
-      oklch(0 0 0 / 0.12) 100%
+      rgba(0, 0, 0, 0.12) 100%
     ),
     var(--color-surface-card);
 }
@@ -203,9 +203,9 @@
   color: var(--color-text-primary);
   border: 1px solid var(--color-semantic-danger-deep);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.18),
-    inset 0 -1px 0 oklch(0 0 0 / 0.32),
-    0 4px 12px -2px oklch(0.62 0.21 25 / 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.32),
+    0 4px 12px -2px rgba(234, 60, 63, 0.4);
   transition:
     box-shadow 120ms var(--ease-spring-premium),
     transform 120ms var(--ease-spring-premium);
@@ -318,14 +318,14 @@
 /* —— Tier 1 · Primary deep — the marquee action (Transferir) —— */
 .tactile-action-btn--primary {
   color: var(--color-text-primary);
-  border: 1px solid oklch(0.65 0.22 40 / 0.36);
+  border: 1px solid rgba(246, 75, 0, 0.36);
   background:
-    linear-gradient(135deg, oklch(0.20 0.04 40) 0%, oklch(0.12 0.02 40) 100%);
+    linear-gradient(135deg, rgb(37, 15, 7) 0%, rgb(12, 4, 2) 100%);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.08),
-    inset 0 -1px 0 oklch(0 0 0 / 0.5),
-    0 8px 24px -8px oklch(0 0 0 / 0.6),
-    0 16px 32px -12px oklch(0.65 0.22 40 / 0.32);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 8px 24px -8px rgba(0, 0, 0, 0.6),
+    0 16px 32px -12px rgba(246, 75, 0, 0.32);
 }
 
 .tactile-action-btn--primary::before {
@@ -346,12 +346,12 @@
 }
 
 .tactile-action-btn--primary:hover:not(:disabled) {
-  border-color: oklch(0.65 0.22 40 / 0.56);
+  border-color: rgba(246, 75, 0, 0.56);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.10),
-    inset 0 -1px 0 oklch(0 0 0 / 0.5),
-    0 12px 28px -8px oklch(0 0 0 / 0.65),
-    0 20px 40px -12px oklch(0.65 0.22 40 / 0.48);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 12px 28px -8px rgba(0, 0, 0, 0.65),
+    0 20px 40px -12px rgba(246, 75, 0, 0.48);
 }
 
 .tactile-action-btn--primary:hover::before {
@@ -359,51 +359,51 @@
 }
 
 .tactile-action-btn--primary .tactile-action-icon {
-  background: linear-gradient(135deg, oklch(0.10 0.010 270 / 0.6) 0%, oklch(0.06 0.008 270 / 0.4) 100%);
+  background: linear-gradient(135deg, rgba(3, 3, 6, 0.6) 0%, rgba(1, 1, 1, 0.4) 100%);
   color: var(--color-brand-signal-orange-light);
-  border: 1px solid oklch(0.65 0.22 40 / 0.32);
+  border: 1px solid rgba(246, 75, 0, 0.32);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.06),
-    inset 0 -1px 0 oklch(0 0 0 / 0.4),
-    0 0 0 1px oklch(0 0 0 / 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
   transition:
     border-color 200ms var(--ease-in-out-smooth),
     box-shadow 200ms var(--ease-in-out-smooth);
 }
 
 .tactile-action-btn--primary:hover .tactile-action-icon {
-  border-color: oklch(0.65 0.22 40 / 0.55);
+  border-color: rgba(246, 75, 0, 0.55);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.08),
-    inset 0 -1px 0 oklch(0 0 0 / 0.4),
-    0 0 0 3px oklch(0.65 0.22 40 / 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 3px rgba(246, 75, 0, 0.12);
 }
 
 /* —— Tier 2 · Secondary deep (Depositar · in-flow) —— */
 .tactile-action-btn--secondary {
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-medium);
-  background: linear-gradient(135deg, oklch(0.12 0.010 270) 0%, oklch(0.08 0.008 270) 100%);
+  background: linear-gradient(135deg, rgb(5, 6, 9) 0%, rgb(1, 2, 3) 100%);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.06),
-    inset 0 -1px 0 oklch(0 0 0 / 0.4),
-    0 6px 16px -6px oklch(0 0 0 / 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 6px 16px -6px rgba(0, 0, 0, 0.5);
 }
 
 .tactile-action-btn--secondary:hover:not(:disabled) {
   border-color: var(--color-border-strong);
-  background: linear-gradient(135deg, oklch(0.14 0.012 270) 0%, oklch(0.10 0.010 270) 100%);
+  background: linear-gradient(135deg, rgb(7, 9, 14) 0%, rgb(3, 3, 6) 100%);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.08),
-    inset 0 -1px 0 oklch(0 0 0 / 0.4),
-    0 8px 20px -6px oklch(0 0 0 / 0.55),
-    0 0 0 1px oklch(0.65 0.22 40 / 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 8px 20px -6px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(246, 75, 0, 0.08);
 }
 
 .tactile-action-btn--secondary .tactile-action-icon {
-  background: linear-gradient(135deg, oklch(0.18 0.012 155) 0%, oklch(0.14 0.010 155) 100%);
-  color: oklch(0.72 0.16 155);
-  border: 1px solid oklch(0.72 0.16 155 / 0.24);
+  background: linear-gradient(135deg, rgb(13, 19, 15) 0%, rgb(6, 10, 7) 100%);
+  color: rgb(53, 193, 119);
+  border: 1px solid rgba(53, 193, 119, 0.24);
 }
 
 /* —— Tier 3 · Ghost deep (Retirar · out-flow) —— */
@@ -411,20 +411,20 @@
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border-subtle);
   background: transparent;
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .tactile-action-btn--ghost:hover:not(:disabled) {
   color: var(--color-text-primary);
   border-color: var(--color-border-medium);
-  background: oklch(1 0 0 / 0.03);
+  background: rgba(255, 255, 255, 0.03);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.06),
-    0 0 0 1px oklch(0.65 0.22 40 / 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(246, 75, 0, 0.06);
 }
 
 .tactile-action-btn--ghost .tactile-action-icon {
-  background: oklch(1 0 0 / 0.02);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--color-border-subtle);
   color: var(--color-text-secondary);
 }
@@ -466,18 +466,18 @@
    ---------------------------------------------------------------------------- */
 
 .sidebar-item {
-  color: oklch(0.62 0.012 270 / 0.78);
+  color: rgba(131, 134, 142, 0.78);
   background-color: transparent;
 }
 
 .sidebar-item:hover {
-  color: oklch(0.82 0.008 270);
-  background-color: oklch(1 0 0 / 0.05);
+  color: rgb(194, 196, 201);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-item.sidebar-item--active {
-  color: oklch(1 0 0);
-  background-color: oklch(1 0 0 / 0.06);
+  color: rgb(255, 255, 255);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 /* ----------------------------------------------------------------------------
@@ -510,7 +510,7 @@
   border-color: var(--color-border-brand-strong);
   box-shadow:
     var(--shadow-tactile-input-inset),
-    0 0 0 3px oklch(0.65 0.22 40 / 0.18);
+    0 0 0 3px rgba(246, 75, 0, 0.18);
 }
 
 .tactile-input:disabled {
@@ -522,7 +522,7 @@
   border-color: var(--color-semantic-danger-deep);
   box-shadow:
     var(--shadow-tactile-input-inset),
-    0 0 0 3px oklch(0.62 0.21 25 / 0.18);
+    0 0 0 3px rgba(234, 60, 63, 0.18);
 }
 
 /* ----------------------------------------------------------------------------
@@ -541,8 +541,8 @@
   white-space: nowrap;
   border: 1px solid var(--color-border-medium);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.06),
-    inset 0 -1px 0 oklch(0 0 0 / 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* ----------------------------------------------------------------------------
@@ -664,7 +664,7 @@
   height: 70vw;
   bottom: -40vh;
   right: -20vw;
-  background: radial-gradient(circle, oklch(0.65 0.22 40 / 0.14), transparent 58%);
+  background: radial-gradient(circle, rgba(246, 75, 0, 0.14), transparent 58%);
 }
 
 .tactile-aurora-blob.--magenta {
@@ -672,7 +672,7 @@
   height: 60vw;
   top: -30vh;
   left: -25vw;
-  background: radial-gradient(circle, oklch(0.65 0.22 40 / 0.08), transparent 62%);
+  background: radial-gradient(circle, rgba(246, 75, 0, 0.08), transparent 62%);
   animation-delay: -6s, -8s;
 }
 
@@ -681,7 +681,7 @@
   height: 50vw;
   top: 30%;
   right: 25%;
-  background: radial-gradient(circle, oklch(0.78 0.18 55 / 0.05), transparent 70%);
+  background: radial-gradient(circle, rgba(255, 147, 42, 0.05), transparent 70%);
   animation-delay: -12s, -16s;
 }
 
@@ -689,7 +689,7 @@
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 1px 1px, oklch(1 0 0 / 0.012) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.01) 1px, transparent 0);
   background-size: 3px 3px;
   pointer-events: none;
   mix-blend-mode: overlay;
@@ -724,12 +724,12 @@
   border-radius: inherit;
   background: conic-gradient(
     from var(--tactile-conic-angle),
-    oklch(0.65 0.22 40 / 0.55) 0deg,
-    oklch(0.78 0.18 55 / 0.30) 60deg,
+    rgba(246, 75, 0, 0.55) 0deg,
+    rgba(255, 147, 42, 0.3) 60deg,
     transparent 140deg,
     transparent 240deg,
-    oklch(0.65 0.22 40 / 0.30) 320deg,
-    oklch(0.65 0.22 40 / 0.55) 360deg
+    rgba(246, 75, 0, 0.3) 320deg,
+    rgba(246, 75, 0, 0.55) 360deg
   );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -752,11 +752,11 @@
   --tactile-scroll-progress: 0;
   --tactile-blur-amount: calc(8px + var(--tactile-scroll-progress) * 24px);
   --tactile-bg-alpha: calc(0.10 + var(--tactile-scroll-progress) * 0.55);
-  background-color: oklch(0.04 0.005 270 / var(--tactile-bg-alpha));
+  background-color: rgba(10, 10, 11, var(--tactile-bg-alpha));
   backdrop-filter: blur(var(--tactile-blur-amount)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--tactile-blur-amount)) saturate(180%);
   border-bottom: 1px solid
-    oklch(1 0 0 / calc(0.04 + var(--tactile-scroll-progress) * 0.06));
+    rgba(255, 255, 255, calc(0.04 + var(--tactile-scroll-progress) * 0.06));
   transition: background-color 200ms var(--ease-in-out-smooth),
               border-color 200ms var(--ease-in-out-smooth);
   will-change: backdrop-filter, background-color;
@@ -790,7 +790,7 @@
   border-radius: inherit;
   background: radial-gradient(
     600px circle at var(--tactile-spotlight-x) var(--tactile-spotlight-y),
-    oklch(0.65 0.22 40 / 0.18),
+    rgba(246, 75, 0, 0.18),
     transparent 45%
   );
   opacity: var(--tactile-spotlight-opacity);
@@ -886,7 +886,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    oklch(0.65 0.22 40 / 0.32) 50%,
+    rgba(246, 75, 0, 0.32) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -915,5 +915,5 @@
   height: 60%;
   border-radius: var(--radius-full);
   background: var(--gradient-primary);
-  box-shadow: 0 0 12px oklch(0.65 0.22 40 / 0.6);
+  box-shadow: 0 0 12px rgba(246, 75, 0, 0.6);
 }

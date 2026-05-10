@@ -29,7 +29,7 @@ export function TransactionsHero({
   filteredCount,
 }: TransactionsHeroProps) {
   const { signedMoney, t } = useI18n()
-  const own = account?.iban.replace(/\s+/g, '')
+  const own = compactIban(account?.iban)
   const totals = useMemo(() => computeTotals(transactions, own), [transactions, own])
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
 
@@ -44,7 +44,7 @@ export function TransactionsHero({
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 12% 0%, oklch(1 0 0 / 0.06), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.025), transparent 60%)',
+            'radial-gradient(circle at 12% 0%, rgba(255,255,255,0.06), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.03), transparent 60%)',
         }}
       />
       <div className="relative grid grid-cols-[220px_minmax(0,1fr)] gap-4 p-4 2xl:grid-cols-[260px_minmax(0,1fr)] 2xl:p-5">
@@ -71,8 +71,8 @@ export function TransactionsHero({
             icon={<TrendingUp size={14} strokeWidth={2.2} />}
             value={totals.income}
             hidden={streamerMode}
-            color="oklch(0.78 0.16 155)"
-            accentBg="oklch(0.72 0.16 155 / 0.10)"
+            color="rgb(78, 213, 137)"
+            accentBg="rgba(53,193,119,0.1)"
             tone="positive"
             signedMoney={signedMoney}
           />
@@ -81,8 +81,8 @@ export function TransactionsHero({
             icon={<TrendingDown size={14} strokeWidth={2.2} />}
             value={totals.expense}
             hidden={streamerMode}
-            color="oklch(0.74 0.20 25)"
-            accentBg="oklch(0.68 0.20 25 / 0.10)"
+            color="rgb(255, 108, 103)"
+            accentBg="rgba(252,88,85,0.1)"
             tone="negative"
             signedMoney={signedMoney}
           />
@@ -91,8 +91,8 @@ export function TransactionsHero({
             icon={<Sigma size={14} strokeWidth={2.2} />}
             value={totals.net}
             hidden={streamerMode}
-            color={totals.net >= 0 ? 'oklch(0.78 0.16 155)' : 'oklch(0.74 0.20 25)'}
-            accentBg="oklch(1 0 0 / 0.06)"
+            color={totals.net >= 0 ? 'rgb(78, 213, 137)' : 'rgb(255, 108, 103)'}
+            accentBg="rgba(255,255,255,0.06)"
             tone={totals.net >= 0 ? 'positive' : 'negative'}
             signedMoney={signedMoney}
             highlighted
@@ -127,9 +127,9 @@ function Stat({ label, icon, value, hidden, color, accentBg, tone, signedMoney, 
         highlighted && 'tactile-card',
       )}
       style={{
-        background: highlighted ? 'oklch(1 0 0 / 0.055)' : 'oklch(1 0 0 / 0.032)',
-        borderColor: highlighted ? 'oklch(1 0 0 / 0.12)' : 'oklch(1 0 0 / 0.07)',
-        boxShadow: highlighted ? 'inset 0 1px 0 oklch(1 0 0 / 0.08)' : undefined,
+        background: highlighted ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
+        borderColor: highlighted ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)',
+        boxShadow: highlighted ? 'inset 0 1px 0 rgba(255,255,255,0.08)' : undefined,
       }}
     >
       <div className="flex items-center gap-2">
@@ -204,8 +204,8 @@ function computeTotals(
   let expense = 0
   for (const t of transactions) {
     if (t.status !== 'committed' && t.status !== 'pending') continue
-    const fromCompact = t.from_iban.replace(/\s+/g, '')
-    const toCompact = t.to_iban.replace(/\s+/g, '')
+    const fromCompact = compactIban(t.from_iban)
+    const toCompact = compactIban(t.to_iban)
     const isOutgoing = ownIban
       ? fromCompact === ownIban && toCompact !== ownIban
       : t.direction === 'out'
@@ -213,4 +213,8 @@ function computeTotals(
     else income += t.amount_minor / 100
   }
   return { income, expense, net: income - expense }
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }

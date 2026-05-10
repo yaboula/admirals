@@ -47,7 +47,7 @@ export function Transactions() {
   const [selected, setSelected] = useState<Transaction | null>(null)
 
   const primaryAccount = data?.accounts[0]
-  const ownIban = primaryAccount?.iban.replace(/\s+/g, '')
+  const ownIban = compactIban(primaryAccount?.iban)
   const allTransactions = data?.recent_transactions ?? []
 
   const filtered = useMemo(
@@ -168,7 +168,7 @@ function TransactionInsightPanel({
 
   const copyIban = async (): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(meta.counterpartIban.replace(/\s+/g, ''))
+      await navigator.clipboard.writeText(compactIban(meta.counterpartIban))
       sfx.coin_clink()
       toast.success(t('transactions.ibanCopied'), meta.name)
     } catch {
@@ -183,7 +183,7 @@ function TransactionInsightPanel({
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 78% 0%, oklch(1 0 0 / 0.08), transparent 34%), linear-gradient(180deg, oklch(0.085 0.014 40 / 0.78), oklch(0.032 0.008 35 / 0.92))',
+            'radial-gradient(circle at 78% 0%, rgba(255,255,255,0.08), transparent 34%), linear-gradient(180deg, rgba(4,1,1,0.78), rgba(0,0,0,0.92))',
         }}
       />
       <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
@@ -202,7 +202,7 @@ function TransactionInsightPanel({
               <X size={15} strokeWidth={2} />
             </button>
           ) : (
-            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/54" style={{ background: 'oklch(1 0 0 / 0.08)' }}>
+            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/54" style={{ background: 'rgba(255,255,255,0.08)' }}>
               {t('transactions.recent')}
             </span>
           )}
@@ -214,9 +214,9 @@ function TransactionInsightPanel({
             <span
               className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full"
               style={{
-                background: 'oklch(0.05 0.006 35)',
-                border: '1px solid oklch(1 0 0 / 0.10)',
-                color: meta.outgoing ? 'oklch(0.74 0.16 25)' : 'oklch(0.78 0.16 155)',
+                background: 'rgb(1, 0, 0)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: meta.outgoing ? 'rgb(255, 126, 118)' : 'rgb(78, 213, 137)',
               }}
             >
               {meta.outgoing ? <ArrowUpRight size={14} strokeWidth={2.4} /> : <ArrowDownLeft size={14} strokeWidth={2.4} />}
@@ -232,7 +232,7 @@ function TransactionInsightPanel({
           <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">{t('transactions.amount')}</span>
           <span
             className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums"
-            style={{ color: meta.outgoing ? 'white' : 'oklch(0.78 0.16 155)' }}
+            style={{ color: meta.outgoing ? 'white' : 'rgb(78, 213, 137)' }}
           >
             {streamerMode ? maskMoneyDisplay() : signedMoney((meta.outgoing ? -1 : 1) * tx.amount_minor / 100)}
           </span>
@@ -279,12 +279,12 @@ function PanelRow({
 }
 
 function getTransactionMeta(tx: Transaction, ownIban: string | undefined, t: (key: TranslationKey) => string) {
-  const fromCompact = tx.from_iban.replace(/\s+/g, '')
-  const toCompact = tx.to_iban.replace(/\s+/g, '')
+  const fromCompact = compactIban(tx.from_iban)
+  const toCompact = compactIban(tx.to_iban)
   const outgoing = ownIban
     ? fromCompact === ownIban && toCompact !== ownIban
     : tx.direction === 'out'
-  const counterpartIban = outgoing ? tx.to_iban : tx.from_iban
+  const counterpartIban = String((outgoing ? tx.to_iban : tx.from_iban) ?? '')
   const name = getMockAliasForIban(counterpartIban) ?? (outgoing ? t('accounts.beneficiary') : t('accounts.sender'))
   return { outgoing, counterpartIban, name }
 }
@@ -326,8 +326,8 @@ function filterTransactions(
     if (t.timestamp_ms < cutoffMs) return false
 
     if (args.direction !== 'all') {
-      const fromCompact = t.from_iban.replace(/\s+/g, '')
-      const toCompact = t.to_iban.replace(/\s+/g, '')
+      const fromCompact = compactIban(t.from_iban)
+      const toCompact = compactIban(t.to_iban)
       const isOut = ownIban
         ? fromCompact === ownIban && toCompact !== ownIban
         : t.direction === 'out'
@@ -339,12 +339,12 @@ function filterTransactions(
 
     if (q) {
       const isOut = ownIban
-        ? t.from_iban.replace(/\s+/g, '') === ownIban
+        ? compactIban(t.from_iban) === ownIban
         : t.direction === 'out'
-      const counterpartIban = isOut ? t.to_iban : t.from_iban
+      const counterpartIban = String((isOut ? t.to_iban : t.from_iban) ?? '')
       const counterpartName = normalizeSearch(getMockAliasForIban(counterpartIban) ?? '')
       const reason = normalizeSearch(t.reason ?? '')
-      const ibanCompact = normalizeSearch(counterpartIban.replace(/\s+/g, ''))
+      const ibanCompact = normalizeSearch(compactIban(counterpartIban))
       const ibanFormatted = normalizeSearch(counterpartIban)
       if (!counterpartName.includes(q) && !reason.includes(q) && !ibanCompact.includes(q) && !ibanFormatted.includes(q)) {
         return false
@@ -355,10 +355,14 @@ function filterTransactions(
   })
 }
 
-function normalizeSearch(value: string): string {
-  return value
+function normalizeSearch(value: string | undefined | null): string {
+  return String(value ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim()
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }

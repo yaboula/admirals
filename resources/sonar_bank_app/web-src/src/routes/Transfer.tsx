@@ -249,7 +249,7 @@ function TransferHero({
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 12% 0%, oklch(0.70 0.22 40 / 0.13), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 54%)',
+            'radial-gradient(circle at 12% 0%, rgba(246,75,0,0.13), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 54%)',
         }}
       />
       <div className="relative flex items-center justify-between gap-5 p-5 2xl:p-6">
@@ -436,7 +436,7 @@ function AmountInsight({ account, amountMinor }: { account: Account | null; amou
         <div className="h-full rounded-full bg-white/35" style={{ width: `${Math.round(risk * 100)}%` }} />
       </div>
       {amountMinor && isLargeTransfer(amountMinor) ? (
-        <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] p-3 text-xs text-amber-100 leading-relaxed">
+        <div className="rounded-2xl border border-[var(--color-semantic-warning-deep)] bg-[var(--color-semantic-warning-glow)] p-3 text-xs text-[var(--color-semantic-warning-deep)] leading-relaxed">
           {t('transfer.largeAmountWarning')}
         </div>
       ) : null}
@@ -645,13 +645,13 @@ function LargeTransferWarning({ amount }: { amount: number }) {
   const { t, money } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   return (
-    <Card variant="elevated" padding="md" className="border-amber-300/20 bg-amber-300/[0.06]">
+    <Card variant="elevated" padding="md" className="border-[var(--color-semantic-warning-deep)] bg-[var(--color-semantic-warning-glow)]">
       <CardContent className="gap-3">
-        <div className="flex items-center gap-2 text-amber-100">
+        <div className="flex items-center gap-2 text-[var(--color-semantic-warning-deep)]">
           <AlertTriangle size={17} strokeWidth={2} />
           <span className="text-sm font-semibold">{t('transfer.confirmationReinforced')}</span>
         </div>
-        <p className="text-xs text-amber-100/80 leading-relaxed">
+        <p className="text-xs text-[var(--color-text-primary)] leading-relaxed">
           {t('transfer.confirmationDescription').replace('{amount}', streamerMode ? maskMoneyDisplay() : money(amount / 100))}
         </p>
       </CardContent>
@@ -916,7 +916,7 @@ function TransferRail({
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 84% 0%, oklch(1 0 0 / 0.08), transparent 34%), linear-gradient(180deg, oklch(0.085 0.014 40 / 0.86), oklch(0.035 0.008 35 / 0.92))',
+              'radial-gradient(circle at 84% 0%, rgba(255,255,255,0.08), transparent 34%), linear-gradient(180deg, rgba(4,1,1,0.86), rgba(0,0,0,0.92))',
           }}
         />
         <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
@@ -925,7 +925,7 @@ function TransferRail({
               <Sparkles size={16} className="text-white/72" />
               <CardTitle className="text-base text-white">{t('transfer.railTitle')}</CardTitle>
             </div>
-            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/68" style={{ background: 'oklch(1 0 0 / 0.10)' }}>
+            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/68" style={{ background: 'rgba(255,255,255,0.1)' }}>
               {t('transfer.secureBadge')}
             </span>
           </div>
@@ -970,9 +970,9 @@ function RailCheck({ done, label }: { done: boolean; label: string }) {
       <span
         className="inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px]"
         style={{
-          borderColor: done ? 'oklch(0.78 0.16 150 / 0.42)' : 'oklch(1 0 0 / 0.12)',
-          background: done ? 'oklch(0.78 0.16 150 / 0.12)' : 'transparent',
-          color: done ? 'oklch(0.84 0.12 150)' : 'oklch(1 0 0 / 0.36)',
+          borderColor: done ? 'rgba(95,211,127,0.42)' : 'rgba(255,255,255,0.12)',
+          background: done ? 'rgba(95,211,127,0.12)' : 'transparent',
+          color: done ? 'rgb(143, 225, 161)' : 'rgba(255,255,255,0.36)',
         }}
       >
         {done ? <Check size={12} strokeWidth={2.6} /> : '·'}

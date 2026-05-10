@@ -17,9 +17,9 @@ interface Props {
 }
 
 const STATUS_TONE: Record<GovtBusinessStatus, { dot: string; text: string; key: TranslationKey }> = {
-  active:      { dot: 'bg-[oklch(0.65_0.18_155)]', text: 'text-[oklch(0.78_0.16_155)]', key: 'govt.business.status.active' },
-  frozen:      { dot: 'bg-[oklch(0.72_0.14_215)]', text: 'text-[oklch(0.80_0.12_215)]', key: 'govt.business.status.frozen' },
-  liquidating: { dot: 'bg-[oklch(0.78_0.16_85)]',  text: 'text-[oklch(0.85_0.14_85)]',  key: 'govt.business.status.liquidating' },
+  active:      { dot: 'bg-[rgb(0, 173, 91)]', text: 'text-[rgb(78, 213, 137)]', key: 'govt.business.status.active' },
+  frozen:      { dot: 'bg-[rgb(0, 185, 219)]', text: 'text-[rgb(76, 209, 238)]', key: 'govt.business.status.frozen' },
+  liquidating: { dot: 'bg-[rgb(230, 173, 0)]',  text: 'text-[rgb(248, 198, 85)]',  key: 'govt.business.status.liquidating' },
   dissolved:   { dot: 'bg-[var(--color-govt-text-tertiary)]', text: 'text-[var(--color-govt-text-tertiary)]', key: 'govt.business.status.dissolved' },
 }
 
@@ -31,10 +31,10 @@ const STATUS_ICON: Record<GovtBusinessStatus, LucideIcon> = {
 }
 
 const RISK_BAR: Record<GovtRiskLevel, { color: string; widthClass: string }> = {
-  low:      { color: 'oklch(0.65 0.18 155)', widthClass: 'w-1/4' },
-  medium:   { color: 'oklch(0.78 0.16 85)',  widthClass: 'w-2/4' },
-  high:     { color: 'oklch(0.72 0.20 35)',  widthClass: 'w-3/4' },
-  critical: { color: 'oklch(0.62 0.21 25)',  widthClass: 'w-full' },
+  low:      { color: 'rgb(0, 173, 91)', widthClass: 'w-1/4' },
+  medium:   { color: 'rgb(230, 173, 0)',  widthClass: 'w-2/4' },
+  high:     { color: 'rgb(255, 106, 67)',  widthClass: 'w-3/4' },
+  critical: { color: 'rgb(234, 60, 63)',  widthClass: 'w-full' },
 }
 
 const SECTOR_LABEL_KEY: Record<string, TranslationKey> = {
@@ -81,7 +81,7 @@ export function BusinessRow({ company, active, onSelect }: Props) {
           'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border',
           active ? 'border-[var(--color-govt-border-active)]' : 'border-[var(--color-govt-border)]',
         )}
-        style={{ background: 'oklch(0.06 0.008 252 / 0.65)' }}
+        style={{ background: 'rgba(0,1,1,0.65)' }}
       >
         <StatusIcon size={15} strokeWidth={1.9} className={tone.text} />
       </span>

@@ -73,7 +73,7 @@ export function StatusBadge() {
             role="tooltip"
             className="absolute right-0 top-[calc(100%+8px)] z-[60] w-64 rounded-lg p-3 text-xs text-text-secondary"
             style={{
-              background: 'oklch(0.18 0.014 270)',
+              background: 'rgb(15, 17, 24)',
               border: '1px solid var(--color-border-medium)',
               boxShadow: 'var(--shadow-tooltip)',
             }}

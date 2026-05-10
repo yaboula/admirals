@@ -251,8 +251,8 @@ function CarouselButton({
         'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary',
       )}
       style={{
-        background: 'oklch(1 0 0 / 0.04)',
-        border: '1px solid oklch(1 0 0 / 0.08)',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
       }}
     >
       <Icon size={16} strokeWidth={2} />
@@ -288,7 +288,7 @@ function Dots({
             style={{
               background: isActive
                 ? 'var(--gradient-primary)'
-                : 'oklch(1 0 0 / 0.18)',
+                : 'rgba(255,255,255,0.18)',
             }}
           />
         )
@@ -307,8 +307,8 @@ function CarouselEmpty({ className }: { className?: string }) {
       )}
       style={{
         aspectRatio: '1.586 / 1',
-        background: 'oklch(1 0 0 / 0.02)',
-        border: '1px dashed oklch(1 0 0 / 0.10)',
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px dashed rgba(255,255,255,0.1)',
       }}
     >
       <p className="text-sm font-semibold text-text-primary mb-1">

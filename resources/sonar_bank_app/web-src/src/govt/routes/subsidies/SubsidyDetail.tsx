@@ -27,13 +27,13 @@ const STATUS_TONE: Record<GovtSubsidyStatus, { tone: 'success' | 'warning' | 'ne
 }
 
 const TYPE_COLOR: Record<GovtSubsidyType, string> = {
-  food:         'oklch(0.72 0.18 155)',
-  housing:      'oklch(0.72 0.15 215)',
-  employment:   'oklch(0.78 0.16 85)',
-  medical:      'oklch(0.74 0.18 10)',
-  education:    'oklch(0.72 0.15 265)',
-  emergency:    'oklch(0.72 0.20 35)',
-  agricultural: 'oklch(0.72 0.18 135)',
+  food:         'rgb(0, 196, 112)',
+  housing:      'rgb(0, 187, 223)',
+  employment:   'rgb(230, 173, 0)',
+  medical:      'rgb(255, 115, 145)',
+  education:    'rgb(118, 161, 255)',
+  emergency:    'rgb(255, 106, 67)',
+  agricultural: 'rgb(112, 188, 57)',
 }
 
 const TYPE_KEY: Record<GovtSubsidyType, TranslationKey> = {
@@ -47,9 +47,9 @@ const TYPE_KEY: Record<GovtSubsidyType, TranslationKey> = {
 }
 
 const DISB_STATUS_DOT: Record<string, string> = {
-  confirmed: 'bg-[oklch(0.65_0.18_155)]',
-  pending:   'bg-[oklch(0.78_0.16_85)]',
-  reversed:  'bg-[oklch(0.72_0.20_35)]',
+  confirmed: 'bg-[rgb(0, 173, 91)]',
+  pending:   'bg-[rgb(230, 173, 0)]',
+  reversed:  'bg-[rgb(255, 106, 67)]',
 }
 const DISB_STATUS_KEY: Record<string, TranslationKey> = {
   confirmed: 'govt.subsidies.disbursement.confirmed',
@@ -79,7 +79,7 @@ export function SubsidyDetail({ detail, isFetching }: Props) {
             aria-hidden
             className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2"
             style={{
-              background: 'radial-gradient(circle at 50% 30%, oklch(0.18 0.018 252), oklch(0.08 0.010 252))',
+              background: 'radial-gradient(circle at 50% 30%, rgb(12, 18, 25), rgb(1, 2, 3))',
               borderColor: 'var(--color-govt-border-strong)',
               color: typeColor,
             }}
@@ -131,7 +131,7 @@ export function SubsidyDetail({ detail, isFetching }: Props) {
           <Stat label={t('govt.subsidies.detail.startDate')} value={dateTime(detail.startDate, { dateStyle: 'medium' })} />
         </div>
         {detail.description ? (
-          <p className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-3 text-[12px] leading-relaxed text-[var(--color-govt-text-secondary)]">
+          <p className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-3 text-[12px] leading-relaxed text-[var(--color-govt-text-secondary)]">
             {detail.description}
           </p>
         ) : null}
@@ -148,7 +148,7 @@ export function SubsidyDetail({ detail, isFetching }: Props) {
               return (
                 <li
                   key={d.id}
-                  className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-2.5"
+                  className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-2.5"
                 >
                   <span
                     aria-hidden
@@ -164,7 +164,7 @@ export function SubsidyDetail({ detail, isFetching }: Props) {
                     </p>
                   </div>
                   <div className="flex flex-shrink-0 flex-col items-end gap-1">
-                    <span className="text-[12px] font-semibold tabular-nums text-[oklch(0.75_0.17_155)]">{amtDisplay}</span>
+                    <span className="text-[12px] font-semibold tabular-nums text-[rgb(51, 204, 125)]">{amtDisplay}</span>
                     <span className="flex items-center gap-1 text-[9px] uppercase tracking-[0.12em] text-[var(--color-govt-text-tertiary)]">
                       <span className={cn('h-1.5 w-1.5 rounded-full', DISB_STATUS_DOT[d.status])} aria-hidden />
                       {t(DISB_STATUS_KEY[d.status] ?? 'govt.subsidies.disbursement.confirmed')}
@@ -212,9 +212,9 @@ function SectionHeader({ icon: Icon, label }: { icon: LucideIcon; label: string 
 
 function Stat({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'neutral' | 'success' | 'warning' }) {
   const colorClass =
-    tone === 'success' ? 'text-[oklch(0.78_0.16_155)]' : tone === 'warning' ? 'text-[oklch(0.85_0.14_85)]' : 'text-[var(--color-govt-text-primary)]'
+    tone === 'success' ? 'text-[rgb(78, 213, 137)]' : tone === 'warning' ? 'text-[rgb(248, 198, 85)]' : 'text-[var(--color-govt-text-primary)]'
   return (
-    <div className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-3">
+    <div className="rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-3">
       <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
       <span className={cn('mt-1 block truncate text-sm font-semibold tabular-nums', colorClass)}>{value}</span>
     </div>

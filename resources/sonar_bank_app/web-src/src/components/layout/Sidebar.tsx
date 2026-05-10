@@ -74,9 +74,9 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
       <div
         className="h-full w-full rounded-[2rem] flex flex-col items-center overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, oklch(0.08 0.018 45 / 0.86), oklch(0.045 0.010 40 / 0.78))',
-          border: '1px solid oklch(1 0 0 / 0.07)',
-          boxShadow: 'inset 0 1px 0 oklch(0.76 0.14 82 / 0.14), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
+          background: 'linear-gradient(180deg, rgba(4,1,0,0.86), rgba(1,0,0,0.78))',
+          border: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: 'inset 0 1px 0 rgba(221,167,52,0.14), 0 28px 64px -44px rgba(0,0,0,0.95)',
           backdropFilter: 'blur(24px) saturate(150%)',
           WebkitBackdropFilter: 'blur(24px) saturate(150%)',
         }}
@@ -85,8 +85,8 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
         <div
           className="relative flex h-11 w-11 items-center justify-center rounded-full"
           style={{
-            border: '1.5px solid oklch(0.76 0.14 82 / 0.38)',
-            boxShadow: '0 0 14px oklch(0.76 0.14 82 / 0.22)',
+            border: '1.5px solid rgba(221,167,52,0.38)',
+            boxShadow: '0 0 14px rgba(221,167,52,0.22)',
           }}
           aria-hidden
         >
@@ -94,7 +94,7 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
             src={sonarMonogramUrl}
             alt=""
             className="h-[42px] w-[42px] max-w-none object-contain"
-            style={{ filter: 'drop-shadow(0 0 10px oklch(0.72 0.22 40 / 0.70)) drop-shadow(0 0 18px oklch(0.76 0.14 82 / 0.30))' }}
+            style={{ filter: 'drop-shadow(0 0 10px rgba(255,100,19,0.7)) drop-shadow(0 0 18px rgba(221,167,52,0.3))' }}
           />
         </div>
       </div>
@@ -102,7 +102,7 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
       <div
         aria-hidden
         className="w-8 h-px"
-        style={{ background: 'oklch(0.76 0.14 82 / 0.28)' }}
+        style={{ background: 'rgba(221,167,52,0.28)' }}
       />
 
       <nav className="flex-1 py-4 flex flex-col items-center gap-2.5">
@@ -142,7 +142,7 @@ function SidebarItem({ item }: { item: NavItem }) {
           'cursor-not-allowed opacity-50 select-none',
         )}
         title={item.disabled ? `${label} (${t('nav.comingSoon')})` : `${label} (${t('nav.permissionRequired')})`}
-        style={{ color: 'oklch(0.55 0.01 270 / 0.6)' }}
+        style={{ color: 'rgba(111,113,120,0.6)' }}
       >
         <Icon size={18} strokeWidth={1.8} className="shrink-0" />
       </div>

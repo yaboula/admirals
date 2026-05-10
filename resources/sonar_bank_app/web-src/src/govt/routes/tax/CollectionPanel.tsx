@@ -17,10 +17,10 @@ interface Props {
 }
 
 const TIER_COLORS: Record<GovtTaxTierId, string> = {
-  basic: 'oklch(0.72 0.17 155)',
-  standard: 'oklch(0.78 0.16 108)',
-  premium: 'oklch(0.78 0.16 60)',
-  elite: 'oklch(0.70 0.20 30)',
+  basic: 'rgb(34, 195, 115)',
+  standard: 'rgb(194, 190, 35)',
+  premium: 'rgb(255, 156, 59)',
+  elite: 'rgb(255, 97, 77)',
 }
 
 export function CollectionPanel({ stats, brackets, draftRates }: Props) {
@@ -81,23 +81,23 @@ function CollectionStats({
   const arcOffset = arcCircumference * (1 - coverage / 100)
 
   return (
-    <div className="rounded-2xl border p-4" style={{ background: 'oklch(0.07 0.010 252)', borderColor: 'oklch(0.15 0.008 252)' }}>
+    <div className="rounded-2xl border p-4" style={{ background: 'rgb(1, 1, 2)', borderColor: 'rgb(9, 11, 14)' }}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'oklch(0.42 0.008 252)' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'rgb(74, 77, 81)' }}>
             {t('govt.tax.stats.collected')}
           </p>
           <div className="mt-0.5 flex items-baseline gap-1.5">
-            <span className="text-[10px]" style={{ color: 'oklch(0.45 0.008 252)' }}>$</span>
+            <span className="text-[10px]" style={{ color: 'rgb(82, 86, 90)' }}>$</span>
             <span
               ref={countRef}
               className="text-[clamp(1.6rem,3.5vw,2.4rem)] font-extralight leading-none tracking-[-0.04em] tabular-nums"
-              style={{ color: 'oklch(0.96 0.004 252)' }}
+              style={{ color: 'rgb(240, 242, 244)' }}
             >
               {(rendered / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </span>
           </div>
-          <p className="mt-1 text-[11px]" style={{ color: 'oklch(0.48 0.010 252)' }}>
+          <p className="mt-1 text-[11px]" style={{ color: 'rgb(90, 94, 99)' }}>
             {`${t('govt.tax.stats.of')} ${(totalObligation / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })} ${t('govt.tax.stats.obligation')}`}
           </p>
         </div>
@@ -106,29 +106,29 @@ function CollectionStats({
           <svg width={68} height={68} viewBox="0 0 68 68" aria-hidden>
             <defs>
               <radialGradient id="arc-glow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="oklch(0.65 0.18 155 / 0.18)" />
+                <stop offset="0%" stopColor="rgba(0,173,91,0.18)" />
                 <stop offset="100%" stopColor="transparent" />
               </radialGradient>
             </defs>
             <circle fill="url(#arc-glow)" cx={arcC} cy={arcC} r={arcR + 4} />
-            <circle cx={arcC} cy={arcC} r={arcR} fill="none" stroke="oklch(0.15 0.010 252)" strokeWidth={4} />
+            <circle cx={arcC} cy={arcC} r={arcR} fill="none" stroke="rgb(8, 11, 15)" strokeWidth={4} />
             <circle
               cx={arcC} cy={arcC} r={arcR}
-              fill="none" stroke="oklch(0.72 0.17 155)" strokeWidth={4}
+              fill="none" stroke="rgb(34, 195, 115)" strokeWidth={4}
               strokeDasharray={arcCircumference}
               strokeDashoffset={arcOffset}
               strokeLinecap="round"
               transform={`rotate(-90 ${arcC} ${arcC})`}
               style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1)' }}
             />
-            <text x={arcC} y={arcC + 1} textAnchor="middle" dominantBaseline="middle" fontSize={12} fontWeight={600} fill="oklch(0.92 0.004 252)">
+            <text x={arcC} y={arcC + 1} textAnchor="middle" dominantBaseline="middle" fontSize={12} fontWeight={600} fill="rgb(227, 229, 231)">
               {`${pct}%`}
             </text>
           </svg>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2 border-t pt-3" style={{ borderColor: 'oklch(0.13 0.008 252)' }}>
+      <div className="mt-3 grid grid-cols-3 gap-2 border-t pt-3" style={{ borderColor: 'rgb(5, 7, 10)' }}>
         <MiniStat label={t('govt.tax.stats.today')} value={`$${(todayCollected / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`} />
         <MiniStat label={t('govt.tax.stats.daysLeft')} value={String(Math.max(0, daysRemaining))} />
         <MiniStat label={t('govt.tax.stats.cycleId')} value={cycleId} mono />
@@ -140,10 +140,10 @@ function CollectionStats({
 function MiniStat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'oklch(0.40 0.008 252)' }}>{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgb(69, 72, 76)' }}>{label}</p>
       <p
         className={`mt-0.5 truncate text-sm font-semibold ${mono ? 'font-mono text-[11px]' : ''}`}
-        style={{ color: 'oklch(0.82 0.008 252)' }}
+        style={{ color: 'rgb(192, 196, 201)' }}
       >
         {value}
       </p>
@@ -190,20 +190,20 @@ function BracketStaircase({ brackets, draftRates }: { brackets: GovtTaxBracket[]
   const isDraft = brackets.some((b) => (draftRates?.get(b.id) ?? b.rate) !== b.rate)
 
   return (
-    <div className="rounded-2xl border p-4" style={{ background: 'oklch(0.07 0.010 252)', borderColor: 'oklch(0.15 0.008 252)' }}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'oklch(0.42 0.008 252)' }}>
+    <div className="rounded-2xl border p-4" style={{ background: 'rgb(1, 1, 2)', borderColor: 'rgb(9, 11, 14)' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'rgb(74, 77, 81)' }}>
         {t('govt.tax.staircase.title')}
       </p>
-      <div className="mt-2 overflow-hidden rounded-xl" style={{ background: 'oklch(0.05 0.008 252)' }}>
+      <div className="mt-2 overflow-hidden rounded-xl" style={{ background: 'rgb(0, 0, 1)' }}>
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ maxHeight: 130 }} aria-hidden>
           <defs>
             <radialGradient id="staircase-atm" cx="50%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="oklch(0.65 0.18 252 / 0.20)" />
+              <stop offset="0%" stopColor="rgba(34,145,248,0.2)" />
               <stop offset="100%" stopColor="transparent" />
             </radialGradient>
             <linearGradient id="staircase-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="oklch(0.65 0.18 252 / 0.22)" />
-              <stop offset="100%" stopColor="oklch(0.65 0.18 252 / 0.04)" />
+              <stop offset="0%" stopColor="rgba(34,145,248,0.22)" />
+              <stop offset="100%" stopColor="rgba(34,145,248,0.04)" />
             </linearGradient>
           </defs>
 
@@ -213,19 +213,19 @@ function BracketStaircase({ brackets, draftRates }: { brackets: GovtTaxBracket[]
             <g key={rate}>
               <line
                 x1={PAD_L} y1={yOf(rate)} x2={W - PAD_R} y2={yOf(rate)}
-                stroke="oklch(0.18 0.010 252)" strokeWidth={0.5} strokeDasharray="2 4"
+                stroke="rgb(14, 18, 22)" strokeWidth={0.5} strokeDasharray="2 4"
               />
-              <text x={PAD_L - 4} y={yOf(rate)} textAnchor="end" dominantBaseline="middle" fontSize={8} fill="oklch(0.38 0.008 252)">
+              <text x={PAD_L - 4} y={yOf(rate)} textAnchor="end" dominantBaseline="middle" fontSize={8} fill="rgb(63, 67, 71)">
                 {`${rate}%`}
               </text>
             </g>
           ))}
 
           {isDraft ? (
-            <path d={staircasePathOriginal} fill="oklch(0.65 0.18 252 / 0.06)" stroke="oklch(0.65 0.18 252 / 0.25)" strokeWidth={1} strokeDasharray="3 3" />
+            <path d={staircasePathOriginal} fill="rgba(34,145,248,0.06)" stroke="rgba(34,145,248,0.25)" strokeWidth={1} strokeDasharray="3 3" />
           ) : null}
 
-          <path d={staircasePath} fill="url(#staircase-fill)" stroke="oklch(0.65 0.18 252)" strokeWidth={1.5} strokeLinejoin="round" style={{ transition: 'd 0.4s ease' }} />
+          <path d={staircasePath} fill="url(#staircase-fill)" stroke="rgb(34, 145, 248)" strokeWidth={1.5} strokeLinejoin="round" style={{ transition: 'd 0.4s ease' }} />
 
           {brackets.map((b, i) => {
             const midX = xOf(i) + ((xOf(i + 1) - xOf(i)) / 2)
@@ -233,11 +233,11 @@ function BracketStaircase({ brackets, draftRates }: { brackets: GovtTaxBracket[]
             const isDirtyTier = rate !== b.rate
             return (
               <g key={b.id}>
-                <circle cx={xOf(i + 1)} cy={yOf(rate)} r={3} fill={isDirtyTier ? TIER_COLORS[b.id] : 'oklch(0.65 0.18 252)'} />
-                <text x={midX} y={H - PAD_B + 10} textAnchor="middle" fontSize={8.5} fontWeight="600" fill="oklch(0.55 0.008 252)">
+                <circle cx={xOf(i + 1)} cy={yOf(rate)} r={3} fill={isDirtyTier ? TIER_COLORS[b.id] : 'rgb(34, 145, 248)'} />
+                <text x={midX} y={H - PAD_B + 10} textAnchor="middle" fontSize={8.5} fontWeight="600" fill="rgb(110, 114, 118)">
                   {b.code}
                 </text>
-                <text x={midX} y={H - PAD_B + 20} textAnchor="middle" fontSize={7} fill="oklch(0.38 0.008 252)">
+                <text x={midX} y={H - PAD_B + 20} textAnchor="middle" fontSize={7} fill="rgb(63, 67, 71)">
                   {`${rate}%`}
                 </text>
               </g>
@@ -246,7 +246,7 @@ function BracketStaircase({ brackets, draftRates }: { brackets: GovtTaxBracket[]
         </svg>
       </div>
       {isDraft ? (
-        <p className="mt-2 text-center text-[10px]" style={{ color: 'oklch(0.65 0.18 252 / 0.70)' }}>
+        <p className="mt-2 text-center text-[10px]" style={{ color: 'rgba(34,145,248,0.7)' }}>
           {t('govt.tax.staircase.previewMode')}
         </p>
       ) : null}
@@ -266,8 +266,8 @@ function DailySpark({ series }: { series: { dayIndex: number; collectedCents: nu
   const barW = Math.floor((W - series.length) / series.length)
 
   return (
-    <div className="rounded-2xl border p-4" style={{ background: 'oklch(0.07 0.010 252)', borderColor: 'oklch(0.15 0.008 252)' }}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'oklch(0.42 0.008 252)' }}>
+    <div className="rounded-2xl border p-4" style={{ background: 'rgb(1, 1, 2)', borderColor: 'rgb(9, 11, 14)' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'rgb(74, 77, 81)' }}>
         {t('govt.tax.spark.title')}
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full" style={{ maxHeight: 52 }} aria-hidden>
@@ -278,11 +278,11 @@ function DailySpark({ series }: { series: { dayIndex: number; collectedCents: nu
           const isToday = d.collectedCents > 0 && (series[i + 1]?.collectedCents ?? 0) === 0
           return (
             <g key={d.dayIndex}>
-              <rect x={x} y={H - oblH} width={barW} height={oblH} fill="oklch(0.14 0.010 252)" rx={1} />
+              <rect x={x} y={H - oblH} width={barW} height={oblH} fill="rgb(7, 9, 13)" rx={1} />
               {colH > 0 ? (
                 <rect
                   x={x} y={H - colH} width={barW} height={colH}
-                  fill={isToday ? 'oklch(0.65 0.18 252)' : 'oklch(0.55 0.18 155)'}
+                  fill={isToday ? 'rgb(34, 145, 248)' : 'rgb(0, 142, 62)'}
                   rx={1}
                   style={{ transition: 'height 0.4s ease, y 0.4s ease' }}
                 />
@@ -291,10 +291,10 @@ function DailySpark({ series }: { series: { dayIndex: number; collectedCents: nu
           )
         })}
       </svg>
-      <div className="mt-1.5 flex items-center gap-4 text-[10px]" style={{ color: 'oklch(0.40 0.008 252)' }}>
-        <LegendDot color="oklch(0.55 0.18 155)" label={t('govt.tax.spark.collected')} />
-        <LegendDot color="oklch(0.65 0.18 252)" label={t('govt.tax.spark.today')} />
-        <LegendDot color="oklch(0.14 0.010 252)" label={t('govt.tax.spark.obligation')} />
+      <div className="mt-1.5 flex items-center gap-4 text-[10px]" style={{ color: 'rgb(69, 72, 76)' }}>
+        <LegendDot color="rgb(0, 142, 62)" label={t('govt.tax.spark.collected')} />
+        <LegendDot color="rgb(34, 145, 248)" label={t('govt.tax.spark.today')} />
+        <LegendDot color="rgb(7, 9, 13)" label={t('govt.tax.spark.obligation')} />
       </div>
     </div>
   )

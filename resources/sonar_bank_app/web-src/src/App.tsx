@@ -84,12 +84,12 @@ function RouteErrorFallback() {
       <div
         className="max-w-md rounded-[1.75rem] px-7 py-6 text-center"
         style={{
-          background: 'rgba(18, 12, 8, 0.96)',
-          border: '1.5px solid rgba(255, 100, 19, 0.55)',
-          boxShadow: '0 24px 80px -40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 40px -12px rgba(255, 100, 19, 0.18)',
+          background: 'rgba(18,12,8,0.96)',
+          border: '1.5px solid rgba(255,100,19,0.55)',
+          boxShadow: '0 24px 80px -40px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 40px -12px rgba(255,100,19,0.18)',
         }}
       >
-        <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(255, 100, 19, 0.12)', border: '1px solid rgba(255, 100, 19, 0.25)' }}>
+        <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,100,19,0.12)', border: '1px solid rgba(255,100,19,0.25)' }}>
           <AlertTriangle size={24} style={{ color: 'rgb(255, 100, 19)' }} />
         </div>
         <h1 className="text-lg font-semibold text-text-primary">Error cargando esta vista</h1>

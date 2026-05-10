@@ -23,9 +23,9 @@ const STROKE: Record<NonNullable<SpinnerProps['size']>, number> = {
 }
 
 const VARIANT_COLOR: Record<NonNullable<SpinnerProps['variant']>, string> = {
-  brand: 'oklch(0.65 0.22 40)',
-  neutral: 'oklch(0.98 0.005 270 / 0.72)',
-  inverse: 'oklch(0.04 0.005 270)',
+  brand: 'rgb(246, 75, 0)',
+  neutral: 'rgba(247,248,252,0.72)',
+  inverse: 'rgb(0, 0, 0)',
 }
 
 export function Spinner({
@@ -38,7 +38,7 @@ export function Spinner({
   const px = SIZE_PX[size]
   const stroke = STROKE[size]
   const color = VARIANT_COLOR[variant]
-  const trackColor = 'oklch(0.98 0.005 270 / 0.12)'
+  const trackColor = 'rgba(247,248,252,0.12)'
 
   return (
     <span

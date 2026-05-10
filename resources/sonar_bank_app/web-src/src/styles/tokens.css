@@ -4,63 +4,63 @@
   =========================================================================== */
   /* ⬤ Pure black canvas (Revolut Metal) — founder mandate BANK-FE.2.3.
      No blue tint. Subtle elevation ladder only kicks in at card tier+. */
-  --color-surface-abyss: oklch(0 0 0);
-  --color-surface-void: oklch(0.025 0 0);
-  --color-surface-card: oklch(0.10 0.010 270);
-  --color-surface-card-elevated: oklch(0.13 0.012 270);
-  --color-surface-card-glass: oklch(0.10 0.010 270 / 0.40);
-  --color-surface-modal-scrim: oklch(0.04 0.005 270 / 0.72);
-  --color-surface-modal: oklch(0.13 0.012 270);
-  --color-surface-input: oklch(0.08 0.008 270);
-  --color-surface-input-focus: oklch(0.13 0.014 270);
-  --color-surface-tooltip: oklch(0.18 0.014 270);
-  --color-surface-toast: oklch(0.13 0.012 270);
-  --color-surface-glow: oklch(0.65 0.22 40 / 0.06);
+  --color-surface-abyss: rgb(0, 0, 0);
+  --color-surface-void: rgb(0, 0, 0);
+  --color-surface-card: rgb(3, 3, 6);
+  --color-surface-card-elevated: rgb(6, 7, 12);
+  --color-surface-card-glass: rgba(3, 3, 6, 0.4);
+  --color-surface-modal-scrim: rgba(0, 0, 0, 0.72);
+  --color-surface-modal: rgb(6, 7, 12);
+  --color-surface-input: rgb(1, 2, 3);
+  --color-surface-input-focus: rgb(6, 7, 13);
+  --color-surface-tooltip: rgb(15, 17, 24);
+  --color-surface-toast: rgb(6, 7, 12);
+  --color-surface-glow: rgba(246, 75, 0, 0.06);
 
   /* ===========================================================================
      BRAND TOKENS (Signal Orange — ADR-016 D1 + ADR-017 D1)
   =========================================================================== */
-  --color-brand-signal-orange: oklch(0.65 0.22 40);
-  --color-brand-signal-orange-light: oklch(0.78 0.18 55);
-  --color-brand-signal-orange-glow: oklch(0.65 0.22 40 / 0.18);
-  --color-brand-signal-orange-subtle: oklch(0.65 0.22 40 / 0.06);
+  --color-brand-signal-orange: rgb(246, 75, 0);
+  --color-brand-signal-orange-light: rgb(255, 147, 42);
+  --color-brand-signal-orange-glow: rgba(246, 75, 0, 0.18);
+  --color-brand-signal-orange-subtle: rgba(246, 75, 0, 0.06);
 
   /* ===========================================================================
      SEMANTIC DEEP (financial state)
   =========================================================================== */
-  --color-semantic-success-deep: oklch(0.65 0.18 155);
-  --color-semantic-success-glow: oklch(0.65 0.18 155 / 0.18);
-  --color-semantic-warning-deep: oklch(0.78 0.16 85);
-  --color-semantic-warning-glow: oklch(0.78 0.16 85 / 0.16);
-  --color-semantic-danger-deep: oklch(0.62 0.21 25);
-  --color-semantic-danger-glow: oklch(0.62 0.21 25 / 0.18);
-  --color-semantic-info-deep: oklch(0.70 0.14 230);
-  --color-semantic-info-glow: oklch(0.70 0.14 230 / 0.14);
+  --color-semantic-success-deep: rgb(0, 173, 91);
+  --color-semantic-success-glow: rgba(0, 173, 91, 0.18);
+  --color-semantic-warning-deep: rgb(230, 173, 0);
+  --color-semantic-warning-glow: rgba(230, 173, 0, 0.16);
+  --color-semantic-danger-deep: rgb(234, 60, 63);
+  --color-semantic-danger-glow: rgba(234, 60, 63, 0.18);
+  --color-semantic-info-deep: rgb(0, 173, 228);
+  --color-semantic-info-glow: rgba(0, 173, 228, 0.14);
 
   /* ===========================================================================
      TEXT SCALE
   =========================================================================== */
-  --color-text-primary: oklch(0.98 0.005 270);
-  --color-text-secondary: oklch(0.98 0.005 270 / 0.72);
-  --color-text-tertiary: oklch(0.98 0.005 270 / 0.48);
-  --color-text-quaternary: oklch(0.98 0.005 270 / 0.24);
+  --color-text-primary: rgb(247, 248, 252);
+  --color-text-secondary: rgba(247, 248, 252, 0.72);
+  --color-text-tertiary: rgba(247, 248, 252, 0.48);
+  --color-text-quaternary: rgba(247, 248, 252, 0.24);
 
   /* ===========================================================================
      BORDER TOKENS
   =========================================================================== */
-  --color-border-subtle: oklch(0.98 0.005 270 / 0.06);
-  --color-border-medium: oklch(0.98 0.005 270 / 0.12);
-  --color-border-strong: oklch(0.98 0.005 270 / 0.24);
-  --color-border-brand-subtle: oklch(0.65 0.22 40 / 0.16);
-  --color-border-brand-strong: oklch(0.65 0.22 40 / 0.48);
+  --color-border-subtle: rgba(247, 248, 252, 0.06);
+  --color-border-medium: rgba(247, 248, 252, 0.12);
+  --color-border-strong: rgba(247, 248, 252, 0.24);
+  --color-border-brand-subtle: rgba(246, 75, 0, 0.16);
+  --color-border-brand-strong: rgba(246, 75, 0, 0.48);
 
   /* ===========================================================================
      STATUS BADGE (CP8 bridges)
   =========================================================================== */
-  --color-status-native-full: oklch(0.65 0.18 155);
-  --color-status-lite-mode-active: oklch(0.78 0.16 85);
-  --color-status-compromised: oklch(0.62 0.21 25);
-  --color-status-framework-missing: oklch(0.40 0.02 270);
+  --color-status-native-full: rgb(0, 173, 91);
+  --color-status-lite-mode-active: rgb(230, 173, 0);
+  --color-status-compromised: rgb(234, 60, 63);
+  --color-status-framework-missing: rgb(67, 71, 83);
 
   /* ===========================================================================
      RADIUS
@@ -95,73 +95,73 @@
      SHADOWS — Tactile UI ladder (ADR-017 D2)
   =========================================================================== */
   --shadow-tactile-card:
-    inset 0 1px 0 oklch(1 0 0 / 0.08),
-    inset 0 -1px 0 oklch(0 0 0 / 0.6),
-    0 8px 24px -8px oklch(0 0 0 / 0.5),
-    0 24px 64px -16px oklch(0.65 0.22 40 / 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+    0 8px 24px -8px rgba(0, 0, 0, 0.5),
+    0 24px 64px -16px rgba(246, 75, 0, 0.12);
 
   --shadow-tactile-card-elevated:
-    inset 0 1px 0 oklch(1 0 0 / 0.12),
-    inset 0 -1px 0 oklch(0 0 0 / 0.7),
-    0 12px 32px -8px oklch(0 0 0 / 0.6),
-    0 32px 80px -16px oklch(0.65 0.22 40 / 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    0 12px 32px -8px rgba(0, 0, 0, 0.6),
+    0 32px 80px -16px rgba(246, 75, 0, 0.18);
 
   --shadow-tactile-button-primary:
-    inset 0 1px 0 oklch(1 0 0 / 0.32),
-    inset 0 -1px 0 oklch(0 0 0 / 0.32),
-    0 4px 12px -2px oklch(0.65 0.22 40 / 0.40),
-    0 8px 24px -4px oklch(0 0 0 / 0.32);
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.32),
+    0 4px 12px -2px rgba(246, 75, 0, 0.4),
+    0 8px 24px -4px rgba(0, 0, 0, 0.32);
 
   --shadow-tactile-button-primary-pressed:
-    inset 0 1px 0 oklch(0 0 0 / 0.24),
-    inset 0 -1px 0 oklch(1 0 0 / 0.10),
-    inset 0 4px 8px -2px oklch(0 0 0 / 0.24),
-    0 2px 6px -1px oklch(0.65 0.22 40 / 0.32);
+    inset 0 1px 0 rgba(0, 0, 0, 0.24),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 4px 8px -2px rgba(0, 0, 0, 0.24),
+    0 2px 6px -1px rgba(246, 75, 0, 0.32);
 
   --shadow-tactile-button-secondary:
-    inset 0 1px 0 oklch(1 0 0 / 0.10),
-    inset 0 -1px 0 oklch(0 0 0 / 0.4),
-    0 2px 6px -1px oklch(0 0 0 / 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 2px 6px -1px rgba(0, 0, 0, 0.4);
 
   --shadow-tactile-glass:
-    inset 0 1px 0 oklch(1 0 0 / 0.12),
-    inset 0 0 0 1px oklch(1 0 0 / 0.04),
-    0 24px 48px -16px oklch(0 0 0 / 0.6),
-    0 48px 96px -32px oklch(0.65 0.22 40 / 0.10);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 24px 48px -16px rgba(0, 0, 0, 0.6),
+    0 48px 96px -32px rgba(246, 75, 0, 0.1);
 
   --shadow-tactile-input-inset:
-    inset 0 2px 4px oklch(0 0 0 / 0.4),
-    inset 0 1px 0 oklch(0 0 0 / 0.6);
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(0, 0, 0, 0.6);
 
   --shadow-modal:
-    0 32px 64px -16px oklch(0 0 0 / 0.7),
-    0 64px 128px -32px oklch(0 0 0 / 0.5);
+    0 32px 64px -16px rgba(0, 0, 0, 0.7),
+    0 64px 128px -32px rgba(0, 0, 0, 0.5);
 
   --shadow-tooltip:
-    0 4px 12px -2px oklch(0 0 0 / 0.5),
-    0 8px 24px -4px oklch(0 0 0 / 0.3);
+    0 4px 12px -2px rgba(0, 0, 0, 0.5),
+    0 8px 24px -4px rgba(0, 0, 0, 0.3);
 
   --shadow-toast:
-    0 8px 24px -4px oklch(0 0 0 / 0.6),
-    0 16px 48px -8px oklch(0.65 0.22 40 / 0.16);
+    0 8px 24px -4px rgba(0, 0, 0, 0.6),
+    0 16px 48px -8px rgba(246, 75, 0, 0.16);
 
   --shadow-focus-ring:
-    0 0 0 2px oklch(0.04 0.005 270),
-    0 0 0 4px oklch(0.65 0.22 40 / 0.6);
+    0 0 0 2px rgb(0, 0, 0),
+    0 0 0 4px rgba(246, 75, 0, 0.6);
 
   /* ===========================================================================
      GRADIENTS
   =========================================================================== */
-  --gradient-primary: linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.78 0.18 55));
-  --gradient-primary-hover: linear-gradient(135deg, oklch(0.70 0.22 40), oklch(0.82 0.18 55));
-  --gradient-primary-glow: radial-gradient(ellipse 60% 80% at 50% 0%, oklch(0.65 0.22 40 / 0.18), transparent 70%);
-  --gradient-vista-hero-light: radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.65 0.22 40 / 0.18), transparent 70%);
+  --gradient-primary: linear-gradient(135deg, rgb(246, 75, 0), rgb(255, 147, 42));
+  --gradient-primary-hover: linear-gradient(135deg, rgb(246, 75, 0), rgb(255, 147, 42));
+  --gradient-primary-glow: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(246, 75, 0, 0.18), transparent 70%);
+  --gradient-vista-hero-light: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(246, 75, 0, 0.18), transparent 70%);
   /* ⬤ V1 orange aura presets — strategic luminaries on pure black canvas */
-  --gradient-orange-aura-strong:   radial-gradient(ellipse 70% 60% at 50% 40%, oklch(0.65 0.22 40 / 0.32), transparent 72%);
-  --gradient-orange-aura-ambient:  radial-gradient(ellipse 80% 70% at 50% 50%, oklch(0.65 0.22 40 / 0.16), transparent 75%);
-  --gradient-orange-aura-whisper:  radial-gradient(ellipse 90% 80% at 50% 50%, oklch(0.65 0.22 40 / 0.08), transparent 78%);
-  --gradient-orange-shimmer: linear-gradient(135deg, oklch(0.65 0.22 40), oklch(0.85 0.15 65), oklch(0.65 0.22 40));
-  --gradient-glass-edge: linear-gradient(135deg, oklch(1 0 0 / 0.12), oklch(1 0 0 / 0.02), oklch(1 0 0 / 0.08));
+  --gradient-orange-aura-strong:   radial-gradient(ellipse 70% 60% at 50% 40%, rgba(246, 75, 0, 0.32), transparent 72%);
+  --gradient-orange-aura-ambient:  radial-gradient(ellipse 80% 70% at 50% 50%, rgba(246, 75, 0, 0.16), transparent 75%);
+  --gradient-orange-aura-whisper:  radial-gradient(ellipse 90% 80% at 50% 50%, rgba(246, 75, 0, 0.08), transparent 78%);
+  --gradient-orange-shimmer: linear-gradient(135deg, rgb(246, 75, 0), rgb(255, 184, 88), rgb(246, 75, 0));
+  --gradient-glass-edge: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.08));
 
   /* ===========================================================================
      EASINGS + SPRINGS (Motion v12)

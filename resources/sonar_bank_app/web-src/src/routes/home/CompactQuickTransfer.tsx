@@ -144,7 +144,7 @@ function CompactRow({
             'text-[11px] font-semibold tactile-wght-breathing',
           )}
           style={{
-            background: 'linear-gradient(135deg, oklch(0.13 0.012 270), oklch(0.18 0.014 270))',
+            background: 'linear-gradient(135deg, rgb(6, 7, 12), rgb(15, 17, 24))',
             border: '1px solid var(--color-border-medium)',
           }}
         >
@@ -155,8 +155,8 @@ function CompactRow({
             aria-hidden
             className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full text-text-primary"
             style={{
-              background: 'oklch(1 0 0 / 0.12)',
-              border: '1px solid oklch(1 0 0 / 0.18)',
+              background: 'rgba(255,255,255,0.12)',
+              border: '1px solid rgba(255,255,255,0.18)',
             }}
           >
             <Star size={7} strokeWidth={3} fill="currentColor" />
@@ -199,11 +199,11 @@ function RecipientsEmptyState({
       <div
         className="inline-flex h-10 w-10 items-center justify-center rounded-full"
         style={{
-          background: isError ? 'oklch(0.68 0.20 25 / 0.08)' : 'oklch(1 0 0 / 0.04)',
+          background: isError ? 'rgba(252,88,85,0.08)' : 'rgba(255,255,255,0.04)',
           border: `1px solid ${
-            isError ? 'oklch(0.68 0.20 25 / 0.30)' : 'var(--color-border-subtle)'
+            isError ? 'rgba(252,88,85,0.3)' : 'var(--color-border-subtle)'
           }`,
-          color: isError ? 'oklch(0.68 0.20 25)' : 'oklch(0.55 0.012 270 / 0.7)',
+          color: isError ? 'rgb(252, 88, 85)' : 'rgba(111,113,121,0.7)',
         }}
         aria-hidden
       >

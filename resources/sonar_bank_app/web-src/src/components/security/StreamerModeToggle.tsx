@@ -33,12 +33,12 @@ export function StreamerModeToggle() {
       )}
       style={{
         background: streamerMode
-          ? 'linear-gradient(135deg, oklch(0.22 0.060 45 / 0.42), oklch(0.10 0.018 45 / 0.32))'
-          : 'oklch(1 0 0 / 0.075)',
-        border: streamerMode ? '1px solid oklch(0.72 0.22 40 / 0.32)' : '1px solid oklch(1 0 0 / 0.12)',
+          ? 'linear-gradient(135deg, rgba(48,15,1,0.42), rgba(7,2,1,0.32))'
+          : 'rgba(255,255,255,0.08)',
+        border: streamerMode ? '1px solid rgba(255,100,19,0.32)' : '1px solid rgba(255,255,255,0.12)',
         boxShadow: streamerMode
-          ? 'inset 0 1px 0 oklch(1 0 0 / 0.08), 0 0 18px -10px oklch(0.72 0.22 40)'
-          : 'inset 0 1px 0 oklch(1 0 0 / 0.08)',
+          ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 18px -10px rgb(255, 100, 19)'
+          : 'inset 0 1px 0 rgba(255,255,255,0.08)',
       }}
     >
       {streamerMode ? <RadioTower size={13} strokeWidth={2.2} /> : <Eye size={13} strokeWidth={2.2} />}
@@ -46,8 +46,8 @@ export function StreamerModeToggle() {
       <span
         className="inline-flex h-4 min-w-8 items-center justify-center rounded-full px-1.5 text-[9px] tracking-[0.12em]"
         style={{
-          background: streamerMode ? 'oklch(0.72 0.22 40 / 0.14)' : 'oklch(1 0 0 / 0.08)',
-          color: streamerMode ? 'oklch(0.82 0.18 45)' : 'oklch(0.86 0.006 270)',
+          background: streamerMode ? 'rgba(255,100,19,0.14)' : 'rgba(255,255,255,0.08)',
+          color: streamerMode ? 'rgb(255, 153, 87)' : 'rgb(207, 209, 213)',
         }}
       >
         {streamerMode ? t('settings.streamerModeOnLabel') : t('settings.streamerModeOffLabel')}

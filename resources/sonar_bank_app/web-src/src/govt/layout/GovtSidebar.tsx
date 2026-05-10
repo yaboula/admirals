@@ -13,9 +13,9 @@ export function GovtSidebar() {
       <div
         className="flex h-full w-full flex-col items-center overflow-hidden rounded-[2rem]"
         style={{
-          background: 'linear-gradient(180deg, oklch(0.10 0.010 252 / 0.88), oklch(0.05 0.008 252 / 0.96))',
-          border: '1px solid oklch(1 0 0 / 0.09)',
-          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05), 0 28px 64px -44px oklch(0 0 0 / 0.95)',
+          background: 'linear-gradient(180deg, rgba(2,3,6,0.88), rgba(0,0,1,0.96))',
+          border: '1px solid rgba(255,255,255,0.09)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 28px 64px -44px rgba(0,0,0,0.95)',
           backdropFilter: 'blur(24px) saturate(150%)',
           WebkitBackdropFilter: 'blur(24px) saturate(150%)',
         }}

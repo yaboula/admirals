@@ -38,13 +38,13 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(180deg, oklch(0.70 0.22 40 / 0.76), oklch(0.19 0.06 34 / 0.86) 34%, oklch(0.055 0.012 35 / 0.92))',
+            'linear-gradient(180deg, rgba(246,75,0,0.76), rgba(41,6,2,0.86) 34%, rgba(1,0,0,0.92))',
         }}
       />
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 h-44 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 78% 4%, oklch(1 0 0 / 0.26), transparent 46%)' }}
+        style={{ background: 'radial-gradient(circle at 78% 4%, rgba(255,255,255,0.26), transparent 46%)' }}
       />
       <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
         <div className="flex items-center justify-between shrink-0">
@@ -53,7 +53,7 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
             type="button"
             onClick={() => navigate('/tarjetas')}
             className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white/86"
-            style={{ background: 'oklch(1 0 0 / 0.13)', border: '1px solid oklch(1 0 0 / 0.14)' }}
+            style={{ background: 'rgba(255,255,255,0.13)', border: '1px solid rgba(255,255,255,0.14)' }}
           >
             <Plus size={13} strokeWidth={2} />
             {t('home.new')}
@@ -107,10 +107,10 @@ function RailAction({ label, icon, onClick, muted }: { label: string; icon: Reac
       onClick={onClick}
       className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-semibold transition-transform hover:-translate-y-0.5 active:scale-[0.98]"
       style={{
-        background: muted ? 'oklch(1 0 0 / 0.18)' : 'oklch(0.70 0.22 40)',
+        background: muted ? 'rgba(255,255,255,0.18)' : 'var(--color-brand-signal-orange)',
         color: 'white',
-        border: '1px solid oklch(1 0 0 / 0.12)',
-        boxShadow: muted ? 'none' : '0 16px 28px -20px oklch(0.70 0.22 40 / 0.9)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        boxShadow: muted ? 'none' : '0 16px 28px -20px rgba(246,75,0,0.9)',
       }}
     >
       {icon}
@@ -121,8 +121,8 @@ function RailAction({ label, icon, onClick, muted }: { label: string; icon: Reac
 
 function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: string | undefined; index: number }) {
   const { t, signedMoney, relativeTime } = useI18n()
-  const own = ownIban?.replace(/\s+/g, '')
-  const outgoing = own ? tx.from_iban.replace(/\s+/g, '') === own : tx.direction === 'out'
+  const own = compactIban(ownIban)
+  const outgoing = own ? compactIban(tx.from_iban) === own : tx.direction === 'out'
   const counterpart = outgoing ? tx.to_iban : tx.from_iban
   const name = getMockAliasForIban(counterpart) ?? tx.reason ?? t('home.movements')
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -132,8 +132,8 @@ function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: str
     <div
       className="flex items-center gap-3 rounded-2xl px-3 py-2.5"
       style={{
-        background: 'oklch(0.02 0.006 35 / 0.34)',
-        border: '1px solid oklch(1 0 0 / 0.06)',
+        background: 'rgba(0,0,0,0.34)',
+        border: '1px solid rgba(255,255,255,0.06)',
       }}
     >
       <BankAvatar name={displayName} size="md" seed={index} />
@@ -141,9 +141,13 @@ function RailTransaction({ tx, ownIban, index }: { tx: Transaction; ownIban: str
         <span className="text-sm font-semibold text-white truncate">{displayName}</span>
         <span className="text-[11px] text-white/46 truncate">{relativeTime(tx.timestamp_ms)}</span>
       </div>
-      <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'oklch(0.72 0.16 25)' : 'oklch(0.78 0.16 150)' }}>
+      <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'rgb(249, 119, 112)' : 'rgb(95, 211, 127)' }}>
         {streamerMode ? maskSignedMoneyDisplay() : signedMoney((outgoing ? -1 : 1) * tx.amount_minor / 100)}
       </span>
     </div>
   )
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }

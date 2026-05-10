@@ -170,7 +170,7 @@ function SettingsHero({ streamerMode, accounts, cards }: { streamerMode: boolean
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 14% 0%, oklch(0.70 0.14 230 / 0.13), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 56%)',
+            'radial-gradient(circle at 14% 0%, rgba(0,173,228,0.13), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%)',
         }}
       />
       <div className="relative grid grid-cols-[minmax(300px,1fr)_minmax(300px,0.95fr)] items-center gap-5 p-4 2xl:p-5">
@@ -324,7 +324,7 @@ function IdentityPanel({ citizenId, primaryIban, ibanMasked, streamerMode }: { c
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 86% 0%, oklch(0.70 0.14 230 / 0.13), transparent 38%)' }}
+        style={{ background: 'radial-gradient(circle at 86% 0%, rgba(0,173,228,0.13), transparent 38%)' }}
       />
       <div className="relative flex items-start justify-between gap-3">
         <div>

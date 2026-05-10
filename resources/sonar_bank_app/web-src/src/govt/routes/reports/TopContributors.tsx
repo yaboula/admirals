@@ -9,10 +9,10 @@ interface Props {
 }
 
 const COMPLIANCE_TONE: Record<GovtTaxCompliance, { color: string; key: TranslationKey }> = {
-  current: { color: 'oklch(0.72 0.18 155)', key: 'govt.census.filters.compliance.current' },
-  overdue: { color: 'oklch(0.72 0.20 35)',  key: 'govt.census.filters.compliance.overdue' },
-  pending: { color: 'oklch(0.78 0.16 85)',  key: 'govt.census.filters.compliance.pending' },
-  exempt:  { color: 'oklch(0.60 0.08 252)', key: 'govt.census.filters.compliance.exempt' },
+  current: { color: 'rgb(0, 196, 112)', key: 'govt.census.filters.compliance.current' },
+  overdue: { color: 'rgb(255, 106, 67)',  key: 'govt.census.filters.compliance.overdue' },
+  pending: { color: 'rgb(230, 173, 0)',  key: 'govt.census.filters.compliance.pending' },
+  exempt:  { color: 'rgb(92, 131, 175)', key: 'govt.census.filters.compliance.exempt' },
 }
 
 export function TopContributors({ data }: Props) {
@@ -29,7 +29,7 @@ export function TopContributors({ data }: Props) {
         const Icon = c.kind === 'company' ? BriefcaseBusiness : IdCard
 
         return (
-          <li key={c.id} className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-2.5">
+          <li key={c.id} className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-2.5">
             <span
               aria-hidden
               className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg text-[10px] font-semibold tabular-nums"
@@ -40,7 +40,7 @@ export function TopContributors({ data }: Props) {
             <span
               aria-hidden
               className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--color-govt-border)]"
-              style={{ background: 'oklch(0.06 0.010 252 / 0.7)', color: tone.color }}
+              style={{ background: 'rgba(0,1,2,0.7)', color: tone.color }}
             >
               <Icon size={12} strokeWidth={2} />
             </span>

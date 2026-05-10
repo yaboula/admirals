@@ -212,3 +212,21 @@ select {
     0 6px 14px -2px rgba(0, 0, 0, 0.6),
     0 0 22px -2px var(--slider-accent, rgb(255, 100, 19));
 }
+
+/* CEF / Chrome 91 overrides for Tailwind v4 filter chains */
+@layer utilities {
+  .blur-sm { filter: blur(4px) !important; }
+  .blur-md { filter: blur(12px) !important; }
+  .blur-lg { filter: blur(16px) !important; }
+  .blur-xl { filter: blur(24px) !important; }
+  .blur-2xl { filter: blur(40px) !important; }
+  .blur-3xl { filter: blur(64px) !important; }
+  
+  .backdrop-blur-sm { backdrop-filter: blur(4px) saturate(150%) !important; -webkit-backdrop-filter: blur(4px) saturate(150%) !important; }
+  .backdrop-blur-md { backdrop-filter: blur(12px) saturate(150%) !important; -webkit-backdrop-filter: blur(12px) saturate(150%) !important; }
+  .backdrop-blur-lg { backdrop-filter: blur(16px) saturate(150%) !important; -webkit-backdrop-filter: blur(16px) saturate(150%) !important; }
+  .backdrop-blur-xl { backdrop-filter: blur(24px) saturate(150%) !important; -webkit-backdrop-filter: blur(24px) saturate(150%) !important; }
+  .backdrop-blur-2xl { backdrop-filter: blur(40px) saturate(150%) !important; -webkit-backdrop-filter: blur(40px) saturate(150%) !important; }
+  .backdrop-blur-3xl { backdrop-filter: blur(64px) saturate(150%) !important; -webkit-backdrop-filter: blur(64px) saturate(150%) !important; }
+}
+

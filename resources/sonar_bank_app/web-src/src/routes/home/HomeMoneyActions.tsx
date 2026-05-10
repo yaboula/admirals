@@ -52,16 +52,16 @@ function MoneyAction({
       onClick={onClick}
       className="group flex flex-1 items-center gap-3 rounded-2xl px-3 text-left transition-transform hover:-translate-y-0.5 active:scale-[0.99]"
       style={{
-        background: tone === 'in' ? 'oklch(1 0 0 / 0.065)' : 'oklch(1 0 0 / 0.035)',
-        border: '1px solid oklch(1 0 0 / 0.08)',
+        background: tone === 'in' ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
       }}
     >
       <span
         className="inline-flex h-10 w-10 items-center justify-center rounded-2xl shrink-0"
         style={{
-          background: tone === 'in' ? 'oklch(0.74 0.15 150 / 0.18)' : 'oklch(0.72 0.22 40 / 0.16)',
-          color: tone === 'in' ? 'oklch(0.80 0.16 150)' : 'oklch(0.78 0.20 40)',
-          border: '1px solid oklch(1 0 0 / 0.09)',
+          background: tone === 'in' ? 'rgba(90,197,118,0.18)' : 'rgba(255,100,19,0.16)',
+          color: tone === 'in' ? 'rgb(102, 218, 133)' : 'rgb(255, 129, 71)',
+          border: '1px solid rgba(255,255,255,0.09)',
         }}
       >
         {icon}

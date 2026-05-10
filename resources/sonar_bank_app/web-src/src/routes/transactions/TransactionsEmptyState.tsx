@@ -41,9 +41,9 @@ export function TransactionsEmptyState({ variant }: TransactionsEmptyStateProps)
       <span
         className="relative inline-flex items-center justify-center h-16 w-16 rounded-full"
         style={{
-          background: 'oklch(1 0 0 / 0.025)',
-          border: '1px solid oklch(1 0 0 / 0.06)',
-          color: 'oklch(0.55 0.012 270 / 0.7)',
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          color: 'rgba(111,113,121,0.7)',
         }}
         aria-hidden
       >
@@ -53,7 +53,7 @@ export function TransactionsEmptyState({ variant }: TransactionsEmptyStateProps)
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 50% 40%, oklch(0.65 0.22 40 / 0.10), transparent 70%)',
+              'radial-gradient(circle at 50% 40%, rgba(246,75,0,0.1), transparent 70%)',
           }}
         />
       </span>

@@ -29,16 +29,16 @@ export interface TransactionRowProps {
 
 export function TransactionRow({ tx, ownIban, index, selected, onSelect }: TransactionRowProps) {
   const { t, signedMoney, relativeTime, dateTime } = useI18n()
-  const fromCompact = tx.from_iban.replace(/\s+/g, '')
-  const toCompact = tx.to_iban.replace(/\s+/g, '')
+  const fromCompact = compactIban(tx.from_iban)
+  const toCompact = compactIban(tx.to_iban)
   const isOutgoing = ownIban
     ? fromCompact === ownIban && toCompact !== ownIban
     : tx.direction === 'out'
-  const counterpartIban = isOutgoing ? tx.to_iban : tx.from_iban
+  const counterpartIban = String((isOutgoing ? tx.to_iban : tx.from_iban) ?? '')
   const counterpartName =
     getMockAliasForIban(counterpartIban) ?? (isOutgoing ? 'Beneficiario' : 'Remitente')
 
-  const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
+  const amountColor = isOutgoing ? 'rgb(227, 228, 232)' : 'rgb(78, 213, 137)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
   const StatusIcon = STATUS_META[tx.status].icon
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -62,16 +62,16 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
       )}
       style={{
         background: selected
-          ? 'oklch(1 0 0 / 0.07)'
+          ? 'rgba(255,255,255,0.07)'
           : 'transparent',
-        border: `1px solid ${selected ? 'oklch(1 0 0 / 0.16)' : 'transparent'}`,
+        border: `1px solid ${selected ? 'rgba(255,255,255,0.16)' : 'transparent'}`,
         boxShadow: selected
-          ? 'inset 0 1px 0 oklch(1 0 0 / 0.08), 0 10px 22px -18px oklch(0 0 0 / 0.8)'
+          ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 22px -18px rgba(0,0,0,0.8)'
           : undefined,
       }}
       onMouseEnter={(e) => {
         if (!selected) {
-          e.currentTarget.style.background = 'oklch(1 0 0 / 0.025)'
+          e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
         }
       }}
       onMouseLeave={(e) => {
@@ -85,9 +85,9 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
         <span
           className="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center h-4 w-4 rounded-full"
           style={{
-            background: 'oklch(0.05 0.005 270)',
-            border: '1px solid oklch(1 0 0 / 0.08)',
-            color: isOutgoing ? 'oklch(0.78 0.18 25)' : 'oklch(0.80 0.18 155)',
+            background: 'rgb(0, 0, 1)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: isOutgoing ? 'rgb(255, 130, 123)' : 'rgb(59, 223, 137)',
           }}
         >
           <DirIcon size={10} strokeWidth={2.4} />
@@ -107,7 +107,7 @@ export function TransactionRow({ tx, ownIban, index, selected, onSelect }: Trans
                 color: STATUS_META[tx.status].color,
                 borderColor: STATUS_META[tx.status].color,
                 border: `1px solid ${STATUS_META[tx.status].color}`,
-                background: `${STATUS_META[tx.status].color.replace(')', ' / 0.06)')}`,
+                background: withAlpha(STATUS_META[tx.status].color, 0.06),
               }}
             >
               <StatusIcon size={9} strokeWidth={2.6} />
@@ -148,9 +148,20 @@ const STATUS_META: Record<
   Transaction['status'],
   { icon: typeof Check; label: string; color: string }
 > = {
-  committed: { icon: Check, label: 'OK', color: 'oklch(0.72 0.16 155)' },
-  pending: { icon: RotateCw, label: 'pendiente', color: 'oklch(0.78 0.16 85)' },
-  reconciling: { icon: RotateCw, label: 'reconcil.', color: 'oklch(0.78 0.16 85)' },
-  reverted: { icon: AlertTriangle, label: 'revertida', color: 'oklch(0.68 0.20 25)' },
-  failed: { icon: AlertTriangle, label: 'fallida', color: 'oklch(0.68 0.20 25)' },
+  committed: { icon: Check, label: 'OK', color: 'rgb(53, 193, 119)' },
+  pending: { icon: RotateCw, label: 'pendiente', color: 'rgb(230, 173, 0)' },
+  reconciling: { icon: RotateCw, label: 'reconcil.', color: 'rgb(230, 173, 0)' },
+  reverted: { icon: AlertTriangle, label: 'revertida', color: 'rgb(252, 88, 85)' },
+  failed: { icon: AlertTriangle, label: 'fallida', color: 'rgb(252, 88, 85)' },
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
+}
+
+function withAlpha(color: string | undefined | null, alpha: number): string {
+  const value = String(color ?? '')
+  const rgb = value.match(/^rgb\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*\)$/)
+  if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`
+  return 'rgba(255,255,255,0)'
 }

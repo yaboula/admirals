@@ -29,8 +29,8 @@ export function CardsHero({ totalCount, activeCount }: CardsHeroProps) {
         <div
           className="inline-flex items-center justify-center h-9 w-9 rounded-xl shrink-0"
           style={{
-            background: 'oklch(1 0 0 / 0.04)',
-            border: '1px solid oklch(1 0 0 / 0.10)',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.1)',
           }}
         >
           <CreditCard size={16} strokeWidth={1.7} className="text-text-secondary" />
@@ -67,9 +67,9 @@ function Pill({ label, tone }: { label: string; tone: 'active' | 'muted' }) {
     <span
       className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] font-semibold"
       style={{
-        color: tone === 'active' ? 'oklch(0.92 0.01 270)' : 'oklch(0.65 0.01 270)',
-        background: 'oklch(1 0 0 / 0.04)',
-        border: '1px solid oklch(1 0 0 / 0.10)',
+        color: tone === 'active' ? 'rgb(226, 228, 235)' : 'rgb(141, 143, 149)',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.1)',
       }}
     >
       <span
@@ -78,8 +78,8 @@ function Pill({ label, tone }: { label: string; tone: 'active' | 'muted' }) {
         style={{
           background:
             tone === 'active'
-              ? 'oklch(0.78 0.16 150)'
-              : 'oklch(0.55 0.01 270)',
+              ? 'rgb(95, 211, 127)'
+              : 'rgb(111, 113, 120)',
         }}
       />
       {label}

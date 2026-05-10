@@ -43,10 +43,10 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'Pure minimalism',
     tier: 'default',
     surface:
-      'linear-gradient(135deg, oklch(0.14 0.010 270) 0%, oklch(0.08 0.008 270) 50%, oklch(0.04 0.006 270) 100%)',
-    accent: 'oklch(0.70 0.012 270)',
-    textPrimary: 'oklch(0.96 0.004 270)',
-    textTertiary: 'oklch(0.56 0.012 270)',
+      'linear-gradient(135deg, rgb(8, 9, 13) 0%, rgb(1, 2, 3) 50%, rgb(0, 0, 0) 100%)',
+    accent: 'rgb(155, 158, 166)',
+    textPrimary: 'rgb(241, 242, 244)',
+    textTertiary: 'rgb(114, 116, 124)',
     motif: 'pinstripe',
   },
   {
@@ -55,12 +55,12 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'The flagship card · #FF5100',
     tier: 'signature',
     surface:
-      'linear-gradient(135deg, oklch(0.16 0.012 270) 0%, oklch(0.10 0.010 270) 50%, oklch(0.06 0.008 270) 100%)',
+      'linear-gradient(135deg, rgb(11, 13, 19) 0%, rgb(3, 3, 6) 50%, rgb(1, 1, 1) 100%)',
     overlay:
-      'radial-gradient(circle at 75% 45%, oklch(0.65 0.22 40 / 0.28) 0%, transparent 55%)',
-    accent: 'oklch(0.72 0.22 40)',
-    textPrimary: 'oklch(0.98 0.004 270)',
-    textTertiary: 'oklch(0.60 0.014 270)',
+      'radial-gradient(circle at 75% 45%, rgba(246, 75, 0, 0.28) 0%, transparent 55%)',
+    accent: 'rgb(255, 100, 19)',
+    textPrimary: 'rgb(247, 248, 251)',
+    textTertiary: 'rgb(125, 128, 137)',
     motif: 'sonar_waves',
   },
   {
@@ -69,12 +69,12 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'Boreal · teal → violet',
     tier: 'premium',
     surface:
-      'linear-gradient(135deg, oklch(0.22 0.10 195) 0%, oklch(0.18 0.14 260) 55%, oklch(0.14 0.10 290) 100%)',
+      'linear-gradient(135deg, rgb(0, 38, 41) 0%, rgb(0, 0, 77) 55%, rgb(13, 0, 46) 100%)',
     overlay:
-      'radial-gradient(circle at 25% 30%, oklch(0.70 0.18 195 / 0.22) 0%, transparent 50%)',
-    accent: 'oklch(0.78 0.14 195)',
-    textPrimary: 'oklch(0.98 0.006 210)',
-    textTertiary: 'oklch(0.78 0.04 210 / 0.75)',
+      'radial-gradient(circle at 25% 30%, rgba(0, 190, 193, 0.22) 0%, transparent 50%)',
+    accent: 'rgb(0, 210, 211)',
+    textPrimary: 'rgb(244, 250, 251)',
+    textTertiary: 'rgba(155, 191, 198, 0.75)',
     motif: 'geometric',
   },
   {
@@ -83,12 +83,12 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'Deep amber · dusk rose',
     tier: 'premium',
     surface:
-      'linear-gradient(135deg, oklch(0.22 0.12 55) 0%, oklch(0.16 0.14 25) 50%, oklch(0.10 0.12 355) 100%)',
+      'linear-gradient(135deg, rgb(63, 0, 0) 0%, rgb(53, 0, 0) 50%, rgb(26, 0, 4) 100%)',
     overlay:
-      'radial-gradient(circle at 80% 20%, oklch(0.70 0.16 55 / 0.22) 0%, transparent 55%)',
-    accent: 'oklch(0.72 0.14 30)',
-    textPrimary: 'oklch(0.98 0.006 50)',
-    textTertiary: 'oklch(0.80 0.05 40 / 0.75)',
+      'radial-gradient(circle at 80% 20%, rgba(232, 127, 37, 0.22) 0%, transparent 55%)',
+    accent: 'rgb(239, 128, 111)',
+    textPrimary: 'rgb(252, 247, 245)',
+    textTertiary: 'rgba(219, 180, 166, 0.75)',
     motif: 'fluid',
   },
   {
@@ -97,12 +97,12 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'Light metal · executive precision',
     tier: 'premium',
     surface:
-      'linear-gradient(135deg, oklch(0.88 0.010 250) 0%, oklch(0.74 0.014 250) 48%, oklch(0.50 0.018 250) 100%)',
+      'linear-gradient(135deg, rgb(211, 216, 222) 0%, rgb(164, 172, 180) 48%, rgb(92, 100, 109) 100%)',
     overlay:
-      'radial-gradient(circle at 78% 20%, oklch(1 0 0 / 0.42) 0%, transparent 42%), linear-gradient(115deg, transparent 0%, oklch(1 0 0 / 0.22) 48%, transparent 62%)',
-    accent: 'oklch(0.48 0.018 250)',
-    textPrimary: 'oklch(0.12 0.010 250)',
-    textTertiary: 'oklch(0.28 0.014 250 / 0.70)',
+      'radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.42) 0%, transparent 42%), linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.22) 48%, transparent 62%)',
+    accent: 'rgb(86, 95, 104)',
+    textPrimary: 'rgb(4, 6, 9)',
+    textTertiary: 'rgba(36, 42, 48, 0.7)',
     motif: 'geometric',
   },
   {
@@ -111,12 +111,12 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'Gravitational blue · violet core',
     tier: 'signature',
     surface:
-      'linear-gradient(135deg, oklch(0.055 0.010 270) 0%, oklch(0.11 0.09 265) 48%, oklch(0.055 0.025 300) 100%)',
+      'linear-gradient(135deg, rgb(0, 1, 1) 0%, rgb(1, 0, 37) 48%, rgb(1, 0, 3) 100%)',
     overlay:
-      'radial-gradient(circle at 68% 38%, oklch(0.58 0.24 285 / 0.28) 0%, transparent 46%), radial-gradient(circle at 24% 76%, oklch(0.58 0.18 220 / 0.22) 0%, transparent 42%)',
-    accent: 'oklch(0.68 0.18 265)',
-    textPrimary: 'oklch(0.98 0.006 260)',
-    textTertiary: 'oklch(0.76 0.05 260 / 0.74)',
+      'radial-gradient(circle at 68% 38%, rgba(116, 83, 254, 0.28) 0%, transparent 46%), radial-gradient(circle at 24% 76%, rgba(0, 142, 195, 0.22) 0%, transparent 42%)',
+    accent: 'rgb(97, 145, 255)',
+    textPrimary: 'rgb(246, 249, 253)',
+    textTertiary: 'rgba(159, 178, 210, 0.74)',
     motif: 'fluid',
   },
   {
@@ -125,12 +125,12 @@ export const CARD_DESIGNS: CardDesign[] = [
     tagline: 'Private green · night vault',
     tier: 'premium',
     surface:
-      'linear-gradient(135deg, oklch(0.12 0.035 165) 0%, oklch(0.16 0.070 155) 52%, oklch(0.055 0.018 170) 100%)',
+      'linear-gradient(135deg, rgb(0, 9, 3) 0%, rgb(0, 21, 1) 52%, rgb(0, 1, 0) 100%)',
     overlay:
-      'radial-gradient(circle at 72% 24%, oklch(0.72 0.16 155 / 0.20) 0%, transparent 48%)',
-    accent: 'oklch(0.76 0.15 155)',
-    textPrimary: 'oklch(0.98 0.006 165)',
-    textTertiary: 'oklch(0.76 0.045 165 / 0.72)',
+      'radial-gradient(circle at 72% 24%, rgba(53, 193, 119, 0.2) 0%, transparent 48%)',
+    accent: 'rgb(82, 205, 134)',
+    textPrimary: 'rgb(245, 250, 247)',
+    textTertiary: 'rgba(151, 187, 170, 0.72)',
     motif: 'pinstripe',
   },
 ]

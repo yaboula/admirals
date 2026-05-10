@@ -60,8 +60,8 @@ export function Topbar({
         className="absolute inset-x-4 top-0 h-16 rounded-b-[1.75rem] pointer-events-none"
         style={{
           background:
-            'linear-gradient(180deg, oklch(0.10 0.018 45 / 0.56), oklch(0.055 0.010 35 / 0.18))',
-          boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05)',
+            'linear-gradient(180deg, rgba(7,2,1,0.56), rgba(1,0,0,0.18))',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
           backdropFilter: 'blur(18px) saturate(150%)',
           WebkitBackdropFilter: 'blur(18px) saturate(150%)',
         }}
@@ -71,8 +71,8 @@ export function Topbar({
         <div
           className="h-10 rounded-full flex items-center gap-2.5 px-3.5"
           style={{
-            background: 'oklch(0.02 0.006 40 / 0.34)',
-            border: '1px solid oklch(1 0 0 / 0.06)',
+            background: 'rgba(0,0,0,0.34)',
+            border: '1px solid rgba(255,255,255,0.06)',
           }}
         >
           <Search size={15} strokeWidth={2} className="text-text-tertiary shrink-0" />
@@ -213,7 +213,7 @@ function ProfileChip({
         'border border-white/10 hover:border-white/18 transition-colors',
       )}
       style={{
-        background: 'oklch(0.02 0.006 40 / 0.34)',
+        background: 'rgba(0,0,0,0.34)',
       }}
     >
       <BankAvatar name={initials ?? name} size="sm" />

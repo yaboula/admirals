@@ -72,9 +72,9 @@ export function useBootstrap(options: BootstrapQueryOptions = {}) {
   return query
 }
 
-function maskIban(iban: string): string {
-  const compact = iban.replace(/\s+/g, '')
-  if (compact.length < 8) return iban
+function maskIban(iban: string | undefined | null): string {
+  const compact = String(iban ?? '').replace(/\s+/g, '')
+  if (compact.length < 8) return String(iban ?? '')
   return `${compact.slice(0, 4)} ···· ···· ···· ${compact.slice(-4)}`
 }
 

@@ -30,8 +30,9 @@ export function CreditCardVisual({
   const reduced = useReducedMotion()
   const [revealed, setRevealed] = useState(false)
 
-  const tail = account ? account.iban.replace(/\s+/g, '').slice(-4) : '0000'
-  const mid = account ? account.iban.replace(/\s+/g, '').slice(-8, -4) : '0000'
+  const iban = compactIban(account?.iban)
+  const tail = iban ? iban.slice(-4) : '0000'
+  const mid = iban ? iban.slice(-8, -4) : '0000'
   const masked = revealed ? `4287 ${mid} ${tail}` : `4287 ···· ···· ${tail}`
 
   const issuedDate = account ? new Date(account.created_ms) : new Date()
@@ -48,10 +49,10 @@ export function CreditCardVisual({
         className="relative aspect-[1.586/1] w-full overflow-hidden rounded-2xl text-text-primary"
         style={{
           background:
-            'linear-gradient(135deg, oklch(0.16 0.012 270) 0%, oklch(0.10 0.010 270) 50%, oklch(0.06 0.008 270) 100%)',
-          border: '1px solid oklch(1 0 0 / 0.08)',
+            'linear-gradient(135deg, rgb(11, 13, 19) 0%, rgb(3, 3, 6) 50%, rgb(1, 1, 1) 100%)',
+          border: '1px solid rgba(255,255,255,0.08)',
           boxShadow:
-            '0 24px 48px -16px oklch(0 0 0 / 0.6), 0 8px 16px -4px oklch(0 0 0 / 0.4), inset 0 1px 0 oklch(1 0 0 / 0.06), inset 0 -1px 0 oklch(0 0 0 / 0.4)',
+            '0 24px 48px -16px rgba(0,0,0,0.6), 0 8px 16px -4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.4)',
         }}
       >
         {/* Holographic ribbon — diagonal sweep */}
@@ -60,7 +61,7 @@ export function CreditCardVisual({
           className="absolute inset-0 pointer-events-none opacity-40"
           style={{
             background:
-              'linear-gradient(115deg, transparent 0%, transparent 35%, oklch(1 0 0 / 0.07) 50%, transparent 65%, transparent 100%)',
+              'linear-gradient(115deg, transparent 0%, transparent 35%, rgba(255,255,255,0.07) 50%, transparent 65%, transparent 100%)',
           }}
         />
 
@@ -75,7 +76,7 @@ export function CreditCardVisual({
             width: '80%',
             height: '130%',
             background:
-              'radial-gradient(circle at 60% 50%, oklch(0.65 0.22 40 / 0.26), transparent 60%)',
+              'radial-gradient(circle at 60% 50%, rgba(246,75,0,0.26), transparent 60%)',
             filter: 'blur(22px)',
           }}
         />
@@ -89,7 +90,7 @@ export function CreditCardVisual({
             width: '55%',
             height: '80%',
             background:
-              'radial-gradient(circle at 40% 50%, oklch(0.50 0.06 240 / 0.10), transparent 65%)',
+              'radial-gradient(circle at 40% 50%, rgba(66,104,130,0.1), transparent 65%)',
             filter: 'blur(24px)',
           }}
         />
@@ -179,9 +180,9 @@ function Chip() {
       className="relative h-7 w-9 rounded-md overflow-hidden shrink-0"
       style={{
         background:
-          'linear-gradient(135deg, oklch(0.78 0.12 85) 0%, oklch(0.62 0.10 75) 50%, oklch(0.45 0.06 70) 100%)',
+          'linear-gradient(135deg, rgb(219, 177, 85) 0%, rgb(169, 125, 58) 50%, rgb(107, 79, 47) 100%)',
         boxShadow:
-          'inset 0 1px 0 oklch(1 0 0 / 0.4), inset 0 -1px 0 oklch(0 0 0 / 0.4), 0 2px 4px oklch(0 0 0 / 0.4)',
+          'inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.4)',
       }}
     >
       {/* contact pads grid */}
@@ -190,7 +191,7 @@ function Chip() {
           <div
             key={i}
             style={{
-              background: 'oklch(0.30 0.04 70 / 0.55)',
+              background: 'rgba(59,42,23,0.55)',
               borderRadius: '1px',
             }}
           />
@@ -202,7 +203,7 @@ function Chip() {
         style={{
           top: '50%',
           height: '1px',
-          background: 'oklch(0.30 0.04 70 / 0.7)',
+          background: 'rgba(59,42,23,0.7)',
         }}
       />
     </div>
@@ -221,4 +222,8 @@ function BrandMark({ brand }: { brand: 'sonar' | 'visa' | 'mastercard' }) {
     )
   }
   return null
+}
+
+function compactIban(value: string | undefined | null): string {
+  return typeof value === 'string' ? value.replace(/\s+/g, '') : ''
 }

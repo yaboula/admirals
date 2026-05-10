@@ -44,13 +44,13 @@ export function TaxEngine() {
   return (
     <div
       className="relative flex h-full flex-col overflow-y-auto"
-      style={{ background: 'oklch(0.04 0.008 252)' }}
+      style={{ background: 'rgb(0, 0, 1)' }}
     >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[280px]"
         style={{
-          background: 'radial-gradient(ellipse 80% 100% at 50% -10%, oklch(0.65 0.18 252 / 0.12), transparent)',
+          background: 'radial-gradient(ellipse 80% 100% at 50% -10%, rgba(34,145,248,0.12), transparent)',
         }}
       />
 
@@ -98,27 +98,27 @@ function PageHeader({ isLoading }: { isLoading: boolean }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       className="flex flex-wrap items-end justify-between gap-4 border-b pb-5"
-      style={{ borderColor: 'oklch(0.12 0.008 252)' }}
+      style={{ borderColor: 'rgb(4, 6, 8)' }}
     >
       <div className="flex items-center gap-4">
         <div
           className="flex h-11 w-11 items-center justify-center rounded-2xl border"
           style={{
-            background: 'radial-gradient(circle at 40% 30%, oklch(0.18 0.045 252), oklch(0.08 0.015 252))',
-            borderColor: 'oklch(0.22 0.030 252)',
+            background: 'radial-gradient(circle at 40% 30%, rgb(3, 18, 37), rgb(1, 2, 4))',
+            borderColor: 'rgb(16, 27, 40)',
           }}
           aria-hidden
         >
-          <Coins size={18} strokeWidth={1.7} style={{ color: 'oklch(0.75 0.16 252)' }} />
+          <Coins size={18} strokeWidth={1.7} style={{ color: 'rgb(90, 178, 255)' }} />
         </div>
         <div>
           <h1
             className="text-xl font-extralight tracking-[-0.03em]"
-            style={{ color: 'oklch(0.96 0.004 252)' }}
+            style={{ color: 'rgb(240, 242, 244)' }}
           >
             {t('govt.tax.title')}
           </h1>
-          <p className="mt-0.5 text-xs" style={{ color: 'oklch(0.45 0.008 252)' }}>
+          <p className="mt-0.5 text-xs" style={{ color: 'rgb(82, 86, 90)' }}>
             {t('govt.tax.subtitle')}
           </p>
         </div>
@@ -126,14 +126,14 @@ function PageHeader({ isLoading }: { isLoading: boolean }) {
 
       <div className="flex items-center gap-2">
         {isLoading ? (
-          <Loader2 size={14} className="animate-spin" style={{ color: 'oklch(0.48 0.010 252)' }} />
+          <Loader2 size={14} className="animate-spin" style={{ color: 'rgb(90, 94, 99)' }} />
         ) : null}
         <span
           className="rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
           style={{
-            borderColor: 'oklch(0.65 0.18 252 / 0.28)',
-            background: 'oklch(0.65 0.18 252 / 0.08)',
-            color: 'oklch(0.72 0.14 252)',
+            borderColor: 'rgba(34,145,248,0.28)',
+            background: 'rgba(34,145,248,0.08)',
+            color: 'rgb(94, 168, 249)',
           }}
         >
           {`P11 · ${t('govt.tax.ace.label')}`}
@@ -155,12 +155,12 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2
           className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-          style={{ color: 'oklch(0.52 0.010 252)' }}
+          style={{ color: 'rgb(101, 105, 111)' }}
         >
           {title}
         </h2>
         {hint ? (
-          <span className="text-[10px] font-mono" style={{ color: 'oklch(0.36 0.008 252)' }}>{hint}</span>
+          <span className="text-[10px] font-mono" style={{ color: 'rgb(58, 61, 65)' }}>{hint}</span>
         ) : null}
       </div>
       {children}
@@ -175,9 +175,9 @@ function SkeletonGrid() {
     <div className="grid gap-5 lg:grid-cols-2">
       {[0, 1].map((i) => (
         <div key={i} className="space-y-3">
-          <div className="h-3 w-32 animate-pulse rounded-full" style={{ background: 'oklch(0.12 0.008 252)' }} />
+          <div className="h-3 w-32 animate-pulse rounded-full" style={{ background: 'rgb(4, 6, 8)' }} />
           {[0, 1, 2, 3].map((j) => (
-            <div key={j} className="h-16 animate-pulse rounded-2xl" style={{ background: 'oklch(0.08 0.008 252)', animationDelay: `${j * 60}ms` }} />
+            <div key={j} className="h-16 animate-pulse rounded-2xl" style={{ background: 'rgb(1, 2, 3)', animationDelay: `${j * 60}ms` }} />
           ))}
         </div>
       ))}
@@ -192,26 +192,26 @@ function PermissionDenied() {
   return (
     <div
       className="flex h-full items-center justify-center p-6"
-      style={{ background: 'oklch(0.04 0.008 252)' }}
+      style={{ background: 'rgb(0, 0, 1)' }}
     >
       <div
         className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border p-8 text-center"
-        style={{ background: 'oklch(0.07 0.010 252)', borderColor: 'oklch(0.15 0.008 252)' }}
+        style={{ background: 'rgb(1, 1, 2)', borderColor: 'rgb(9, 11, 14)' }}
       >
         <span
           aria-hidden
           className="flex h-12 w-12 items-center justify-center rounded-full border"
           style={{
-            background: 'oklch(0.10 0.015 252)',
-            borderColor: 'oklch(0.20 0.020 252)',
-            color: 'oklch(0.65 0.18 252)',
+            background: 'rgb(1, 3, 7)',
+            borderColor: 'rgb(15, 23, 31)',
+            color: 'rgb(34, 145, 248)',
           }}
         >
           <ScanSearch size={20} strokeWidth={1.6} />
         </span>
         <div>
-          <p className="text-sm font-semibold" style={{ color: 'oklch(0.92 0.004 252)' }}>{t('nav.permissionRequired')}</p>
-          <p className="mt-2 text-xs leading-relaxed" style={{ color: 'oklch(0.48 0.008 252)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'rgb(227, 229, 231)' }}>{t('nav.permissionRequired')}</p>
+          <p className="mt-2 text-xs leading-relaxed" style={{ color: 'rgb(90, 94, 98)' }}>
             {t('govt.tax.permissionHint')}
           </p>
         </div>

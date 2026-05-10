@@ -112,7 +112,7 @@ function RecurringHero({ stats, streamerMode }: { stats: RecurringStats; streame
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 14% 0%, oklch(0.70 0.14 230 / 0.14), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 56%)',
+            'radial-gradient(circle at 14% 0%, rgba(0,173,228,0.14), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%)',
         }}
       />
       <div className="relative flex items-center justify-between gap-5 p-4 2xl:p-5">
@@ -259,7 +259,7 @@ function NextPaymentPanel({ rule, streamerMode }: { rule: Recurring | undefined;
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 86% 0%, oklch(0.70 0.14 230 / 0.14), transparent 38%)' }}
+        style={{ background: 'radial-gradient(circle at 86% 0%, rgba(0,173,228,0.14), transparent 38%)' }}
       />
       <div className="relative flex items-start justify-between gap-3">
         <div>
@@ -385,10 +385,10 @@ function statusText(status: RecurringStatus): string {
 }
 
 function getRecurringMeta(rule: Recurring): { icon: typeof RefreshCw; color: string } {
-  if (rule.status === 'paused') return { icon: Pause, color: 'oklch(0.78 0.16 85)' }
-  if (rule.status === 'cancelled') return { icon: Receipt, color: 'oklch(0.98 0.005 270 / 0.48)' }
-  if (rule.next_charge_ms - Date.now() < 3 * 24 * 60 * 60 * 1000) return { icon: AlertTriangle, color: 'oklch(0.78 0.16 85)' }
-  if (rule.interval_days <= 7) return { icon: Clock, color: 'oklch(0.70 0.14 230)' }
-  if (rule.amount_minor >= 500_00) return { icon: Landmark, color: 'oklch(0.70 0.22 40)' }
-  return { icon: Check, color: 'oklch(0.72 0.16 155)' }
+  if (rule.status === 'paused') return { icon: Pause, color: 'rgb(230, 173, 0)' }
+  if (rule.status === 'cancelled') return { icon: Receipt, color: 'rgba(247,248,252,0.48)' }
+  if (rule.next_charge_ms - Date.now() < 3 * 24 * 60 * 60 * 1000) return { icon: AlertTriangle, color: 'rgb(230, 173, 0)' }
+  if (rule.interval_days <= 7) return { icon: Clock, color: 'rgb(0, 173, 228)' }
+  if (rule.amount_minor >= 500_00) return { icon: Landmark, color: 'var(--color-brand-signal-orange)' }
+  return { icon: Check, color: 'rgb(53, 193, 119)' }
 }

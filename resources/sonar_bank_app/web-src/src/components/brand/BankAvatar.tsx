@@ -20,11 +20,11 @@ const SIZE_CLASS = {
 } satisfies Record<NonNullable<BankAvatarProps['size']>, string>
 
 const AVATAR_GRADIENTS = [
-  'linear-gradient(135deg, oklch(0.72 0.16 35), oklch(0.50 0.12 25))',
-  'linear-gradient(135deg, oklch(0.72 0.14 165), oklch(0.36 0.10 215))',
-  'linear-gradient(135deg, oklch(0.76 0.10 80), oklch(0.48 0.08 45))',
-  'linear-gradient(135deg, oklch(0.66 0.12 285), oklch(0.42 0.10 245))',
-  'linear-gradient(135deg, oklch(0.82 0.08 20), oklch(0.50 0.12 12))',
+  'linear-gradient(135deg, rgb(248, 123, 92), rgb(156, 67, 63))',
+  'linear-gradient(135deg, rgb(45, 192, 142), rgb(0, 72, 93))',
+  'linear-gradient(135deg, rgb(211, 170, 100), rgb(131, 78, 54))',
+  'linear-gradient(135deg, rgb(139, 135, 216), rgb(11, 81, 127))',
+  'linear-gradient(135deg, rgb(244, 176, 175), rgb(155, 66, 81))',
 ]
 
 const AVATAR_IMAGES = [
@@ -51,8 +51,8 @@ export function BankAvatar({ name, size = 'md', seed, className }: BankAvatarPro
       )}
       style={{
         background: AVATAR_GRADIENTS[index],
-        border: '1px solid oklch(1 0 0 / 0.18)',
-        boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.24), 0 8px 18px -10px oklch(0 0 0 / 0.8)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.24), 0 8px 18px -10px rgba(0,0,0,0.8)',
       }}
       aria-label={label}
       title={label}

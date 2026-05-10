@@ -8,14 +8,14 @@ interface Props {
 }
 
 const SECTOR_COLORS: Record<string, string> = {
-  farming:   'oklch(0.72 0.18 135)',
-  milling:   'oklch(0.75 0.15 85)',
-  bakery:    'oklch(0.78 0.16 55)',
-  retail:    'oklch(0.72 0.17 215)',
-  logistics: 'oklch(0.72 0.15 265)',
-  services:  'oklch(0.72 0.12 252)',
-  finance:   'oklch(0.68 0.18 155)',
-  other:     'oklch(0.60 0.08 252)',
+  farming:   'rgb(112, 188, 57)',
+  milling:   'rgb(217, 165, 20)',
+  bakery:    'rgb(255, 152, 69)',
+  retail:    'rgb(0, 189, 230)',
+  logistics: 'rgb(118, 161, 255)',
+  services:  'rgb(106, 169, 237)',
+  finance:   'rgb(0, 183, 100)',
+  other:     'rgb(92, 131, 175)',
 }
 
 const SECTOR_LABEL_KEY: Record<string, TranslationKey> = {

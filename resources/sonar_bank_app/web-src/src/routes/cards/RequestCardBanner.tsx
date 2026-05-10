@@ -34,9 +34,9 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
       )}
       style={{
         background:
-          'linear-gradient(135deg, oklch(0.18 0.05 35 / 0.80), oklch(0.08 0.018 270 / 0.72))',
-        border: '1px solid oklch(1 0 0 / 0.09)',
-        boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.08), 0 18px 42px -30px oklch(0.70 0.22 40 / 0.55)',
+          'linear-gradient(135deg, rgba(35,7,3,0.8), rgba(1,2,5,0.72))',
+        border: '1px solid rgba(255,255,255,0.09)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 42px -30px rgba(246,75,0,0.55)',
       }}
     >
       <div
@@ -44,7 +44,7 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 18% 10%, oklch(0.72 0.22 40 / 0.34), transparent 38%), radial-gradient(circle at 88% 20%, oklch(1 0 0 / 0.10), transparent 32%)',
+            'radial-gradient(circle at 18% 10%, rgba(255,100,19,0.34), transparent 38%), radial-gradient(circle at 88% 20%, rgba(255,255,255,0.1), transparent 32%)',
         }}
       />
       <div className="relative flex items-center -space-x-1.5 shrink-0">
@@ -80,10 +80,10 @@ export function RequestCardBanner({ className }: RequestCardBannerProps) {
             : 'enabled:hover:-translate-y-0.5 enabled:active:scale-[0.98]',
         )}
         style={{
-          background: ctaDisabled ? 'oklch(1 0 0 / 0.08)' : 'oklch(1 0 0 / 0.92)',
-          border: '1px solid oklch(1 0 0 / 0.18)',
-          color: ctaDisabled ? 'oklch(0.85 0.012 270)' : 'oklch(0.08 0.01 270)',
-          boxShadow: ctaDisabled ? 'none' : '0 14px 24px -18px oklch(0 0 0 / 0.85)',
+          background: ctaDisabled ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.92)',
+          border: '1px solid rgba(255,255,255,0.18)',
+          color: ctaDisabled ? 'rgb(202, 206, 214)' : 'rgb(1, 2, 3)',
+          boxShadow: ctaDisabled ? 'none' : '0 14px 24px -18px rgba(0,0,0,0.85)',
         }}
       >
         <span>{t('cards.design')}</span>
@@ -102,8 +102,8 @@ function DesignSwatch({ surface, index }: { surface: string; index: number }) {
       className="relative h-7 w-11 rounded-md overflow-hidden"
       style={{
         background: surface,
-        border: '1px solid oklch(1 0 0 / 0.18)',
-        boxShadow: '0 2px 6px -2px oklch(0 0 0 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.08)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: '0 2px 6px -2px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}
       aria-hidden
     >
@@ -111,7 +111,7 @@ function DesignSwatch({ surface, index }: { surface: string; index: number }) {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(115deg, transparent 30%, oklch(1 0 0 / 0.12) 50%, transparent 70%)',
+            'linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%)',
           mixBlendMode: 'overlay',
         }}
       />

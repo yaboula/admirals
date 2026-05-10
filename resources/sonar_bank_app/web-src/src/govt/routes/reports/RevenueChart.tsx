@@ -7,8 +7,8 @@ interface Props {
   data: GovtRevenueDataPoint[]
 }
 
-const COLOR_COLLECTED  = 'oklch(0.68 0.18 155)'
-const COLOR_OBLIGATION = 'oklch(0.55 0.08 252)'
+const COLOR_COLLECTED  = 'rgb(0, 183, 100)'
+const COLOR_OBLIGATION = 'rgb(78, 116, 159)'
 
 export function RevenueChart({ data }: Props) {
   const { t, money } = useI18n()
@@ -51,7 +51,7 @@ export function RevenueChart({ data }: Props) {
               x2={W - padR}
               y1={y}
               y2={y}
-              stroke="oklch(1 0 0 / 0.06)"
+              stroke="rgba(255,255,255,0.06)"
               strokeWidth="1"
             />
           )
@@ -83,7 +83,7 @@ export function RevenueChart({ data }: Props) {
               y={H - 6}
               textAnchor="middle"
               fontSize="9"
-              fill="oklch(1 0 0 / 0.35)"
+              fill="rgba(255,255,255,0.35)"
               fontFamily="inherit"
             >
               {d.label}
@@ -91,7 +91,7 @@ export function RevenueChart({ data }: Props) {
           )
         })}
 
-        <line x1={padL} x2={W - padR} y1={padT + chartH} y2={padT + chartH} stroke="oklch(1 0 0 / 0.10)" strokeWidth="1" />
+        <line x1={padL} x2={W - padR} y1={padT + chartH} y2={padT + chartH} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
       </svg>
 
       {!streamerMode ? (

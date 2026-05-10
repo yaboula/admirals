@@ -55,7 +55,7 @@ export function Census() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-4 h-56"
-        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, rgba(0,113,214,0.07), transparent)', zIndex: 0 }}
       />
       <motion.header
         initial={{ opacity: 0, y: 8 }}
@@ -68,7 +68,7 @@ export function Census() {
           <div className="flex items-center gap-3">
             <div
               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border"
-              style={{ background: 'oklch(0.06 0.018 252 / 0.70)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
+              style={{ background: 'rgba(0,1,3,0.7)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
               aria-hidden
             >
               <Users size={16} strokeWidth={1.8} />
@@ -79,11 +79,11 @@ export function Census() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
-            <InlineStat value={number(totalsByStatus.active)} label={t('govt.census.status.active')} color="oklch(0.72 0.17 155)" />
+            <InlineStat value={number(totalsByStatus.active)} label={t('govt.census.status.active')} color="rgb(34, 195, 115)" />
             <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
-            <InlineStat value={number(totalsByStatus.flagged)} label={t('govt.census.status.flagged')} color="oklch(0.82 0.14 85)" />
+            <InlineStat value={number(totalsByStatus.flagged)} label={t('govt.census.status.flagged')} color="rgb(238, 188, 74)" />
             <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
-            <InlineStat value={number(totalsByStatus.sanctioned)} label={t('govt.census.status.sanctioned')} color="oklch(0.78 0.16 25)" />
+            <InlineStat value={number(totalsByStatus.sanctioned)} label={t('govt.census.status.sanctioned')} color="rgb(255, 138, 130)" />
             <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
             <InlineStat value={number(totalsByStatus.exempt)} label={t('govt.census.status.exempt')} color="var(--color-govt-text-tertiary)" />
           </div>

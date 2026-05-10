@@ -19,10 +19,10 @@ const RATE_MAX = 60
 const REASON_MIN = 12
 
 const TIER_COLORS: Record<GovtTaxTierId, string> = {
-  basic: 'oklch(0.72 0.17 155)',
-  standard: 'oklch(0.78 0.16 108)',
-  premium: 'oklch(0.78 0.16 60)',
-  elite: 'oklch(0.70 0.20 30)',
+  basic: 'rgb(34, 195, 115)',
+  standard: 'rgb(194, 190, 35)',
+  premium: 'rgb(255, 156, 59)',
+  elite: 'rgb(255, 97, 77)',
 }
 
 interface Props {
@@ -113,16 +113,16 @@ export function BracketEditor({ brackets, onDraftChange }: Props) {
             <div
               className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs"
               style={{
-                borderColor: estimatedRevenueDelta > 0 ? 'oklch(0.72 0.17 155 / 0.30)' : 'oklch(0.70 0.20 30 / 0.30)',
-                background: estimatedRevenueDelta > 0 ? 'oklch(0.72 0.17 155 / 0.06)' : 'oklch(0.70 0.20 30 / 0.06)',
+                borderColor: estimatedRevenueDelta > 0 ? 'rgba(34,195,115,0.3)' : 'rgba(255,97,77,0.3)',
+                background: estimatedRevenueDelta > 0 ? 'rgba(34,195,115,0.06)' : 'rgba(255,97,77,0.06)',
               }}
             >
               <ArrowRight
                 size={13}
                 strokeWidth={2}
-                style={{ color: estimatedRevenueDelta > 0 ? 'oklch(0.72 0.17 155)' : 'oklch(0.70 0.20 30)' }}
+                style={{ color: estimatedRevenueDelta > 0 ? 'rgb(34, 195, 115)' : 'rgb(255, 97, 77)' }}
               />
-              <span style={{ color: estimatedRevenueDelta > 0 ? 'oklch(0.85 0.12 155)' : 'oklch(0.85 0.10 30)' }}>
+              <span style={{ color: estimatedRevenueDelta > 0 ? 'rgb(138, 229, 171)' : 'rgb(255, 181, 167)' }}>
                 {`${t('govt.tax.editor.estimatedImpact')}: ${estimatedRevenueDelta > 0 ? '+' : ''}${money(Math.abs(estimatedRevenueDelta))} / ciclo`}
               </span>
             </div>
@@ -132,32 +132,32 @@ export function BracketEditor({ brackets, onDraftChange }: Props) {
             <button
               type="button"
               onClick={() => { sfx.console_tap(); setShowReason(true) }}
-              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-[oklch(0.28_0.10_252)] bg-[oklch(0.65_0.18_252/0.10)] text-xs font-semibold uppercase tracking-[0.12em] text-[oklch(0.85_0.12_252)] transition-all hover:bg-[oklch(0.65_0.18_252/0.18)]"
+              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-[rgb(0, 40, 88)] bg-[rgba(34,145,248,0.1)] text-xs font-semibold uppercase tracking-[0.12em] text-[rgb(147, 211, 255)] transition-all hover:bg-[rgba(34,145,248,0.18)]"
             >
               {t('govt.tax.editor.reviewChanges')}
               <ArrowRight size={12} strokeWidth={2.4} />
             </button>
           ) : (
             <div className="space-y-2">
-              <label className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[oklch(0.48_0.008_252)]">
+              <label className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[rgb(90, 94, 98)]">
                 {t('govt.tax.editor.auditReason')}
-                <span className="ml-1 text-[oklch(0.55_0.008_252)]">{`${reason.trim().length} / min ${REASON_MIN}`}</span>
+                <span className="ml-1 text-[rgb(110, 114, 118)]">{`${reason.trim().length} / min ${REASON_MIN}`}</span>
               </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value.slice(0, 320))}
                 placeholder={t('govt.tax.editor.reasonPlaceholder')}
                 rows={2}
-                className="w-full resize-none rounded-xl border bg-[oklch(0.07_0.010_252)] px-3 py-2.5 text-sm leading-relaxed text-[oklch(0.96_0.004_252)] placeholder:text-[oklch(0.38_0.008_252)] outline-none transition-colors"
-                style={{ borderColor: 'oklch(0.20 0.012 252)' }}
+                className="w-full resize-none rounded-xl border bg-[rgb(1, 1, 2)] px-3 py-2.5 text-sm leading-relaxed text-[rgb(240, 242, 244)] placeholder:text-[rgb(63, 67, 71)] outline-none transition-colors"
+                style={{ borderColor: 'rgb(18, 22, 27)' }}
               />
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={handleRevert}
                   disabled={mutation.isPending}
-                  className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border bg-transparent text-xs font-semibold uppercase tracking-[0.12em] text-[oklch(0.55_0.008_252)] transition-colors disabled:opacity-50"
-                  style={{ borderColor: 'oklch(0.20 0.012 252)' }}
+                  className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border bg-transparent text-xs font-semibold uppercase tracking-[0.12em] text-[rgb(110, 114, 118)] transition-colors disabled:opacity-50"
+                  style={{ borderColor: 'rgb(18, 22, 27)' }}
                 >
                   <RotateCcw size={12} strokeWidth={2.2} />
                   {t('govt.tax.editor.revert')}
@@ -169,8 +169,8 @@ export function BracketEditor({ brackets, onDraftChange }: Props) {
                   className={cn(
                     'inline-flex h-9 flex-[2] items-center justify-center gap-2 rounded-xl border text-xs font-semibold uppercase tracking-[0.12em] transition-all disabled:cursor-not-allowed disabled:opacity-40',
                     canSave
-                      ? 'border-[oklch(0.28_0.10_252)] bg-[oklch(0.65_0.18_252/0.14)] text-[oklch(0.88_0.10_252)] hover:bg-[oklch(0.65_0.18_252/0.22)]'
-                      : 'border-[oklch(0.20_0.012_252)] text-[oklch(0.48_0.008_252)]',
+                      ? 'border-[rgb(0, 40, 88)] bg-[rgba(34,145,248,0.14)] text-[rgb(167, 220, 255)] hover:bg-[rgba(34,145,248,0.22)]'
+                      : 'border-[rgb(18, 22, 27)] text-[rgb(90, 94, 98)]',
                   )}
                 >
                   {mutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} strokeWidth={2.4} />}
@@ -206,8 +206,8 @@ function BracketRow({ bracket, currentRate, color, index, onChange, disabled }: 
       transition={{ duration: 0.2, delay: index * 0.05 }}
       className="group relative overflow-hidden rounded-xl border p-3 transition-colors"
       style={{
-        borderColor: isDirty ? `${color.replace(')', ' / 0.35)')}` : 'oklch(0.15 0.008 252)',
-        background: isDirty ? `${color.replace(')', ' / 0.05)')}` : 'oklch(0.08 0.010 252)',
+        borderColor: isDirty ? `${color.replace(')', ' / 0.35)')}` : 'rgb(9, 11, 14)',
+        background: isDirty ? `${color.replace(')', ' / 0.05)')}` : 'rgb(1, 2, 3)',
       }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -220,10 +220,10 @@ function BracketRow({ bracket, currentRate, color, index, onChange, disabled }: 
             {bracket.code}
           </span>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'oklch(0.78 0.008 252)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgb(180, 184, 188)' }}>
               {bracket.label}
             </p>
-            <p className="text-[10px]" style={{ color: 'oklch(0.45 0.008 252)' }}>
+            <p className="text-[10px]" style={{ color: 'rgb(82, 86, 90)' }}>
               {bracket.incomeMax
                 ? `${money(bracket.incomeMin)} — ${money(bracket.incomeMax)}`
                 : `${money(bracket.incomeMin)}+`}
@@ -233,21 +233,21 @@ function BracketRow({ bracket, currentRate, color, index, onChange, disabled }: 
         <div className="text-right">
           <div className="flex items-baseline gap-1">
             {isDirty ? (
-              <span className="text-[11px] line-through" style={{ color: 'oklch(0.40 0.008 252)' }}>{bracket.rate}%</span>
+              <span className="text-[11px] line-through" style={{ color: 'rgb(69, 72, 76)' }}>{bracket.rate}%</span>
             ) : null}
-            <span className="text-2xl font-light tracking-[-0.04em]" style={{ color: isDirty ? color : 'oklch(0.92 0.004 252)' }}>
+            <span className="text-2xl font-light tracking-[-0.04em]" style={{ color: isDirty ? color : 'rgb(227, 229, 231)' }}>
               {currentRate}
             </span>
-            <span className="text-xs" style={{ color: 'oklch(0.55 0.008 252)' }}>%</span>
+            <span className="text-xs" style={{ color: 'rgb(110, 114, 118)' }}>%</span>
           </div>
-          <p className="text-[10px]" style={{ color: 'oklch(0.42 0.008 252)' }}>
+          <p className="text-[10px]" style={{ color: 'rgb(74, 77, 81)' }}>
             {`${number(bracket.affectedCount)} ${bracket.affectedCount === 1 ? 'citizen' : 'citizens'}`}
           </p>
         </div>
       </div>
 
       <div className="mt-3 relative h-5 flex items-center">
-        <div className="pointer-events-none absolute left-0 right-0 h-[2px] rounded-full" style={{ background: 'oklch(0.16 0.010 252)' }} />
+        <div className="pointer-events-none absolute left-0 right-0 h-[2px] rounded-full" style={{ background: 'rgb(10, 14, 18)' }} />
         <div
           className="pointer-events-none absolute left-0 h-[2px] rounded-full transition-all"
           style={{ width: `${pct}%`, background: color }}

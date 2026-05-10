@@ -34,7 +34,7 @@ export function Investments() {
       </div>
 
       <div className="relative mx-auto flex w-full max-w-[1220px] flex-col gap-4 pb-6">
-        <motion.section initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }} className="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-[radial-gradient(circle_at_70%_45%,oklch(0.65_0.18_155/0.18),transparent_28%),radial-gradient(circle_at_24%_16%,oklch(0.65_0.22_40/0.20),transparent_34%),linear-gradient(135deg,oklch(0.105_0.012_270/0.82),oklch(0.035_0_0/0.96))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.5)] md:p-6">
+        <motion.section initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }} className="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-[radial-gradient(circle_at_70%_45%,rgba(0,173,91,0.18),transparent_28%),radial-gradient(circle_at_24%_16%,rgba(246,75,0,0.2),transparent_34%),linear-gradient(135deg,rgba(3,4,7,0.82),rgba(0,0,0,0.96))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.5)] md:p-6">
           <div className="absolute right-[-8%] top-[-22%] h-64 w-64 rounded-full border border-white/10" />
           <div className="absolute bottom-[-34%] left-[18%] h-80 w-80 rounded-full border border-brand-signal-orange/10" />
           <div className="relative grid min-h-[330px] gap-6 xl:grid-cols-[minmax(0,0.95fr)_360px_minmax(300px,0.74fr)]">
@@ -107,7 +107,7 @@ export function Investments() {
             </div>
 
             <aside className="grid gap-4">
-              <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,oklch(0.65_0.22_40/0.13),transparent_46%),rgba(255,255,255,0.035)]">
+              <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(246,75,0,0.13),transparent_46%),rgba(255,255,255,0.035)]">
                 <div className="border-b border-white/10 px-5 py-4">
                   <p className="text-sm font-semibold text-text-primary">{t('investments.allocationMap')}</p>
                   <p className="mt-0.5 text-xs text-text-tertiary">{t('investments.allocationDescription')}</p>
@@ -147,7 +147,7 @@ function VaultCore({ holdings, quotes, streamerMode }: { holdings: PortfolioHold
   const total = holdings.reduce((sum, holding) => sum + holding.market_value_minor, 0)
   return (
     <div className="relative flex min-h-[300px] items-center justify-center">
-      <div className="absolute h-72 w-72 rounded-full border border-white/10 bg-[conic-gradient(from_120deg,oklch(0.65_0.22_40/0.34),oklch(0.65_0.18_155/0.22),transparent,oklch(0.65_0.22_40/0.34))] p-[1px] shadow-[0_0_70px_rgba(255,103,18,0.10)]">
+      <div className="absolute h-72 w-72 rounded-full border border-white/10 bg-[conic-gradient(from_120deg,rgba(246,75,0,0.34),rgba(0,173,91,0.22),transparent,rgba(246,75,0,0.34))] p-[1px] shadow-[0_0_70px_rgba(255,103,18,0.10)]">
         <div className="h-full w-full rounded-full bg-black/80" />
       </div>
       <div className="absolute h-56 w-56 rounded-full border border-white/10" />
@@ -222,7 +222,7 @@ function MarketPulseRow({ quote, holding, rank }: { quote: StockQuote; holding?:
 function MarketSparkline({ quote }: { quote: StockQuote }) {
   const positive = quote.change_24h_pct >= 0
   const data = buildSparklineData(quote)
-  const color = positive ? 'oklch(0.65 0.18 155)' : 'oklch(0.62 0.21 25)'
+  const color = positive ? 'rgb(0, 173, 91)' : 'rgb(234, 60, 63)'
   const gradientId = `market-spark-${quote.symbol.replace(/[^a-zA-Z0-9_-]/g, '')}`
   return (
     <div className="h-14 w-[156px] overflow-hidden max-lg:hidden">
@@ -278,7 +278,7 @@ function AllocationStrip({ item }: { item: AllocationItem }) {
         <span className="text-xs font-semibold text-brand-signal-orange-light tactile-tabular-nums">{number(item.weight, { maximumFractionDigits: 1 })}%</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.06]">
-        <div className="h-full rounded-full bg-[linear-gradient(90deg,oklch(0.65_0.22_40),oklch(0.65_0.18_155))]" style={{ width: `${Math.max(4, item.weight)}%` }} />
+        <div className="h-full rounded-full bg-[linear-gradient(90deg,rgb(246, 75, 0),rgb(0, 173, 91))]" style={{ width: `${Math.max(4, item.weight)}%` }} />
       </div>
     </div>
   )

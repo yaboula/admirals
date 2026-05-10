@@ -60,7 +60,7 @@ export function BusinessFilters({ value, onChange, resultCount }: Props) {
           onChange={(e) => onChange({ ...value, search: e.target.value })}
           placeholder={t('govt.business.searchPlaceholder')}
           aria-label={t('govt.business.searchPlaceholder')}
-          className="h-8 w-full rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.008_252/0.55)] pl-7 pr-7 text-[12px] text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
+          className="h-8 w-full rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,1,1,0.55)] pl-7 pr-7 text-[12px] text-[var(--color-govt-text-primary)] placeholder:text-[var(--color-govt-text-tertiary)] outline-none transition-colors focus:border-[var(--color-govt-border-active)]"
         />
         {value.search.length > 0 ? (
           <button type="button" onClick={() => onChange({ ...value, search: '' })} aria-label={t('govt.census.searchClear')}
@@ -87,7 +87,7 @@ export function BusinessFilters({ value, onChange, resultCount }: Props) {
 }
 
 function Divider() {
-  return <span aria-hidden className="hidden h-3.5 w-px bg-[oklch(1_0_0/0.10)] sm:block" />
+  return <span aria-hidden className="hidden h-3.5 w-px bg-[rgba(255,255,255,0.1)] sm:block" />
 }
 
 function ChipGroup<V extends string>({

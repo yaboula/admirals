@@ -123,7 +123,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 82% 0%, color-mix(in oklch, ${design.accent} 20%, transparent), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 56%)`,
+          background: `radial-gradient(circle at 82% 0%, ${withAlpha(design.accent, 0.2)}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%)`,
         }}
       />
       <div className="relative flex h-full min-h-0 flex-col gap-3 p-4 2xl:gap-4 2xl:p-5">
@@ -134,9 +134,9 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           transition={{ duration: 0.22 }}
           className="rounded-[1.35rem] border p-3.5 2xl:p-4"
           style={{
-            background: 'oklch(1 0 0 / 0.035)',
-            borderColor: 'oklch(1 0 0 / 0.08)',
-            boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.06)',
+            background: 'rgba(255,255,255,0.04)',
+            borderColor: 'rgba(255,255,255,0.08)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
           }}
         >
           <div className="flex items-start justify-between gap-3">
@@ -184,9 +184,9 @@ export function CardDetails({ card, className }: CardDetailsProps) {
         <div
           className="rounded-[1.35rem] p-3.5 flex flex-col gap-3 2xl:p-4"
           style={{
-            background: 'oklch(1 0 0 / 0.035)',
-            border: '1px solid oklch(1 0 0 / 0.08)',
-            boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05)',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
         >
           <div className="flex items-center justify-between">
@@ -317,9 +317,9 @@ function BenefitsPanel({
         className,
       )}
       style={{
-        background: 'oklch(1 0 0 / 0.035)',
-        border: '1px solid oklch(1 0 0 / 0.08)',
-        boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.05)',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
       }}
     >
       <div className="flex items-center justify-between shrink-0">
@@ -355,9 +355,9 @@ function TierBadge({ tier }: { tier: 'default' | 'premium' | 'signature' }) {
     <span
       className="text-[9px] uppercase tracking-[0.16em] font-semibold px-1.5 py-0.5 rounded"
       style={{
-        color: 'oklch(0.78 0.012 270)',
-        background: 'oklch(1 0 0 / 0.05)',
-        border: '1px solid oklch(1 0 0 / 0.10)',
+        color: 'rgb(180, 183, 191)',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
       }}
     >
       {label}
@@ -377,7 +377,7 @@ function StatusPill({ status, t }: { status: BankCardMock['status']; t: (key: Tr
       className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] font-semibold shrink-0"
       style={{
         color: config.color,
-        background: 'oklch(1 0 0 / 0.04)',
+        background: 'rgba(255,255,255,0.04)',
         border: `1px solid ${config.borderColor}`,
       }}
     >
@@ -389,10 +389,10 @@ function StatusPill({ status, t }: { status: BankCardMock['status']; t: (key: Tr
 
 function useStatusConfig(t: (key: TranslationKey) => string): Record<BankCardMock['status'], { label: string; color: string; borderColor: string; icon: typeof Lock | null }> {
   return {
-    active: { label: t('cards.statusActive'), color: 'oklch(0.85 0.14 150)', borderColor: 'oklch(0.85 0.14 150 / 0.25)', icon: null },
-    locked: { label: t('cards.statusFrozen'), color: 'oklch(0.78 0.10 230)', borderColor: 'oklch(0.78 0.10 230 / 0.25)', icon: Lock },
-    expired: { label: t('cards.statusExpired'), color: 'oklch(0.65 0.01 270)', borderColor: 'oklch(0.65 0.01 270 / 0.20)', icon: null },
-    pending: { label: t('cards.statusPending'), color: 'oklch(0.78 0.10 70)', borderColor: 'oklch(0.78 0.10 70 / 0.25)', icon: null },
+    active: { label: t('cards.statusActive'), color: 'rgb(134, 231, 156)', borderColor: 'rgba(134,231,156,0.25)', icon: null },
+    locked: { label: t('cards.statusFrozen'), color: 'rgb(110, 195, 235)', borderColor: 'rgba(110,195,235,0.25)', icon: Lock },
+    expired: { label: t('cards.statusExpired'), color: 'rgb(141, 143, 149)', borderColor: 'rgba(141,143,149,0.2)', icon: null },
+    pending: { label: t('cards.statusPending'), color: 'rgb(225, 172, 110)', borderColor: 'rgba(225,172,110,0.25)', icon: null },
   }
 }
 
@@ -413,8 +413,8 @@ function MetaItem({
     <div
       className="flex min-w-0 flex-col gap-1.5 rounded-[1.1rem] border p-3"
       style={{
-        background: 'oklch(1 0 0 / 0.028)',
-        borderColor: 'oklch(1 0 0 / 0.07)',
+        background: 'rgba(255,255,255,0.03)',
+        borderColor: 'rgba(255,255,255,0.07)',
       }}
     >
       <div className="inline-flex items-center gap-1.5">
@@ -453,10 +453,10 @@ function Meter({
 }) {
   const { money } = useI18n()
   const isAlarm = pct > 80
-  // Use color-mix to derive a softer entry stop in the same hue family. The
+  // Use an alpha-derived entry stop in the same hue family. The
   // bar therefore always speaks the focused card's chromatic language; the
   // alarm state adds an accent halo + brighter mix instead of swapping hue.
-  const softStop = `color-mix(in oklch, ${accent} 55%, transparent)`
+  const softStop = withAlpha(accent, 0.55)
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-white/[0.055] bg-black/[0.10] px-2.5 py-2">
       <div className="flex items-baseline justify-between gap-2">
@@ -472,7 +472,7 @@ function Meter({
       </div>
       <div
         className="h-1.5 w-full rounded-full overflow-hidden"
-        style={{ background: 'oklch(1 0 0 / 0.06)' }}
+        style={{ background: 'rgba(255,255,255,0.06)' }}
       >
         <motion.div
           initial={{ width: 0 }}
@@ -524,9 +524,9 @@ function ActionButton({
         active && !disabled && 'tactile-wght-breathing',
       )}
       style={{
-        background: active ? 'oklch(1 0 0 / 0.08)' : 'oklch(1 0 0 / 0.03)',
-        border: `1px solid ${active ? 'oklch(1 0 0 / 0.16)' : 'oklch(1 0 0 / 0.07)'}`,
-        color: active ? 'oklch(0.96 0 0)' : 'oklch(0.78 0.012 270)',
+        background: active ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
+        border: `1px solid ${active ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.07)'}`,
+        color: active ? 'rgb(242, 242, 242)' : 'rgb(180, 183, 191)',
       }}
       title={disabled && !onClick ? t('cards.comingSoon') : undefined}
     >
@@ -542,4 +542,14 @@ function ActionButton({
 
 function typeLabel(cardType: BankCardMock['card_type'], t: (key: TranslationKey) => string): string {
   return cardType === 'debit' ? t('cards.debit') : cardType === 'virtual' ? 'Virtual' : t('cards.credit')
+}
+
+function withAlpha(color: string, alpha: number): string {
+  const rgb = color.match(/^rgb\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*\)$/)
+  if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`
+
+  const rgba = color.match(/^rgba\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*[0-9.]+\s*\)$/)
+  if (rgba) return `rgba(${rgba[1]}, ${rgba[2]}, ${rgba[3]}, ${alpha})`
+
+  return color
 }

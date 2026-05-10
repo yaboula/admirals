@@ -12,27 +12,27 @@ const TONE_META: Record<
 > = {
   success: {
     icon: CheckCircle2,
-    bg: 'oklch(0.65 0.18 155 / 0.16)',
-    ring: 'oklch(0.65 0.18 155 / 0.4)',
-    iconColor: 'oklch(0.65 0.18 155)',
+    bg: 'rgba(0,173,91,0.16)',
+    ring: 'rgba(0,173,91,0.4)',
+    iconColor: 'rgb(0, 173, 91)',
   },
   warning: {
     icon: AlertTriangle,
-    bg: 'oklch(0.78 0.16 85 / 0.16)',
-    ring: 'oklch(0.78 0.16 85 / 0.4)',
-    iconColor: 'oklch(0.78 0.16 85)',
+    bg: 'rgba(230,173,0,0.16)',
+    ring: 'rgba(230,173,0,0.4)',
+    iconColor: 'rgb(230, 173, 0)',
   },
   danger: {
     icon: AlertOctagon,
-    bg: 'oklch(0.62 0.21 25 / 0.16)',
-    ring: 'oklch(0.62 0.21 25 / 0.4)',
-    iconColor: 'oklch(0.62 0.21 25)',
+    bg: 'rgba(234,60,63,0.16)',
+    ring: 'rgba(234,60,63,0.4)',
+    iconColor: 'rgb(234, 60, 63)',
   },
   info: {
     icon: Info,
-    bg: 'oklch(0.70 0.14 230 / 0.16)',
-    ring: 'oklch(0.70 0.14 230 / 0.4)',
-    iconColor: 'oklch(0.70 0.14 230)',
+    bg: 'rgba(0,173,228,0.16)',
+    ring: 'rgba(0,173,228,0.4)',
+    iconColor: 'rgb(0, 173, 228)',
   },
 }
 
@@ -94,7 +94,7 @@ function ToastItem({
     >
       <div
         className="shrink-0 mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-lg"
-        style={{ background: 'oklch(0 0 0 / 0.32)' }}
+        style={{ background: 'rgba(0,0,0,0.32)' }}
       >
         <Icon size={18} strokeWidth={2} style={{ color: meta.iconColor }} />
       </div>

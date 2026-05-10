@@ -14,9 +14,9 @@ export function SonarBureauSeal({
   const bgId = `sbg_${size}`
   const topArcId = `starc_${size}`
 
-  const gold    = 'oklch(0.76 0.14 82)'
-  const goldDim = 'oklch(0.76 0.14 82 / 0.50)'
-  const navy    = 'oklch(0.055 0.020 252)'
+  const gold    = 'rgb(221, 167, 52)'
+  const goldDim = 'rgba(221,167,52,0.5)'
+  const navy    = 'rgb(0, 1, 2)'
 
   return (
     <svg
@@ -28,8 +28,8 @@ export function SonarBureauSeal({
     >
       <defs>
         <radialGradient id={bgId} cx="50%" cy="36%" r="68%">
-          <stop offset="0%"   stopColor="oklch(0.14 0.032 252)" />
-          <stop offset="100%" stopColor="oklch(0.05 0.014 252)" />
+          <stop offset="0%"   stopColor="rgb(2, 9, 22)" />
+          <stop offset="100%" stopColor="rgb(0, 0, 1)" />
         </radialGradient>
         {showText && (
           <path

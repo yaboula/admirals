@@ -111,7 +111,7 @@ export function OnboardingOverlay({ citizenId, primaryIban }: OnboardingOverlayP
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  'radial-gradient(circle at 50% -18%, oklch(0.65 0.22 40 / 0.22), transparent 46%), radial-gradient(circle at 86% 14%, oklch(0.70 0.14 230 / 0.14), transparent 34%)',
+                  'radial-gradient(circle at 50% -18%, rgba(246,75,0,0.22), transparent 46%), radial-gradient(circle at 86% 14%, rgba(0,173,228,0.14), transparent 34%)',
               }}
             />
             <button
@@ -171,7 +171,7 @@ function OnboardingVisual({ step, displayIban, onCopyIban }: { step: OnboardingS
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'linear-gradient(150deg, oklch(1 0 0 / 0.08), transparent 46%), radial-gradient(circle at 20% 20%, oklch(0.65 0.22 40 / 0.16), transparent 44%)' }}
+        style={{ background: 'linear-gradient(150deg, rgba(255,255,255,0.08), transparent 46%), radial-gradient(circle at 20% 20%, rgba(246,75,0,0.16), transparent 44%)' }}
       />
       <div className="relative flex items-center justify-between">
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] text-text-primary">

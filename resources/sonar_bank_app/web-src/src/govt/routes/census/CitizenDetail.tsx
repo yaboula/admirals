@@ -42,17 +42,17 @@ const STATUS_TONE: Record<GovtCitizenStatus, { tone: 'success' | 'warning' | 'da
 }
 
 const RISK_TONE: Record<GovtRiskLevel, { color: string; key: TranslationKey }> = {
-  low: { color: 'oklch(0.65 0.18 155)', key: 'govt.census.risk.low' },
-  medium: { color: 'oklch(0.78 0.16 85)', key: 'govt.census.risk.medium' },
-  high: { color: 'oklch(0.72 0.20 35)', key: 'govt.census.risk.high' },
-  critical: { color: 'oklch(0.62 0.21 25)', key: 'govt.census.risk.critical' },
+  low: { color: 'rgb(0, 173, 91)', key: 'govt.census.risk.low' },
+  medium: { color: 'rgb(230, 173, 0)', key: 'govt.census.risk.medium' },
+  high: { color: 'rgb(255, 106, 67)', key: 'govt.census.risk.high' },
+  critical: { color: 'rgb(234, 60, 63)', key: 'govt.census.risk.critical' },
 }
 
 const RISK_SEGS = [
-  { color: 'oklch(0.65 0.18 155)', min: 0, max: 25 },
-  { color: 'oklch(0.78 0.16 85)', min: 26, max: 50 },
-  { color: 'oklch(0.72 0.20 35)', min: 51, max: 75 },
-  { color: 'oklch(0.62 0.21 25)', min: 76, max: 100 },
+  { color: 'rgb(0, 173, 91)', min: 0, max: 25 },
+  { color: 'rgb(230, 173, 0)', min: 26, max: 50 },
+  { color: 'rgb(255, 106, 67)', min: 51, max: 75 },
+  { color: 'rgb(234, 60, 63)', min: 76, max: 100 },
 ] as const
 
 const ACTIVITY_ICON: Record<GovtActivityType, typeof ArrowUpRight> = {
@@ -76,11 +76,11 @@ const ACTIVITY_LABEL: Record<GovtActivityType, TranslationKey> = {
 }
 
 const FLAG_SEVERITY_TONE: Record<GovtFlagSeverity, { color: string; key: TranslationKey }> = {
-  info: { color: 'oklch(0.78 0.10 215)', key: 'govt.census.flags.severity.info' },
-  low: { color: 'oklch(0.65 0.18 155)', key: 'govt.census.flags.severity.low' },
-  medium: { color: 'oklch(0.78 0.16 85)', key: 'govt.census.flags.severity.medium' },
-  high: { color: 'oklch(0.72 0.20 35)', key: 'govt.census.flags.severity.high' },
-  critical: { color: 'oklch(0.62 0.21 25)', key: 'govt.census.flags.severity.critical' },
+  info: { color: 'rgb(98, 200, 223)', key: 'govt.census.flags.severity.info' },
+  low: { color: 'rgb(0, 173, 91)', key: 'govt.census.flags.severity.low' },
+  medium: { color: 'rgb(230, 173, 0)', key: 'govt.census.flags.severity.medium' },
+  high: { color: 'rgb(255, 106, 67)', key: 'govt.census.flags.severity.high' },
+  critical: { color: 'rgb(234, 60, 63)', key: 'govt.census.flags.severity.critical' },
 }
 
 const FLAG_STATUS_LABEL: Record<GovtFlagStatus, TranslationKey> = {
@@ -118,7 +118,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
             aria-hidden
             className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border-2 text-white"
             style={{
-              background: 'radial-gradient(circle at 50% 30%, oklch(0.18 0.018 252), oklch(0.08 0.010 252))',
+              background: 'radial-gradient(circle at 50% 30%, rgb(12, 18, 25), rgb(1, 2, 3))',
               borderColor: 'var(--color-govt-border-strong)',
             }}
           >
@@ -145,7 +145,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
               <Stat label={t('govt.census.detail.flagsCount')} value={number(detail.flagCount)} tone={detail.flagCount > 0 ? 'warning' : 'neutral'} />
             </div>
           </div>
-          <div className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-3">
+          <div className="mt-3 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-3">
             <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">
               {t('govt.census.detail.primaryIban')}
             </span>
@@ -178,10 +178,10 @@ export function CitizenDetail({ detail, isFetching }: Props) {
               width: `${taxPaidPct}%`,
               background:
                 taxPaidPct >= 100
-                  ? 'oklch(0.65 0.18 155)'
+                  ? 'rgb(0, 173, 91)'
                   : taxPaidPct >= 50
-                    ? 'oklch(0.78 0.16 85)'
-                    : 'oklch(0.72 0.20 35)',
+                    ? 'rgb(230, 173, 0)'
+                    : 'rgb(255, 106, 67)',
             }}
           />
         </div>
@@ -202,7 +202,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
                 return (
                   <li
                     key={entry.id}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-2.5"
+                    className="flex items-center gap-3 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-2.5"
                   >
                     <span
                       aria-hidden
@@ -224,7 +224,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
                       <span
                         className={cn(
                           'flex-shrink-0 text-[12px] font-semibold tactile-tabular-nums',
-                          isPositive ? 'text-[oklch(0.78_0.16_155)]' : 'text-[var(--color-govt-text-secondary)]',
+                          isPositive ? 'text-[rgb(78, 213, 137)]' : 'text-[var(--color-govt-text-secondary)]',
                         )}
                       >
                         {valueDisplay}
@@ -248,7 +248,7 @@ export function CitizenDetail({ detail, isFetching }: Props) {
                 return (
                   <li
                     key={flag.id}
-                    className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-2.5"
+                    className="rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-2.5"
                   >
                     <div className="flex items-start gap-2">
                       <span aria-hidden className="mt-1 h-2 w-2 flex-shrink-0 rounded-full" style={{ background: sev.color }} />
@@ -315,12 +315,12 @@ function Stat({
 }) {
   const toneClass =
     tone === 'success'
-      ? 'text-[oklch(0.78_0.16_155)]'
+      ? 'text-[rgb(78, 213, 137)]'
       : tone === 'warning'
-        ? 'text-[oklch(0.85_0.14_85)]'
+        ? 'text-[rgb(248, 198, 85)]'
         : 'text-[var(--color-govt-text-primary)]'
   return (
-    <div className="rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.04_0.008_252/0.60)] p-3">
+    <div className="rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.6)] p-3">
       <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
       <span className={cn('mt-1 block truncate tactile-tabular-nums', prominent ? 'text-2xl font-semibold tracking-[-0.02em]' : 'text-sm font-medium', toneClass)}>
         {value}
@@ -345,7 +345,7 @@ function RiskGauge({ score, color, levelLabel }: { score: number; color: string;
           <circle
             cx={cx} cy={cy} r={r}
             fill="none"
-            stroke="oklch(1 0 0 / 0.07)"
+            stroke="rgba(255,255,255,0.07)"
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={`${sweepArc} ${circ - sweepArc}`}
@@ -377,7 +377,7 @@ function RiskGauge({ score, color, levelLabel }: { score: number; color: string;
             <div
               key={seg.min}
               className="h-1.5 flex-1 rounded-full transition-colors duration-300"
-              style={{ background: pct >= seg.min && pct <= seg.max ? seg.color : 'oklch(1 0 0 / 0.07)' }}
+              style={{ background: pct >= seg.min && pct <= seg.max ? seg.color : 'rgba(255,255,255,0.07)' }}
             />
           ))}
         </div>

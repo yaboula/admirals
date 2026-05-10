@@ -42,11 +42,11 @@ interface Props {
 }
 
 const SEVERITY_TONE: Record<GovtFlagSeverity, { color: string; key: TranslationKey }> = {
-  info: { color: 'oklch(0.78 0.10 215)', key: 'govt.census.flags.severity.info' },
-  low: { color: 'oklch(0.65 0.18 155)', key: 'govt.census.flags.severity.low' },
-  medium: { color: 'oklch(0.78 0.16 85)', key: 'govt.census.flags.severity.medium' },
-  high: { color: 'oklch(0.72 0.20 35)', key: 'govt.census.flags.severity.high' },
-  critical: { color: 'oklch(0.62 0.21 25)', key: 'govt.census.flags.severity.critical' },
+  info: { color: 'rgb(98, 200, 223)', key: 'govt.census.flags.severity.info' },
+  low: { color: 'rgb(0, 173, 91)', key: 'govt.census.flags.severity.low' },
+  medium: { color: 'rgb(230, 173, 0)', key: 'govt.census.flags.severity.medium' },
+  high: { color: 'rgb(255, 106, 67)', key: 'govt.census.flags.severity.high' },
+  critical: { color: 'rgb(234, 60, 63)', key: 'govt.census.flags.severity.critical' },
 }
 
 const STATUS_KEY: Record<GovtFlagStatus, TranslationKey> = {
@@ -160,7 +160,7 @@ export function FlagDetail({ flag }: Props) {
               aria-hidden
               className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border-2 text-white"
               style={{
-                background: 'radial-gradient(circle at 50% 30%, oklch(0.22 0.05 252), oklch(0.10 0.030 252))',
+                background: 'radial-gradient(circle at 50% 30%, rgb(7, 27, 49), rgb(0, 3, 12))',
                 borderColor: 'var(--color-govt-border-strong)',
               }}
             >
@@ -329,21 +329,21 @@ function ActionButton({
 }) {
   const TONE_BG: Record<typeof tone, string> = {
     neutral: 'var(--color-govt-glass)',
-    warning: 'oklch(0.78 0.16 85 / 0.08)',
-    danger: 'oklch(0.62 0.21 25 / 0.08)',
-    success: 'oklch(0.65 0.18 155 / 0.08)',
+    warning: 'rgba(230,173,0,0.08)',
+    danger: 'rgba(234,60,63,0.08)',
+    success: 'rgba(0,173,91,0.08)',
   }
   const TONE_BORDER: Record<typeof tone, string> = {
     neutral: 'var(--color-govt-border)',
-    warning: 'oklch(0.78 0.16 85 / 0.30)',
-    danger: 'oklch(0.62 0.21 25 / 0.30)',
-    success: 'oklch(0.65 0.18 155 / 0.30)',
+    warning: 'rgba(230,173,0,0.3)',
+    danger: 'rgba(234,60,63,0.3)',
+    success: 'rgba(0,173,91,0.3)',
   }
   const TONE_FG: Record<typeof tone, string> = {
     neutral: 'var(--color-govt-text-primary)',
-    warning: 'oklch(0.92 0.10 85)',
-    danger: 'oklch(0.92 0.06 25)',
-    success: 'oklch(0.85 0.12 155)',
+    warning: 'rgb(255, 224, 150)',
+    danger: 'rgb(255, 214, 209)',
+    success: 'rgb(138, 229, 171)',
   }
   return (
     <button
@@ -360,7 +360,7 @@ function ActionButton({
       <span
         aria-hidden
         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
-        style={{ background: 'oklch(0.06 0.022 252 / 0.55)', color: TONE_FG[tone] }}
+        style={{ background: 'rgba(0,1,3,0.55)', color: TONE_FG[tone] }}
       >
         <Icon size={16} strokeWidth={1.9} />
       </span>
@@ -378,7 +378,7 @@ function ActionHistoryRow({ action }: { action: GovtSanctionAction }) {
   const { t, dateTime, money } = useI18n()
   const Icon = ACTION_ICON[action.type]
   return (
-    <li className="flex items-start gap-2.5 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.06_0.022_252/0.50)] p-2.5">
+    <li className="flex items-start gap-2.5 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,1,3,0.5)] p-2.5">
       <span aria-hidden className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl" style={{ background: 'var(--color-govt-accent-subtle)', color: 'var(--color-govt-accent-light)' }}>
         <Icon size={13} strokeWidth={1.9} />
       </span>

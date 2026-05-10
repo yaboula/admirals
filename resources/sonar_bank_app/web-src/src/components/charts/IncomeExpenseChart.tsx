@@ -37,7 +37,7 @@ function buildBuckets(
   windowDays: number,
   dateTime: (timestamp: number, options?: Intl.DateTimeFormatOptions) => string,
 ): DayBucket[] {
-  const ownCompact = ownIban?.replace(/\s+/g, '')
+  const ownCompact = compactIban(ownIban)
   const today = new Date()
   today.setHours(23, 59, 59, 999)
   const buckets: DayBucket[] = []
@@ -62,8 +62,8 @@ function buildBuckets(
     if (dayIdx < 0 || dayIdx >= buckets.length) continue
     const bucket = buckets[dayIdx]!
 
-    const fromCompact = t.from_iban.replace(/\s+/g, '')
-    const toCompact = t.to_iban.replace(/\s+/g, '')
+    const fromCompact = compactIban(t.from_iban)
+    const toCompact = compactIban(t.to_iban)
 
     if (ownCompact) {
       if (toCompact === ownCompact && fromCompact !== ownCompact) {
@@ -88,12 +88,16 @@ function buildBuckets(
   return buckets
 }
 
-const COLOR_INCOME = 'oklch(0.72 0.16 155)'
-const COLOR_INCOME_STROKE = 'oklch(0.80 0.18 155)'
-const COLOR_EXPENSE = 'oklch(0.68 0.20 25)'
-const COLOR_EXPENSE_STROKE = 'oklch(0.76 0.22 25)'
-const COLOR_GRID = 'oklch(1 0 0 / 0.04)'
-const COLOR_AXIS = 'oklch(0.55 0.012 270)'
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
+}
+
+const COLOR_INCOME = 'rgb(53, 193, 119)'
+const COLOR_INCOME_STROKE = 'rgb(59, 223, 137)'
+const COLOR_EXPENSE = 'rgb(252, 88, 85)'
+const COLOR_EXPENSE_STROKE = 'rgb(255, 105, 101)'
+const COLOR_GRID = 'rgba(255,255,255,0.04)'
+const COLOR_AXIS = 'rgb(111, 113, 121)'
 
 /**
  * BANK-FE.2.3 — dual AreaChart (income vs expense per day) with illuminated
@@ -202,7 +206,7 @@ export function IncomeExpenseChart({
               scale="sqrt"
             />
             <Tooltip
-              cursor={{ stroke: 'oklch(1 0 0 / 0.14)', strokeWidth: 1, strokeDasharray: '3 4' }}
+              cursor={{ stroke: 'rgba(255,255,255,0.14)', strokeWidth: 1, strokeDasharray: '3 4' }}
               content={<CustomTooltip money={money} />}
               animationDuration={120}
             />
@@ -215,7 +219,7 @@ export function IncomeExpenseChart({
               strokeOpacity={0.95}
               fill="url(#bk-area-expense)"
               fillOpacity={1}
-              activeDot={{ r: 4, stroke: COLOR_EXPENSE_STROKE, strokeWidth: 2, fill: 'oklch(0.08 0.008 25)' }}
+              activeDot={{ r: 4, stroke: COLOR_EXPENSE_STROKE, strokeWidth: 2, fill: 'rgb(3, 1, 1)' }}
               dot={false}
               animationDuration={640}
               filter="url(#bk-glow-expense)"
@@ -229,7 +233,7 @@ export function IncomeExpenseChart({
               strokeOpacity={0.95}
               fill="url(#bk-area-income)"
               fillOpacity={1}
-              activeDot={{ r: 4, stroke: COLOR_INCOME_STROKE, strokeWidth: 2, fill: 'oklch(0.08 0.008 155)' }}
+              activeDot={{ r: 4, stroke: COLOR_INCOME_STROKE, strokeWidth: 2, fill: 'rgb(1, 2, 1)' }}
               dot={false}
               animationDuration={640}
               filter="url(#bk-glow-income)"
@@ -292,7 +296,7 @@ function CustomTooltip({ active, payload, label, money }: TooltipProps<number, s
     <div
       className="rounded-lg px-3 py-2 text-xs"
       style={{
-        background: 'oklch(0.10 0.010 270 / 0.94)',
+        background: 'rgba(3,3,6,0.94)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         border: '1px solid var(--color-border-medium)',

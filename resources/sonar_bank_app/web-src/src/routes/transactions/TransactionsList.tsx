@@ -146,7 +146,7 @@ function ScrollPane({
         )}
         style={{
           background:
-            'linear-gradient(180deg, oklch(0.04 0.005 270 / 0.85) 0%, oklch(0.04 0.005 270 / 0) 100%)',
+            'linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)',
         }}
       />
 
@@ -159,7 +159,7 @@ function ScrollPane({
         )}
         style={{
           background:
-            'linear-gradient(0deg, oklch(0.04 0.005 270 / 0.92) 0%, oklch(0.04 0.005 270 / 0) 100%)',
+            'linear-gradient(0deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0) 100%)',
         }}
       />
 
@@ -174,11 +174,11 @@ function ScrollPane({
             atBottom ? 'opacity-50' : 'opacity-90',
           )}
           style={{
-            background: 'oklch(0.06 0.008 270 / 0.85)',
-            border: '1px solid oklch(1 0 0 / 0.08)',
+            background: 'rgba(1,1,1,0.85)',
+            border: '1px solid rgba(255,255,255,0.08)',
             color: 'var(--color-text-secondary)',
             backdropFilter: 'blur(8px)',
-            boxShadow: '0 4px 12px -4px oklch(0 0 0 / 0.5)',
+            boxShadow: '0 4px 12px -4px rgba(0,0,0,0.5)',
           }}
         >
           <span className="text-text-primary">{scrolledIndex}</span>
@@ -211,7 +211,7 @@ function DaySeparator({
         className="flex-1 h-px"
         style={{
           background:
-            'linear-gradient(90deg, oklch(1 0 0 / 0.06) 0%, oklch(1 0 0 / 0.02) 50%, transparent 100%)',
+            'linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, transparent 100%)',
         }}
       />
       <span className="text-[10px] text-text-tertiary tactile-tabular-nums">

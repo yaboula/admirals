@@ -107,8 +107,8 @@ export function TransactionsFilters() {
               <span
                 className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] font-semibold tactile-tabular-nums"
                 style={{
-                  background: 'oklch(1 0 0 / 0.10)',
-                  border: '1px solid oklch(1 0 0 / 0.14)',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.14)',
                   color: 'var(--color-text-primary)',
                 }}
               >
@@ -162,10 +162,10 @@ function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGr
               style={
                 active
                   ? {
-                      background: 'oklch(1 0 0 / 0.08)',
-                      border: '1px solid oklch(1 0 0 / 0.16)',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.16)',
                       boxShadow:
-                        'inset 0 1px 0 oklch(1 0 0 / 0.10), 0 1px 0 oklch(0 0 0 / 0.3)',
+                        'inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 0 rgba(0,0,0,0.3)',
                     }
                   : {
                       background: 'transparent',
@@ -187,7 +187,7 @@ function Divider() {
     <span
       aria-hidden
       className="hidden xl:inline-block h-7 w-px"
-      style={{ background: 'oklch(1 0 0 / 0.06)' }}
+      style={{ background: 'rgba(255,255,255,0.06)' }}
     />
   )
 }

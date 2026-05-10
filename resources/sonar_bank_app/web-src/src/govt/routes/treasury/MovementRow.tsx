@@ -25,14 +25,14 @@ const TYPE_ICON: Record<GovtMovementType, LucideIcon> = {
 }
 
 const TYPE_COLOR: Record<GovtMovementType, string> = {
-  tax_collection:       'oklch(0.72 0.17 155)',
-  transfer_in:          'oklch(0.72 0.17 155)',
-  transfer_out:         'oklch(0.78 0.12 215)',
-  payroll_disbursement: 'oklch(0.78 0.16 85)',
-  fine_collected:       'oklch(0.75 0.18 35)',
-  subsidy_issued:       'oklch(0.78 0.16 85)',
+  tax_collection:       'rgb(34, 195, 115)',
+  transfer_in:          'rgb(34, 195, 115)',
+  transfer_out:         'rgb(67, 202, 231)',
+  payroll_disbursement: 'rgb(230, 173, 0)',
+  fine_collected:       'rgb(255, 125, 90)',
+  subsidy_issued:       'rgb(230, 173, 0)',
   reconciliation:       'var(--color-govt-accent-light)',
-  interest_accrued:     'oklch(0.72 0.17 155)',
+  interest_accrued:     'rgb(34, 195, 115)',
 }
 
 const TYPE_LABEL: Record<GovtMovementType, TranslationKey> = {
@@ -53,9 +53,9 @@ const STATUS_LABEL: Record<GovtMovementStatus, TranslationKey> = {
 }
 
 const STATUS_DOT: Record<GovtMovementStatus, string> = {
-  settled:  'bg-[oklch(0.65_0.18_155)]',
-  pending:  'bg-[oklch(0.78_0.16_85)]',
-  reversed: 'bg-[oklch(0.72_0.20_35)]',
+  settled:  'bg-[rgb(0, 173, 91)]',
+  pending:  'bg-[rgb(230, 173, 0)]',
+  reversed: 'bg-[rgb(255, 106, 67)]',
 }
 
 export function MovementRow({ movement, index }: Props) {
@@ -79,7 +79,7 @@ export function MovementRow({ movement, index }: Props) {
           <span
             aria-hidden
             className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: 'oklch(0.07 0.012 252 / 0.8)', color: iconColor }}
+            style={{ background: 'rgba(0,1,3,0.8)', color: iconColor }}
           >
             <Icon size={13} strokeWidth={2} />
           </span>
@@ -106,7 +106,7 @@ export function MovementRow({ movement, index }: Props) {
       </td>
       <td className="py-2.5 pl-2 pr-4 text-right">
         <span
-          className={cn('text-[13px] font-semibold tabular-nums', isInflow ? 'text-[oklch(0.75_0.17_155)]' : 'text-[var(--color-govt-text-secondary)]')}
+          className={cn('text-[13px] font-semibold tabular-nums', isInflow ? 'text-[rgb(51, 204, 125)]' : 'text-[var(--color-govt-text-secondary)]')}
         >
           {isInflow ? '+' : '−'}{amountDisplay}
         </span>

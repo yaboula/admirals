@@ -26,10 +26,10 @@ const RANGE_OPTIONS: Array<{ value: GovtReportsRange; key: TranslationKey }> = [
 ]
 
 const RISK_COLORS: Record<keyof GovtRiskBreakdown, string> = {
-  low:      'oklch(0.65 0.18 155)',
-  medium:   'oklch(0.78 0.16 85)',
-  high:     'oklch(0.72 0.20 35)',
-  critical: 'oklch(0.62 0.21 25)',
+  low:      'rgb(0, 173, 91)',
+  medium:   'rgb(230, 173, 0)',
+  high:     'rgb(255, 106, 67)',
+  critical: 'rgb(234, 60, 63)',
 }
 
 export function GovtReports() {
@@ -49,7 +49,7 @@ export function GovtReports() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-4 h-56"
-        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, rgba(0,113,214,0.07), transparent)', zIndex: 0 }}
       />
 
       <motion.header
@@ -62,7 +62,7 @@ export function GovtReports() {
         <div className="flex items-center gap-3">
           <div
             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border"
-            style={{ background: 'oklch(0.06 0.018 252 / 0.70)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
+            style={{ background: 'rgba(0,1,3,0.7)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
             aria-hidden
           >
             <BarChart2 size={16} strokeWidth={1.8} />
@@ -103,11 +103,11 @@ export function GovtReports() {
             <KpiCard icon={TrendingUp} label={t('govt.reports.kpi.revenue')} value={m(d.kpis.totalRevenue)}
               sub={`${d.kpis.revenueVsPriorPct >= 0 ? '+' : ''}${d.kpis.revenueVsPriorPct}% vs prior`}
               subIcon={d.kpis.revenueVsPriorPct >= 0 ? ArrowUpRight : ArrowDownRight}
-              subColor={d.kpis.revenueVsPriorPct >= 0 ? 'oklch(0.72 0.18 155)' : 'oklch(0.72 0.20 35)'} />
+              subColor={d.kpis.revenueVsPriorPct >= 0 ? 'rgb(0, 196, 112)' : 'rgb(255, 106, 67)'} />
             <KpiCard icon={BarChart2} label={t('govt.reports.kpi.obligation')} value={m(d.kpis.totalObligation)} />
             <KpiCard icon={Shield} label={t('govt.reports.kpi.compliance')} value={`${d.kpis.complianceRate}%`}
               sub={d.kpis.complianceRate >= 80 ? t('govt.reports.kpi.complianceGood') : t('govt.reports.kpi.complianceLow')}
-              subColor={d.kpis.complianceRate >= 80 ? 'oklch(0.72 0.18 155)' : 'oklch(0.72 0.20 35)'} />
+              subColor={d.kpis.complianceRate >= 80 ? 'rgb(0, 196, 112)' : 'rgb(255, 106, 67)'} />
             <KpiCard icon={Users} label={t('govt.reports.kpi.taxpayers')} value={number(d.kpis.activeTaxpayers)} />
           </div>
 

@@ -38,7 +38,7 @@ export function Loans() {
       </div>
 
       <div className="relative mx-auto flex w-full max-w-[1220px] flex-col gap-4 pb-6">
-        <motion.section initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }} className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[radial-gradient(circle_at_82%_30%,oklch(0.70_0.14_230/0.18),transparent_32%),radial-gradient(circle_at_18%_18%,oklch(0.65_0.18_155/0.14),transparent_34%),linear-gradient(135deg,oklch(0.09_0.012_270/0.92),oklch(0.025_0_0/0.98))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.48)] md:p-6">
+        <motion.section initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }} className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[radial-gradient(circle_at_82%_30%,rgba(0,173,228,0.18),transparent_32%),radial-gradient(circle_at_18%_18%,rgba(0,173,91,0.14),transparent_34%),linear-gradient(135deg,rgba(2,2,5,0.92),rgba(0,0,0,0.98))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.48)] md:p-6">
           <div className="absolute right-[-10%] top-[-30%] h-80 w-80 rounded-full border border-white/10" />
           <div className="absolute bottom-[-36%] left-[30%] h-96 w-96 rounded-full border border-semantic-info-deep/10" />
           <div className="relative grid min-h-[318px] gap-6 xl:grid-cols-[minmax(0,0.86fr)_330px_minmax(300px,0.78fr)]">
@@ -102,7 +102,7 @@ export function Loans() {
             </div>
 
             <aside className="grid gap-4">
-              <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,oklch(0.70_0.14_230/0.13),transparent_46%),rgba(255,255,255,0.035)]">
+              <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(0,173,228,0.13),transparent_46%),rgba(255,255,255,0.035)]">
                 <div className="border-b border-white/10 px-5 py-4">
                   <p className="text-sm font-semibold text-text-primary">{t('loans.repaymentCurve')}</p>
                   <p className="mt-0.5 text-xs text-text-tertiary">{t('loans.repaymentCurveDescription')}</p>
@@ -144,10 +144,10 @@ function CreditLens({ loan, streamerMode }: { loan: Loan | null; streamerMode: b
   const circumference = 2 * Math.PI * radius
   return (
     <div className="relative flex min-h-[288px] items-center justify-center">
-      <div className="absolute h-72 w-72 rounded-full border border-white/10 bg-[conic-gradient(from_180deg,oklch(0.70_0.14_230/0.28),oklch(0.65_0.18_155/0.22),transparent,oklch(0.70_0.14_230/0.28))] p-[1px] shadow-[0_0_70px_rgba(60,140,255,0.08)]"><div className="h-full w-full rounded-full bg-black/[0.82]" /></div>
+      <div className="absolute h-72 w-72 rounded-full border border-white/10 bg-[conic-gradient(from_180deg,rgba(0,173,228,0.28),rgba(0,173,91,0.22),transparent,rgba(0,173,228,0.28))] p-[1px] shadow-[0_0_70px_rgba(60,140,255,0.08)]"><div className="h-full w-full rounded-full bg-black/[0.82]" /></div>
       <svg viewBox="0 0 220 220" className="absolute h-60 w-60 -rotate-90">
         <circle cx="110" cy="110" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
-        <circle cx="110" cy="110" r={radius} fill="none" stroke="oklch(0.70 0.14 230)" strokeWidth="10" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} />
+        <circle cx="110" cy="110" r={radius} fill="none" stroke="rgb(0, 173, 228)" strokeWidth="10" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} />
       </svg>
       <div className="relative z-[1] flex h-44 w-44 flex-col items-center justify-center rounded-full border border-white/15 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.14),rgba(255,255,255,0.025)_48%,rgba(0,0,0,0.74))] text-center shadow-[inset_0_1px_24px_rgba(255,255,255,0.08)]">
         <Orbit className="text-semantic-info-deep" size={28} strokeWidth={1.8} />
@@ -195,11 +195,11 @@ function RepaymentCurve({ loan }: { loan: Loan | null }) {
       <AreaChart data={data} margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="loan-repayment-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="oklch(0.70 0.14 230)" stopOpacity={0.34} />
-            <stop offset="100%" stopColor="oklch(0.70 0.14 230)" stopOpacity={0} />
+            <stop offset="0%" stopColor="rgb(0, 173, 228)" stopOpacity={0.34} />
+            <stop offset="100%" stopColor="rgb(0, 173, 228)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <Area type="monotone" dataKey="outstanding" stroke="oklch(0.70 0.14 230)" strokeWidth={2.4} fill="url(#loan-repayment-fill)" dot={false} activeDot={false} isAnimationActive />
+        <Area type="monotone" dataKey="outstanding" stroke="rgb(0, 173, 228)" strokeWidth={2.4} fill="url(#loan-repayment-fill)" dot={false} activeDot={false} isAnimationActive />
       </AreaChart>
     </ResponsiveContainer>
   )

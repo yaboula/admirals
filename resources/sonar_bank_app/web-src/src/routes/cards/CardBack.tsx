@@ -39,9 +39,9 @@ export function CardBack({ card, design: designOverride, revealed = false, compa
       style={{
         background: design.surface,
         color: design.textPrimary,
-        border: '1px solid oklch(1 0 0 / 0.08)',
+        border: '1px solid rgba(255,255,255,0.08)',
         boxShadow:
-          '0 24px 48px -16px oklch(0 0 0 / 0.65), 0 8px 16px -4px oklch(0 0 0 / 0.45), inset 0 1px 0 oklch(1 0 0 / 0.06), inset 0 -1px 0 oklch(0 0 0 / 0.4)',
+          '0 24px 48px -16px rgba(0,0,0,0.65), 0 8px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.4)',
       }}
     >
       {/* Subtle holographic sweep echoing the front, kept dim for legibility */}
@@ -50,7 +50,7 @@ export function CardBack({ card, design: designOverride, revealed = false, compa
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(115deg, transparent 0%, transparent 35%, oklch(1 0 0 / 0.04) 50%, transparent 65%, transparent 100%)',
+            'linear-gradient(115deg, transparent 0%, transparent 35%, rgba(255,255,255,0.04) 50%, transparent 65%, transparent 100%)',
           mixBlendMode: 'overlay',
         }}
       />
@@ -64,8 +64,8 @@ export function CardBack({ card, design: designOverride, revealed = false, compa
         )}
         style={{
           background:
-            'linear-gradient(180deg, oklch(0 0 0) 0%, oklch(0 0 0) 60%, oklch(0.10 0 0) 100%)',
-          boxShadow: 'inset 0 1px 0 oklch(0 0 0 / 0.6), inset 0 -1px 0 oklch(0 0 0 / 0.6)',
+            'linear-gradient(180deg, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 60%, rgb(3, 3, 3) 100%)',
+          boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.6), inset 0 -1px 0 rgba(0,0,0,0.6)',
         }}
       />
 
@@ -137,8 +137,8 @@ function SignaturePanel({ holder, compact }: { holder: string; compact: boolean 
         compact ? 'h-7' : 'h-8 2xl:h-9',
       )}
       style={{
-        background: 'linear-gradient(180deg, oklch(0.96 0 0) 0%, oklch(0.92 0 0) 100%)',
-        boxShadow: 'inset 0 1px 2px oklch(0 0 0 / 0.25), inset 0 -1px 0 oklch(1 0 0 / 0.6)',
+        background: 'linear-gradient(180deg, rgb(242, 242, 242) 0%, rgb(228, 228, 228) 100%)',
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.25), inset 0 -1px 0 rgba(255,255,255,0.6)',
       }}
     >
       {/* Diagonal hatching pattern — security-paper feel */}
@@ -147,7 +147,7 @@ function SignaturePanel({ holder, compact }: { holder: string; compact: boolean 
         className="absolute inset-0 opacity-30"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(45deg, oklch(0.65 0.10 250 / 0.5) 0 1px, transparent 1px 5px)',
+            'repeating-linear-gradient(45deg, rgba(94,147,202,0.5) 0 1px, transparent 1px 5px)',
         }}
       />
       <div className="relative h-full flex items-center px-2.5">
@@ -157,7 +157,7 @@ function SignaturePanel({ holder, compact }: { holder: string; compact: boolean 
             compact ? 'text-[10px]' : 'text-[11px]',
           )}
           style={{
-            color: 'oklch(0.20 0.02 270)',
+            color: 'rgb(18, 22, 31)',
             fontFamily: '"Brush Script MT", "Apple Chancery", cursive',
             letterSpacing: '0.02em',
           }}
@@ -178,8 +178,8 @@ function CvvBox({ cvv, compact }: { cvv: string; compact: boolean }) {
         compact ? 'h-7 min-w-[44px]' : 'h-8 min-w-[48px] 2xl:h-9 2xl:min-w-[52px]',
       )}
       style={{
-        background: 'linear-gradient(180deg, oklch(0.96 0 0) 0%, oklch(0.92 0 0) 100%)',
-        boxShadow: 'inset 0 1px 2px oklch(0 0 0 / 0.25), inset 0 -1px 0 oklch(1 0 0 / 0.6)',
+        background: 'linear-gradient(180deg, rgb(242, 242, 242) 0%, rgb(228, 228, 228) 100%)',
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.25), inset 0 -1px 0 rgba(255,255,255,0.6)',
       }}
     >
       <span
@@ -188,7 +188,7 @@ function CvvBox({ cvv, compact }: { cvv: string; compact: boolean }) {
           compact ? 'text-[11px]' : 'text-xs',
         )}
         style={{
-          color: 'oklch(0.20 0.02 270)',
+          color: 'rgb(18, 22, 31)',
           fontVariantNumeric: 'tabular-nums',
           letterSpacing: '0.08em',
         }}

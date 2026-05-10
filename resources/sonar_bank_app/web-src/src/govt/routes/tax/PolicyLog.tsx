@@ -14,10 +14,10 @@ import { useForceCollectionMutation } from '../../data/queries/govtTax'
    ============================================================================ */
 
 const TIER_COLORS: Record<GovtTaxTierId, string> = {
-  basic: 'oklch(0.72 0.17 155)',
-  standard: 'oklch(0.78 0.16 108)',
-  premium: 'oklch(0.78 0.16 60)',
-  elite: 'oklch(0.70 0.20 30)',
+  basic: 'rgb(34, 195, 115)',
+  standard: 'rgb(194, 190, 35)',
+  premium: 'rgb(255, 156, 59)',
+  elite: 'rgb(255, 97, 77)',
 }
 
 const TIER_LABELS: Record<GovtTaxTierId, string> = {
@@ -36,17 +36,17 @@ export function PolicyLog({ changes }: Props) {
   return (
     <div
       className="rounded-2xl border"
-      style={{ background: 'oklch(0.07 0.010 252)', borderColor: 'oklch(0.15 0.008 252)' }}
+      style={{ background: 'rgb(1, 1, 2)', borderColor: 'rgb(9, 11, 14)' }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'oklch(0.13 0.008 252)' }}>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'oklch(0.42 0.008 252)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'rgb(5, 7, 10)' }}>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'rgb(74, 77, 81)' }}>
           {t('govt.tax.log.title')}
         </p>
         <ForceCollectionButton />
       </div>
       <div className="divide-y" style={{ '--tw-divide-opacity': 1 } as React.CSSProperties}>
         {changes.length === 0 ? (
-          <p className="px-4 py-5 text-xs" style={{ color: 'oklch(0.42 0.008 252)' }}>{t('govt.tax.log.empty')}</p>
+          <p className="px-4 py-5 text-xs" style={{ color: 'rgb(74, 77, 81)' }}>{t('govt.tax.log.empty')}</p>
         ) : (
           changes.slice(0, 8).map((change, i) => (
             <PolicyChangeRow key={change.id} change={change} index={i} />
@@ -65,14 +65,14 @@ function PolicyChangeRow({ change, index }: { change: GovtTaxPolicyChange; index
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, delay: index * 0.04 }}
       className="px-4 py-3"
-      style={{ borderColor: 'oklch(0.13 0.008 252)' }}
+      style={{ borderColor: 'rgb(5, 7, 10)' }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {change.delta.length === 0 ? (
             <span
               className="inline-flex h-5 items-center rounded-md border px-1.5 text-[10px] font-bold uppercase tracking-[0.10em]"
-              style={{ borderColor: 'oklch(0.65 0.18 252 / 0.35)', background: 'oklch(0.65 0.18 252 / 0.10)', color: 'oklch(0.78 0.14 252)' }}
+              style={{ borderColor: 'rgba(34,145,248,0.35)', background: 'rgba(34,145,248,0.1)', color: 'rgb(113, 188, 255)' }}
             >
               FORCE
             </span>
@@ -87,25 +87,25 @@ function PolicyChangeRow({ change, index }: { change: GovtTaxPolicyChange; index
               }}
             >
               {TIER_LABELS[d.tierId]}
-              <span style={{ color: 'oklch(0.40 0.008 252)' }}>{d.oldRate}%</span>
-              <span style={{ color: 'oklch(0.55 0.008 252)' }}>→</span>
+              <span style={{ color: 'rgb(69, 72, 76)' }}>{d.oldRate}%</span>
+              <span style={{ color: 'rgb(110, 114, 118)' }}>→</span>
               <span>{d.newRate}%</span>
             </span>
           ))}
         </div>
         <div className="text-right">
-          <p className="text-[10px]" style={{ color: 'oklch(0.55 0.008 252)' }}>
+          <p className="text-[10px]" style={{ color: 'rgb(110, 114, 118)' }}>
             {relativeTime(change.changedAt)}
           </p>
-          <p className="text-[10px]" style={{ color: 'oklch(0.35 0.008 252)' }}>
+          <p className="text-[10px]" style={{ color: 'rgb(56, 59, 63)' }}>
             {dateTime(change.changedAt, { dateStyle: 'short', timeStyle: 'short' })}
           </p>
         </div>
       </div>
-      <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: 'oklch(0.60 0.008 252)' }}>
+      <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: 'rgb(125, 129, 133)' }}>
         {change.reason}
       </p>
-      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'oklch(0.38 0.008 252)' }}>
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'rgb(63, 67, 71)' }}>
         {change.operatorAlias}
       </p>
     </motion.div>
@@ -165,7 +165,7 @@ function ForceCollectionButton() {
       <button
         type="button"
         onClick={startConfirm}
-        className="inline-flex h-8 items-center gap-2 rounded-xl border border-[oklch(0.65_0.18_252/0.25)] bg-[oklch(0.65_0.18_252/0.08)] px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[oklch(0.72_0.14_252)] transition-all hover:border-[oklch(0.65_0.18_252/0.45)] hover:bg-[oklch(0.65_0.18_252/0.16)]"
+        className="inline-flex h-8 items-center gap-2 rounded-xl border border-[rgba(34,145,248,0.25)] bg-[rgba(34,145,248,0.08)] px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[rgb(94, 168, 249)] transition-all hover:border-[rgba(34,145,248,0.45)] hover:bg-[rgba(34,145,248,0.16)]"
       >
         <Zap size={12} strokeWidth={2.4} />
         {t('govt.tax.force.button')}
@@ -186,14 +186,14 @@ function ForceCollectionButton() {
           onChange={(e) => setReason(e.target.value.slice(0, 120))}
           placeholder={t('govt.tax.force.reasonPlaceholder')}
           autoFocus
-          className="h-8 rounded-xl border bg-[oklch(0.06_0.008_252)] px-3 text-xs text-[oklch(0.88_0.004_252)] placeholder:text-[oklch(0.32_0.008_252)] outline-none"
-          style={{ borderColor: 'oklch(0.20 0.012 252)', width: 180 }}
+          className="h-8 rounded-xl border bg-[rgb(0, 1, 1)] px-3 text-xs text-[rgb(214, 216, 218)] placeholder:text-[rgb(48, 51, 55)] outline-none"
+          style={{ borderColor: 'rgb(18, 22, 27)', width: 180 }}
         />
         <button
           type="button"
           onClick={startCountdown}
           disabled={reason.trim().length < 8}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-[oklch(0.65_0.18_252/0.35)] bg-[oklch(0.65_0.18_252/0.12)] px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[oklch(0.82_0.14_252)] transition-all disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[oklch(0.65_0.18_252/0.22)]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-[rgba(34,145,248,0.35)] bg-[rgba(34,145,248,0.12)] px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[rgb(126, 201, 255)] transition-all disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[rgba(34,145,248,0.22)]"
         >
           {t('govt.tax.force.confirm')}
         </button>
@@ -201,7 +201,7 @@ function ForceCollectionButton() {
           type="button"
           onClick={() => setState('idle')}
           className="inline-flex h-8 items-center rounded-xl border px-3 text-[11px] uppercase tracking-[0.12em]"
-          style={{ borderColor: 'oklch(0.18 0.008 252)', color: 'oklch(0.45 0.008 252)' }}
+          style={{ borderColor: 'rgb(15, 18, 21)', color: 'rgb(82, 86, 90)' }}
         >
           {t('govt.tax.force.cancel')}
         </button>
@@ -211,7 +211,7 @@ function ForceCollectionButton() {
 
   if (state === 'countdown') {
     return (
-      <div className="inline-flex h-8 items-center gap-2 rounded-xl border border-[oklch(0.65_0.18_252/0.40)] bg-[oklch(0.65_0.18_252/0.12)] px-4 text-sm font-mono font-bold text-[oklch(0.85_0.14_252)]">
+      <div className="inline-flex h-8 items-center gap-2 rounded-xl border border-[rgba(34,145,248,0.4)] bg-[rgba(34,145,248,0.12)] px-4 text-sm font-mono font-bold text-[rgb(135, 211, 255)]">
         <span className="animate-pulse" aria-live="polite">{countdown}</span>
         <span className="text-[10px] font-normal uppercase tracking-[0.14em]">{t('govt.tax.force.executing')}</span>
       </div>
@@ -219,9 +219,9 @@ function ForceCollectionButton() {
   }
 
   return (
-    <div className="inline-flex h-8 items-center gap-2 rounded-xl border border-[oklch(0.65_0.18_252/0.40)] px-4">
-      <Loader2 size={13} className="animate-spin" style={{ color: 'oklch(0.65 0.18 252)' }} />
-      <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'oklch(0.65 0.18 252)' }}>
+    <div className="inline-flex h-8 items-center gap-2 rounded-xl border border-[rgba(34,145,248,0.4)] px-4">
+      <Loader2 size={13} className="animate-spin" style={{ color: 'rgb(34, 145, 248)' }} />
+      <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'rgb(34, 145, 248)' }}>
         {t('govt.tax.force.executingLabel')}
       </span>
     </div>

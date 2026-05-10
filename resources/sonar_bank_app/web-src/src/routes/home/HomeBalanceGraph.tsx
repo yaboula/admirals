@@ -16,8 +16,8 @@ export interface HomeBalanceGraphProps {
   transactions: Transaction[]
 }
 
-const ORANGE = 'oklch(0.70 0.22 40)'
-const ORANGE_SOFT = 'oklch(0.58 0.18 38)'
+const ORANGE = 'var(--color-brand-signal-orange)'
+const ORANGE_SOFT = 'rgb(206, 71, 20)'
 const PERIODS = [
   { key: '1y', label: '1 year', days: 365 },
   { key: '6m', label: '6 month', days: 180 },
@@ -47,7 +47,7 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle at 18% 0%, oklch(0.72 0.22 40 / 0.13), transparent 34%), linear-gradient(180deg, oklch(1 0 0 / 0.035), transparent 48%)',
+            'radial-gradient(circle at 18% 0%, rgba(246,75,0,0.13), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 48%)',
         }}
       />
       <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
@@ -60,13 +60,13 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
               </span>
               <span
                 className="text-xs font-semibold tactile-tabular-nums"
-                style={{ color: deltaPct >= 0 ? 'oklch(0.78 0.16 150)' : 'oklch(0.72 0.18 25)' }}
+                style={{ color: deltaPct >= 0 ? 'rgb(95, 211, 127)' : 'rgb(255, 111, 105)' }}
               >
                 {streamerMode ? '•••%' : `${deltaPct >= 0 ? '↑' : '↓'} ${number(Math.abs(deltaPct), { maximumFractionDigits: 2 })}%`}
               </span>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-1.5 rounded-full p-1" style={{ background: 'oklch(1 0 0 / 0.045)' }}>
+          <div className="hidden md:flex items-center gap-1.5 rounded-full p-1" style={{ background: 'rgba(255,255,255,0.05)' }}>
             {PERIODS.map((item) => {
               const active = item.key === period
               return (
@@ -77,7 +77,7 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
                 className="h-8 rounded-full px-3 text-[11px] font-medium text-text-secondary"
                 style={
                   active
-                    ? { background: 'oklch(1 0 0 / 0.10)', color: 'var(--color-text-primary)' }
+                    ? { background: 'rgba(255,255,255,0.1)', color: 'var(--color-text-primary)' }
                     : undefined
                 }
               >
@@ -105,24 +105,24 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
                   </feMerge>
                 </filter>
               </defs>
-              <CartesianGrid stroke="oklch(1 0 0 / 0.055)" strokeDasharray="3 5" vertical={false} />
+              <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="3 5" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fill: 'oklch(0.64 0.012 270)', fontSize: 10 }}
+                tick={{ fill: 'rgb(137, 140, 148)', fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 interval={0}
                 minTickGap={10}
               />
               <YAxis
-                tick={{ fill: 'oklch(0.58 0.012 270)', fontSize: 10 }}
+                tick={{ fill: 'rgb(119, 122, 130)', fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 width={44}
                 orientation="right"
                 tickFormatter={(value: number) => streamerMode ? '•••' : `${Math.round(value / 1000)}k`}
               />
-              <Tooltip content={<BalanceTooltip hidden={streamerMode} />} cursor={{ stroke: 'oklch(1 0 0 / 0.16)', strokeDasharray: '3 4' }} />
+              <Tooltip content={<BalanceTooltip hidden={streamerMode} />} cursor={{ stroke: 'rgba(255,255,255,0.16)', strokeDasharray: '3 4' }} />
               <Area
                 type="monotone"
                 dataKey="balance"
@@ -156,16 +156,20 @@ function BalanceTooltip({ active, payload, label, hidden }: TooltipProps<number,
   if (!active || !payload?.length) return null
   const value = payload[0]?.value ?? 0
   return (
-    <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'oklch(0.98 0 0)', color: 'oklch(0.08 0.01 270)', boxShadow: '0 18px 34px -20px oklch(0 0 0 / 0.8)' }}>
+    <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'rgb(248, 248, 248)', color: 'rgb(1, 2, 3)', boxShadow: '0 18px 34px -20px rgba(0,0,0,0.8)' }}>
       <div className="text-xs font-semibold">{label}</div>
       <div className="text-sm font-bold tactile-tabular-nums">{hidden ? maskMoneyDisplay() : money(Number(value))}</div>
     </div>
   )
 }
 
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
+}
+
 function buildGraph(account: Account | undefined, transactions: Transaction[], periodDays: number, locale: string): GraphPoint[] {
   const balance = account ? account.balance_minor / 100 : 0
-  const own = account?.iban.replace(/\s+/g, '')
+  const own = compactIban(account?.iban)
   const bucketCount = 6
   const end = new Date()
   end.setHours(23, 59, 59, 999)
@@ -181,8 +185,8 @@ function buildGraph(account: Account | undefined, transactions: Transaction[], p
   const bucketNet = buckets.map((bucket) => {
     return transactions.reduce((sum, tx) => {
       if (tx.timestamp_ms < bucket.from || tx.timestamp_ms > bucket.to || tx.status !== 'committed') return sum
-      const fromOwn = own ? tx.from_iban.replace(/\s+/g, '') === own : tx.direction === 'out'
-      const toOwn = own ? tx.to_iban.replace(/\s+/g, '') === own : tx.direction === 'in'
+      const fromOwn = own ? compactIban(tx.from_iban) === own : tx.direction === 'out'
+      const toOwn = own ? compactIban(tx.to_iban) === own : tx.direction === 'in'
       if (toOwn && !fromOwn) return sum + tx.amount_minor / 100
       if (fromOwn && !toOwn) return sum - tx.amount_minor / 100
       return sum
@@ -193,7 +197,7 @@ function buildGraph(account: Account | undefined, transactions: Transaction[], p
   buckets.forEach((bucket, index) => {
     rolling += bucketNet[index] ?? 0
     points.push({
-      label: bucket.date.toLocaleDateString(locale, periodDays <= 45 ? { day: '2-digit', month: 'short' } : { month: 'short' }).replace('.', ''),
+      label: String(bucket.date.toLocaleDateString(locale, periodDays <= 45 ? { day: '2-digit', month: 'short' } : { month: 'short' }) ?? '').replace('.', ''),
       balance: Math.max(0, rolling),
     })
   })
@@ -201,12 +205,12 @@ function buildGraph(account: Account | undefined, transactions: Transaction[], p
 }
 
 function computeMonthDelta(transactions: Transaction[], ownIban: string | undefined): number {
-  const own = ownIban?.replace(/\s+/g, '')
+  const own = compactIban(ownIban)
   const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
   return transactions.reduce((sum, tx) => {
     if (tx.timestamp_ms < cutoff || tx.status !== 'committed') return sum
-    const fromOwn = own ? tx.from_iban.replace(/\s+/g, '') === own : tx.direction === 'out'
-    const toOwn = own ? tx.to_iban.replace(/\s+/g, '') === own : tx.direction === 'in'
+    const fromOwn = own ? compactIban(tx.from_iban) === own : tx.direction === 'out'
+    const toOwn = own ? compactIban(tx.to_iban) === own : tx.direction === 'in'
     if (toOwn && !fromOwn) return sum + tx.amount_minor / 100
     if (fromOwn && !toOwn) return sum - tx.amount_minor / 100
     return sum

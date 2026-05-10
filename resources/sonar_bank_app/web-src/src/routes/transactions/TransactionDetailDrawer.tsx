@@ -91,9 +91,9 @@ export function TransactionDetailDrawer({ tx, ownIban, onClose }: TransactionDet
               'border-l border-white/10',
             )}
             style={{
-              background: 'linear-gradient(180deg, oklch(0.06 0.008 270) 0%, oklch(0.02 0 0) 100%)',
+              background: 'linear-gradient(180deg, rgb(1, 1, 1) 0%, rgb(0, 0, 0) 100%)',
               boxShadow:
-                '-12px 0 48px -12px oklch(0 0 0 / 0.7), inset 1px 0 0 oklch(1 0 0 / 0.04)',
+                '-12px 0 48px -12px rgba(0,0,0,0.7), inset 1px 0 0 rgba(255,255,255,0.04)',
             }}
           >
             <DrawerBody tx={tx} ownIban={ownIban} onClose={onClose} />
@@ -116,16 +116,16 @@ function DrawerBody({
   onClose: () => void
 }) {
   const { t, signedMoney, relativeTime, dateTime } = useI18n()
-  const fromCompact = tx.from_iban.replace(/\s+/g, '')
-  const toCompact = tx.to_iban.replace(/\s+/g, '')
+  const fromCompact = compactIban(tx.from_iban)
+  const toCompact = compactIban(tx.to_iban)
   const isOutgoing = ownIban
     ? fromCompact === ownIban && toCompact !== ownIban
     : tx.direction === 'out'
-  const counterpartIban = isOutgoing ? tx.to_iban : tx.from_iban
+  const counterpartIban = String((isOutgoing ? tx.to_iban : tx.from_iban) ?? '')
   const counterpartName =
     getMockAliasForIban(counterpartIban) ?? (isOutgoing ? t('accounts.beneficiary') : t('accounts.sender'))
   const initials = getMockInitialsForIban(counterpartIban)
-  const amountColor = isOutgoing ? 'oklch(0.92 0.005 270)' : 'oklch(0.78 0.16 155)'
+  const amountColor = isOutgoing ? 'rgb(227, 228, 232)' : 'rgb(78, 213, 137)'
   const DirIcon = isOutgoing ? ArrowUpRight : ArrowDownLeft
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const displayName = streamerMode ? t('transactions.hiddenMovement') : counterpartName
@@ -133,7 +133,7 @@ function DrawerBody({
 
   const handleCopyIban = async (): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(counterpartIban.replace(/\s+/g, ''))
+      await navigator.clipboard.writeText(compactIban(counterpartIban))
       sfx.coin_clink()
       toast.success(t('transactions.ibanCopied'), counterpartName)
     } catch {
@@ -155,11 +155,11 @@ function DrawerBody({
             className="relative inline-flex items-center justify-center h-12 w-12 rounded-full shrink-0"
             style={{
               background: isOutgoing
-                ? 'linear-gradient(135deg, oklch(0.20 0.020 25 / 0.7), oklch(0.10 0.010 25 / 0.5))'
-                : 'linear-gradient(135deg, oklch(0.20 0.020 155 / 0.7), oklch(0.10 0.010 155 / 0.5))',
-              border: `1px solid ${isOutgoing ? 'oklch(0.68 0.20 25 / 0.32)' : 'oklch(0.72 0.16 155 / 0.32)'}`,
-              color: isOutgoing ? 'oklch(0.78 0.18 25)' : 'oklch(0.80 0.18 155)',
-              boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 0.08), inset 0 -1px 0 oklch(0 0 0 / 0.34)',
+                ? 'linear-gradient(135deg, rgba(30,19,17,0.7), rgba(5,3,2,0.5))'
+                : 'linear-gradient(135deg, rgba(15,25,18,0.7), rgba(2,4,2,0.5))',
+              border: `1px solid ${isOutgoing ? 'rgba(252,88,85,0.32)' : 'rgba(53,193,119,0.32)'}`,
+              color: isOutgoing ? 'rgb(255, 130, 123)' : 'rgb(59, 223, 137)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.34)',
             }}
             aria-hidden
           >
@@ -190,10 +190,10 @@ function DrawerBody({
           className="relative rounded-2xl px-6 py-5 overflow-hidden"
           style={{
             background:
-              'linear-gradient(135deg, oklch(0.10 0.010 270 / 0.7) 0%, oklch(0.06 0.008 270 / 0.4) 100%)',
-            border: '1px solid oklch(1 0 0 / 0.08)',
+              'linear-gradient(135deg, rgba(3,3,6,0.7) 0%, rgba(1,1,1,0.4) 100%)',
+            border: '1px solid rgba(255,255,255,0.08)',
             boxShadow:
-              'inset 0 1px 0 oklch(1 0 0 / 0.06), 0 8px 24px -8px oklch(0 0 0 / 0.5)',
+              'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px -8px rgba(0,0,0,0.5)',
           }}
         >
           {/* Subtle direction-tinted aura */}
@@ -206,8 +206,8 @@ function DrawerBody({
               width: '90%',
               height: '160%',
               background: isOutgoing
-                ? 'radial-gradient(circle at 50% 50%, oklch(0.68 0.20 25 / 0.10), transparent 60%)'
-                : 'radial-gradient(circle at 50% 50%, oklch(0.72 0.16 155 / 0.10), transparent 60%)',
+                ? 'radial-gradient(circle at 50% 50%, rgba(252,88,85,0.1), transparent 60%)'
+                : 'radial-gradient(circle at 50% 50%, rgba(53,193,119,0.1), transparent 60%)',
               filter: 'blur(20px)',
             }}
           />
@@ -226,8 +226,8 @@ function DrawerBody({
             <span
               className="inline-flex items-center justify-center h-10 w-10 rounded-full"
               style={{
-                background: 'oklch(0 0 0 / 0.4)',
-                border: '1px solid oklch(1 0 0 / 0.08)',
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 color: amountColor,
               }}
               aria-hidden
@@ -391,12 +391,12 @@ function StatusTimeline({
         const Icon = s.icon
         const color =
           s.state === 'done'
-            ? 'oklch(0.72 0.16 155)'
+            ? 'rgb(53, 193, 119)'
             : s.state === 'current'
-              ? 'oklch(0.78 0.16 85)'
+              ? 'rgb(230, 173, 0)'
               : s.state === 'failed'
-                ? 'oklch(0.68 0.20 25)'
-                : 'oklch(0.55 0.012 270 / 0.6)'
+                ? 'rgb(252, 88, 85)'
+                : 'rgba(111,113,121,0.6)'
         return (
           <div key={s.key} className="flex items-center gap-3 relative">
             <span
@@ -432,7 +432,7 @@ function StatusTimeline({
               <span
                 aria-hidden
                 className="absolute left-[13px] top-7 w-px h-3"
-                style={{ background: 'oklch(1 0 0 / 0.06)' }}
+                style={{ background: 'rgba(255,255,255,0.06)' }}
               />
             )}
           </div>
@@ -474,4 +474,8 @@ function ActionButton({
       </span>
     </button>
   )
+}
+
+function compactIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '')
 }

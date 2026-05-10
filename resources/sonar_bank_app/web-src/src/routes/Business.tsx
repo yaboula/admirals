@@ -31,8 +31,8 @@ import { useBankSession } from '@/stores/session'
 
 const MOCK_COMPANY_ID = 'vanilla-unicorn'
 const FLOW_COLORS = {
-  in: 'oklch(0.72 0.17 154)',
-  out: 'oklch(0.66 0.20 28)',
+  in: 'rgb(41, 194, 113)',
+  out: 'rgb(244, 82, 70)',
 }
 
 export function Business() {
@@ -338,13 +338,13 @@ function ReadinessRing({ pct }: { pct: number }) {
   return (
     <div className="relative flex h-[72px] w-[72px] items-center justify-center">
       <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden>
-        <circle cx="36" cy="36" r={radius} fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="7" />
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
         <circle
           cx="36"
           cy="36"
           r={radius}
           fill="none"
-          stroke="oklch(0.72 0.17 154)"
+          stroke="rgb(41, 194, 113)"
           strokeWidth="7"
           strokeLinecap="round"
           strokeDasharray={circumference}

@@ -6,10 +6,10 @@ interface Props {
 }
 
 const SEGMENTS = [
-  { key: 'current' as const, color: 'oklch(0.65 0.18 155)', labelKey: 'govt.census.filters.compliance.current' as const },
-  { key: 'overdue' as const, color: 'oklch(0.72 0.20 35)',  labelKey: 'govt.census.filters.compliance.overdue' as const },
-  { key: 'pending' as const, color: 'oklch(0.78 0.16 85)',  labelKey: 'govt.census.filters.compliance.pending' as const },
-  { key: 'exempt'  as const, color: 'oklch(0.60 0.08 252)', labelKey: 'govt.census.filters.compliance.exempt' as const },
+  { key: 'current' as const, color: 'rgb(0, 173, 91)', labelKey: 'govt.census.filters.compliance.current' as const },
+  { key: 'overdue' as const, color: 'rgb(255, 106, 67)',  labelKey: 'govt.census.filters.compliance.overdue' as const },
+  { key: 'pending' as const, color: 'rgb(230, 173, 0)',  labelKey: 'govt.census.filters.compliance.pending' as const },
+  { key: 'exempt'  as const, color: 'rgb(92, 131, 175)', labelKey: 'govt.census.filters.compliance.exempt' as const },
 ] as const
 
 function polarToXY(cx: number, cy: number, r: number, angle: number) {
@@ -49,7 +49,7 @@ export function ComplianceRing({ data }: Props) {
       <div className="flex items-center justify-center gap-6">
         <div className="relative flex-shrink-0" style={{ width: 172, height: 172 }}>
           <svg width="172" height="172" viewBox="0 0 172 172" aria-hidden>
-            <circle cx={cx} cy={cy} r={r + stroke / 2 + 1} fill="oklch(0.04 0.010 252 / 0.80)" />
+            <circle cx={cx} cy={cy} r={r + stroke / 2 + 1} fill="rgba(0,0,1,0.8)" />
             {arcs.map((arc) =>
               arc.sweep > 1 ? (
                 <path

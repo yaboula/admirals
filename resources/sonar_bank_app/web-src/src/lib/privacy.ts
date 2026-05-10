@@ -1,28 +1,28 @@
-export function normalizeSensitiveToken(value: string): string {
-  return value.replace(/\s+/g, '').toUpperCase()
+export function normalizeSensitiveToken(value: string | null | undefined): string {
+  return String(value ?? '').replace(/\s+/g, '').toUpperCase()
 }
 
-export function maskIbanDisplay(iban: string): string {
+export function maskIbanDisplay(iban: string | null | undefined): string {
   const compact = normalizeSensitiveToken(iban)
   if (compact.length < 8) return '••••'
   return `${compact.slice(0, 4)} **** **** ${compact.slice(-4)}`
 }
 
-export function maskIbanCompact(iban: string): string {
+export function maskIbanCompact(iban: string | null | undefined): string {
   const compact = normalizeSensitiveToken(iban)
   if (compact.length < 8) return '••••'
   return `${compact.slice(0, 4)}…${compact.slice(-4)}`
 }
 
-export function maskIbanPanel(iban: string): string {
+export function maskIbanPanel(iban: string | null | undefined): string {
   const compact = normalizeSensitiveToken(iban)
   if (compact.length < 8) return '••••'
   return `${compact.slice(0, 4)} ···· ···· ${compact.slice(-4)}`
 }
 
-export function revealIbanDisplay(iban: string): string {
+export function revealIbanDisplay(iban: string | null | undefined): string {
   const compact = normalizeSensitiveToken(iban)
-  if (compact.length < 8) return iban
+  if (compact.length < 8) return String(iban ?? '')
   return compact.replace(/(.{4})/g, '$1 ').trim()
 }
 
@@ -72,6 +72,6 @@ export function revealOperationCode(value: string | null | undefined): string {
   return value ?? '—'
 }
 
-export function safeAriaLabel(label: string): string {
-  return label.replace(/[A-Z]{2}\d{2}[A-Z0-9]{8,}/gi, 'IBAN oculto')
+export function safeAriaLabel(label: string | null | undefined): string {
+  return String(label ?? '').replace(/[A-Z]{2}\d{2}[A-Z0-9]{8,}/gi, 'IBAN oculto')
 }

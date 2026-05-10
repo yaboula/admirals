@@ -54,7 +54,7 @@ export function GovtSubsidies() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-4 h-56"
-        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, rgba(0,113,214,0.07), transparent)', zIndex: 0 }}
       />
 
       <motion.header
@@ -68,7 +68,7 @@ export function GovtSubsidies() {
           <div className="flex items-center gap-3">
             <div
               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border"
-              style={{ background: 'oklch(0.06 0.018 252 / 0.70)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
+              style={{ background: 'rgba(0,1,3,0.7)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
               aria-hidden
             >
               <Sprout size={16} strokeWidth={1.8} />
@@ -81,15 +81,15 @@ export function GovtSubsidies() {
 
           {stats ? (
             <div className="flex flex-wrap items-center gap-3 text-[11px]">
-              <InlineStat value={number(stats.activeProgramCount)} label={t('govt.subsidies.stats.activePrograms')} color="oklch(0.75 0.17 155)" />
+              <InlineStat value={number(stats.activeProgramCount)} label={t('govt.subsidies.stats.activePrograms')} color="rgb(51, 204, 125)" />
               <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
-              <InlineStat value={m(stats.totalDisbursed)} label={t('govt.subsidies.stats.totalDisbursed')} color="oklch(0.80 0.12 215)" />
+              <InlineStat value={m(stats.totalDisbursed)} label={t('govt.subsidies.stats.totalDisbursed')} color="rgb(76, 209, 238)" />
               <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
               <InlineStat value={number(stats.totalBeneficiaries)} label={t('govt.subsidies.stats.beneficiaries')} color="var(--color-govt-text-secondary)" />
               {stats.pendingDisbursements > 0 ? (
                 <>
                   <span aria-hidden className="text-[var(--color-govt-text-quaternary)]">·</span>
-                  <InlineStat value={number(stats.pendingDisbursements)} label={t('govt.subsidies.stats.pending')} color="oklch(0.85 0.14 85)" />
+                  <InlineStat value={number(stats.pendingDisbursements)} label={t('govt.subsidies.stats.pending')} color="rgb(248, 198, 85)" />
                 </>
               ) : null}
             </div>

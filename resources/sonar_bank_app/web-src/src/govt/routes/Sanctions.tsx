@@ -47,7 +47,7 @@ export function Sanctions() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-4 h-56"
-        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, rgba(0,113,214,0.07), transparent)', zIndex: 0 }}
       />
       <motion.header
         initial={{ opacity: 0, y: 8 }}
@@ -151,10 +151,10 @@ function PermissionDenied() {
 }
 
 const KPI_STRIP_TONE: Record<string, { bg: string; border: string; fg: string }> = {
-  warning: { bg: 'oklch(0.78 0.16 85 / 0.08)', border: 'oklch(0.78 0.16 85 / 0.22)', fg: 'oklch(0.88 0.12 85)' },
-  danger:  { bg: 'oklch(0.62 0.21 25 / 0.08)',  border: 'oklch(0.62 0.21 25 / 0.22)',  fg: 'oklch(0.88 0.10 25)' },
+  warning: { bg: 'rgba(230,173,0,0.08)', border: 'rgba(230,173,0,0.22)', fg: 'rgb(252, 209, 118)' },
+  danger:  { bg: 'rgba(234,60,63,0.08)',  border: 'rgba(234,60,63,0.22)',  fg: 'rgb(255, 190, 182)' },
   accent:  { bg: 'var(--color-govt-accent-subtle)', border: 'var(--color-govt-border-active)', fg: 'var(--color-govt-accent-light)' },
-  neutral: { bg: 'oklch(1 0 0 / 0.04)', border: 'var(--color-govt-border)', fg: 'var(--color-govt-text-secondary)' },
+  neutral: { bg: 'rgba(255,255,255,0.04)', border: 'var(--color-govt-border)', fg: 'var(--color-govt-text-secondary)' },
 }
 
 function KpiStrip({ label, value, tone }: { label: string; value: string; tone: string }) {

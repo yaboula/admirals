@@ -78,9 +78,9 @@ export function CardVisual({
       style={{
         background: design.surface,
         color: design.textPrimary,
-        border: '1px solid oklch(1 0 0 / 0.08)',
+        border: '1px solid rgba(255,255,255,0.08)',
         boxShadow:
-          '0 24px 48px -16px oklch(0 0 0 / 0.65), 0 8px 16px -4px oklch(0 0 0 / 0.45), inset 0 1px 0 oklch(1 0 0 / 0.06), inset 0 -1px 0 oklch(0 0 0 / 0.4)',
+          '0 24px 48px -16px rgba(0,0,0,0.65), 0 8px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.4)',
       }}
       onClick={onClick}
     >
@@ -93,7 +93,7 @@ export function CardVisual({
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(115deg, transparent 0%, transparent 35%, oklch(1 0 0 / 0.06) 50%, transparent 65%, transparent 100%)',
+            'linear-gradient(115deg, transparent 0%, transparent 35%, rgba(255,255,255,0.06) 50%, transparent 65%, transparent 100%)',
           mixBlendMode: 'overlay',
         }}
       />
@@ -279,8 +279,8 @@ function FrostOverlay({
       className="absolute inset-0 flex items-center justify-center"
       style={{
         background: isFrozen
-          ? 'radial-gradient(circle at 50% 50%, oklch(0.62 0.08 220 / 0.42) 0%, oklch(0.18 0.04 230 / 0.62) 80%)'
-          : 'oklch(0 0 0 / 0.55)',
+          ? 'radial-gradient(circle at 50% 50%, rgba(72,146,168,0.42) 0%, rgba(0,20,32,0.62) 80%)'
+          : 'rgba(0,0,0,0.55)',
         backdropFilter: 'blur(3px) saturate(0.7)',
         WebkitBackdropFilter: 'blur(3px) saturate(0.7)',
       }}
@@ -300,7 +300,7 @@ function FrostOverlay({
             style={{
               width: 64,
               height: 64,
-              border: '1px solid oklch(0.92 0.06 220 / 0.55)',
+              border: '1px solid rgba(185,239,255,0.55)',
             }}
           />
         )}
@@ -311,15 +311,15 @@ function FrostOverlay({
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.18em]"
           style={{
             background: isFrozen
-              ? 'oklch(0.18 0.04 230 / 0.85)'
-              : 'oklch(0 0 0 / 0.7)',
+              ? 'rgba(0,20,32,0.85)'
+              : 'rgba(0,0,0,0.7)',
             border: isFrozen
-              ? '1px solid oklch(0.86 0.08 220 / 0.45)'
-              : '1px solid oklch(1 0 0 / 0.12)',
+              ? '1px solid rgba(148,222,245,0.45)'
+              : '1px solid rgba(255,255,255,0.12)',
             color: textPrimary,
             boxShadow: isFrozen
-              ? '0 0 24px -4px oklch(0.70 0.10 220 / 0.55), inset 0 1px 0 oklch(1 0 0 / 0.10)'
-              : 'inset 0 1px 0 oklch(1 0 0 / 0.06)',
+              ? '0 0 24px -4px rgba(74,173,201,0.55), inset 0 1px 0 rgba(255,255,255,0.1)'
+              : 'inset 0 1px 0 rgba(255,255,255,0.06)',
           }}
         >
           {isFrozen ? (
@@ -369,7 +369,7 @@ function CrystalField({ reduced }: { reduced: boolean }) {
           style={{
             left: c.x,
             top: c.y,
-            color: 'oklch(0.96 0.02 220)',
+            color: 'rgb(228, 245, 251)',
             opacity: c.opacity,
             transform: `translate(-50%, -50%) rotate(${c.rot}deg)`,
           }}
@@ -452,8 +452,8 @@ function CardTypeBadge({
     <span
       className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] uppercase tracking-[0.18em] font-semibold"
       style={{
-        background: 'oklch(1 0 0 / 0.08)',
-        border: '1px solid oklch(1 0 0 / 0.10)',
+        background: 'rgba(255,255,255,0.08)',
+        border: '1px solid rgba(255,255,255,0.1)',
         color: textTertiary,
       }}
     >
@@ -497,22 +497,22 @@ function Chip() {
       className="relative h-6 w-8 rounded-md overflow-hidden shrink-0"
       style={{
         background:
-          'linear-gradient(135deg, oklch(0.78 0.12 85) 0%, oklch(0.62 0.10 75) 50%, oklch(0.45 0.06 70) 100%)',
+          'linear-gradient(135deg, rgb(219, 177, 85) 0%, rgb(169, 125, 58) 50%, rgb(107, 79, 47) 100%)',
         boxShadow:
-          'inset 0 1px 0 oklch(1 0 0 / 0.4), inset 0 -1px 0 oklch(0 0 0 / 0.4), 0 2px 4px oklch(0 0 0 / 0.4)',
+          'inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.4)',
       }}
     >
       <div className="absolute inset-1 grid grid-cols-2 grid-rows-3 gap-px">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            style={{ background: 'oklch(0.30 0.04 70 / 0.55)', borderRadius: '1px' }}
+            style={{ background: 'rgba(59,42,23,0.55)', borderRadius: '1px' }}
           />
         ))}
       </div>
       <div
         className="absolute left-0 right-0"
-        style={{ top: '50%', height: '1px', background: 'oklch(0.30 0.04 70 / 0.7)' }}
+        style={{ top: '50%', height: '1px', background: 'rgba(59,42,23,0.7)' }}
       />
     </div>
   )
@@ -536,7 +536,7 @@ function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
         className="absolute inset-0 pointer-events-none opacity-[0.045]"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(135deg, oklch(1 0 0 / 0.6) 0 1px, transparent 1px 18px)',
+            'repeating-linear-gradient(135deg, rgba(255,255,255,0.6) 0 1px, transparent 1px 18px)',
         }}
       />
     )
@@ -568,8 +568,8 @@ function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
         className="absolute inset-0 pointer-events-none opacity-[0.06]"
         style={{
           backgroundImage: [
-            'linear-gradient(0deg, oklch(1 0 0 / 0.4) 0 1px, transparent 1px 28px)',
-            'linear-gradient(90deg, oklch(1 0 0 / 0.4) 0 1px, transparent 1px 28px)',
+            'linear-gradient(0deg, rgba(255,255,255,0.4) 0 1px, transparent 1px 28px)',
+            'linear-gradient(90deg, rgba(255,255,255,0.4) 0 1px, transparent 1px 28px)',
           ].join(', '),
         }}
       />
@@ -586,7 +586,7 @@ function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
           left: '-10%',
           width: '70%',
           height: '130%',
-          background: `radial-gradient(circle at 40% 50%, ${accent.replace(')', ' / 0.18)')}, transparent 60%)`,
+          background: `radial-gradient(circle at 40% 50%, ${withAlpha(accent, 0.18)}, transparent 60%)`,
           filter: 'blur(22px)',
         }}
       />
@@ -594,4 +594,15 @@ function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
   }
 
   return null
+}
+
+function withAlpha(color: string | undefined | null, alpha: number): string {
+  const value = String(color ?? '')
+  const rgb = value.match(/^rgb\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*\)$/)
+  if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`
+
+  const rgba = value.match(/^rgba\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*[0-9.]+\s*\)$/)
+  if (rgba) return `rgba(${rgba[1]}, ${rgba[2]}, ${rgba[3]}, ${alpha})`
+
+  return 'rgba(255,255,255,0)'
 }

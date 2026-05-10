@@ -15,11 +15,11 @@ interface GovtPillProps {
 const TONE_MAP: Record<GovtPillTone, string> = {
   neutral: 'border-white/10 bg-white/[0.045] text-[var(--color-govt-text-secondary)]',
   accent: 'border-[var(--color-govt-border-strong)] bg-[var(--color-govt-accent-soft)] text-[var(--color-govt-accent-light)]',
-  seal: 'border-[oklch(0.78_0.14_215/0.32)] bg-[oklch(0.78_0.14_215/0.10)] text-[var(--color-govt-seal)]',
+  seal: 'border-[rgba(0,205,239,0.32)] bg-[rgba(0,205,239,0.1)] text-[var(--color-govt-seal)]',
   gold: 'border-[var(--color-govt-gold-ring)] bg-[var(--color-govt-gold-subtle)] text-[var(--color-govt-gold)]',
-  success: 'border-[oklch(0.65_0.18_155/0.30)] bg-[oklch(0.65_0.18_155/0.10)] text-[oklch(0.78_0.16_155)]',
-  warning: 'border-[oklch(0.78_0.16_85/0.30)] bg-[oklch(0.78_0.16_85/0.10)] text-[oklch(0.85_0.14_85)]',
-  danger: 'border-[oklch(0.62_0.21_25/0.32)] bg-[oklch(0.62_0.21_25/0.10)] text-[oklch(0.78_0.16_25)]',
+  success: 'border-[rgba(0,173,91,0.3)] bg-[rgba(0,173,91,0.1)] text-[rgb(78, 213, 137)]',
+  warning: 'border-[rgba(230,173,0,0.3)] bg-[rgba(230,173,0,0.1)] text-[rgb(248, 198, 85)]',
+  danger: 'border-[rgba(234,60,63,0.32)] bg-[rgba(234,60,63,0.1)] text-[rgb(255, 138, 130)]',
 }
 
 const SIZE_MAP: Record<GovtPillSize, string> = {

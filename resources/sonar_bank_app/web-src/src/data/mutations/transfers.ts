@@ -47,15 +47,15 @@ interface TransferMutationContext {
 
 const processedIdempotencyKeys = new Set<string>()
 
-export function normalizeIban(value: string): string {
-  return value.replace(/\s+/g, '').toUpperCase()
+export function normalizeIban(value: string | undefined | null): string {
+  return String(value ?? '').replace(/\s+/g, '').toUpperCase()
 }
 
-export function formatIban(value: string): string {
+export function formatIban(value: string | undefined | null): string {
   return normalizeIban(value).replace(/(.{4})/g, '$1 ').trim()
 }
 
-export function isValidSpanishIban(value: string): boolean {
+export function isValidSpanishIban(value: string | undefined | null): boolean {
   return SPANISH_IBAN_RE.test(normalizeIban(value))
 }
 

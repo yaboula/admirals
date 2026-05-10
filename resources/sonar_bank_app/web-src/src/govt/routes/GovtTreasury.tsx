@@ -51,7 +51,7 @@ export function GovtTreasury() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-4 h-56"
-        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, oklch(0.55 0.18 252 / 0.07), transparent)', zIndex: 0 }}
+        style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 0%, rgba(0,113,214,0.07), transparent)', zIndex: 0 }}
       />
 
       <motion.header
@@ -64,7 +64,7 @@ export function GovtTreasury() {
         <div className="flex items-center gap-3">
           <div
             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border"
-            style={{ background: 'oklch(0.06 0.018 252 / 0.70)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
+            style={{ background: 'rgba(0,1,3,0.7)', borderColor: 'var(--color-govt-border-strong)', color: 'var(--color-govt-accent-light)' }}
             aria-hidden
           >
             <Banknote size={16} strokeWidth={1.8} />
@@ -117,7 +117,7 @@ export function GovtTreasury() {
             <TableEmpty />
           ) : (
             <table className="w-full min-w-[640px] border-collapse text-left">
-              <thead className="sticky top-0 z-10" style={{ background: 'oklch(0.05 0.010 252 / 0.95)' }}>
+              <thead className="sticky top-0 z-10" style={{ background: 'rgba(0,0,1,0.95)' }}>
                 <tr className="border-b border-[var(--color-govt-border)]">
                   <th className="py-2 pl-4 pr-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{t('govt.treasury.col.type')}</th>
                   <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{t('govt.treasury.col.entity')}</th>
@@ -152,9 +152,9 @@ export function GovtTreasury() {
 }
 
 function StatPill({ icon: Icon, label, value, tone }: { icon: typeof Banknote; label: string; value: string; tone: 'inflow' | 'outflow' | 'neutral' }) {
-  const color = tone === 'inflow' ? 'oklch(0.75 0.17 155)' : tone === 'outflow' ? 'oklch(0.80 0.12 215)' : 'var(--color-govt-text-secondary)'
+  const color = tone === 'inflow' ? 'rgb(51, 204, 125)' : tone === 'outflow' ? 'rgb(76, 209, 238)' : 'var(--color-govt-text-secondary)'
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-[var(--color-govt-border)] bg-[oklch(0.05_0.010_252/0.70)] p-2.5">
+    <div className="flex flex-col gap-1 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.7)] p-2.5">
       <div className="flex items-center gap-1.5">
         <Icon size={10} strokeWidth={2} style={{ color }} aria-hidden />
         <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>

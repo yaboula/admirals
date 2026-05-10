@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -41,7 +41,7 @@ const ATM_CARD_DESIGN: CardDesign = {
   surface: 'linear-gradient(135deg, rgb(2, 4, 6) 0%, rgb(1, 1, 2) 58%, rgb(0, 1, 2) 100%)',
   accent: 'rgb(246, 75, 0)',
   textPrimary: 'rgb(246, 249, 251)',
-  textTertiary: 'rgba(141, 147, 153, 0.78)',
+  textTertiary: 'rgba(141,147,153,0.78)',
   motif: 'pinstripe',
 }
 
@@ -159,9 +159,9 @@ function AtmSurface({ children }: { children: ReactNode }) {
   return (
     <main className="relative h-full w-full overflow-hidden bg-[#050202] text-text-primary">
       <div aria-hidden className="absolute inset-0 bg-[#05070a]" />
-      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(246, 75, 0, 0.22),transparent_30%),radial-gradient(circle_at_16%_78%,rgba(246, 75, 0, 0.12),transparent_34%),linear-gradient(135deg,#080202_0%,#05070a_48%,#020203_100%)]" />
+      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(246,75,0,0.22),transparent_30%),radial-gradient(circle_at_16%_78%,rgba(246,75,0,0.12),transparent_34%),linear-gradient(135deg,#080202_0%,#05070a_48%,#020203_100%)]" />
       <div aria-hidden className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:72px_72px]" />
-      <div aria-hidden className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(246, 75, 0, 0.34)] to-transparent" />
+      <div aria-hidden className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(246,75,0,0.34)] to-transparent" />
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-white/10" />
       {children}
     </main>
@@ -192,8 +192,8 @@ function PinGate({
   }
 
   return (
-    <div className="grid h-full grid-cols-[minmax(0,1fr)_390px] gap-4 rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_88%_14%,rgba(246, 75, 0, 0.16),transparent_30%),linear-gradient(135deg,rgba(8,2,2,0.92)_0%,rgba(5,7,10,0.88)_52%,rgba(2,2,3,0.96)_100%)] p-4 shadow-[0_34px_100px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
-      <section className="relative overflow-hidden rounded-[1.65rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246, 75, 0, 0.09)_0%,rgba(255,255,255,0.035)_36%,rgba(0,0,0,0.30)_100%)] p-8">
+    <div className="grid h-full grid-cols-[minmax(0,1fr)_390px] gap-4 rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_88%_14%,rgba(246,75,0,0.16),transparent_30%),linear-gradient(135deg,rgba(8,2,2,0.92)_0%,rgba(5,7,10,0.88)_52%,rgba(2,2,3,0.96)_100%)] p-4 shadow-[0_34px_100px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
+      <section className="relative overflow-hidden rounded-[1.65rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246,75,0,0.09)_0%,rgba(255,255,255,0.035)_36%,rgba(0,0,0,0.30)_100%)] p-8">
         <div className="relative grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
           <div>
             <TerminalKicker location={location} />
@@ -205,11 +205,11 @@ function PinGate({
           <div className="grid place-items-center">
             <div className="relative h-[220px] w-[440px] max-w-full">
               <div className="absolute left-1/2 top-1/2 h-[170px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-black/18" />
-              <div className="absolute left-1/2 top-1/2 h-[112px] w-[286px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(246, 75, 0, 0.18)] bg-[rgba(246, 75, 0, 0.05)]" />
+              <div className="absolute left-1/2 top-1/2 h-[112px] w-[286px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(246,75,0,0.18)] bg-[rgba(246,75,0,0.05)]" />
               <div className="absolute left-1/2 top-1/2 grid h-[78px] w-[78px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/12 bg-[#080a0d] shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                 <KeyRound size={26} className="text-[rgb(246, 75, 0)]" strokeWidth={2.2} />
               </div>
-              <div className="absolute left-[42px] top-[34px] h-3 w-3 rounded-full border border-[rgba(246, 75, 0, 0.36)] bg-[rgba(246, 75, 0, 0.22)]" />
+              <div className="absolute left-[42px] top-[34px] h-3 w-3 rounded-full border border-[rgba(246,75,0,0.36)] bg-[rgba(246,75,0,0.22)]" />
               <div className="absolute bottom-[42px] right-[64px] h-2 w-2 rounded-full bg-white/22" />
               <div className="absolute right-[38px] top-[52px] h-10 w-10 rounded-full border border-white/10" />
             </div>
@@ -238,7 +238,7 @@ function PinGate({
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-text-tertiary">{t('atm.enterPin')}</p>
           <div className="mt-5 flex justify-center gap-3">
             {Array.from({ length: 4 }, (_, index) => (
-              <span key={index} className={cn('h-4 w-4 rounded-full border transition', index < pin.length ? 'border-[rgb(246, 75, 0)] bg-[rgb(246, 75, 0)] shadow-[0_0_18px_rgba(246, 75, 0, 0.26)]' : 'border-white/16 bg-white/[0.035]')} />
+              <span key={index} className={cn('h-4 w-4 rounded-full border transition', index < pin.length ? 'border-[rgb(246, 75, 0)] bg-[rgb(246, 75, 0)] shadow-[0_0_18px_rgba(246,75,0,0.26)]' : 'border-white/16 bg-white/[0.035]')} />
             ))}
           </div>
 
@@ -251,7 +251,7 @@ function PinGate({
           </div>
         </div>
 
-        <button type="button" disabled={!ready} onClick={onNext} className={cn('flex h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition', ready ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246, 75, 0, 0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
+        <button type="button" disabled={!ready} onClick={onNext} className={cn('flex h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition', ready ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246,75,0,0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
           {t('atm.confirmPin')}
           <ChevronRight size={16} />
         </button>
@@ -378,7 +378,7 @@ function CardChooser({
             </div>
           )}
 
-          <button type="button" disabled={!canContinue} onClick={onNext} className={cn('flex h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition', canContinue ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246, 75, 0, 0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
+          <button type="button" disabled={!canContinue} onClick={onNext} className={cn('flex h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition', canContinue ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246,75,0,0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
             {t('atm.useThisCard')}
             <ChevronRight size={16} />
           </button>
@@ -428,7 +428,7 @@ function CashScreen({
   onExit: () => void
 }) {
   return (
-    <div className="grid h-full grid-cols-[minmax(0,1fr)_336px] gap-4 rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_88%_14%,rgba(246, 75, 0, 0.18),transparent_30%),linear-gradient(135deg,rgba(8,2,2,0.92)_0%,rgba(5,7,10,0.88)_52%,rgba(2,2,3,0.96)_100%)] p-4 shadow-[0_34px_100px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
+    <div className="grid h-full grid-cols-[minmax(0,1fr)_336px] gap-4 rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_88%_14%,rgba(246,75,0,0.18),transparent_30%),linear-gradient(135deg,rgba(8,2,2,0.92)_0%,rgba(5,7,10,0.88)_52%,rgba(2,2,3,0.96)_100%)] p-4 shadow-[0_34px_100px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
       <section className="grid min-h-0 grid-rows-[76px_minmax(0,1fr)_132px] gap-3">
         <FlowHeader name={name} location={location} stepLabel="ATM" onBack={onBack} onExit={onExit} />
         <CashGateway card={selectedCard} availableNow={availableNow} totalBalance={totalBalance} cashBalance={cashBalance} limitLeft={limitLeft} limitRatio={limitRatio} terminalId={terminalId} online={online} />
@@ -448,7 +448,7 @@ function FlowHeader({ name, location, stepLabel, onBack, onExit }: { name: strin
   return (
     <header className="flex min-h-0 items-start justify-between gap-4">
       <div className="flex min-w-0 items-start gap-3">
-        <BankAvatar name={name} size="lg" className="mt-1 ring-2 ring-[rgba(246, 75, 0, 0.2)] shadow-[0_0_32px_rgba(246, 75, 0, 0.18)]" />
+        <BankAvatar name={name} size="lg" className="mt-1 ring-2 ring-[rgba(246,75,0,0.2)] shadow-[0_0_32px_rgba(246,75,0,0.18)]" />
         <div className="min-w-0">
           <TerminalKicker location={location} />
           <div className="mt-2 flex items-end gap-3">
@@ -483,7 +483,7 @@ function TerminalKicker({ location }: { location?: string }) {
 
 function StageBadge({ index, label, active = false }: { index: string; label: string; active?: boolean }) {
   return (
-    <div className={cn('rounded-[1.2rem] border p-3', active ? 'border-[rgba(246, 75, 0, 0.2)] bg-[rgba(246, 75, 0, 0.07)]' : 'border-white/10 bg-white/[0.035]')}>
+    <div className={cn('rounded-[1.2rem] border p-3', active ? 'border-[rgba(246,75,0,0.2)] bg-[rgba(246,75,0,0.07)]' : 'border-white/10 bg-white/[0.035]')}>
       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-text-tertiary">{index}</p>
       <p className="mt-1 text-sm font-black text-text-primary">{label}</p>
     </div>
@@ -511,15 +511,15 @@ function CashGateway({
 }) {
   const { t } = useI18n()
   return (
-    <section className="relative grid min-h-0 grid-cols-[minmax(0,1fr)_196px] gap-4 overflow-hidden rounded-[1.65rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246, 75, 0, 0.11)_0%,rgba(255,255,255,0.035)_34%,rgba(0,0,0,0.30)_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-      <div aria-hidden className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[rgba(246, 75, 0, 0.14)] blur-3xl" />
-      <div aria-hidden className="absolute bottom-0 left-8 h-px w-2/3 bg-gradient-to-r from-[rgba(246, 75, 0, 0)] via-[rgba(246, 75, 0, 0.22)] to-[rgba(246, 75, 0, 0)]" />
+    <section className="relative grid min-h-0 grid-cols-[minmax(0,1fr)_196px] gap-4 overflow-hidden rounded-[1.65rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246,75,0,0.11)_0%,rgba(255,255,255,0.035)_34%,rgba(0,0,0,0.30)_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+      <div aria-hidden className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[rgba(246,75,0,0.14)] blur-3xl" />
+      <div aria-hidden className="absolute bottom-0 left-8 h-px w-2/3 bg-gradient-to-r from-[rgba(246,75,0,0)] via-[rgba(246,75,0,0.22)] to-[rgba(246,75,0,0)]" />
       <div className="relative grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-4">
         <div className="grid grid-cols-[minmax(0,1fr)_170px] gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/18 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-text-primary">
               <span className="relative flex h-2.5 w-2.5">
-                <motion.span className="absolute inline-flex h-full w-full rounded-full bg-[rgba(246, 75, 0, 0.45)]" animate={{ scale: [1, 1.9, 1], opacity: [0.45, 0, 0.45] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }} />
+                <motion.span className="absolute inline-flex h-full w-full rounded-full bg-[rgba(246,75,0,0.45)]" animate={{ scale: [1, 1.9, 1], opacity: [0.45, 0, 0.45] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }} />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[rgb(246, 75, 0)]" />
               </span>
               {online ? t('atm.terminalOnline') : t('atm.terminalOffline')}
@@ -547,7 +547,7 @@ function CashGateway({
             {card ? (
               <motion.div className="group relative rounded-[1.45rem]" animate={{ rotateX: 6, rotateY: -7, y: 0 }} whileHover={{ y: -5, rotateX: 4, rotateY: -5, scale: 1.01 }} transition={{ type: 'spring', stiffness: 160, damping: 18 }} style={{ transformStyle: 'preserve-3d' }}>
                 <CardVisual card={card} design={ATM_CARD_DESIGN} className="rounded-[1.45rem] shadow-[0_38px_80px_rgba(0,0,0,0.62)]" />
-                <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[1.45rem] border border-transparent transition duration-300 group-hover:border-[rgba(246, 75, 0, 0.28)] group-hover:shadow-[0_0_34px_rgba(246, 75, 0, 0.12)]" />
+                <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[1.45rem] border border-transparent transition duration-300 group-hover:border-[rgba(246,75,0,0.28)] group-hover:shadow-[0_0_34px_rgba(246,75,0,0.12)]" />
               </motion.div>
             ) : (
               <FallbackAtmCard />
@@ -576,7 +576,7 @@ function LimitPillar({ value, ratio }: { value: string; ratio: number }) {
       <p className="mt-3 text-[11px] font-semibold leading-4 text-text-secondary">{t('atm.limitHintShort')}</p>
       <div className="mt-4 grid content-end gap-2">
         {cells.map((active, index) => (
-          <div key={index} className={cn('h-4 rounded-full border transition', active ? 'border-[rgba(246, 75, 0, 0.18)] bg-[rgba(246, 75, 0, 0.18)]' : 'border-white/10 bg-white/[0.035]')} />
+          <div key={index} className={cn('h-4 rounded-full border transition', active ? 'border-[rgba(246,75,0,0.18)] bg-[rgba(246,75,0,0.18)]' : 'border-white/10 bg-white/[0.035]')} />
         ))}
       </div>
       <div className="mt-4 flex items-center justify-between rounded-full border border-white/10 bg-white/[0.035] px-3 py-2">
@@ -595,7 +595,7 @@ function OperationDock({ active, onChange }: { active: OperationId; onChange: (o
     { id: 'transfer', label: t('atm.transfer'), hint: t('atm.transferHintShort'), rail: t('atm.moveRail'), icon: ArrowRight },
   ]
   return (
-    <section className="rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246, 75, 0, 0.12)_0%,rgba(255,255,255,0.04)_40%,rgba(0,0,0,0.32)_100%)] p-4 shadow-glass backdrop-blur-2xl">
+    <section className="rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246,75,0,0.12)_0%,rgba(255,255,255,0.04)_40%,rgba(0,0,0,0.32)_100%)] p-4 shadow-glass backdrop-blur-2xl">
       <div className="flex items-center gap-2">
         <ReceiptText size={18} strokeWidth={2.2} className="text-text-secondary" />
         <h2 className="text-xl font-black tracking-[-0.055em] text-text-primary">{t('atm.chooseOperation')}</h2>
@@ -614,7 +614,7 @@ function OperationDock({ active, onChange }: { active: OperationId; onChange: (o
                 <span className={cn('hidden rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] xl:inline', selected ? 'border-white/16 bg-white/[0.08] text-text-primary' : 'border-white/10 bg-white/[0.035] text-text-tertiary')}>
                   {operation.rail}
                 </span>
-                <span className={cn('grid h-8 w-8 place-items-center rounded-full border transition', selected ? 'border-[rgba(246, 75, 0, 0.24)] bg-[rgba(246, 75, 0, 0.1)] text-[rgb(246, 75, 0)]' : 'border-white/10 bg-white/[0.035] text-text-secondary group-hover:text-text-primary')}>
+                <span className={cn('grid h-8 w-8 place-items-center rounded-full border transition', selected ? 'border-[rgba(246,75,0,0.24)] bg-[rgba(246,75,0,0.1)] text-[rgb(246, 75, 0)]' : 'border-white/10 bg-white/[0.035] text-text-secondary group-hover:text-text-primary')}>
                   <Icon size={15} strokeWidth={2.3} />
                 </span>
               </span>
@@ -640,8 +640,8 @@ function AmountComposer({
   const { t, money } = useI18n()
   const title = operation === 'withdraw' ? t('atm.withdrawAmount') : operation === 'deposit' ? t('atm.depositAmount') : t('atm.transferAmount')
   return (
-    <section className="relative min-h-0 overflow-hidden rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246, 75, 0, 0.09)_0%,rgba(255,255,255,0.035)_42%,rgba(0,0,0,0.34)_100%)] p-4 shadow-glass backdrop-blur-2xl">
-      <div aria-hidden className="absolute -right-20 bottom-0 h-40 w-40 rounded-full bg-[rgba(246, 75, 0, 0.12)] blur-3xl" />
+    <section className="relative min-h-0 overflow-hidden rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246,75,0,0.09)_0%,rgba(255,255,255,0.035)_42%,rgba(0,0,0,0.34)_100%)] p-4 shadow-glass backdrop-blur-2xl">
+      <div aria-hidden className="absolute -right-20 bottom-0 h-40 w-40 rounded-full bg-[rgba(246,75,0,0.12)] blur-3xl" />
       <div className="relative grid h-full grid-rows-[auto_auto_auto_auto_1fr_auto]">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -654,8 +654,8 @@ function AmountComposer({
 
         <div className="mt-3 grid grid-cols-4 gap-2">
           {QUICK_AMOUNTS.map((quickAmount) => (
-            <button key={quickAmount} type="button" onClick={() => onAmountChange(String(quickAmount))} className={cn('relative h-9 overflow-hidden rounded-full border text-[11px] font-black transition hover:scale-[1.03]', amount === String(quickAmount) ? 'border-[rgba(246, 75, 0, 0.28)] bg-[rgba(246, 75, 0, 0.1)] text-text-primary' : 'border-white/10 bg-black/12 text-text-secondary hover:bg-white/[0.045] hover:text-text-primary')}>
-              {amount === String(quickAmount) && <motion.span layoutId="atm-quick-amount-fill" className="absolute inset-y-0 left-0 w-full rounded-full bg-[rgba(246, 75, 0, 0.06)]" transition={{ type: 'spring', stiffness: 280, damping: 26 }} />}
+            <button key={quickAmount} type="button" onClick={() => onAmountChange(String(quickAmount))} className={cn('relative h-9 overflow-hidden rounded-full border text-[11px] font-black transition hover:scale-[1.03]', amount === String(quickAmount) ? 'border-[rgba(246,75,0,0.28)] bg-[rgba(246,75,0,0.1)] text-text-primary' : 'border-white/10 bg-black/12 text-text-secondary hover:bg-white/[0.045] hover:text-text-primary')}>
+              {amount === String(quickAmount) && <motion.span layoutId="atm-quick-amount-fill" className="absolute inset-y-0 left-0 w-full rounded-full bg-[rgba(246,75,0,0.06)]" transition={{ type: 'spring', stiffness: 280, damping: 26 }} />}
               <span className="relative">{money(quickAmount)}</span>
             </button>
           ))}
@@ -674,7 +674,7 @@ function AmountComposer({
           <p className="mt-2 text-xs font-semibold leading-5 text-text-secondary">{amountReady ? t('atm.readyNote') : t('atm.waitingNote')}</p>
         </div>
 
-        <button type="button" disabled={!amountReady} className={cn('mt-3 flex h-11 w-full items-center justify-center gap-2 self-end rounded-full text-sm font-black transition', amountReady ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246, 75, 0, 0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
+        <button type="button" disabled={!amountReady} className={cn('mt-3 flex h-11 w-full items-center justify-center gap-2 self-end rounded-full text-sm font-black transition', amountReady ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246,75,0,0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
           {t('atm.reviewCash')}
           <ChevronRight size={16} />
         </button>
@@ -687,7 +687,7 @@ function RecentPanel({ clientName, transactions }: { clientName: string; transac
   const { t, money, dateTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   return (
-    <section className="min-h-0 overflow-hidden rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246, 75, 0, 0.1)_0%,rgba(255,255,255,0.04)_34%,rgba(0,0,0,0.22)_100%)] p-3 shadow-glass backdrop-blur-2xl">
+    <section className="min-h-0 overflow-hidden rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246,75,0,0.1)_0%,rgba(255,255,255,0.04)_34%,rgba(0,0,0,0.22)_100%)] p-3 shadow-glass backdrop-blur-2xl">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
@@ -707,7 +707,7 @@ function RecentPanel({ clientName, transactions }: { clientName: string; transac
           const amount = streamerMode ? maskMoneyDisplay() : money(transaction.amount_minor / 100)
           const avatarName = streamerMode ? clientName : label
           return (
-            <div key={transaction.txn_id} className="grid h-[62px] grid-cols-[34px_minmax(0,1fr)] grid-rows-[1fr_auto] gap-x-2 rounded-[1rem] border border-white/[0.065] bg-black/18 px-3 py-2 transition hover:border-[rgba(246, 75, 0, 0.18)] hover:bg-black/28">
+            <div key={transaction.txn_id} className="grid h-[62px] grid-cols-[34px_minmax(0,1fr)] grid-rows-[1fr_auto] gap-x-2 rounded-[1rem] border border-white/[0.065] bg-black/18 px-3 py-2 transition hover:border-[rgba(246,75,0,0.18)] hover:bg-black/28">
               <span className="relative row-span-2 self-center">
                 <BankAvatar name={avatarName} seed={transaction.txn_id.length + index} size="sm" className="h-8 w-8 ring-1 ring-white/10" />
                 <span className={cn('absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full border border-black bg-[#120805]', incoming ? 'text-[rgb(246, 75, 0)]' : 'text-text-secondary')}>
@@ -740,7 +740,7 @@ function FallbackAtmCard() {
   const { t } = useI18n()
   return (
     <div className="relative aspect-[1.586/1] w-full overflow-hidden rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,#10131f,rgb(52, 0, 0)_48%,#090a10)] p-6 shadow-[0_38px_80px_rgba(0,0,0,0.62)]">
-      <div aria-hidden className="absolute -right-12 top-0 h-full w-1/2 rounded-full bg-[rgba(246, 75, 0, 0.16)] blur-2xl" />
+      <div aria-hidden className="absolute -right-12 top-0 h-full w-1/2 rounded-full bg-[rgba(246,75,0,0.16)] blur-2xl" />
       <WalletCards className="relative text-white/80" size={34} />
       <p className="relative mt-20 font-mono text-xl font-black tracking-[0.16em] text-white">•••• •••• •••• 5614</p>
       <p className="relative mt-4 text-sm font-black uppercase tracking-[0.12em] text-white/80">{t('atm.clientFallback')}</p>
