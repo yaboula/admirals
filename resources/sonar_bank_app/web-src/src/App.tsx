@@ -39,19 +39,10 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* NuiControlBridge listens to FiveM messages — wrap defensively so a
-          malformed payload from Lua cannot kill the whole tree. */}
-      <AppErrorBoundary locationKey={`nui-${location.key}`} fallback={null}>
-        <NuiControlBridge onVisibilityChange={setVisible} />
-      </AppErrorBoundary>
+      <NuiControlBridge onVisibilityChange={setVisible} />
       {visible && (
         <BankDeviceFrame>
-          {/* NetEventBridge mounts hooks (useBankNetEvent, useI18n, etc.)
-              outside the route Outlet. A throw here previously cascaded up
-              past the route boundary and unmounted the entire app. */}
-          <AppErrorBoundary locationKey={`net-${location.key}`} fallback={null}>
-            <NetEventBridge />
-          </AppErrorBoundary>
+          <NetEventBridge />
           <AppErrorBoundary locationKey={location.key}>
             <Outlet />
           </AppErrorBoundary>
@@ -62,7 +53,7 @@ export function App() {
 }
 
 class AppErrorBoundary extends Component<
-  { children: ReactNode; locationKey: string; fallback?: ReactNode },
+  { children: ReactNode; locationKey: string },
   { hasError: boolean }
 > {
   state = { hasError: false }
@@ -72,11 +63,7 @@ class AppErrorBoundary extends Component<
   }
 
   componentDidCatch(error: unknown, errorInfo: ErrorInfo): void {
-    console.error('[SONAR Bank] Subtree render failed', {
-      locationKey: this.props.locationKey,
-      error,
-      componentStack: errorInfo?.componentStack,
-    })
+    console.error('[SONAR Bank] Route render failed', error, errorInfo)
   }
 
   componentDidUpdate(prevProps: { locationKey: string }): void {
@@ -86,12 +73,7 @@ class AppErrorBoundary extends Component<
   }
 
   render(): ReactNode {
-    if (this.state.hasError) {
-      // Allow caller to opt out of the visible fallback (e.g. for headless
-      // bridge components that normally render null — showing a panel where
-      // none existed would itself be a regression).
-      return this.props.fallback !== undefined ? this.props.fallback : <RouteErrorFallback />
-    }
+    if (this.state.hasError) return <RouteErrorFallback />
     return this.props.children
   }
 }
