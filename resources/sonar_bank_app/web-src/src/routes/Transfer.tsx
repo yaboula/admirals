@@ -20,7 +20,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Button, Card, CardContent, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
-import { useExecuteTransfer, formatIban, isLargeTransfer, isValidSpanishIban, normalizeIban } from '@/data/mutations'
+import { useExecuteTransfer, formatIban, isLargeTransfer, isValidSonarIban, normalizeIban } from '@/data/mutations'
 import type { TransferReceipt } from '@/data/mutations'
 import { useBootstrap, useInvalidateBootstrap, useInvalidateRecentRecipients, useRecentRecipients } from '@/data/queries'
 import type { Account, RecentRecipient } from '@/data/contracts'
@@ -469,7 +469,7 @@ function RecipientStep({ account }: { account: Account | null }) {
   })
 
   const submit = (): void => {
-    if (!isValidSpanishIban(iban)) {
+    if (!isValidSonarIban(iban)) {
       setError(t('transfer.validSpanishIban'))
       return
     }

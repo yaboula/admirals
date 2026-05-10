@@ -42,14 +42,17 @@ local Config    = BankApp.Config
 -- -----------------------------------------------------------------------------
 
 local function ox_callback_register(name, fn)
+  print(('[%s][WRAP] Registering callback: %s'):format(Config.Logging.PREFIX, name))
   if _G.lib and _G.lib.callback and type(_G.lib.callback.register) == 'function' then
+    print(('[%s][WRAP] Using ox_lib.callback.register for: %s'):format(Config.Logging.PREFIX, name))
     _G.lib.callback.register(name, fn)
+    print(('[%s][WRAP] Successfully registered with ox_lib: %s'):format(Config.Logging.PREFIX, name))
     return true
   end
   -- Fallback: vanilla FiveM callback bus (registers as net event-based callback)
   -- ox_lib should always be present per fxmanifest dependencies — this branch
   -- is purely defensive against load-order surprises.
-  print(('[%s][WARN] ox_lib not loaded — callback %s falling back to event bus'):format(
+  print(('[%s][WRAP][WARN] ox_lib not loaded — callback %s falling back to event bus'):format(
     Config.Logging.PREFIX, name))
   RegisterNetEvent(name, function(payload, response_event)
     local src = source

@@ -40,7 +40,10 @@ Wrap.Register('sonar:bank:transfer:execute', {
   tier  = Enums.TIER.TIER_2_WRITE,
   cb_id = 'C006',
 }, function(src, citizen_id, payload)
-  return TransferService.Execute({
+  print(('[%s][C006] INVOKED src=%s citizen_id=%s from_iban=%s to_iban=%s amount_minor=%s'):format(
+    BankApp.Config.Logging.PREFIX, tostring(src), tostring(citizen_id),
+    tostring(payload.from_iban), tostring(payload.to_iban), tostring(payload.amount_minor)))
+  local result = TransferService.Execute({
     src              = src,
     citizen_id       = citizen_id,
     from_iban        = payload.from_iban,
@@ -50,6 +53,8 @@ Wrap.Register('sonar:bank:transfer:execute', {
     idempotency_key  = payload.idempotency_key,
     correlation_id   = payload.correlation_id,
   })
+  print(('[%s][C006] RESULT ok=%s'):format(BankApp.Config.Logging.PREFIX, tostring(result.ok)))
+  return result
 end)
 
 -- -----------------------------------------------------------------------------

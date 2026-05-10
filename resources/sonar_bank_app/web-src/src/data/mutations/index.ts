@@ -22,7 +22,7 @@ export {
   useExecuteTransfer,
   formatIban,
   isLargeTransfer,
-  isValidSpanishIban,
+  isValidSonarIban,
   normalizeIban,
 } from './transfers'
 export type {

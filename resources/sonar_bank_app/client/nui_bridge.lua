@@ -39,10 +39,14 @@ local function is_allowed(event_name)
 end
 
 local function await_server_callback(event_name, payload)
+  print(('[%s] await_server_callback: event=%s'):format(PREFIX, event_name))
+
   if _G.lib and _G.lib.callback and type(_G.lib.callback.await) == 'function' then
+    print(('[%s] Using ox_lib callback.await'):format(PREFIX))
     return _G.lib.callback.await(event_name, false, payload)
   end
 
+  print(('[%s] WARNING: ox_lib not loaded, using fallback'):format(PREFIX))
   local token = ('%s:%s:%s'):format(GetGameTimer(), math.random(100000, 999999), event_name)
   local response_event = 'sonar:bank_app:callback:response:' .. token
   local response_promise = promise.new()
@@ -54,15 +58,18 @@ local function await_server_callback(event_name, payload)
     if resolved then return end
     resolved = true
     if handler then RemoveEventHandler(handler) end
+    print(('[%s] Fallback response received: ok=%s'):format(PREFIX, tostring(response.ok)))
     response_promise:resolve(response)
   end)
 
+  print(('[%s] Triggering server event: %s'):format(PREFIX, event_name))
   TriggerServerEvent(event_name, payload, response_event)
 
   SetTimeout(15000, function()
     if resolved then return end
     resolved = true
     if handler then RemoveEventHandler(handler) end
+    print(('[%s] Fallback TIMEOUT for event: %s'):format(PREFIX, event_name))
     response_promise:resolve({
       ok = false,
       error = {

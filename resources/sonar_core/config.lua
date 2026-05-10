@@ -199,6 +199,7 @@ Config.MigrationsFiles = {
   '031_business_payroll_persistence.sql',
   '032_govt_risk_scores_and_treasury_movements.sql',
   '033_bank_saved_recipients.sql',
+  '034_fix_sonar_accounts_collation.sql',
 }
 
 -- =============================================================================

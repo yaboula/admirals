@@ -32,6 +32,7 @@ description 'SONAR Bank App — Phase A financial-grade callbacks resource (R1 h
 
 dependencies {
   'oxmysql',
+  'ox_lib',
   'sonar_core',
   'sonar_bridges',
   'sonar_bank',
@@ -44,6 +45,7 @@ shared_scripts {
 server_scripts {
   -- 0. External helpers (loaded into sonar_bank_app VM context):
   '@oxmysql/lib/MySQL.lua',
+  '@ox_lib/init.lua',                   -- ox_lib server-side for callbacks
   '@sonar_core/lib/sonar.lua',          -- exposes SONAR.{Core,DB,Bus,Rate,Log,Metrics,Identity}
 
   -- 1. Foundation lib — R1 hardened canonical helpers.
@@ -129,6 +131,7 @@ server_scripts {
 -- =============================================================================
 
 client_scripts {
+  '@ox_lib/init.lua',                  -- ox_lib client-side for callbacks
   'client/nui_bridge.lua',              -- BANK-FE.2 NUI ↔ server proxy + NetEvent forwarder
 }
 
