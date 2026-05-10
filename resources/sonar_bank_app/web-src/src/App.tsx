@@ -1,6 +1,10 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useState } from 'react'
+import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from 'react'
+import { AlertTriangle } from 'lucide-react'
+import { isDev, isInsideFiveMNui, isMockMode } from '@/lib/env'
+import { nuiControl, onNuiMessage } from '@/lib/nui'
+import { BankDeviceFrame } from '@/components/layout/BankDeviceFrame'
 import { useBankNetEvent } from './lib/bankEvents'
 import { useBankStatus } from './stores/status'
 import { toast } from './stores/toast'
@@ -8,6 +12,7 @@ import { useInvalidateBootstrap } from './data/queries'
 import { useI18n } from './lib/i18n'
 
 export function App() {
+  const location = useLocation()
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -25,12 +30,104 @@ export function App() {
       }),
   )
 
+  const [visible, setVisible] = useState(isMockMode() || (!isInsideFiveMNui() && isDev()))
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('bank-nui-visible', visible)
+    document.body.classList.toggle('bank-nui-visible', visible)
+  }, [visible])
+
   return (
     <QueryClientProvider client={queryClient}>
-      <NetEventBridge />
-      <Outlet />
+      <NuiControlBridge onVisibilityChange={setVisible} />
+      {visible && (
+        <BankDeviceFrame>
+          <NetEventBridge />
+          <AppErrorBoundary locationKey={location.key}>
+            <Outlet />
+          </AppErrorBoundary>
+        </BankDeviceFrame>
+      )}
     </QueryClientProvider>
   )
+}
+
+class AppErrorBoundary extends Component<
+  { children: ReactNode; locationKey: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: unknown, errorInfo: ErrorInfo): void {
+    console.error('[SONAR Bank] Route render failed', error, errorInfo)
+  }
+
+  componentDidUpdate(prevProps: { locationKey: string }): void {
+    if (this.state.hasError && prevProps.locationKey !== this.props.locationKey) {
+      this.setState({ hasError: false })
+    }
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) return <RouteErrorFallback />
+    return this.props.children
+  }
+}
+
+function RouteErrorFallback() {
+  return (
+    <div className="flex h-full w-full items-center justify-center p-6">
+      <div
+        className="max-w-md rounded-[1.75rem] px-7 py-6 text-center"
+        style={{
+          background: 'rgba(18, 12, 8, 0.96)',
+          border: '1.5px solid rgba(255, 100, 19, 0.55)',
+          boxShadow: '0 24px 80px -40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 40px -12px rgba(255, 100, 19, 0.18)',
+        }}
+      >
+        <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(255, 100, 19, 0.12)', border: '1px solid rgba(255, 100, 19, 0.25)' }}>
+          <AlertTriangle size={24} style={{ color: 'rgb(255, 100, 19)' }} />
+        </div>
+        <h1 className="text-lg font-semibold text-text-primary">Error cargando esta vista</h1>
+        <p className="mt-2 text-sm text-text-tertiary">
+          El resto de la interfaz sigue activa. Navega a otra sección y vuelve para reintentar.
+        </p>
+        <p className="mt-3 text-[11px] text-text-tertiary opacity-70">
+          Si el error persiste, reinicia el recurso bancario para limpiar caché.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function NuiControlBridge({ onVisibilityChange }: { onVisibilityChange: (visible: boolean) => void }) {
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      void nuiControl('close').catch(() => undefined)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  useEffect(() => {
+    return onNuiMessage((data: unknown) => {
+      if (!data || typeof data !== 'object' || !('type' in data)) return
+      const msg = data as { type: string }
+      if (msg.type === 'BANK_OPEN') {
+        onVisibilityChange(true)
+      } else if (msg.type === 'BANK_CLOSE') {
+        onVisibilityChange(false)
+      }
+    })
+  }, [onVisibilityChange])
+
+  return null
 }
 
 /**
