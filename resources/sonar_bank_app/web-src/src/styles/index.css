@@ -45,6 +45,14 @@ body {
   padding: 24px;
   overflow: hidden;
   pointer-events: auto;
+  /* Darkens the game world behind the frame; body is made transparent below */
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* In FiveM NUI context the device frame is present: make body transparent
+   so the game world shows through behind the overlay/frame. */
+body:has(.bank-device-viewport) {
+  background: transparent;
 }
 
 .bank-device-frame {
