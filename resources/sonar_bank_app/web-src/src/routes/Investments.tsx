@@ -28,8 +28,8 @@ export function Investments() {
   return (
     <main className="relative h-full min-h-0 overflow-y-auto bg-surface-abyss px-5 py-4 lg:px-6 scrollbar-thin">
       <div aria-hidden className="pointer-events-none fixed inset-0 opacity-70">
-        <div className="absolute left-[6%] top-[5%] h-72 w-72 rounded-full bg-brand-signal-orange/10 blur-[92px]" />
-        <div className="absolute bottom-[10%] right-[8%] h-80 w-80 rounded-full bg-semantic-success-deep/10 blur-[110px]" />
+        <div className="absolute left-[6%] top-[5%] h-72 w-72 rounded-full bg-brand-signal-orange/10" style={{ filter: 'blur(92px)' }} />
+        <div className="absolute bottom-[10%] right-[8%] h-80 w-80 rounded-full bg-semantic-success-deep/10" style={{ filter: 'blur(110px)' }} />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:42px_42px] [mask-image:radial-gradient(circle_at_center,black,transparent_78%)]" />
       </div>
 

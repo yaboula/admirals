@@ -32,8 +32,8 @@ export function Loans() {
   return (
     <main className="relative h-full min-h-0 overflow-y-auto bg-surface-abyss px-5 py-4 lg:px-6 scrollbar-thin">
       <div aria-hidden className="pointer-events-none fixed inset-0 opacity-60">
-        <div className="absolute left-[10%] top-[8%] h-80 w-80 rounded-full bg-semantic-info-deep/10 blur-[105px]" />
-        <div className="absolute bottom-[8%] right-[12%] h-72 w-72 rounded-full bg-semantic-success-deep/10 blur-[100px]" />
+        <div className="absolute left-[10%] top-[8%] h-80 w-80 rounded-full bg-semantic-info-deep/10" style={{ filter: 'blur(105px)' }} />
+        <div className="absolute bottom-[8%] right-[12%] h-72 w-72 rounded-full bg-semantic-success-deep/10" style={{ filter: 'blur(100px)' }} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.055)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)]" />
       </div>
 
