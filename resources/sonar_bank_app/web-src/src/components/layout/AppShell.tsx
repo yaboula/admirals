@@ -46,11 +46,11 @@ export function AppShell() {
 
   return (
     <div
-      className="relative h-[100dvh] w-screen overflow-hidden bg-surface-abyss text-text-primary"
+      className="relative h-full w-full overflow-hidden bg-surface-abyss text-text-primary"
       style={{
         display: 'grid',
         gridTemplateColumns: 'auto 1fr',
-        gridTemplateRows: '100dvh',
+        gridTemplateRows: '100%',
       }}
     >
       <AuroraBackground />

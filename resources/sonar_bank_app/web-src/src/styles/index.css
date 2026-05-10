@@ -59,6 +59,11 @@ body {
     0 34px 110px -44px rgba(0, 0, 0, 0.96),
     0 0 0 1px rgba(255, 255, 255, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  /* Creates a new "fixed positioning context" in Chromium/CEF.
+     Any position:fixed descendant (AuroraBackground, overlays, decorations)
+     is now positioned relative to this 1280×800 frame instead of the game viewport. */
+  transform: translateZ(0);
+  isolation: isolate;
 }
 
 * {
