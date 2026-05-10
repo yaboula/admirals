@@ -147,11 +147,11 @@ function VaultCore({ holdings, quotes, streamerMode }: { holdings: PortfolioHold
   const total = holdings.reduce((sum, holding) => sum + holding.market_value_minor, 0)
   return (
     <div className="relative flex min-h-[300px] items-center justify-center">
-      <div className="absolute h-72 w-72 rounded-full border border-white/10 bg-[conic-gradient(from_120deg,rgba(246,75,0,0.34),rgba(0,173,91,0.22),transparent,rgba(246,75,0,0.34))] p-[1px] shadow-[0_0_70px_rgba(255,103,18,0.10)]">
+      <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[conic-gradient(from_120deg,rgba(246,75,0,0.34),rgba(0,173,91,0.22),transparent,rgba(246,75,0,0.34))] p-[1px] shadow-[0_0_70px_rgba(255,103,18,0.10)]">
         <div className="h-full w-full rounded-full bg-black/80" />
       </div>
-      <div className="absolute h-56 w-56 rounded-full border border-white/10" />
-      <div className="absolute h-40 w-40 rounded-full border border-brand-signal-orange/20" />
+      <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
+      <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-signal-orange/20" />
       <div className="relative z-[1] flex h-44 w-44 flex-col items-center justify-center rounded-full border border-white/15 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.14),rgba(255,255,255,0.025)_48%,rgba(0,0,0,0.72))] text-center shadow-[inset_0_1px_24px_rgba(255,255,255,0.08)]">
         <Gem className="text-brand-signal-orange-light" size={28} strokeWidth={1.8} />
         <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">{t('investments.assetCore')}</p>
@@ -164,7 +164,7 @@ function VaultCore({ holdings, quotes, streamerMode }: { holdings: PortfolioHold
         const y = Math.sin(angle * Math.PI / 180) * radius
         const quote = quotes.get(holding.symbol)
         return (
-          <div key={holding.holding_id} className="absolute z-[2] rounded-full border border-white/10 bg-black/70 px-3 py-1 text-[11px] font-semibold text-text-primary shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-xl" style={{ transform: `translate(${x}px, ${y}px)` }}>
+          <div key={holding.holding_id} className="absolute left-1/2 top-1/2 z-[2] rounded-full border border-white/10 bg-black/70 px-3 py-1 text-[11px] font-semibold text-text-primary shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-xl" style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}>
             <span className="text-brand-signal-orange-light">{holding.symbol}</span>
             <span className="ml-2 text-text-tertiary">{quote ? number(quote.change_24h_pct, { signDisplay: 'exceptZero', maximumFractionDigits: 1 }) : '—'}%</span>
           </div>

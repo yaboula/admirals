@@ -144,8 +144,8 @@ function CreditLens({ loan, streamerMode }: { loan: Loan | null; streamerMode: b
   const circumference = 2 * Math.PI * radius
   return (
     <div className="relative flex min-h-[288px] items-center justify-center">
-      <div className="absolute h-72 w-72 rounded-full border border-white/10 bg-[conic-gradient(from_180deg,rgba(0,173,228,0.28),rgba(0,173,91,0.22),transparent,rgba(0,173,228,0.28))] p-[1px] shadow-[0_0_70px_rgba(60,140,255,0.08)]"><div className="h-full w-full rounded-full bg-black/[0.82]" /></div>
-      <svg viewBox="0 0 220 220" className="absolute h-60 w-60 -rotate-90">
+      <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[conic-gradient(from_180deg,rgba(0,173,228,0.28),rgba(0,173,91,0.22),transparent,rgba(0,173,228,0.28))] p-[1px] shadow-[0_0_70px_rgba(60,140,255,0.08)]"><div className="h-full w-full rounded-full bg-black/[0.82]" /></div>
+      <svg viewBox="0 0 220 220" className="absolute left-1/2 top-1/2 h-60 w-60 -translate-x-1/2 -translate-y-1/2 -rotate-90">
         <circle cx="110" cy="110" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
         <circle cx="110" cy="110" r={radius} fill="none" stroke="rgb(0, 173, 228)" strokeWidth="10" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} />
       </svg>
