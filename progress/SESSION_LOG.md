@@ -2459,3 +2459,32 @@ ST-021 Audit Log Integrity bajo carga → ✅ PASS (post audit_complete atomic i
 - ST-022+ multi-framework matrix: deferido hasta post Backend ESX adapter completed.
 
 — **PM Cascade + DevOps Lead + Founder yaboula attested. Fase 2 closed clean. Next: Backend ESX adapter (BANK-BE.ESX) Window B activation.**
+
+---
+
+### BANK-BE.ESX - ESX 1.10+ Bridges adapters bank+identity
+**Status:** DRAFTED 2026-05-11. Scoped implementation complete; pending push / real ESX server matrix validation.
+
+#### Contexto
+
+Founder confirmo whitelist actualizada para implementar ESX en layout modular real de `sonar_bridges`, manteniendo paridad con split QBCore y sin crear adapter monolitico. `xPlayer.identifier` queda como identifier canonico raw sin truncar (`char1:license:xxx` preservado).
+
+#### Cambios aplicados
+
+- `resources/sonar_bridges/adapters/bank/esx.lua` NEW - adapter `bank/esx` con `GetBalance`, `AddMoney`, `RemoveMoney`, `Transfer`, `IsAvailable`; usa `esx:getSharedObject` con callback + wait defensivo de disponibilidad; mantiene idempotency wrapper y error codes en paridad QBCore.
+- `resources/sonar_bridges/adapters/identity/esx.lua` NEW - adapter `identity/esx` con `GetCitizenId`, `GetSource`, `GetPlayerData`, `GetJob`, `IsOnline`, `IsAvailable`; cache bidireccional source-identifier; lifecycle hooks `esx:playerLoaded`, `esx:playerDropped`, `playerDropped`.
+- `resources/sonar_bridges/fxmanifest.lua` MODIFIED - carga ambos adapters ESX antes de `server/detect.lua` / `server/init.lua`.
+
+#### Validacion local
+
+- Whitelist respetada: solo `sonar_bridges` + append `SESSION_LOG`.
+- `config.lua` untouched: priority/map/tier ya contenian `esx`.
+- `sonar_bank/**`, contratos LOCKED, harness, migrations y QBCore templates untouched.
+- Registro verificado: `Bridges.RegisterAdapter('bank', 'esx', ...)` y `Bridges.RegisterAdapter('identity', 'esx', ...)`.
+- Metodos requeridos verificados contra registry: bank 5/5, identity 6/6.
+- `luac` no disponible en entorno local; syntax check runtime queda diferido a FiveM resource boot.
+
+#### Pendientes
+
+- ST-022 multi-framework matrix en servidor ESX real queda como trigger DevOps Fase 3.
+- Commit scoped esperado: `feat(bridges): add ESX 1.10+ bank+identity adapters`.

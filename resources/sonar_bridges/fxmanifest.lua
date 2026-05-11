@@ -66,6 +66,8 @@ server_scripts {
   'adapters/bank/qbcore.lua',
   'adapters/identity/qbcore.lua',
   'adapters/notify/qb.lua',
+  'adapters/bank/esx.lua',
+  'adapters/identity/esx.lua',
 
   -- Detection + boot orchestration (LAST)
   'server/detect.lua',
