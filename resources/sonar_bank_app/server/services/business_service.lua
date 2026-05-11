@@ -105,9 +105,34 @@ end
 
 local function has_decision(decisions, account_id)
   for _, decision in ipairs(decisions or {}) do
-    if decision.signer_account_id == account_id then return true end
+    if decision.signer_account_id == account_id then return decision end
   end
-  return false
+  return nil
+end
+
+local function count_approved(decisions)
+  local approved_count = 0
+  for _, decision in ipairs(decisions or {}) do
+    if decision.decision == 'approved' then approved_count = approved_count + 1 end
+  end
+  return approved_count
+end
+
+local function prepare_execution_lines(lines, treasury_balance)
+  local executable_lines = {}
+  local total_ready = 0
+  local running_treasury = tonumber(treasury_balance) or 0
+  for _, line in ipairs(lines or {}) do
+    line.net_amount = tonumber(line.net_amount) or 0
+    line.destination_balance = tonumber(line.destination_balance) or 0
+    if line.state == 'ready' then
+      total_ready = total_ready + line.net_amount
+      running_treasury = running_treasury - line.net_amount
+      line.destination_balance_after = line.destination_balance + line.net_amount
+      executable_lines[#executable_lines + 1] = line
+    end
+  end
+  return executable_lines, total_ready, running_treasury
 end
 
 local function acquire_idempotency(ctx, callback_id, payload, actor_account_id, bank_account_id)
@@ -240,8 +265,8 @@ function S.RequestPayrollExecution(ctx)
   if not is_valid_company_id(ctx.company_id) then
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'company_id' }) }
   end
-  if type(ctx.idempotency_key) ~= 'string' or #ctx.idempotency_key < 16 then
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key', reason = 'must be UUID v4' }) }
   end
 
   local exec, exec_err = Repo.GetPayrollExecutionContext(ctx.company_id, ctx.actor_citizen_id)
@@ -263,7 +288,10 @@ function S.RequestPayrollExecution(ctx)
       batch_lines[#batch_lines + 1] = {
         id = UUID.V4(),
         employee_account_id = line.employee_account_id,
+        employee_cid = line.employee_cid,
         destination_bank_account_id = line.destination_bank_account_id,
+        destination_iban = line.destination_iban,
+        destination_balance = tonumber(line.destination_balance) or 0,
         net_amount = amount,
         state = state,
       }
@@ -306,22 +334,47 @@ function S.RequestPayrollExecution(ctx)
   }, batch_lines, approval)
   if not ok then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = tx_err } end
 
+  local status = requires_approval and 'pending_approval' or 'queued'
+  local paid_total_minor = 0
+  if not requires_approval then
+    local executable_lines, total_ready, treasury_after = prepare_execution_lines(batch_lines, exec.treasury_balance)
+    if total_ready <= 0 or tonumber(exec.treasury_balance) < total_ready then
+      Idempotency.Orphan(ctx.idempotency_key)
+      return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { company_id = ctx.company_id }) }
+    end
+    local exec_ok, exec_tx_err = Repo.MarkPayrollBatchExecutedTx({
+      batch_id = batch_id,
+      actor_account_id = exec.actor_account_id,
+      treasury_account_id = exec.treasury_account_id,
+      treasury_iban = exec.treasury_iban,
+      treasury_balance_after = treasury_after,
+      total_ready_amount = total_ready,
+      reason = 'Business payroll',
+      idempotency_key = ctx.idempotency_key,
+    }, executable_lines)
+    if not exec_ok then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = exec_tx_err } end
+    status = 'executed'
+    paid_total_minor = math.floor(total_ready * 100)
+  end
+
   local audit_id = Audit.Write({
-    event_type = Enums.AUDIT_EVENT_TYPE.BUSINESS_PAYROLL_REQUEST,
+    event_type = status == 'executed' and Enums.AUDIT_EVENT_TYPE.BUSINESS_PAYROLL_EXECUTED or Enums.AUDIT_EVENT_TYPE.BUSINESS_PAYROLL_REQUEST,
     actor_citizen_id = ctx.actor_citizen_id,
+    actor_account_id = exec.actor_account_id,
     actor_src = ctx.src,
     actor_role = 'business',
     target_account_id = exec.treasury_account_id,
     target_iban = exec.treasury_iban,
-    event_data = { company_id = ctx.company_id, batch_id = batch_id, approval_id = approval_id, total_net_minor = math.floor(total * 100), requires_approval = requires_approval },
+    event_data = { company_id = ctx.company_id, batch_id = batch_id, approval_id = approval_id, total_net_minor = math.floor(total * 100), paid_total_minor = paid_total_minor, requires_approval = requires_approval, status = status },
     correlation_id = ctx.correlation_id or ctx.idempotency_key,
+    request_nonce = ctx.idempotency_key,
   })
 
   local result = {
     company_id = ctx.company_id,
     batch_id = batch_id,
     approval_id = approval_id,
-    status = requires_approval and 'pending_approval' or 'queued',
+    status = status,
     total_net_minor = math.floor(total * 100),
     employee_count = #batch_lines,
     requires_approvals = requires_approval and threshold or 0,
@@ -339,8 +392,8 @@ function S.DecideApproval(ctx)
   if ctx.decision ~= 'approve' and ctx.decision ~= 'reject' then
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'decision' }) }
   end
-  if type(ctx.idempotency_key) ~= 'string' or #ctx.idempotency_key < 16 then
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key', reason = 'must be UUID v4' }) }
   end
 
   local approval, approval_err = Repo.GetApprovalForDecision(ctx.approval_id, ctx.actor_citizen_id)
@@ -356,16 +409,24 @@ function S.DecideApproval(ctx)
 
   local decisions = decode_json_array(approval.approvals_json)
   if has_decision(decisions, approval.actor_account_id) then
-    Idempotency.Orphan(ctx.idempotency_key)
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'signer already decided' }) }
+    local approved_count = count_approved(decisions)
+    local result = {
+      company_id = approval.company_id,
+      approval_id = ctx.approval_id,
+      batch_id = batch.batch_id,
+      status = batch.state,
+      signers_approved = approved_count,
+      signers_required = tonumber(approval.signers_required) or 1,
+      paid_total_minor = batch.state == 'executed' and math.floor((tonumber(batch.total_net_amount) or 0) * 100) or 0,
+      committed_at_ms = now_ms(),
+    }
+    Idempotency.Commit(ctx.idempotency_key, result)
+    return { ok = true, data = result, replayed = true }
   end
 
   decisions[#decisions + 1] = { signer_account_id = approval.actor_account_id, decision = ctx.decision == 'approve' and 'approved' or 'rejected', decided_at = os.time(), note = ctx.note or '' }
 
-  local approved_count = 0
-  for _, decision in ipairs(decisions) do
-    if decision.decision == 'approved' then approved_count = approved_count + 1 end
-  end
+  local approved_count = count_approved(decisions)
 
   local finalized = ctx.decision == 'reject' or approved_count >= (tonumber(approval.signers_required) or 1)
   local approval_state = ctx.decision == 'reject' and 'rejected' or (finalized and 'executed' or 'pending')
@@ -376,17 +437,7 @@ function S.DecideApproval(ctx)
   if batch_state == 'executed' then
     local lines, lines_err = Repo.GetPayrollBatchLines(batch.batch_id)
     if lines_err then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = lines_err } end
-    local running_treasury = tonumber(approval.treasury_balance) or 0
-    for _, line in ipairs(lines or {}) do
-      line.net_amount = tonumber(line.net_amount) or 0
-      line.destination_balance = tonumber(line.destination_balance) or 0
-      if line.state == 'ready' then
-        total_ready = total_ready + line.net_amount
-        running_treasury = running_treasury - line.net_amount
-        line.destination_balance_after = line.destination_balance + line.net_amount
-        executable_lines[#executable_lines + 1] = line
-      end
-    end
+    executable_lines, total_ready = prepare_execution_lines(lines, approval.treasury_balance)
     if total_ready <= 0 or tonumber(approval.treasury_balance) < total_ready then
       Idempotency.Orphan(ctx.idempotency_key)
       return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { approval_id = ctx.approval_id }) }
@@ -411,16 +462,34 @@ function S.DecideApproval(ctx)
   }, executable_lines)
   if not ok then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = tx_err } end
 
-  local audit_id = Audit.Write({
-    event_type = finalized and Enums.AUDIT_EVENT_TYPE.BUSINESS_PAYROLL_EXECUTE or Enums.AUDIT_EVENT_TYPE.BUSINESS_APPROVAL_DECIDE,
+  local vote_audit_id = Audit.Write({
+    event_type = Enums.AUDIT_EVENT_TYPE.BUSINESS_APPROVAL_VOTED,
     actor_citizen_id = ctx.actor_citizen_id,
+    actor_account_id = approval.actor_account_id,
     actor_src = ctx.src,
     actor_role = 'business',
     target_account_id = approval.treasury_account_id,
     target_iban = approval.treasury_iban,
     event_data = { company_id = approval.company_id, approval_id = ctx.approval_id, batch_id = batch.batch_id, decision = ctx.decision, signers_approved = approved_count, status = batch_state, total_net_minor = math.floor(total_ready * 100) },
     correlation_id = ctx.correlation_id or ctx.idempotency_key,
+    request_nonce = ctx.idempotency_key,
   })
+  local execution_audit_id = nil
+  if batch_state == 'executed' then
+    execution_audit_id = Audit.Write({
+      event_type = Enums.AUDIT_EVENT_TYPE.BUSINESS_PAYROLL_EXECUTED,
+      actor_citizen_id = ctx.actor_citizen_id,
+      actor_account_id = approval.actor_account_id,
+      actor_src = ctx.src,
+      actor_role = 'business',
+      target_account_id = approval.treasury_account_id,
+      target_iban = approval.treasury_iban,
+      event_data = { company_id = approval.company_id, approval_id = ctx.approval_id, batch_id = batch.batch_id, total_net_minor = math.floor(total_ready * 100), status = batch_state },
+      cross_ref_audit_id = vote_audit_id,
+      correlation_id = ctx.correlation_id or ctx.idempotency_key,
+      request_nonce = ctx.idempotency_key,
+    })
+  end
 
   local result = {
     company_id = approval.company_id,
@@ -430,7 +499,7 @@ function S.DecideApproval(ctx)
     signers_approved = approved_count,
     signers_required = tonumber(approval.signers_required) or 1,
     paid_total_minor = math.floor(total_ready * 100),
-    cross_ref_audit_id = audit_id,
+    cross_ref_audit_id = execution_audit_id or vote_audit_id,
     committed_at_ms = now_ms(),
   }
   Idempotency.Commit(ctx.idempotency_key, result)

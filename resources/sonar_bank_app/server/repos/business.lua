@@ -286,7 +286,7 @@ INNER JOIN sonar_bank_accounts ba ON ba.id = bt.bank_account_id
 INNER JOIN sonar_accounts actor ON actor.char_id = ?
 LEFT JOIN sonar_company_members cm ON cm.company_id = c.id AND cm.account_id = actor.id AND cm.active = 1
 LEFT JOIN sonar_bank_business_treasury_signers signer ON signer.treasury_id = bt.id AND signer.signer_account_id = actor.id AND signer.active = 1
-WHERE c.id = ? AND ba.closed_at IS NULL AND ba.is_frozen = 0 AND (cm.id IS NOT NULL OR signer.id IS NOT NULL)
+WHERE c.id = ? AND ba.closed_at IS NULL AND ba.is_frozen = 0 AND (cm.role IN ('founder','co-founder','director','manager') OR signer.signer_role IN ('owner','manager'))
 LIMIT 1
 ]], { actor_cid, company_id })
 end
@@ -295,6 +295,7 @@ function R.ListPayrollExecutionLines(company_id)
   return DB.Query([[
 SELECT cm.id AS member_id,
        sa.id AS employee_account_id,
+       sa.char_id AS employee_cid,
        COALESCE(sa.alias, sa.char_id) AS employee_alias,
        dest.id AS destination_bank_account_id,
        dest.iban AS destination_iban,
@@ -381,6 +382,7 @@ SELECT a.id AS approval_id,
        actor.id AS actor_account_id,
        actor.char_id AS actor_cid,
        signer.signer_role,
+       cm.role AS member_role,
        ba.iban AS treasury_iban,
        ba.balance AS treasury_balance
 FROM sonar_bank_business_treasury_approvals a
@@ -388,6 +390,7 @@ INNER JOIN sonar_bank_business_treasuries bt ON bt.id = a.treasury_id
 INNER JOIN sonar_bank_accounts ba ON ba.id = bt.bank_account_id
 INNER JOIN sonar_accounts actor ON actor.char_id = ?
 INNER JOIN sonar_bank_business_treasury_signers signer ON signer.treasury_id = bt.id AND signer.signer_account_id = actor.id AND signer.active = 1
+INNER JOIN sonar_company_members cm ON cm.company_id = bt.company_id AND cm.account_id = actor.id AND cm.active = 1
 WHERE a.id = ? AND a.expires_at > UNIX_TIMESTAMP()
 LIMIT 1
 ]], { actor_cid, approval_id })
@@ -406,16 +409,78 @@ function R.GetPayrollBatchLines(batch_id)
   return DB.Query([[
 SELECT l.id,
        l.employee_account_id,
+       sa.char_id AS employee_cid,
        l.destination_bank_account_id,
        l.net_amount,
        l.state,
        dest.iban AS destination_iban,
        dest.balance AS destination_balance
 FROM sonar_bank_business_payroll_lines l
+INNER JOIN sonar_accounts sa ON sa.id = l.employee_account_id
 INNER JOIN sonar_bank_accounts dest ON dest.id = l.destination_bank_account_id
 WHERE l.batch_id = ?
 ORDER BY l.created_at ASC
 ]], { batch_id })
+end
+
+function R.MarkPayrollBatchExecutedTx(params, lines)
+  local queries = {
+    {
+      query = [[
+UPDATE sonar_bank_business_payroll_batches
+SET state = 'executed', executed_by_account_id = ?, executed_at = UNIX_TIMESTAMP(), updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND state IN ('queued','pending_approval')
+]],
+      values = { params.actor_account_id, params.batch_id },
+    },
+    {
+      query = [[
+UPDATE sonar_bank_accounts
+SET balance = balance - ?, updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND balance >= ? AND is_frozen = 0 AND closed_at IS NULL
+]],
+      values = { params.total_ready_amount, params.treasury_account_id, params.total_ready_amount },
+    },
+  }
+
+  for _, line in ipairs(lines or {}) do
+    if line.state == 'ready' then
+      queries[#queries + 1] = {
+        query = [[
+UPDATE sonar_bank_accounts
+SET balance = balance + ?, updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND is_frozen = 0 AND closed_at IS NULL
+]],
+        values = { line.net_amount, line.destination_bank_account_id },
+      }
+      queries[#queries + 1] = {
+        query = [[
+INSERT INTO sonar_bank_movements
+  (bank_account_id, amount, balance_after, category, counterpart_iban, concept, related_job_id, request_nonce, initiated_by_account_id, source_resource)
+VALUES (?, ?, ?, 'salary', ?, ?, ?, ?, ?, 'sonar_bank_app')
+]],
+        values = { params.treasury_account_id, -line.net_amount, params.treasury_balance_after, line.destination_iban, params.reason, params.batch_id, params.idempotency_key, params.actor_account_id },
+      }
+      queries[#queries + 1] = {
+        query = [[
+INSERT INTO sonar_bank_movements
+  (bank_account_id, amount, balance_after, category, counterpart_iban, concept, related_job_id, request_nonce, initiated_by_account_id, source_resource)
+VALUES (?, ?, ?, 'salary', ?, ?, ?, ?, ?, 'sonar_bank_app')
+]],
+        values = { line.destination_bank_account_id, line.net_amount, line.destination_balance_after, params.treasury_iban, params.reason, params.batch_id, params.idempotency_key, params.actor_account_id },
+      }
+      queries[#queries + 1] = {
+        query = [[
+UPDATE sonar_bank_business_payroll_lines
+SET state = 'paid', paid_at = UNIX_TIMESTAMP(), updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND state = 'ready'
+]],
+        values = { line.id },
+      }
+    end
+  end
+
+  return DB.Transaction(queries)
 end
 
 function R.DecidePayrollApprovalTx(params, lines)

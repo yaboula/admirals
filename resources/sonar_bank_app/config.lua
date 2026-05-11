@@ -104,6 +104,7 @@ C.Deployment = {
 C.Permissions = {
   PLAYER_ACE          = 'sonar.bank.player',
   ADMIN_ACE           = 'sonar.bank.admin',
+  BUSINESS_READ_ACE   = 'sonar.bank.business.read',
   GOVT_READ_ACE       = 'sonar.bank.govt.audit.full',
   GOVT_COMPLIANCE_ACE = 'sonar.bank.govt.compliance.admin',
   GOVT_LOAN_ACE       = 'sonar.bank.govt.loan.admin',

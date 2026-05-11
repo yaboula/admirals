@@ -2,8 +2,8 @@
 
 > **Owner:** Frontend & UX Premium Lead (Cascade BANK-FE.*).
 > **Consumer:** Backend Money & Compatibility Lead (Standby — reactivation trigger Round 2 amendment cycle).
-> **Status:** ✅ **GOVT VERTICAL INTEGRATION COMPLETE 2026-05-09** — DB Issue #002 emitted; Backend Issue #003 closed; Government frontend now consumes real callbacks for REQ-FE-006/007/009/012/013/014.
-> **Versionado:** v1.2 (BANK-BE GOVT vertical integration — frontend query layer connected to real callbacks). Bump cada vez que añada/cierre items.
+> **Status:** ✅ **BUSINESS MODULE COMPLETE 2026-05-11** — REQ-FE-011 + REQ-FE-015 DONE; business repo/service/callbacks implementados contra schema v2.1; ACE `sonar.bank.business.read` + signer-role ACE check; idempotency UUID v4 + canonical audit shape (request_nonce + correlation_id + actor_account_id); mock handlers preservados.
+> **Versionado:** v1.3 (BANK-BE.BUSINESS — REQ-FE-011 + REQ-FE-015 cerrados). Bump cada vez que añada/cierre items.
 > **Cierre:** al cierre BANK-FE.LOCK, founder decide path:
 >   - **Path A** — Backend Lead Standby reactivation Round 2 amendment cycle (incorporate items HIGH+MEDIUM al pre-LOCK Phase A).
 >   - **Path B** — Diferir items a Phase A.1 / Phase B (post-LOCK Phase A).
@@ -376,7 +376,7 @@ Cada request sigue:
   ```
 - **Criterio aceptación:** 2 callbacks LOCKED + audit ledger entries por detail view + payload shape matches `src/govt/data/contracts.ts` types 1:1. Frontend swap = 2-line config en `src/govt/data/queries/govtBusiness.ts`.
 - **Path recomendado:** Path A (Phase A.GOVT cycle) — NODO 3 ya entregado UI-side mock-only, requiere backend para go-live.
-- **Status:** OPEN — awaiting Backend Lead reactivation.
+- **Status:** ✅ **RESOLVED-PATH-A** — BANK-BE.BUSINESS 2026-05-11. Callbacks `sonar:bank:govt:business:list` + `sonar:bank:govt:business:detail` implementados. ACE `sonar.bank.business.read` + fallback `sonar.bank.admin`. Frontend `govtBusiness.ts` usa `useBankCallback` real. Mocks preservados en `register.ts`.
 
 ---
 
@@ -526,7 +526,7 @@ Cada request sigue:
   ```
 - **Criterio aceptación:** 3 callbacks LOCKED + idempotency + audit ledger + permission matrix company-scoped. Frontend cambia disabled buttons → real mutations con optimistic pending state y toast. Payroll execute debe actualizar `business:treasury` query cache o emitir StateBag/evento para refresh.
 - **Path recomendado:** Path A — sin esto Business Dashboard queda read-only/preview-only y no cumple "completo en funciones".
-- **Status:** OPEN — awaiting Backend Lead reactivation.
+- **Status:** ✅ **RESOLVED-PATH-A** — BANK-BE.BUSINESS 2026-05-11. Callbacks implementados: `sonar:bank:business:payroll:execute` (REQ-FE-015E) + `sonar:bank:business:approval:decide` (REQ-FE-015A). Idempotency UUID v4 estricto, FSM m-of-n approval lifecycle, audit shape canonical (BUSINESS_PAYROLL_EXECUTED + BUSINESS_APPROVAL_VOTED + request_nonce + correlation_id + actor_account_id), signer-role ACE check (founder/co-founder/director/manager). Mock handlers para ambas mutations preservados en `register.ts`.
 
 ---
 
@@ -537,6 +537,8 @@ Cada request sigue:
 | REQ-FE-001 | RESOLVED-PATH-A | Backend R2 `sonar:bank:bootstrap:snapshot` + `server/services/bootstrap_service.lua`. |
 | REQ-FE-002 | RESOLVED-PATH-A | Backend R2 `sonar:bank:transfer:recentRecipients` + `server/services/recipients_service.lua`. |
 | REQ-FE-005 | RESOLVED-PATH-C | No Backend amendment necesario; tooltip enriquecido admin queda Phase B UI-side. |
+| REQ-FE-011 | RESOLVED-PATH-A | BANK-BE.BUSINESS 2026-05-11. `sonar:bank:govt:business:list` + `:detail`. ACE `sonar.bank.business.read`. Frontend `govtBusiness.ts` real. |
+| REQ-FE-015 | RESOLVED-PATH-A | BANK-BE.BUSINESS 2026-05-11. `sonar:bank:business:payroll:execute` + `:approval:decide`. UUID v4 idempotency + canonical audit + signer-role check. |
 
 ---
 
@@ -545,11 +547,11 @@ Cada request sigue:
 | Métrica | Valor |
 |---|---|
 | Total items | 15 |
-| HIGH abiertos | 8 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
+| HIGH abiertos | 6 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-012, REQ-FE-013) |
 | MEDIUM abiertos | 2 (REQ-FE-008, REQ-FE-014) |
 | LOW abiertos | 2 (REQ-FE-003, REQ-FE-004) |
-| RESOLVED | 3 (REQ-FE-001, REQ-FE-002, REQ-FE-005) |
-| Path A target (Backend amendment / Phase A.GOVT cycle) | 8 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-011, REQ-FE-012, REQ-FE-013, REQ-FE-015) |
+| RESOLVED | 5 (REQ-FE-001, REQ-FE-002, REQ-FE-005, REQ-FE-011, REQ-FE-015) |
+| Path A target (Backend amendment / Phase A.GOVT cycle) | 6 (REQ-FE-006, REQ-FE-007, REQ-FE-009, REQ-FE-010, REQ-FE-012, REQ-FE-013) |
 | Path A/B target (joint spec) | 2 (REQ-FE-008, REQ-FE-014) |
 | Path B target (Phase B defer) | 2 (REQ-FE-003, REQ-FE-004) |
 | Path C target (UI workaround) | 1 (REQ-FE-005) |

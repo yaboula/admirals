@@ -2619,3 +2619,65 @@ Summary                                      -> Total=6 | Passed=6 | Failed=0
 ```
 
 - BANK-DO.3.3 archival rerun confirms clean PASS output with no false `FAILED` err fields.
+
+---
+
+### BANK-BE.BUSINESS — REQ-FE-011 + REQ-FE-015 Business module endpoints
+
+**Status:** ✅ CLOSED 2026-05-11. REQ-FE-011 (Business Registry reads) + REQ-FE-015 (payroll execute + approval decide mutations) implementados contra schema canonical v2.1. Patrón GOVT MVP espejado.
+
+#### Context
+
+Reactivación Backend Money & Compatibility Lead. Goal: cerrar REQ-FE-011 + REQ-FE-015 pendientes post BANK-BE.GOVT.2. Schema target migrations 026 (business_treasuries) + 029 (company_registry) + 031 (payroll_persistence).
+
+#### Cambios aplicados
+
+**MODIFIED — server-side Lua:**
+- `resources/sonar_bank_app/config.lua` — `BUSINESS_READ_ACE = 'sonar.bank.business.read'` añadido a `C.Permissions`.
+- `resources/sonar_bank_app/server/lib/enums.lua` — 3 nuevos audit event types: `BUSINESS_PAYROLL_EXECUTED`, `BUSINESS_WITHDRAWAL_EXECUTED`, `BUSINESS_APPROVAL_VOTED` (whitelist prompt).
+- `resources/sonar_bank_app/server/callbacks/business.lua` — ACE migrado de `GOVT_READ_ACE` → `BUSINESS_READ_ACE` para callbacks `sonar:bank:govt:business:list` + `sonar:bank:govt:business:detail`.
+- `resources/sonar_bank_app/server/repos/business.lua`:
+  - `GetPayrollExecutionContext` — guard endurecido: sólo permite roles `founder/co-founder/director/manager` (member) o `owner/manager` (signer).
+  - `GetApprovalForDecision` — añadido `cm.role AS member_role` + `INNER JOIN sonar_company_members` para validar membership activo del signer.
+  - `ListPayrollExecutionLines` / `GetPayrollBatchLines` — añadidos `sa.char_id AS employee_cid` para audit trail.
+  - `R.MarkPayrollBatchExecutedTx` NEW — función de ejecución directa (threshold=1, sin approval) separada de `DecidePayrollApprovalTx`. Mantiene atomicidad batch completa.
+- `resources/sonar_bank_app/server/services/business_service.lua`:
+  - `has_decision()` — refactorizado para retornar la decisión existente (idempotency vote replay).
+  - `count_approved()` / `prepare_execution_lines()` — helpers canónicos extraídos.
+  - `RequestPayrollExecution` — validación `idempotency_key` ahora `Validators.IsValidUUID()` (UUID v4 estricto). Ejecución directa vía `MarkPayrollBatchExecutedTx` cuando `threshold=1`. Audit con `BUSINESS_PAYROLL_EXECUTED` + `request_nonce` + `actor_account_id`.
+  - `DecideApproval` — validación UUID v4 estricta. Idempotency vote-replay: si signer ya votó, retorna estado actual sin doble-count. Audit split en dos entries: `BUSINESS_APPROVAL_VOTED` (siempre) + `BUSINESS_PAYROLL_EXECUTED` (sólo si batch_state=executed) con `cross_ref_audit_id` chain.
+
+**UNTOUCHED (whitelist confirmada):**
+- 🔒 Contratos LOCKED (`c_be_01..05_*.md` v1.0.1 R1) — sin tocar.
+- 🔒 GOVT module (`govt_service.lua`, `govt.lua`, `callbacks/govt.lua`) — sin refactor.
+- 🔒 Bridges adapters (`sonar_bridges/adapters/`) — sin tocar.
+- 🔒 Smoke chaos harness (`smoke_chaos_*.lua`) — sin tocar.
+- 🔒 `fxmanifest.lua` — ya registraba los 3 archivos business desde sesión anterior; sin cambios.
+
+**Frontend (ya conectado, confirmado):**
+- `web-src/src/govt/data/queries/govtBusiness.ts` — ya usaba `useBankCallback` contra `sonar:bank:govt:business:list` + `:detail`. Sin cambio requerido.
+- `web-src/src/data/mock/register.ts` — mocks `sonar:bank:business:payroll:execute` + `sonar:bank:business:approval:decide` preservados (ya existentes desde sesión anterior).
+
+#### Validación
+
+```
+npm run typecheck → ✅ EXIT 0 (0 errores TypeScript)
+npm run build     → ✅ EXIT 0 (built in 20.31s, sin errores)
+git diff --check  → ✅ solo CRLF warnings pre-existing (ignorado per norma)
+```
+
+#### Architectural decisions
+
+- **ACE específico `sonar.bank.business.read`** (no reutiliza `GOVT_READ_ACE`) → isolación de permisos Business vs Govt por DevOps.
+- **UUID v4 estricto** para `idempotency_key` en mutaciones sensibles (M002 §3.3.1 compliant).
+- **Vote idempotency**: segundo voto del mismo signer → replay transparente sin error, sin doble count. Patrón CDD FSM #6.
+- **`request_nonce`** propagado al campo `sonar_bank_movements.request_nonce` vía `MarkPayrollBatchExecutedTx` / `DecidePayrollApprovalTx` para trazabilidad forensic.
+- **`actor_account_id`** en cada `Audit.Write()` → chain audit ledger completo (correlación actor ↔ account ↔ company).
+- **Ejecución directa threshold=1**: cuando no requiere approval, payroll se ejecuta atómicamente en el mismo request. Cuando threshold>1, crea batch `pending_approval` + approval record y espera votos.
+
+#### Issues abiertos
+
+- ⚠️ `sonar:bank:business:withdrawal:request` (REQ-FE-015 callback #3) NOT implemented (prompt especificaba como opcional Phase A; botón de withdrawal sigue disabled en UI por diseño). Candidato Phase B.
+- ⚠️ StateBag balance publish post-payroll execution: treasury company balance no se publica via `Publish.PublishBalanceUpdate` (no hay `src` online para empresa). Aceptable Phase A — el frontend invalida `queryKeys.business.treasury` on mutation success.
+
+— **BANK-BE.BUSINESS atestado por Cascade. REQ-FE-011 + REQ-FE-015 cerrados. typecheck + build PASS. Scope whitelist respetado.**
