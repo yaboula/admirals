@@ -184,11 +184,11 @@ export function RequestFirstCardPanel() {
                     cardType === type ? 'text-white' : 'text-white/40'
                   )} />
                   <span className="text-xs font-semibold text-white">
-                    {t(`cards.activate.type${type.charAt(0).toUpperCase() + type.slice(1)}`)}
+                    {t(type === 'debit' ? 'cards.activate.typeDebit' : 'cards.activate.typeVirtual')}
                   </span>
                 </div>
                 <span className="text-[10px] text-white/50 leading-tight">
-                  {t(`cards.activate.type${type.charAt(0).toUpperCase() + type.slice(1)}Desc`)}
+                  {t(type === 'debit' ? 'cards.activate.typeDebitDesc' : 'cards.activate.typeVirtualDesc')}
                 </span>
               </button>
             ))}

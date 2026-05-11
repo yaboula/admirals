@@ -25,11 +25,18 @@ local function token64()
 end
 
 local SQL_LIST = [[
-SELECT c.id AS card_id, ba.iban AS account_iban,
-       CONCAT('**** **** **** ', c.last_4_digits) AS masked_number,
+SELECT c.id AS card_id, sa.char_id AS owner_citizen_id, ba.iban AS iban,
+       c.last_4_digits AS pan_last_four,
        CASE WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
-       CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS spend_limit_minor,
-       c.issued_at * 1000 AS created_ms
+       c.issued_at * 1000 AS created_ms,
+       (c.issued_at + 4 * 365 * 24 * 3600) * 1000 AS expiry_ms,
+       c.card_kind AS card_type,
+       'sonar_signature' AS design_id,
+       CONCAT(COALESCE(sa.firstname, ''), ' ', COALESCE(sa.lastname, '')) AS holder_name,
+       CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS daily_limit_minor,
+       0 AS daily_spent_minor,
+       CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS monthly_limit_minor,
+       0 AS monthly_spent_minor
 FROM sonar_bank_physical_cards c
 INNER JOIN sonar_accounts sa ON sa.id = c.holder_account_id
 INNER JOIN sonar_bank_accounts ba ON ba.id = c.bank_account_id
@@ -57,7 +64,7 @@ INSERT INTO sonar_bank_physical_cards
 VALUES (
   ?, (SELECT id FROM sonar_bank_accounts WHERE iban = ? LIMIT 1),
   (SELECT id FROM sonar_accounts WHERE char_id = ? LIMIT 1),
-  ?, ?, 'debit', 'active', ?, ?, (? / 100.0)
+  ?, ?, ?, 'active', ?, ?, (? / 100.0)
 )
 ]]
 
@@ -90,7 +97,7 @@ function R.Insert(t)
   local last4 = tostring(t.masked_number or ''):match('(%d%d%d%d)$') or card_token:sub(-4)
   local _, err = DB.Execute(SQL_INSERT, {
     card_id, t.account_iban, t.owner_citizen_id,
-    card_token, last4, t.pin_hash, card_token:sub(1, 32), t.spend_limit_minor,
+    card_token, last4, t.card_kind or 'debit', t.pin_hash, card_token:sub(1, 32), t.spend_limit_minor,
   })
   if err then return nil, err end
   return card_id, nil
