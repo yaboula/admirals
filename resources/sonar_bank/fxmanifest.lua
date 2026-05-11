@@ -83,6 +83,12 @@ server_scripts {
   -- post Phase 8 rename. Carga LAST porque depende de modules + Bank.Version().
   -- Si convar ausente, file no-op silent (return early).
   'server/admin_commands.lua',
+
+  -- Smoke Chaos Test Harness (DEV ONLY — BANK-DO.1 regression tests ST-001 to ST-007)
+  'server/smoke_chaos.lua',
+
+  -- Smoke Chaos Matrix (DEV ONLY — BANK-DO.2 chaos tests ST-008 to ST-030)
+  'server/smoke_chaos_chaos.lua',
 }
 
 -- No client_scripts (callbacks server-side; client UI llega
