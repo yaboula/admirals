@@ -32,8 +32,8 @@ Wrap.Register('sonar:bank:bootstrap:snapshot', {
       BankApp.Config.Logging.PREFIX, tostring(err.code), tostring(err.message)))
     return { ok = false, error = err }
   end
-  print(('[%s][C001] SUCCESS accounts=%d'):format(
-    BankApp.Config.Logging.PREFIX, #snapshot.accounts))
+  print(('[%s][C001] SUCCESS accounts=%d cards=%d'):format(
+    BankApp.Config.Logging.PREFIX, #snapshot.accounts, #snapshot.cards or 0))
   return snapshot
 end)
 

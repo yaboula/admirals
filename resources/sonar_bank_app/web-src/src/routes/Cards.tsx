@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { useCards, useCardById } from '@/data/queries'
 import { useCardsUi } from '@/stores/cardsUi'
 import { Card } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
@@ -40,6 +41,7 @@ export function Cards() {
   const dialog = useCardsUi((s) => s.dialog)
   const dialogCardId = useCardsUi((s) => s.dialogCardId)
   const closeDialog = useCardsUi((s) => s.closeDialog)
+  const openDialog = useCardsUi((s) => s.openDialog)
 
   // Bind the store to the resolved focused card, gracefully handling the
   // empty list and a stale id that no longer exists in the resolved set.
@@ -84,7 +86,21 @@ export function Cards() {
             gridTemplateRows: 'auto 1fr',
           }}
         >
-          <CardsHero totalCount={cards.length} activeCount={activeCount} />
+          <div className="flex items-center justify-between gap-3">
+            <CardsHero totalCount={cards.length} activeCount={activeCount} />
+            {cards.length > 0 && cards.length < 3 && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  openDialog('issue', selectedCardId || cards[0]?.card_id || '')
+                }}
+                className="shrink-0"
+              >
+                + Añadir tarjeta
+              </Button>
+            )}
+          </div>
 
           <Card
             variant="glass"
@@ -115,6 +131,26 @@ export function Cards() {
       </div>
 
       {/* ── OVERLAYS ───────────────────────────────────────── */}
+      {dialog === 'issue' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={closeDialog}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-[500px] p-6"
+          >
+            <RequestFirstCardPanel isInitial={false} onClose={closeDialog} />
+          </motion.div>
+        </motion.div>
+      )}
       <LimitsModal
         card={focusedForDialog}
         open={dialog === 'limits'}

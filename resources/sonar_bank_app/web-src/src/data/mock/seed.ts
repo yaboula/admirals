@@ -340,6 +340,9 @@ export function buildMockRecurring(): Recurring[] {
    when the user explicitly requests reveal.
    --------------------------------------------------------------------------- */
 export function buildMockCards(): BankCardMock[] {
+  // Empty by default to simulate first visit without cards.
+  // Uncomment below to populate cards for testing.
+  /*
   const accounts = buildMockAccounts()
   const primary = accounts[0]!
   const savings = accounts[1]!
@@ -405,6 +408,8 @@ export function buildMockCards(): BankCardMock[] {
       monthly_spent_minor: 0,
     },
   ]
+  */
+  return []
 }
 
 export function buildMockBootstrap(): BootstrapSnapshot {

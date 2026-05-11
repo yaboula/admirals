@@ -3,6 +3,7 @@ import { queryKeys } from '@/data/queryKeys'
 import type { BankCardMock, BootstrapSnapshot, CardStatus } from '@/data/contracts'
 import { simulateLatency } from '@/data/mock/seed'
 import { BankError } from '@/lib/bankError'
+import { useBankMutation } from '@/lib/bankQuery'
 
 /* ---------------------------------------------------------------------------
    BANK-FE.4.3 — Card mutations (Phase A · MOCK).
@@ -156,6 +157,37 @@ export function useUpdateCardLimits() {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
     },
   })
+}
+
+/* ============================================================================
+   useIssueCard — request a new physical card linked to the player's account.
+   Calls C032 sonar:bank:card:issue. Requires account_iban + 4-8 digit PIN.
+   On success, invalidates bootstrap so the new card appears in the carousel.
+   ============================================================================ */
+
+export interface IssueCardArgs extends Record<string, unknown> {
+  account_iban: string
+  pin: string
+  card_type: 'debit' | 'virtual'
+  spend_limit_minor?: number
+}
+
+export interface IssueCardResult {
+  card_id: string
+  masked_number: string
+  card_type: 'debit' | 'virtual'
+}
+
+export function useIssueCard() {
+  const qc = useQueryClient()
+  return useBankMutation<IssueCardResult, IssueCardArgs>(
+    'sonar:bank:card:issue',
+    {
+      onSuccess: () => {
+        void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      },
+    },
+  )
 }
 
 /* ============================================================================

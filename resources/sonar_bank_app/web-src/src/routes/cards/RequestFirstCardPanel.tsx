@@ -15,7 +15,14 @@ const MAX_CARDS = 3
 const CARD_TYPES = ['debit', 'virtual'] as const
 type CardType = (typeof CARD_TYPES)[number]
 
-export function RequestFirstCardPanel() {
+export interface RequestCardPanelProps {
+  isInitial?: boolean
+  onClose?: () => void
+}
+
+export function RequestFirstCardPanel({ isInitial = true }: RequestCardPanelProps = {}) {
+  // isInitial can be used in future to customize the UI for first-time vs additional cards
+  void isInitial
   const { t } = useI18n()
   const { data: bootstrap } = useBootstrap()
   const { cards } = useCards()

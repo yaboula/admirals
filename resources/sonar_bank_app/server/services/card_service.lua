@@ -64,6 +64,17 @@ function S.Issue(ctx)
   local owner_cid, _, own_err = Auth.RequireOwnership(ctx.src, norm_iban, { allow_joint = false })
   if own_err then return { ok = false, error = own_err } end
 
+  -- Max 3 cards per citizen
+  local existing_cards, list_err = CardsRepo.ListByCitizen(owner_cid, 3)
+  if list_err then return { ok = false, error = list_err } end
+  if #existing_cards >= 3 then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'cards', reason = 'max 3 cards per citizen' }) }
+  end
+
+  -- Map card_type to card_kind (virtual maps to debit for schema compatibility)
+  local card_type = ctx.card_type or 'debit'
+  local card_kind = card_type == 'virtual' and 'debit' or card_type
+
   local masked = generate_masked_number()
   -- Insert with placeholder hash, update once we know card_id (PIN salted by card_id)
   local card_id, ins_err = CardsRepo.Insert({
@@ -72,6 +83,7 @@ function S.Issue(ctx)
     masked_number     = masked,
     pin_hash          = hash_pin(ctx.pin, owner_cid, 0),  -- temporary salt = 0
     spend_limit_minor = ctx.spend_limit_minor,
+    card_kind         = card_kind,
   })
   if ins_err then return { ok = false, error = ins_err } end
 

@@ -16,6 +16,7 @@ import {
 } from './seed'
 import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, PayrollPreviewRequest, PayrollPreviewResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
 import type { BusinessApprovalDecideRequest, BusinessApprovalDecideResponse, BusinessPayrollExecuteRequest, BusinessPayrollExecuteResponse } from '@/data/contracts'
+import type { IssueCardResult } from '@/data/mutations'
 import type { BankStateBagKey } from '@/lib/bankStateBags'
 import { getBusinessDetailMock, listBusinessMock } from '@/govt/data/mock/govtBusiness'
 import { getCensusDetailMock, listCensusMock } from '@/govt/data/mock/govtCensus'
@@ -252,7 +253,18 @@ export function installMockHandlers(): void {
     return getBusinessDetailMock(String(payload.companyId ?? payload.company_id ?? '')) ?? null
   })
 
-  console.info('[mock] handlers installed (33 endpoints) — VITE_MOCK_MODE=true')
+  registerMockHandler<IssueCardResult>('sonar:bank:card:issue', async (_payload) => {
+    await simulateLatency(200, 420)
+    const last4 = String(Math.floor(Math.random() * 9000) + 1000)
+    const card_type = _payload.card_type ?? 'debit'
+    return {
+      card_id: `mock-card-${Date.now()}`,
+      masked_number: `**** **** **** ${last4}`,
+      card_type: card_type as 'debit' | 'virtual',
+    }
+  })
+
+  console.info('[mock] handlers installed (34 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

@@ -24,7 +24,7 @@ import { create } from 'zustand'
    re-evaluation as the timestamp passes.
    --------------------------------------------------------------------------- */
 
-export type CardDialog = 'limits' | 'design' | null
+export type CardDialog = 'limits' | 'design' | 'issue' | null
 
 export interface CardsUiState {
   selectedCardId: string | null

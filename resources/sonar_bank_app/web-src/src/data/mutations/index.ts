@@ -6,6 +6,7 @@ export {
   useFreezeCard,
   useUpdateCardLimits,
   useApplyCardDesign,
+  useIssueCard,
 } from './cards'
 export type {
   BusinessPayrollExecuteRequest,
@@ -17,6 +18,8 @@ export type {
   FreezeCardArgs,
   UpdateCardLimitsArgs,
   ApplyCardDesignArgs,
+  IssueCardArgs,
+  IssueCardResult,
 } from './cards'
 export {
   useExecuteTransfer,
