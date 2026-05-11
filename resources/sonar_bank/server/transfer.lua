@@ -72,6 +72,15 @@ local function _round2(n)
   return math.floor(n * 100 + 0.5) / 100
 end
 
+local function _json_encode(value)
+  if type(value) ~= 'table' then return nil end
+  if json and type(json.encode) == 'function' then
+    local ok, encoded = pcall(json.encode, value)
+    if ok then return encoded end
+  end
+  return nil
+end
+
 -- =============================================================================
 -- Public — Transfer.Execute.
 --
@@ -258,12 +267,57 @@ function Transfer.Execute(from_cid, from_iban, to_iban, amount, concept, request
     },
   }
 
+  local q_audit_complete = {
+    query = [[
+      INSERT INTO sonar_bank_audit_ledger
+        (event_type, severity, bank_account_iban, counterpart_iban,
+         actor_account_id, actor_role, amount_delta, balance_after,
+         correlation_id, request_nonce, context_data, source_resource)
+      VALUES ('transfer_complete', 'info', ?, ?,
+              ?, 'citizen', ?, ?,
+              ?, ?, ?, 'sonar_bank')
+    ]],
+    values = {
+      from_iban, to_iban,
+      caller_account_id, -amount, from_balance_post,
+      transaction_id, transaction_id,
+      _json_encode({
+        actor_citizen_id = from_cid,
+        transaction_id = transaction_id,
+        request_id = request_id,
+        from_iban = from_iban,
+        to_iban = to_iban,
+        amount = amount,
+        fee_retained = 0.0,
+        concept = concept,
+        new_balance_from = from_balance_post,
+      }),
+    },
+  }
+
   -- ---------------------------------------------------------------------------
-  -- 7. Execute TX (atomic).
+  -- 7. Chaos: Kill-mid-TX injection (ST-019 APPROACH A).
+  --     env var SONAR_BANK_CHAOS_INJECT_FAIL_AT_QUERY={1,2,3,4} inyecta fallo
+  --     artificial en el query especificado para probar rollback atomicidad.
+  -- ---------------------------------------------------------------------------
+  local chaos_fail_at = GetConvar('SONAR_BANK_CHAOS_INJECT_FAIL_AT_QUERY', '0')
+  local chaos_fail_num = tonumber(chaos_fail_at) or 0
+
+  if chaos_fail_num >= 1 and chaos_fail_num <= 4 then
+    local queries = { q_debit, q_credit, q_mov_debit, q_mov_credit }
+    local target_query = queries[chaos_fail_num]
+    if target_query then
+      target_query.query = 'UPDATE sonar_bank_chaos_injected_failure SET id = id'
+      target_query.values = {}
+    end
+  end
+
+  -- ---------------------------------------------------------------------------
+  -- 8. Execute TX (atomic).
   -- ---------------------------------------------------------------------------
   local start_ms = GetGameTimer()
   local tx_ok, tx_result = pcall(function()
-    return SONAR.DB.Transaction({ q_debit, q_credit, q_mov_debit, q_mov_credit })
+    return SONAR.DB.Transaction({ q_debit, q_credit, q_mov_debit, q_mov_credit, q_audit_complete })
   end)
   local tx_ms = GetGameTimer() - start_ms
 

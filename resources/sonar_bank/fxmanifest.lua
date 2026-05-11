@@ -89,6 +89,10 @@ server_scripts {
 
   -- Smoke Chaos Matrix (DEV ONLY — BANK-DO.2 chaos tests ST-008 to ST-030)
   'server/smoke_chaos_chaos.lua',
+
+  -- Smoke Chaos Advanced (DEV ONLY — BANK-DO.2 Fase 2 advanced chaos tests ST-018 to ST-022+)
+  -- Requires smoke_chaos_chaos.lua loaded first for baseline modules (ChaosFixtures + ChaosConcurrency)
+  'server/smoke_chaos_advanced.lua',
 }
 
 -- No client_scripts (callbacks server-side; client UI llega

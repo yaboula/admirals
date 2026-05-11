@@ -14,6 +14,8 @@
 --   docs/technical/06_fivem_standards.md (performance budgets)
 -- =============================================================================
 
+print('^3[SMOKE_CHAOS_CHAOS]^7 Loading smoke_chaos_chaos.lua...')
+
 -- =============================================================================
 -- GLOBAL LOG HELPER
 -- =============================================================================
@@ -108,16 +110,21 @@ end
 function ChaosConcurrency.InitializeMockPlayers(count)
   count = count or 20
   ChaosConcurrency.MockPlayers = {}
-  
+
   for i = 1, count do
+    local iban = ChaosFixtures.GetIban(i)
     table.insert(ChaosConcurrency.MockPlayers, {
       index = i,
       citizenId = string.format("CHAOS_PLAYER_%04d", i),
       accountUUID = ChaosFixtures.GenerateAccountId(i),  -- BANK-DO.2.1 F1: real DB FK target
-      iban = ChaosFixtures.GetIban(i),  -- BANK-DO.2.1.b: real generated IBAN
+      iban = iban,  -- BANK-DO.2.1.b: real generated IBAN
     })
+    -- Log first few mock players for debugging
+    if i <= 5 then
+      Log(string.format('[CHAOS_CONC] Player %d: citizenId=%s, iban=%s', i, ChaosConcurrency.MockPlayers[i].citizenId, iban), 'info')
+    end
   end
-  
+
   Log("[CHAOS_CONC] Initialized " .. count .. " mock players (bound to fixtures)", "info")
 end
 
@@ -337,6 +344,11 @@ function ChaosFixtures.Setup(count)
     end
     ChaosFixtures.Ibans[i] = iban
 
+    -- Log first few IBANs for debugging
+    if i <= 5 then
+      Log(string.format('[FIXTURES] Slot %d IBAN: %s', i, iban), 'info')
+    end
+
     local accOk = pcall(SONAR.DB.Execute, [[
       INSERT INTO sonar_accounts (id, char_id, framework_source, alias, created_at, updated_at)
       VALUES (?, ?, 'native', ?, ?, ?)
@@ -344,21 +356,43 @@ function ChaosFixtures.Setup(count)
     ]], { accUUID, charId, 'ChaosTest_' .. i, now, now })
 
     -- Post-migration-014: type column split into owner_type + account_class.
-    local bankOk = pcall(SONAR.DB.Execute, [[
-      INSERT INTO sonar_bank_accounts (id, iban, owner_type, account_class, owner_account_id, balance, created_at)
-      VALUES (?, ?, 'personal', 'checking', ?, ?, ?)
-      ON DUPLICATE KEY UPDATE balance = VALUES(balance)
-    ]], { bankUUID, iban, accUUID, ChaosFixtures.InitialBalance, now })
+    -- Use DB.Execute with ON DUPLICATE KEY UPDATE for idempotency.
+    -- Fix: Update all relevant columns on duplicate to ensure IBAN sync.
+    local bankOk, bankErr = pcall(SONAR.DB.Execute, [[
+      INSERT INTO sonar_bank_accounts (id, iban, owner_type, account_class, owner_account_id, balance, created_at, updated_at, closed_at)
+      VALUES (?, ?, 'personal', 'checking', ?, ?, ?, ?, NULL)
+      ON DUPLICATE KEY UPDATE
+        iban = VALUES(iban),
+        owner_type = VALUES(owner_type),
+        account_class = VALUES(account_class),
+        owner_account_id = VALUES(owner_account_id),
+        balance = VALUES(balance),
+        updated_at = VALUES(updated_at),
+        closed_at = VALUES(closed_at)
+    ]], { bankUUID, iban, accUUID, ChaosFixtures.InitialBalance, now, now })
 
     if not accOk or not bankOk then
-      Log(string.format('[FIXTURES] Row %d failed (acc=%s bank=%s)', i, tostring(accOk), tostring(bankOk)), 'error')
+      Log(string.format('[FIXTURES] Row %d failed (acc=%s bank=%s bankErr=%s)', i, tostring(accOk), tostring(bankOk), tostring(bankErr)), 'error')
       ok = false
+    end
+
+    -- Log first INSERT result for debugging
+    if i == 1 then
+      Log(string.format('[FIXTURES] First row INSERT result: bankOk=%s, bankErr=%s', tostring(bankOk), tostring(bankErr)), 'info')
     end
   end
 
   ChaosFixtures.ActiveCount = count
   if ok then
     Log(string.format('[FIXTURES] %d chaos accounts ready (real IBANs)', count), 'success')
+    -- Verify first IBAN is in DB
+    local verify_iban = ChaosFixtures.Ibans[1]
+    local verify_row = SONAR.DB.FetchOne('SELECT iban FROM sonar_bank_accounts WHERE iban = ? LIMIT 1', { verify_iban })
+    if verify_row then
+      Log(string.format('[FIXTURES] Verification: IBAN %s found in DB', verify_iban), 'success')
+    else
+      Log(string.format('[FIXTURES] Verification: IBAN %s NOT found in DB - INSERT failed?', verify_iban), 'error')
+    end
   else
     Log('[FIXTURES] Setup completed with errors — chaos tests may be unreliable', 'warn')
   end

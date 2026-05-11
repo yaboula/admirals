@@ -2417,3 +2417,45 @@ Sin la CHECK constraint, habría habido 5× over-debit + balance final negativo.
 - ST-016/017 establecen el template para tests full-stack via `SONAR.Bank.*.Execute`.
 
 — **BANK-DO.2.1 close 2026-05-11. PM Cascade attested. Chaos harness sano. SUT confirmed correct under application-level concurrent contention. Next: DevOps Lead Fase 2.**
+
+
+---
+
+
+### BANK-DO.2.2 + BANK-BE.HOTFIX — Fase 2 closure (ST-018→021 PASS) + transfer audit_complete hardening
+
+**Status:** ✅ CLOSED 2026-05-11. Fase 2 advanced chaos passing 4/4.
+
+#### Resultados Fase 2 (post fixes harness + SUT hardening founder)
+
+`
+ST-018 Idempotency Replay Storm     → ✅ PASS (cache_miss=1, replay=99, race=NONE)
+ST-019 Kill-mid-TX                   → ✅ PASS (4/4 query positions rollback OK)
+ST-020 Scale Stress 100 players      → ✅ PASS (p99=3ms target <500ms, 200/200 completed)
+ST-021 Audit Log Integrity bajo carga → ✅ PASS (post audit_complete atomic inclusion)
+`
+
+#### Cambios consolidados en este commit
+
+**Harness (DevOps Fase 2):**
+- `resources/sonar_bank/server/smoke_chaos_advanced.lua` NEW — harness ST-018→021 reusando `ChaosFixtures` + `ChaosConcurrency` del baseline. Bugs corregidos por PM Cascade durante diagnóstico run #1: operationFn retornaba tabla en failure → `tostring()` rompía error_breakdown; `op.result.ok` no existía. Fixes en líneas 336, 485, 504 + simplificación aggregation ST-020.
+- `resources/sonar_bank/server/smoke_chaos_chaos.lua` — hardening Fixtures: `ON DUPLICATE KEY UPDATE` cubre todos los columns (iban + owner_type + account_class + owner_account_id + balance + updated_at + closed_at); verification post-Setup; debug logs primeros 5 IBANs.
+- `resources/sonar_bank/fxmanifest.lua` — registra `smoke_chaos_advanced.lua` después del baseline.
+- `scripts/cleanup_chaos.sql` NEW — utility cleanup.
+
+**SUT hardening (founder-approved, ⚠️ pendiente formal amendment C-BE-02):**
+- `resources/sonar_bank/server/transfer.lua`:
+  - Añadido `q_audit_complete` como query #5 dentro de la TX atómica de Transfer.Execute. Garantiza que `transfer_complete` audit row se escribe atomically con balance + movements. Antes era publish post-TX (susceptible a packet drop bajo carga). Ahora imposible que un transfer exitoso quede sin audit row.
+  - Añadido chaos injection hook env var `SONAR_BANK_CHAOS_INJECT_FAIL_AT_QUERY={1,2,3,4}` (off=0 por default) — usado por ST-019 para forzar rollback atomic en posición de query especificada. Activación safe: solo en dev (server.cfg local), no production.
+
+#### Hallazgo empírico Fase 2
+
+- **ST-020 p99=3ms** sobre 200 ops concurrentes / 100 players distintos vs target Q16.5 <500ms = **2 órdenes de magnitud bajo target**. Sin saturación de connection pool con default oxmysql config. Headroom confirmado para Phase B 200@p99<500ms target.
+- **ST-021 audit integrity hardened** — atomic audit-in-TX cierra cualquier ventana de packet drop. Invariante: `audit_delta >= success_count` siempre cumplido por design ahora.
+
+#### Pendientes
+
+- ⚠️ Contract amendment formal C-BE-02 §9.C032: documentar que `transfer_complete` audit es INSIDE atomic TX (no post-TX publish). Próxima sesión Backend Lead la atiende como Round 2 amendment menor (founder-approved, security-favorable).
+- ST-022+ multi-framework matrix: deferido hasta post Backend ESX adapter completed.
+
+— **PM Cascade + DevOps Lead + Founder yaboula attested. Fase 2 closed clean. Next: Backend ESX adapter (BANK-BE.ESX) Window B activation.**
