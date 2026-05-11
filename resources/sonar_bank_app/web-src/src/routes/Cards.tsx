@@ -7,6 +7,7 @@ import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
 import { RequestCardBanner } from './cards/RequestCardBanner'
+import { RequestFirstCardPanel } from './cards/RequestFirstCardPanel'
 import { LimitsModal } from './cards/LimitsModal'
 import { DesignPickerDialog } from './cards/DesignPickerDialog'
 
@@ -90,12 +91,20 @@ export function Cards() {
             padding="md"
             className="min-h-0 border-white/10 flex flex-col gap-3 2xl:gap-4 overflow-hidden"
           >
-            <div className="flex-1 min-h-0 flex items-center justify-center">
-              <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto">
-                <CardCarousel cards={cards} />
+            <div className="flex-1 min-h-0 flex items-center justify-center overflow-visible">
+              <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto py-2">
+                {(() => {
+                  console.log('[Cards] DEBUG - cards:', cards, 'length:', cards?.length, 'type:', typeof cards, 'isArray:', Array.isArray(cards))
+                  if (!cards || cards.length === 0) {
+                    console.log('[Cards] DEBUG - Showing RequestFirstCardPanel')
+                    return <RequestFirstCardPanel />
+                  }
+                  console.log('[Cards] DEBUG - Showing CardCarousel')
+                  return <CardCarousel cards={cards} />
+                })()}
               </div>
             </div>
-            <RequestCardBanner />
+            {cards.length > 0 && <RequestCardBanner />}
           </Card>
         </section>
 
