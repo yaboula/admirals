@@ -72,4 +72,5 @@ server_scripts {
   -- Detection + boot orchestration (LAST)
   'server/detect.lua',
   'server/init.lua',
+  'server/st022_esx_eval.lua',
 }

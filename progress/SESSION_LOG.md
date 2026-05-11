@@ -2361,7 +2361,8 @@ DevOps Lead reportó BANK-DO.2 Fase 1 con 6/8 PASS (75 %) y 2 FAIL atribuidos a 
 
 #### Refactor BANK-DO.2.1 + BANK-DO.2.1.b aplicado
 
-**Fixes infraestructurales (esources/sonar_bank/server/smoke_chaos_chaos.lua ~1100 LoC):**
+**Fixes infraestructurales (
+esources/sonar_bank/server/smoke_chaos_chaos.lua ~1100 LoC):**
 - F1: módulo `ChaosFixtures` (Setup/Teardown idempotentes, UUIDs deterministas, aislamiento por prefix UUID, cleanup de `sonar_bank_movements`).
 - F2: success criteria real `affected_rows > 0` con categorización de errores.
 - F3: `ChaosConcurrency.OpCounter` monotónico (fixed opId collision que perdía ops).
@@ -2488,3 +2489,133 @@ Founder confirmo whitelist actualizada para implementar ESX en layout modular re
 
 - ST-022 multi-framework matrix en servidor ESX real queda como trigger DevOps Fase 3.
 - Commit scoped esperado: `feat(bridges): add ESX 1.10+ bank+identity adapters`.
+
+---
+
+### BANK-DO.3 - ST-022 ESX boot validation + schema compatibility closure
+
+**Status:** PASS BOOT VALIDATED 2026-05-11 06:31 UTC+02. Core ESX runtime clean; smoke regression 7/7 PASS.
+
+#### Evidence captured
+
+```
+FXServer boot: license authentication succeeded
+ESX: ESX Legacy 1.13.5 initialized
+sonar_bridges: bank=esx, identity=esx, inventory=ox_inventory, notify=ox_lib
+sonar_core: Migration 035_audit_log_framework_identifier_width.sql applied OK (53ms)
+sonar_core: Migrations done: 1 applied, 33 skipped, 0 errors
+sonar_bank: sonar_bank is READY
+sonar_bank_app: HMAC self-test PASS + smoke 8/8 PASS
+SMOKE_CHAOS ST-001..ST-007: Passed 7, Failed 0, Pass Rate 100.0%
+```
+
+#### Findings closed
+
+- PASS **F-ESX-001 - ESX schema on sonar DB:** ESX/ox_inventory share global `mysql_connection_string`; minimal ESX schema/columns required by ensured resources were applied to `sonar`.
+- PASS **F-ESX-002 - multichar mismatch:** `esx_multicharacter` disabled for ST-022 and ESX `Config.Multichar` patched to require explicit `esx_multicharacter_enabled=1` plus resource presence.
+- PASS **F-ESX-003 - audit actor width:** ESX observed identifier is 40-char SHA1 (`1a3ba66e3ab1cdb37db5971d887fbfb74e94c8eb`); `sonar_audit_log.actor_account_id` widened from `CHAR(36)` to `VARCHAR(64)` via migration 035.
+
+#### Files changed in this closure
+
+- `resources/sonar_core/migrations/035_audit_log_framework_identifier_width.sql` - NEW persistent DB compatibility migration.
+- `resources/sonar_core/config.lua` - registers migration 035.
+- `progress/ST-022_ESX_MULTI_FRAMEWORK_MATRIX.md` - boot execution snapshot + findings closure.
+- `progress/SESSION_LOG.md` - this entry.
+
+#### Remaining scope before ESX adapter LOCKED
+
+- ST-022.2 bank adapter explicit method parity.
+- ST-022.3 identity adapter explicit method/cache/drop parity.
+- ST-022.4 NUI transfer end-to-end on ESX.
+- ST-022.5 reconciliation pipeline under lag.
+- ST-022.7 timing baseline table vs QBCore.
+
+- BANK-DO.3 attested by Cascade. ESX core boot + smoke regression green; deep parity matrix remains pending.
+
+---
+
+### BANK-DO.3.1 - ESX advanced chaos baseline ST-018..021
+
+**Status:** PASS 2026-05-11 06:49 UTC+02. Advanced chaos baseline passed 4/4 on ESX runtime after enabling `sonar_dev_mode=1` in runtime `D:\FiveM_Server\Sonar\esx.cfg`.
+
+#### Results
+
+```
+ST-018 Idempotency Replay Storm  -> PASS cache_miss=1, replay=99, balance_delta=100.00, race_window=NONE
+ST-019 Kill-mid-TX               -> PASS query positions 1-4 rolled back correctly
+ST-020 Scale Stress              -> PASS 200/200 completed, success=200, p50=17ms, p95=45ms, p99=65ms
+ST-021 Audit Log Integrity       -> PASS success=200, audit_delta=200, movement_delta=400, packet_drop=NONE
+Summary                          -> Total: 4 | Passed: 4 | Failed: 0
+```
+
+#### Notes
+
+- ST-019 missing-table oxmysql errors for `sonar_bank_chaos_injected_failure` are expected chaos injection noise; all four rollback assertions passed.
+- Observed server thread hitch warning during ST-021 pressure window, but test invariants remained green and p99 ST-020 stayed under the <500ms target.
+- Advanced run confirms ESX runtime did not regress idempotency, rollback atomicity, scale stress, or audit persistence baselines.
+
+- BANK-DO.3.1 attested by Cascade. ESX advanced chaos baseline green; adapter-specific parity/NUI/reconciliation steps remain pending before LOCKED.
+
+---
+
+### BANK-DO.3.2 - ESX ST-022 bank + identity parity closure
+
+**Status:** PARTIAL PASS 2026-05-11 07:46 UTC+02. ST-022.1, ST-022.2, and ST-022.3 passed on connected ESX player `source=1`.
+
+#### Results
+
+```
+ST-022.1 ESX adapters active -> PASS bank=esx, identity=esx
+ST-022.3 Identity raw identifier parity -> PASS source=1, bridge/raw=1a3ba66e3ab1cdb37db5971d887fbfb74e94c8eb, len=40
+ST-022.2 Bank AddMoney/RemoveMoney/GetBalance ESX memory parity -> PASS before=51400, after_add=51410, after_remove=51400, accounts=bank=51400,black_money=0,money=0
+```
+
+#### Notes
+
+- Root cause for the previous `xPlayer not found`/`NOT_FOUND` loop was CFX exported ESX callable refs reporting as `type(fn) == "table"` rather than `function`; guards rejected valid ESX APIs.
+- Fixed `sonar_bridges` ESX bank/identity adapters and ST-022 harness to invoke official ESX APIs (`GetPlayerFromId`, `GetPlayerFromIdentifier`, `getAccount('bank')`, `addAccountMoney('bank', ...)`, `removeAccountMoney('bank', ...)`) via presence + `pcall`.
+- Corrected bank adapter success return shape so successful AddMoney/RemoveMoney return `true, nil` instead of `true, "FAILED"` caused by Lua `and/or` nil semantics.
+- Remaining before ESX adapter LOCKED: ST-022.4 NUI E2E, ST-022.5 lag/reconciliation invariants, ST-022.6 formal identifier capture, and ST-022.7 latency baseline evidence.
+
+- BANK-DO.3.2 attested by Cascade. Bank + identity parity blockers closed; full ST-022 LOCK remains pending final subtests.
+
+---
+
+### BANK-DO.3.3 - ESX ST-022 runtime validation full pass
+
+**Status:** PASS 2026-05-11 07:50 UTC+02. ST-022 runtime harness passed all emitted rows on connected ESX player `source=1` after reloading `sonar_bank` with the callback-ref safe ST-022 handler.
+
+#### Results
+
+```
+ST-022.1 ESX adapters active                 -> PASS bank=esx, identity=esx
+ST-022.3 Identity raw identifier parity      -> PASS source=1, bridge/raw=1a3ba66e3ab1cdb37db5971d887fbfb74e94c8eb, len=40
+ST-022.2 Bank memory parity                  -> PASS before=51400, after_add=51410, after_remove=51400, ESX accounts=bank=51400,black_money=0,money=0
+ST-022.4 NUI transfer payload                -> PASS ok=true, err=nil, tx=429ce442-e03f-463b-ae3a-7d301e8d868f, duration_ms=26, conservation=5000.0->5000.0
+ST-022.5 Lag reconciliation invariants       -> PASS spike_ms=300, conservation=5000.0->5000.0, p99_ms=98, err=nil
+ST-022.7 Latency baseline documentation      -> PASS ESX advanced p99=65ms vs QBCore p99=3ms; source1 lag sample p99=98ms; target<500ms
+Summary                                      -> Total=6 | Passed=6 | Failed=0
+```
+
+#### Notes
+
+- ST-022.6 identifier format capture is covered by ST-022.3 evidence: raw ESX identifier is preserved as the observed 40-char SHA1 string without truncation.
+- `sonar_bank` ST-022 handler timeout was caused by the same CFX callback-ref shape (`type(cb) == "table"`) seen with ESX exports; fixed by responding through presence + `pcall(cb, payload)`.
+- Archival rerun at 07:54 UTC+02 after reloading `sonar_bridges` confirmed clean `add_err=nil` and `remove_err=nil` return shape.
+- Functional invariants are green: ESX memory balance parity, SONAR transfer conservation, lag conservation, audit events, and latency target all passed.
+
+- BANK-DO.3.3 attested by Cascade. ST-022 ESX runtime validation is PASS and ready for ESX adapter LOCK consideration.
+
+#### Archival rerun
+
+```
+ST-022.1 ESX adapters active                 -> PASS bank=esx, identity=esx
+ST-022.3 Identity raw identifier parity      -> PASS source=1, bridge/raw=1a3ba66e3ab1cdb37db5971d887fbfb74e94c8eb, len=40
+ST-022.2 Bank memory parity                  -> PASS before=51600, add_err=nil, after_add=51610, remove_err=nil, after_remove=51600
+ST-022.4 NUI transfer payload                -> PASS ok=true, err=nil, duration_ms=30, conservation=5000.0->5000.0
+ST-022.5 Lag reconciliation invariants       -> PASS spike_ms=300, conservation=5000.0->5000.0, p99_ms=97, err=nil
+ST-022.7 Latency baseline documentation      -> PASS ESX advanced p99=65ms; source1 lag p99=97ms; target<500ms
+Summary                                      -> Total=6 | Passed=6 | Failed=0
+```
+
+- BANK-DO.3.3 archival rerun confirms clean PASS output with no false `FAILED` err fields.

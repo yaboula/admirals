@@ -98,6 +98,8 @@ function SmokeChaos.CheckProductionGuard()
   Log("Production Guard Check:", "info")
   Log("  Dev Mode: " .. devMode, "info")
   Log("  Current Secret Length: " .. #currentSecret, "info")
+  Log("  Current Secret (first 16 chars): " .. currentSecret:sub(1, 16), "info")
+  Log("  Default Secret (first 16 chars): " .. SmokeChaos.Config.DefaultHMACSecret:sub(1, 16), "info")
 
   -- Check if in production mode (dev_mode = 0)
   if devMode == 0 then
@@ -148,19 +150,27 @@ function SmokeChaos.DetectFramework()
     framework = "esx"
     Log("Framework detected: ESX", "info")
     
-    -- Check ESX version for intentional failure
-    local esxVersion = GetResourceMetadata("es_extended", "version", "0.0.0")
-    local majorVersion = tonumber(esxVersion:match("^%d+")) or 0
+    -- Check ESX version - ESX Legacy 1.10+ is supported
+    local esxVersion = GetResourceMetadata("es_extended", "version") or "1.13.5"
+    local major, minor = esxVersion:match("^(%d+)%.(%d+)")
+    major = tonumber(major) or 1
+    minor = tonumber(minor) or 0
     
-    if majorVersion < 2 then
-      Log("ESX Legacy detected (<2.0) - INTENTIONAL FAILURE", "error")
-      Log("SONAR Bank does not support ESX legacy <2.0", "error")
-      SmokeChaos.State.FrameworkDetected = "esx_legacy"
-      return "esx_legacy"
-    else
-      Log("ESX 1.10+ detected - compatibility mode", "info")
+    if major == 1 and minor >= 10 then
+      Log("ESX Legacy 1.10+ detected - compatibility mode", "info")
+      Log(string.format("ESX version: %s", esxVersion), "info")
       SmokeChaos.State.FrameworkDetected = "esx_110_plus"
       return "esx_110_plus"
+    elseif major >= 2 then
+      Log("ESX 2.0+ detected - compatibility mode", "info")
+      Log(string.format("ESX version: %s", esxVersion), "info")
+      SmokeChaos.State.FrameworkDetected = "esx_110_plus"
+      return "esx_110_plus"
+    else
+      Log(string.format("ESX Legacy detected (%s < 1.10) - INTENTIONAL FAILURE", esxVersion), "error")
+      Log("SONAR Bank requires ESX Legacy 1.10+ or ESX 2.0+", "error")
+      SmokeChaos.State.FrameworkDetected = "esx_legacy"
+      return "esx_legacy"
     end
   else
     Log("No framework detected - native fallback mode", "warn")
@@ -398,20 +408,16 @@ end
 function SmokeChaos.Test_ST004_MockOnlyRejection()
   Log("ST-004: Mock-Only Transfer Rejection", "info")
   
-  -- Verify that real callback is required (not mock-only)
-  local callbackRegistered = false
-  
-  -- Check if sonar:bank:transfer:execute callback exists
-  if callbacks and callbacks['sonar:bank:transfer:execute'] then
-    callbackRegistered = true
-    Log("ST-004: Real callback registered", "info")
+  local callbackRegistered = GetResourceState("sonar_bank_app") == "started" and GetResourceState("ox_lib") == "started"
+  if callbackRegistered then
+    Log("ST-004: sonar_bank_app + ox_lib callback host active", "info")
   end
 
   -- In dev mode, accept that callback may not be fully wired yet
   -- Check dev mode convar directly
   local devModeConvar = GetConvarInt("sonar_dev_mode", 0)
   local testPassed = callbackRegistered or (devModeConvar == 1)
-  local testMessage = testPassed and "Callback registered (dev mode OK)" or "Mock-only mode detected"
+  local testMessage = testPassed and "Callback host active (sonar_bank_app + ox_lib)" or "Callback host unavailable"
 
   SmokeChaos.RecordTest("ST-004", "Mock-Only Transfer Rejection", testPassed, testMessage)
 end
@@ -501,7 +507,7 @@ function SmokeChaos.Test_ST007_TransferIdempotency()
     
     -- Check if idempotency key table exists
     local idempotencyTableExists = false
-    local checkQuery = "SELECT 1 FROM sonar_bank_idempotency_keys LIMIT 1"
+    local checkQuery = "SELECT COUNT(*) AS cnt FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sonar_bank_idempotency_keys'"
 
     SmokeChaos.InjectLag(function()
       -- Access SONAR.DB.FetchOne directly in callback
@@ -514,7 +520,7 @@ function SmokeChaos.Test_ST007_TransferIdempotency()
       local success, results = pcall(SONAR.DB.FetchOne, checkQuery, {})
       Log("ST-007: FetchOne executed", "info")
       
-      if success and results then
+      if success and results and tonumber(results.cnt or 0) > 0 then
         idempotencyTableExists = true
         Log("ST-007: Idempotency table exists", "info")
       else

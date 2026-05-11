@@ -200,6 +200,7 @@ Config.MigrationsFiles = {
   '032_govt_risk_scores_and_treasury_movements.sql',
   '033_bank_saved_recipients.sql',
   '034_fix_sonar_accounts_collation.sql',
+  '035_audit_log_framework_identifier_width.sql',
 }
 
 -- =============================================================================

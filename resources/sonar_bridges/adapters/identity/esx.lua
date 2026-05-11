@@ -5,6 +5,13 @@ local _cid_to_src = {}
 
 local function _request_esx()
   if GetResourceState('es_extended') ~= 'started' then return end
+  local ok, obj = pcall(function()
+    return exports['es_extended']:getSharedObject()
+  end)
+  if ok and type(obj) == 'table' then
+    _esx = obj
+    return
+  end
   TriggerEvent('esx:getSharedObject', function(obj)
     if type(obj) == 'table' then _esx = obj end
   end)
@@ -48,18 +55,26 @@ local function _evict(src)
   _src_to_cid[src] = nil
 end
 
+local function _call_esx(ESX, method, ...)
+  local fn = ESX and ESX[method] or nil
+  if not fn then return nil end
+  local ok, result = pcall(fn, ...)
+  if ok then return result end
+  return nil
+end
+
 local function _get_player_by_source(src)
   local ESX = _get_esx()
-  if not ESX or type(ESX.GetPlayerFromId) ~= 'function' then return nil end
-  return ESX.GetPlayerFromId(tonumber(src))
+  return _call_esx(ESX, 'GetPlayerFromId', tonumber(src))
 end
 
 local function _get_player_by_identifier(identifier)
   local ESX = _get_esx()
-  if not ESX or type(ESX.GetExtendedPlayers) ~= 'function' then return nil end
-  for _, player in pairs(ESX.GetExtendedPlayers()) do
-    if player and player.identifier == identifier then return player end
-  end
+  if not ESX then return nil end
+  local player = _call_esx(ESX, 'GetPlayerFromIdentifier', identifier)
+  if player then return player end
+  player = _call_esx(ESX, 'Player', identifier)
+  if player then return player end
   return nil
 end
 

@@ -3,6 +3,13 @@ local _esx = nil
 
 local function _request_esx()
   if GetResourceState('es_extended') ~= 'started' then return end
+  local ok, obj = pcall(function()
+    return exports['es_extended']:getSharedObject()
+  end)
+  if ok and type(obj) == 'table' then
+    _esx = obj
+    return
+  end
   TriggerEvent('esx:getSharedObject', function(obj)
     if type(obj) == 'table' then _esx = obj end
   end)
@@ -41,19 +48,36 @@ local function _with_idem(idem_key, actual_fn)
   return table.unpack(results, 1, results.n)
 end
 
+local function _call_esx(ESX, method, ...)
+  local fn = ESX and ESX[method] or nil
+  if not fn then return nil end
+  local ok, result = pcall(fn, ...)
+  if ok then return result end
+  return nil
+end
+
+local function _call_player(player, method, ...)
+  local fn = player and player[method] or nil
+  if not fn then return false, nil end
+  local ok, result = pcall(fn, ...)
+  if ok then return true, result end
+  return false, nil
+end
+
 local function _get_player_by_identifier(identifier)
   local ESX = _get_esx()
-  if not ESX or type(ESX.GetExtendedPlayers) ~= 'function' then return nil end
-  for _, player in pairs(ESX.GetExtendedPlayers()) do
-    if player and player.identifier == identifier then return player end
-  end
+  if not ESX then return nil end
+  local player = _call_esx(ESX, 'GetPlayerFromIdentifier', identifier)
+  if player then return player end
+  player = _call_esx(ESX, 'Player', identifier)
+  if player then return player end
   return nil
 end
 
 local function _get_account_balance(player, account_type)
   local acct = account_type or 'bank'
-  if not player or type(player.getAccount) ~= 'function' then return nil end
-  local account = player.getAccount(acct)
+  local ok, account = _call_player(player, 'getAccount', acct)
+  if not ok then return nil end
   if type(account) ~= 'table' then return nil end
   return account.money
 end
@@ -78,11 +102,10 @@ function EsxBank.AddMoney(identifier, amount, reason, idempotency_key)
       return false, 'VALIDATION_FAILED'
     end
     local player = _get_player_by_identifier(identifier)
-    if not player or type(player.addAccountMoney) ~= 'function' then return false, 'NOT_FOUND' end
-    local ok = pcall(function()
-      player.addAccountMoney('bank', amount, reason or 'sonar')
-    end)
-    return ok == true, ok == true and nil or 'FAILED'
+    if not player then return false, 'NOT_FOUND' end
+    local ok = _call_player(player, 'addAccountMoney', 'bank', amount, reason or 'sonar')
+    if ok == true then return true, nil end
+    return false, 'FAILED'
   end)
 end
 
@@ -95,13 +118,12 @@ function EsxBank.RemoveMoney(identifier, amount, reason, idempotency_key)
       return false, 'VALIDATION_FAILED'
     end
     local player = _get_player_by_identifier(identifier)
-    if not player or type(player.removeAccountMoney) ~= 'function' then return false, 'NOT_FOUND' end
+    if not player then return false, 'NOT_FOUND' end
     local balance = _get_account_balance(player, 'bank') or 0
     if balance < amount then return false, 'INSUFFICIENT_FUNDS' end
-    local ok = pcall(function()
-      player.removeAccountMoney('bank', amount, reason or 'sonar')
-    end)
-    return ok == true, ok == true and nil or 'FAILED'
+    local ok = _call_player(player, 'removeAccountMoney', 'bank', amount, reason or 'sonar')
+    if ok == true then return true, nil end
+    return false, 'FAILED'
   end)
 end
 
@@ -116,20 +138,13 @@ function EsxBank.Transfer(from, to, amount, reason, idempotency_key)
     local from_player = _get_player_by_identifier(from)
     local to_player = _get_player_by_identifier(to)
     if not from_player or not to_player then return false, 'NOT_FOUND' end
-    if type(from_player.removeAccountMoney) ~= 'function' or type(to_player.addAccountMoney) ~= 'function' then return false, 'FAILED' end
     local balance = _get_account_balance(from_player, 'bank') or 0
     if balance < amount then return false, 'INSUFFICIENT_FUNDS' end
-    local removed = pcall(function()
-      from_player.removeAccountMoney('bank', amount, reason or 'sonar_transfer')
-    end)
+    local removed = _call_player(from_player, 'removeAccountMoney', 'bank', amount, reason or 'sonar_transfer')
     if removed ~= true then return false, 'FAILED' end
-    local added = pcall(function()
-      to_player.addAccountMoney('bank', amount, reason or 'sonar_transfer')
-    end)
+    local added = _call_player(to_player, 'addAccountMoney', 'bank', amount, reason or 'sonar_transfer')
     if added ~= true then
-      pcall(function()
-        from_player.addAccountMoney('bank', amount, 'sonar_transfer_rollback')
-      end)
+      _call_player(from_player, 'addAccountMoney', 'bank', amount, 'sonar_transfer_rollback')
       return false, 'FAILED'
     end
     return true, nil
