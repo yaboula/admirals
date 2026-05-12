@@ -134,7 +134,7 @@ local function admin_delta(actor_src, account, amount_minor, reason, opts, event
   local actor_id = actor_account_id(actor_src)
   local ok, tx_err = DB.Transaction({
     { query = 'UPDATE sonar_bank_accounts SET balance = balance + (? / 100.0), updated_at = UNIX_TIMESTAMP() WHERE id = ? AND closed_at IS NULL', values = { delta, account.account_id } },
-    movement_query(account.account_id, delta, after, event_type, reason, tx_id, idem_key, actor_id),
+    movement_query(account.account_id, delta, after, 'adjustment', reason, tx_id, idem_key, actor_id),
     audit_query(actor_id, actor_src, account.account_id, account.iban, audit_event, delta, previous, idem_key, correlation_id, inv, reason, created_at),
     idem_query(idem_key, payload, result, audit_event, account.account_id, correlation_id, inv, created_at),
   })
@@ -169,7 +169,7 @@ local function admin_set(actor_src, account, new_balance_minor, reason, opts)
   local actor_id = actor_account_id(actor_src)
   local ok, tx_err = DB.Transaction({
     { query = 'UPDATE sonar_bank_accounts SET balance = (? / 100.0), updated_at = UNIX_TIMESTAMP() WHERE id = ? AND closed_at IS NULL', values = { new_balance, account.account_id } },
-    movement_query(account.account_id, delta, new_balance, 'admin_set_balance', reason, tx_id, idem_key, actor_id),
+    movement_query(account.account_id, delta, new_balance, 'adjustment', reason, tx_id, idem_key, actor_id),
     audit_query(actor_id, actor_src, account.account_id, account.iban, audit_event, delta, previous, idem_key, correlation_id, inv, reason, created_at),
     idem_query(idem_key, payload, result, audit_event, account.account_id, correlation_id, inv, created_at),
   })

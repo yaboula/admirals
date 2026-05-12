@@ -44,12 +44,19 @@ local function ensure_uuid(value)
   if value ~= nil and not Validators.IsValidUUID(value) then return nil, 'INVALID_UUID' end
   return value or UUID.V4(), nil
 end
+local function is_identity_loaded(src)
+  if BankApp.api._smoke_identity_loaded and BankApp.api._smoke_identity_loaded[src] ~= nil then
+    return BankApp.api._smoke_identity_loaded[src]
+  end
+  local loaded_ok, loaded = pcall(function() return exports.sonar_bridges:IsIdentityLoaded(src) end)
+  if loaded_ok then return loaded end
+  return nil
+end
 local function source_to_citizen(src)
   src = tonumber(src)
   if not src or src <= 0 then return nil, 'INVALID_ARGUMENT' end
   if not GetPlayerName(src) then return nil, 'PLAYER_NOT_FOUND' end
-  local loaded_ok, loaded = pcall(function() return exports.sonar_bridges:IsIdentityLoaded(src) end)
-  if loaded_ok and loaded == false then return nil, 'PLAYER_NOT_LOADED' end
+  if is_identity_loaded(src) == false then return nil, 'PLAYER_NOT_LOADED' end
   local ok, cid = pcall(function() return exports.sonar_bridges:GetCitizenId(src) end)
   if not ok then return nil, 'INTERNAL_ERROR' end
   if type(cid) ~= 'string' or cid == '' then return nil, 'PLAYER_NOT_LOADED' end
@@ -91,6 +98,16 @@ function API.ResolvePrimaryAccount(citizen_id)
   if row.closed_at ~= nil then return nil, 'ACCOUNT_CLOSED' end
   return row, nil
 end
+
+function API.SetSmokeIdentityLoadedOverride(src, loaded)
+  BankApp.api._smoke_identity_loaded = BankApp.api._smoke_identity_loaded or {}
+  if loaded == nil then
+    BankApp.api._smoke_identity_loaded[src] = nil
+  else
+    BankApp.api._smoke_identity_loaded[src] = loaded == true
+  end
+end
+
 function API.ResolveIban(iban)
   local norm = Validators.NormalizeIBAN(iban)
   if not norm then return nil, 'IBAN_INVALID' end
@@ -183,7 +200,7 @@ local function mutate_balance(account, delta_minor, reason, opts, event_type, ac
     or { query = 'UPDATE sonar_bank_accounts SET balance = balance - (? / 100.0), updated_at = UNIX_TIMESTAMP() WHERE id = ? AND balance >= (? / 100.0) AND closed_at IS NULL AND is_frozen = 0', values = { math.abs(delta_minor), account.account_id, math.abs(delta_minor) } }
   local ok, tx_err = DB.Transaction({
     update_query,
-    movement_query(account.account_id, delta_minor, after, event_type == 'bank_credit' and 'credit' or 'debit', nil, reason, tx_id, idem_key, account.owner_account_id),
+    movement_query(account.account_id, delta_minor, after, event_type == 'bank_credit' and 'deposit' or 'withdrawal', nil, reason, tx_id, idem_key, account.owner_account_id),
     audit_query(account.owner_account_id, actor_src, account.account_id, account.iban, event_type, delta_minor, nil, idem_key, correlation_id, inv, reason, created_at),
     idem_query(idem_key, payload, result, event_type, account.account_id, correlation_id, inv, created_at),
   })
@@ -321,8 +338,9 @@ exports('RemoveMoneyByCitizen', API.RemoveMoneyByCitizen)
 exports('CanAffordByCitizen', API.CanAffordByCitizen)
 exports('GetBalanceByCitizen', API.GetBalanceByCitizen)
 exports('TransferByCitizen', API.TransferByCitizen)
-exports('GetApiVersion', function()
+function API.GetApiVersion()
   return { major = 1, minor = 0, patch = 2, phase = 'Phase 5', api_lock = 'C-BE-02 v1.0.2 R2' }
-end)
+end
+exports('GetApiVersion', API.GetApiVersion)
 
 return API

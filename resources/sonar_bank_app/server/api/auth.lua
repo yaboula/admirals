@@ -4,11 +4,17 @@ local M = BankApp.api.auth
 
 local DB = BankApp.lib.db
 local Config = BankApp.Config
+M._test_context = nil
 
 local function invoker_resource()
+  if M._test_context and M._test_context.invoker_resource then return M._test_context.invoker_resource end
   local resource = GetInvokingResource()
   if type(resource) == 'string' and resource ~= '' then return resource end
   return 'console'
+end
+local function ace_allowed(actor_src, ace)
+  if M._test_context and M._test_context.ace_allowed then return M._test_context.ace_allowed[ace] == true end
+  return IsPlayerAceAllowed(actor_src, ace)
 end
 local function split_csv(raw)
   local values = {}
@@ -57,7 +63,7 @@ function M.RequireAdmin(actor_src, opts)
   end
 
   local ace = opts.ace or Config.Permissions.ADMIN_ACE
-  if IsPlayerAceAllowed(actor_src, ace) or IsPlayerAceAllowed(actor_src, Config.Permissions.ADMIN_ACE) then
+  if ace_allowed(actor_src, ace) or ace_allowed(actor_src, Config.Permissions.ADMIN_ACE) then
     context.auth_path = 'ace'
     return true, nil, context
   end
@@ -65,7 +71,7 @@ function M.RequireAdmin(actor_src, opts)
   local role_prefix = GetConvar('sonar:admin_role_ace_prefix', 'sonar.bank.role.')
   local roles = split_csv(GetConvar('sonar:admin_roles', 'bank_admin,government'))
   for _, role in ipairs(roles) do
-    if IsPlayerAceAllowed(actor_src, role_prefix .. role) then
+    if ace_allowed(actor_src, role_prefix .. role) then
       context.auth_path = 'role'
       return true, nil, context
     end
@@ -73,6 +79,10 @@ function M.RequireAdmin(actor_src, opts)
 
   audit_auth(actor_src, invoker, 'admin export denied')
   return false, 'AUTH_ACE_DENIED', context
+end
+
+function M.SetSmokeTestContext(context)
+  M._test_context = context
 end
 
 return M

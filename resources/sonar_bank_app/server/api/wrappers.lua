@@ -14,6 +14,9 @@ end
 
 function W.publish_balance_update(citizen_id, balance_major_decimal, account_class, opts)
   opts = opts or {}
+  if type(W._smoke_observer) == 'function' then
+    pcall(W._smoke_observer, citizen_id, balance_major_decimal, account_class, opts)
+  end
   if type(citizen_id) ~= 'string' or citizen_id == '' then return end
   local src = resolve_source(citizen_id)
   if not src then return end
@@ -31,6 +34,10 @@ function W.publish_account_balance(account, new_balance_minor, opts)
   local decimal = Units.from_minor(new_balance_minor)
   if type(decimal) ~= 'string' then return end
   W.publish_balance_update(account.citizen_id, decimal, opts.account_class or 'main', opts)
+end
+
+function W.SetSmokeObserver(observer)
+  W._smoke_observer = observer
 end
 
 return W

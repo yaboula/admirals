@@ -135,7 +135,8 @@ server_scripts {
   'server/api/admin_api.lua',           -- 58. Phase 5 Tier 2 admin exports
   'server/api/legacy_scan.lua',         -- 59. Phase 5 migration scanner
   'server/api/smoke_exports.lua',       -- 60. Phase 5 exports smoke
-  'server/boot/exports.lua',            -- 61. GetPrimaryBalanceMinor
+  'server/smoke/st_024_phase_5_exports.lua', -- 61. ST-024 Phase 5 exports harness
+  'server/boot/exports.lua',            -- 62. GetPrimaryBalanceMinor
 
 }
 
