@@ -426,6 +426,6 @@ DevOps Lead H4 update:
 
 Founder GO/NO-GO:
 
-- Founder decision: PENDING explicit GO / NO-GO
-- Fecha UTC:
-- Condiciones / notas: Runtime evidence satisfies ST-024.1-10 live PASS, legacy scanner clean, and ST-001..ST-007 regression PASS.
+- Founder decision: GO
+- Fecha UTC: 2026-05-12 23:42
+- Condiciones / notas: Founder GO issued after runtime evidence satisfied ST-024.1-10 live PASS, legacy scanner clean, and ST-001..ST-007 regression PASS.
