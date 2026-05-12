@@ -129,7 +129,8 @@ server_scripts {
   -- 10. Public cross-resource exports (loaded last — depends on repos).
   --     Consumers: sonar_bridges MirrorSync login sync +
   --     third-party resources querying canonical SONAR balance.
-  'server/boot/exports.lua',            -- 55. GetPrimaryBalanceMinor
+  'server/api/public_api.lua',          -- 55. Phase 5 Tier 1 exports + GetApiVersion
+  'server/boot/exports.lua',            -- 56. GetPrimaryBalanceMinor
 
 }
 
