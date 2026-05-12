@@ -37,3 +37,6 @@ ALTER TABLE sonar_audit_log
   ADD INDEX IF NOT EXISTS idx_sonar_audit_log_target_account_created (target_account_id, created_at),
   ADD INDEX IF NOT EXISTS idx_sonar_audit_log_correlation (correlation_id),
   ADD INDEX IF NOT EXISTS idx_sonar_audit_log_request_nonce (request_nonce);
+
+ALTER TABLE sonar_bank_accounts
+  DROP CONSTRAINT IF EXISTS chk_sonar_bank_accounts_balance_nonneg;

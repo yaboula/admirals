@@ -130,7 +130,8 @@ server_scripts {
   --     Consumers: sonar_bridges MirrorSync login sync +
   --     third-party resources querying canonical SONAR balance.
   'server/api/public_api.lua',          -- 55. Phase 5 Tier 1 exports + GetApiVersion
-  'server/boot/exports.lua',            -- 56. GetPrimaryBalanceMinor
+  'server/api/admin_api.lua',           -- 56. Phase 5 Tier 2 admin exports
+  'server/boot/exports.lua',            -- 57. GetPrimaryBalanceMinor
 
 }
 
