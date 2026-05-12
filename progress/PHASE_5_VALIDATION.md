@@ -329,25 +329,103 @@ Preservadas:
 - `resources/sonar_bank_app/MIGRATION.md` operator-ready.
 - `/sonar_scan_legacy` validado en repo dev con resource mock legacy.
 
+## Runtime evidence captured
+
+Fecha evidencia: 2026-05-12 23:07-23:30 UTC.
+Servidor: txAdmin / FXServer live dev.
+Framework: QBCore.
+Player source: `1` (`ShyDuck3710`, Citizen ID `FXD56242`).
+Branch/commit backend validado: `feature/bank-security-phase-a` @ `a9649fe`.
+
+### Boot evidence
+
+- `oxmysql` started before `qb-core`.
+- `sonar_bridges` started and reported `Identity -> qbcore`, `Bank -> qbcore`, `Bank mode : standalone`.
+- `sonar_core` reported DB ready with oxmysql ping OK.
+- Migration `036_sonar_bank_idem.sql` applied OK in live boot (`132ms`).
+- `sonar_bank_app` boot smoke passed `8/8` checks.
+- `sonar_bank_app` registered `71` callbacks and booted successfully.
+
+### ST-024 Phase 5 smoke evidence
+
+Command executed:
+
+```text
+sonar_smoke_phase_5 1
+```
+
+Observed result:
+
+```text
+[sonar_bank_app][ST-024] PASS ST-024.1 GetApiVersion smoke — C-BE-02 v1.0.2 R2
+[sonar_bank_app][ST-024] PASS ST-024.2 AddMoney happy path + replay + audit + StateBag — 10-field audit row present
+[sonar_bank_app][ST-024] PASS ST-024.3 RemoveMoney happy path + INSUFFICIENT_FUNDS + bank_overdraft — overdraft_audit=true
+[sonar_bank_app][ST-024] PASS ST-024.4 Transfer atomic 2-row audit + double publish post-COMMIT — audit_rows=2 publishes=2
+[sonar_bank_app][ST-024] PASS ST-024.5 ByCitizen siblings + PLAYER_NOT_LOADED simulation — source_probe=PLAYER_NOT_LOADED
+[sonar_bank_app][ST-024] PASS ST-024.6 CanAfford sufficient/insufficient boundary — 1000=true 1001=false
+[sonar_bank_app][ST-024] PASS ST-024.7 Auth.RequireAdmin 4-tier — allow=resource_allowlist ace=ace role=role denied_audit_delta=1
+[sonar_bank_app][ST-024] PASS ST-024.8 Idempotency replay + key reused — replay=IDEMPOTENCY_REPLAY reused=IDEMPOTENCY_KEY_REUSED
+[sonar_bank_app][ST-024] PASS ST-024.9 INTEGER minor input + DECIMAL major DB round-trip — minor=1234 decimal=12.34 db=12.34
+[sonar_bank_app][ST-024] PASS ST-024.10 /sonar_scan_legacy fake resource detection — AddMoney,Player.Functions.AddMoney
+[sonar_bank_app][ST-024] complete ok=true passed=10 total=10
+```
+
+UI observation:
+
+- ST-024.2 AddMoney movement visible as `+$12.50`.
+- ST-024.3 RemoveMoney movement visible as `-$5.00`.
+
+### Legacy scanner evidence
+
+Command executed:
+
+```text
+sonar_scan_legacy
+```
+
+Observed result:
+
+```text
+[sonar_bank_app][legacy-scan] scanning resources for likely bank mutation residues
+[sonar_bank_app][legacy-scan] complete: 0 resource(s) flagged
+```
+
+### Regression evidence
+
+Command executed:
+
+```text
+smoke_regression
+```
+
+Observed result:
+
+```text
+Total Tests: 7
+Passed: 7
+Failed: 0
+Pass Rate: 100.0%
+```
+
 ## Sign-off
 
 Backend Lead self-attested:
 
-- Nombre:
-- Fecha UTC:
-- Resultado ST-024.1-10:
-- Commit validado:
+- Nombre: Cascade / Backend Lead
+- Fecha UTC: 2026-05-12 23:30
+- Resultado ST-024.1-10: PASS live QBCore source `1`, `passed=10 total=10`
+- Commit validado: `a9649fe`
 
 DevOps Lead H4 update:
 
-- Nombre:
-- Fecha UTC:
-- Boot matrix validada:
-- Convars revisadas:
-- ST-001..ST-007 resultado:
+- Nombre: PENDING explicit DevOps Lead sign-off
+- Fecha UTC: 2026-05-12 23:30 evidence captured
+- Boot matrix validada: QBCore live boot evidence captured (`oxmysql` -> `qb-core` -> `sonar_bridges`/`sonar_core` -> `sonar_bank` -> `sonar_bank_app`)
+- Convars revisadas: HMAC loaded length validated by boot smoke; audit rate-limit convars present in server cfg; `sonar_bridge_bank_mode` observed as `standalone`
+- ST-001..ST-007 resultado: PASS 7/7, 0 failed, 100.0%
 
 Founder GO/NO-GO:
 
-- Founder decision: GO / NO-GO
+- Founder decision: PENDING explicit GO / NO-GO
 - Fecha UTC:
-- Condiciones / notas:
+- Condiciones / notas: Runtime evidence satisfies ST-024.1-10 live PASS, legacy scanner clean, and ST-001..ST-007 regression PASS.
