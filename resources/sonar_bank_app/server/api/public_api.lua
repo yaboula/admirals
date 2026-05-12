@@ -8,6 +8,7 @@ local Validators = BankApp.lib.validators
 local UUID = BankApp.lib.uuid
 local Idempotency = BankApp.lib.idempotency
 local Publish = BankApp.lib.publish
+local Wrappers = BankApp.api.wrappers
 
 local RESOURCE = 'sonar_bank_app'
 local IDEM_TTL_SECONDS = 86400
@@ -144,10 +145,7 @@ VALUES ('bank_exports', ?, ?, ?, ?, 'bank_account', ?, ?, ?, ?, 'EUR', ?, ?, ?, 
 ]], values = { event_type, event_type, actor_account_id, actor_src, target_iban, target_account_id, decimal, delta_minor, request_nonce, request_nonce, correlation_id, RESOURCE, invoker_resource, reason, created_at, json_encode({ invoker_resource = invoker_resource }), previous_flag_snapshot and json_encode(previous_flag_snapshot) or nil } }
 end
 local function publish_account(account, new_balance_minor, correlation_id, reason)
-  local src = BankApp.lib.auth and BankApp.lib.auth.ResolveCitizenSrc and BankApp.lib.auth.ResolveCitizenSrc(account.citizen_id) or nil
-  if src then
-    Publish.PublishBalanceUpdate(src, account.citizen_id, new_balance_minor, 0, { reason = reason, correlation = correlation_id })
-  end
+  Wrappers.publish_account_balance(account, new_balance_minor, { account_class = 'main', correlation_id = correlation_id, reason = reason })
 end
 local function audit_overdraft_attempt(account, amount_minor, request_nonce, correlation_id, reason, invoker_resource)
   local created_at = now_sec()

@@ -8,6 +8,7 @@ local Validators = BankApp.lib.validators
 local UUID = BankApp.lib.uuid
 local Idempotency = BankApp.lib.idempotency
 local Publish = BankApp.lib.publish
+local Wrappers = BankApp.api.wrappers
 local Public = BankApp.api.public
 local ApiAuth = BankApp.api.auth
 
@@ -62,8 +63,7 @@ local function resolve_target(target)
   return nil, 'INVALID_ARGUMENT'
 end
 local function publish(account, balance_minor, correlation_id, reason)
-  local src = BankApp.lib.auth and BankApp.lib.auth.ResolveCitizenSrc and BankApp.lib.auth.ResolveCitizenSrc(account.citizen_id) or nil
-  if src then Publish.PublishBalanceUpdate(src, account.citizen_id, balance_minor, 0, { reason = reason, correlation = correlation_id }) end
+  Wrappers.publish_account_balance(account, balance_minor, { account_class = 'main', correlation_id = correlation_id, reason = reason })
 end
 local function hash_payload(value) return Idempotency.HashPayload(value) end
 local function check_replay(idem_key, payload)
