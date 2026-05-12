@@ -125,6 +125,17 @@ CreateThread(function()
   -- 5) Activate.
   Bridges.SetActive(detected)
 
+  if Bridges.CoreOverride and type(Bridges.CoreOverride.Boot) == 'function' then
+    local bank_ok = Bridges.CoreOverride.Boot(detected.bank)
+    if bank_ok ~= true then
+      Logger.Error('Money authority boot failed for bank adapter "%s"', tostring(detected.bank))
+    end
+  end
+
+  if Bridges.Watchdog and type(Bridges.Watchdog.Start) == 'function' then
+    Bridges.Watchdog.Start(detected.bank)
+  end
+
   -- 6) Boot report.
   Bridges.PrintBootReport()
 

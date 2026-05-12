@@ -124,6 +124,15 @@ server_scripts {
   'server/boot/smoke.lua',              -- 52.
   'server/boot/cron.lua',               -- 53.
   'server/boot/init.lua',               -- 54. wires onResourceStart → Run()
+
+  -- 10. Public cross-resource exports (loaded last — depends on repos).
+  --     Consumers: sonar_bridges Core Override (login mirror sync) +
+  --     third-party resources querying canonical SONAR balance.
+  'server/boot/exports.lua',            -- 55. GetPrimaryBalanceMinor
+
+  -- 11. Admin CLI commands (framework-agnostic). Loaded after services so
+  --     BankApp.services.admin is defined.
+  'server/admin/credit_command.lua',    -- 56. /sonarcredit
 }
 
 -- =============================================================================

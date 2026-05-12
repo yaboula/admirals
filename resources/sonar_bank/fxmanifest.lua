@@ -94,6 +94,11 @@ server_scripts {
   -- Requires smoke_chaos_chaos.lua loaded first for baseline modules (ChaosFixtures + ChaosConcurrency)
   'server/smoke_chaos_advanced.lua',
   'server/st022_esx_eval.lua',
+
+  -- Smoke Core Override (DEV ONLY — BANK-BE.MONEY_AUTHORITY.1 Phase 4 ST-023 series).
+  -- Probes Bridges.CoreOverride / MirrorSync / Reconcile / Watchdog surface via
+  -- exports.sonar_bridges from this VM. Gated by convar sonar_dev_mode + ACE sonar.bank.admin.
+  'server/smoke_core_override.lua',
 }
 
 -- No client_scripts (callbacks server-side; client UI llega

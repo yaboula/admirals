@@ -71,6 +71,9 @@ server_scripts {
 
   -- Detection + boot orchestration (LAST)
   'server/detect.lua',
+  'server/core_override.lua',
+  'server/lite_mode.lua',
+  'server/watchdog.lua',
   'server/init.lua',
   'server/st022_esx_eval.lua',
 }

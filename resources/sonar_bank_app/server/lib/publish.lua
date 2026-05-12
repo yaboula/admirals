@@ -50,6 +50,59 @@ local function is_player_online(src)
 end
 
 -- -----------------------------------------------------------------------------
+-- §1.b Mirror hotpath — Core Override universal backward-compat.
+--
+--   When `sonar_bridge_bank_mode` is set to `mirror` (or legacy `synced`),
+--   every successful balance publish also pushes the new balance to the
+--   active framework's player object (qb/qbox/esx) via
+--   `exports.sonar_bridges:MirrorSyncBalance`. This keeps
+--   `PlayerData.money.bank` (QB) / account_money.bank (ESX) in sync with
+--   SONAR, so any third-party resource reading those fields (qb-hud,
+--   qb-multicharacter, qb-banking, qb-phone, etc.) sees the SONAR truth
+--   without needing per-resource patches.
+--
+--   Guarantees:
+--     - Best-effort: any failure in the mirror call is logged but never
+--       breaks the primary publish contract.
+--     - Loop-safe: the mirror call uses reason=`sonar_mirror_sync|<corr>`,
+--       which the Core Override interceptor recognises and passes through
+--       to the framework's original SetMoney — no foreign-mutation enqueue.
+--     - Mode-gated: only active when the convar is set; default `standalone`
+--       disables this path (Core Override still intercepts foreign writes
+--       but does not push SONAR → framework).
+-- -----------------------------------------------------------------------------
+
+local function is_mirror_mode()
+  local mode = GetConvar('sonar_bridge_bank_mode', 'standalone')
+  return mode == 'mirror' or mode == 'synced'
+end
+
+local function try_mirror_to_framework(citizen_id, balance_minor, reason, correlation)
+  if not is_mirror_mode() then return end
+  local ok_exp, exports_proxy = pcall(function() return exports.sonar_bridges end)
+  if not ok_exp or not exports_proxy then return end
+  local opts = {
+    reason         = reason,
+    correlation_id = correlation,
+  }
+  local ok, result = pcall(function()
+    return exports_proxy:MirrorSyncBalance(citizen_id, balance_minor, opts)
+  end)
+  if not ok then
+    print(('[sonar_bank_app][mirror][WARN] MirrorSyncBalance call raised: %s'):format(tostring(result)))
+    return
+  end
+  if type(result) == 'table' and result.ok == false then
+    -- Non-fatal: typical reasons are NOT_FOUND (player offline) or
+    -- SET_UNAVAILABLE (framework API missing). Logged at debug level.
+    if result.error ~= 'NOT_FOUND' then
+      print(('[sonar_bank_app][mirror][INFO] MirrorSyncBalance cid=%s reason=%s error=%s'):format(
+        tostring(citizen_id), tostring(reason), tostring(result.error)))
+    end
+  end
+end
+
+-- -----------------------------------------------------------------------------
 -- §2. Public API
 -- -----------------------------------------------------------------------------
 
@@ -112,6 +165,10 @@ function M.PublishBalanceUpdate(src, citizen_id, balance_minor, savings_minor, o
     -- TriggerClientEvent goes only to specific src — privacy preserved.
     TriggerClientEvent('sonar:bank:balance:update', src, payload)
   end
+
+  -- Mirror to framework (QB / QBox / ESX) when bank_mode=mirror.
+  -- Best-effort, loop-safe (reason=sonar_mirror_sync), no-op in standalone.
+  try_mirror_to_framework(citizen_id, balance_minor, opts.reason, opts.correlation)
 
   return true, 'ok'
 end

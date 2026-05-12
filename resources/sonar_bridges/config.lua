@@ -50,10 +50,20 @@ end
 
 -- -----------------------------------------------------------------------------
 -- Bank mode (per doc §4.1):
---   standalone — SONAR ledger es SSoT único. Bridges.Bank adapters externos
---                son no-op. Recomendado. Default.
---   synced     — SONAR ledger SSoT + bidirectional sync con framework bank.
---                Complejidad adicional, reconciliation cron requerido.
+--   standalone     — SONAR ledger es SSoT único. Core Override intercepta
+--                    mutaciones foráneas (qb-adminmenu, qb-banking, etc.) y las
+--                    enruta a reconcile, pero NO empuja SONAR → framework.
+--                    Consecuencia: PlayerData.money.bank (QB) puede divergir
+--                    del balance SONAR. HUD/selector NO ven el saldo SONAR
+--                    salvo que se parcheen explícitamente. Default.
+--   mirror (alias  — SONAR ledger SSoT + push unidireccional SONAR → framework
+--    'synced')        tras cada operación de balance (transfer, deposit, ATM,
+--                    loan, payroll, etc.) vía MirrorSync.SetBalance. Hot-path
+--                    wireado en sonar_bank_app/lib/publish.lua y login sync
+--                    en core_override.lua. RECOMENDADO para compatibilidad
+--                    universal con scripts QB (qb-hud, qb-multicharacter,
+--                    qb-banking, qb-phone, 3rd-party). Activación:
+--                    `setr sonar_bridge_bank_mode "mirror"` en server cfg.
 -- -----------------------------------------------------------------------------
 Config.BankMode = GetConvar('sonar_bridge_bank_mode', 'standalone')
 
