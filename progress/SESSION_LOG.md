@@ -2738,3 +2738,33 @@ git diff --check  → ✅ solo CRLF warnings pre-existing (ignorado per norma)
 - Backend Lead Phase 5 reactivation Phase 3 cleanup ETA 1.5-2h (founder spawnea sesión BANK-BE.PHASE_5.2 con prompt 08 §4 Phase 3 spec)
 
 — **PM Cascade promote ceremony ejecutada. Sign-off triple ratificado. Effective immediately. C-BE-02 v1.0.2 R2 + C-BE-04 v1.0.2 R2 + C-BE-05 v1.0.2 R2 + C-SEC-01 v0.3 R2 LOCKED 2026-05-12.**
+
+---
+
+### BANK-BE.PHASE_5.2 — Phase 3.1 cleanup — qb-core local patch revert instructions
+
+- **Fecha:** 2026-05-12 23:55 UTC+02
+- **Branch:** `feature/bank-security-phase-a`
+- **Scope:** founder-side runtime instructions only. `qb-core` local patch lives outside this workspace; no direct edit performed here.
+- **Reason:** C-BE-04 v1.0.2 R2 §4′ replaces Core Override / `OnMoneyPreHook` interception with explicit Tier 1/2 server-to-server exports. The patched qb-core pre-hook must be removed before Phase 5 runtime cleanup.
+
+#### Founder-side revert checklist
+
+1. Open runtime qb-core `server/player.lua` in the FiveM runtime tree.
+2. Search for `sonar_bridges`, `OnMoneyPreHook`, `sonar_mirror_sync`, or `SONAR Bank pre-hook`.
+3. Remove the helper block that calls `exports.sonar_bridges:OnMoneyPreHook(...)`.
+4. Remove the inserted pre-hook calls inside QBCore `AddMoney`, `RemoveMoney`, and `SetMoney` bank-money paths.
+5. Restore vanilla qb-core behavior: money functions must no longer call any SONAR export before applying framework-local money mutation.
+6. Restart `qb-core` and `sonar_bridges` together during runtime validation.
+7. Verify grep returns no patch residue in qb-core:
+   - `OnMoneyPreHook`
+   - `sonar_bridges`
+   - `sonar_mirror_sync`
+
+#### Expected post-revert behavior
+
+- Direct qb-core bank mutations are no longer blocked/intercepted by SONAR.
+- Third-party resources must migrate explicitly to `exports.sonar_bank_app:*` Tier 1/2 API.
+- `sonar_bridges/server/core_override.lua` cleanup Phase 3.2 removes the matching `OnMoneyPreHook` export and all token/watchdog/trap code.
+
+— **BANK-BE.PHASE_5.2 3.1 completed.**
