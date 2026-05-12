@@ -201,6 +201,7 @@ Config.MigrationsFiles = {
   '033_bank_saved_recipients.sql',
   '034_fix_sonar_accounts_collation.sql',
   '035_audit_log_framework_identifier_width.sql',
+  '036_sonar_bank_idem.sql',
 }
 
 -- =============================================================================
