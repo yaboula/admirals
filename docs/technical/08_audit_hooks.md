@@ -1,9 +1,9 @@
-# C-SEC-01 / 02 / 03 — Audit Hooks + ACE Matrix + Autoraise Rules v0.1 DRAFT
+# C-SEC-01 / 02 / 03 — Audit Hooks + ACE Matrix + Autoraise Rules v0.3 R2 LOCKED
 
 > **Owner:** Security, Compliance & Audit Lead.
 > **Consumers:** Backend Lead (amendment hooks + ACE + autoraise) + Frontend Lead (UI gating) + DevOps Lead (watchdog deploy).
-> **Status:** 🟡 DRAFT v0.1 — review window open.
-> **Fecha:** 2026-05-06 (BANK-SEC.0).
+> **Status:** � **C-SEC-01 v0.3 R2 LOCKED 2026-05-12** (BANK-BE.PHASE_5.1 Phase 2 ceremony — Round 2 amendment Phase 5 pivot Founder LOCK Q3 + Q5 + Q8 + cross-decision #2). C-SEC-02/03 unchanged from v0.2 RE-AUDIT.
+> **Fecha:** 2026-05-12 (BANK-SEC.0 → BANK-SEC.1 → BANK-BE.PHASE_5.1.LOCK.R2 para C-SEC-01 only).
 
 ---
 
@@ -19,8 +19,9 @@ Consolida 3 entregables Phase A: C-SEC-01 Audit Hooks, C-SEC-02 ACE Matrix, C-SE
 - **AH1** Todo hook append-only. Nunca UPDATE/DELETE `sonar_bank_audit_ledger`.
 - **AH2** Hooks criticos persisten antes de NetEvent/StateBag emit.
 - **AH3** Cada hook incluye `correlation_id`, `event_type` ENUM, `occurred_at`.
+- **AH4 (Phase 5 R2 — NEW v0.3 R2)** **Atomic same-TX mandate.** El audit insert vive **dentro del mismo SQL transaction** que la balance mutation + movement append + idempotency upsert. Si cualquier paso falla, rollback total. NO `audit_complete` async path para superficie Tier 1/2 exports (cross-ref C-BE-02 §9 R1 LOCKED — mismo pattern para callbacks C001-C040). Post-COMMIT side effects (`publish_balance_update` NetEvent CP1-B + MirrorSync) son best-effort fire-and-forget — sus fallos NO rollbacken el audit. Cross-decision Founder #2 (`@docs/agents/teams/decisions/founder_phase_5_pivot_q1_q8_2026_05_12.md:170`) ratifica.
 
-### 1.2 Tabla hooks canonicos (12)
+### 1.2 Tabla hooks canonicos (13 — NEW v0.3 R2)
 
 | Hook name | Trigger | Event type | Shape minimo | Severity si fail |
 |---|---|---|---|---|
@@ -36,6 +37,52 @@ Consolida 3 entregables Phase A: C-SEC-01 Audit Hooks, C-SEC-02 ACE Matrix, C-SE
 | `audit_hook_pin_failure` | PIN fail | `pin_failure` | `{card_id_masked, citizen_id, fail_count, context, correlation_id}` | MEDIUM |
 | `audit_hook_admin_override` | Admin force action | `admin_force_action` | `{admin_id, action_type, target_citizen_id, justification, previous_state_snapshot}` | HIGH |
 | `audit_hook_bridge_echo_dropped` | Echo dropped | `bridge_echo_dropped` | `{correlation_id, source_framework, reason}` | MEDIUM |
+| `audit_hook_exports_mutation` (NEW v0.3 R2) | Tier 1/2 export mutation commit | `bank_credit` / `bank_debit` / `bank_transfer` / `admin_credit` / `admin_debit` / `admin_set_balance` / `account_freeze` / `account_unfreeze` / `bank_overdraft` | 10-field canonical §1.2.A | MEDIUM (TX rollback si fail) |
+
+### 1.2.A Tier 1/2 exports audit shape (NEW v0.3 R2 — Phase 5)
+
+La nueva superficie Tier 1/2 exports server-to-server (C-BE-02 §10 v1.0.2 R2 — 22 públicos = 21 mutation/read + 1 GetApiVersion informational) emite **uno y solo un audit row por mutation commit**, dentro del mismo SQL TX. Shape canonical 10-field (alineado Q3 LOCKED + AH4 atomic mandate):
+
+| Field | Type | Nullable | Semantic |
+|---|---|---|---|
+| `actor_account_id` | VARCHAR(64) | YES | Resolved del actor_src (Tier 2) o source (Tier 1). NULL si console (`actor_src == 0`). Para `*ByCitizen` variants Tier 1 cuando se invoca offline-scheduled (cron payroll, taxes), actor_account_id = `system` literal OR resolved del invoker_resource si el resource declara actor explícito. |
+| `target_account_id` | VARCHAR(64) | NO | Target citizen/IBAN UUID afectado. MANDATORY. |
+| `event_type` | ENUM | NO | Uno de: `bank_credit` (Tier 1 AddMoney/*ByCitizen), `bank_debit` (Tier 1 RemoveMoney/*ByCitizen), `bank_transfer` (Tier 1 TransferBy*), `admin_credit` (Tier 2 AdminCredit), `admin_debit` (Tier 2 AdminDebit), `admin_set_balance` (Tier 2 AdminSetBalance), `account_freeze` (Tier 2 Freeze), `account_unfreeze` (Tier 2 Unfreeze), `bank_overdraft` (Tier 2 AdminDebit/SetBalance + `opts.allow_overdraft=true`). |
+| `delta_minor` | BIGINT | NO | Signed minor units. Positivo = credit, negativo = debit. Para `bank_transfer` se inserta 2 rows (1 debit en payer + 1 credit en payee) con mismo `correlation_id`. Para `account_freeze/unfreeze` delta = 0. **DB column type:** Founder Decision #2 LOCKED 2026-05-12 = diferir migration DECIMAL→BIGINT a Phase A+1 holistic (`@docs/planning/roadmap_phase_a_plus_1_minor_units_migration.md`). Phase A wrapper escribe int signed; columna actual sin breaking. |
+| `previous_flag_snapshot` | JSON | YES | `{frozen, closed, overdraft_authorized, ...}` ANTES del cambio. NULL para `bank_credit/bank_debit/bank_transfer` puros. MANDATORY para `account_freeze/account_unfreeze/admin_set_balance/bank_overdraft`. Idem H006 R1 fix para shape completa. |
+| `request_nonce` | VARCHAR(36) | NO | `opts.idempotency_key` del caller OR `Bridges.UUID.v4()` generado si absent. Persistido también en `sonar_bank_idem.idem_key` (Phase 5 migration 036). |
+| `correlation_id` | VARCHAR(36) | NO | `opts.correlation_id` del caller OR mismo valor que `request_nonce` si absent. Cross-resource trace ID. |
+| `invoker_resource` | VARCHAR(64) | NO | `GetInvokingResource()` retornado dentro del wrapper export. `'console'` literal si Tier 2 invocado por console (`actor_src == 0`). |
+| `reason` | VARCHAR(255) | NO | Free-text sanitized server-side (strip control chars + cap 255 + collapse whitespace). MANDATORY non-empty. |
+| `created_at` | INT (epoch sec) OR TIMESTAMP | NO | Server timestamp commit moment. Aligned con LOCKED schema column type per `@docs/technical/03_db_schema.md` v2.1. |
+
+**Atomic insert ordering dentro del wrapper Tier 1/2 SQL TX:**
+
+```lua
+-- sonar_bank_app/server/exports/public_api.lua (Phase 5 implementation)
+MySQL.transaction.await({
+  -- 1. Balance mutation
+  { 'UPDATE sonar_bank_accounts SET balance = balance + ? WHERE owner_id = ? AND account_class = ?',
+    { units.from_minor(amount_minor_signed), citizen_id, 'main' } },
+  -- 2. Movement append-only
+  { 'INSERT INTO sonar_bank_movements (...) VALUES (...)', { ... } },
+  -- 3. Audit row 10-field shape (this section)
+  { 'INSERT INTO sonar_audit_log (actor_account_id, target_account_id, event_type, delta_minor, previous_flag_snapshot, request_nonce, correlation_id, invoker_resource, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    { actor_cid, target_cid, event_type, amount_minor_signed, prev_flag_json or nil, request_nonce, correlation_id, invoker_resource, reason_sanitized, now_epoch } },
+  -- 4. Idempotency upsert (si opts.idempotency_key)
+  { 'INSERT IGNORE INTO sonar_bank_idem (idem_key, result_json, invoker_resource, created_at) VALUES (?, ?, ?, ?)',
+    { opts.idempotency_key, json.encode(result), invoker_resource, now_epoch } },
+})
+-- TX COMMIT atomic. Post-commit side effects (publish_balance_update + MirrorSync) fire-and-forget.
+```
+
+**Si cualquier paso 1-4 falla → rollback total + return error code apropiado al caller.** Eventual consistency `publish_balance_update` y `MirrorSync` viven post-COMMIT — sus fallos NO afectan el audit (eventual reconcile path).
+
+**Notas:**
+
+- Para `bank_transfer` el wrapper inserta **2 audit rows** (1 debit payer + 1 credit payee) mismo `correlation_id` mismo `request_nonce` mismo `created_at`. Permite reconstruir P2P transfer auditing single-key.
+- `previous_flag_snapshot` JSON shape canonical para freeze/unfreeze: `{"frozen": false, "frozen_reason": null, "frozen_at": null}` ANTES del cambio. Para `bank_overdraft`: `{"balance_before_minor": <int>, "overdraft_authorized_by": "<actor_cid|console>"}`.
+- `bank_overdraft` event_type dispara AR-P05 admin override existing (§3 C-SEC-03) — autoraise infrastructure unchanged.
 
 ### 1.3 Shape base
 ```typescript
@@ -337,6 +384,7 @@ Code review obligatorio pre-merge para Frontend + Backend Leads:
 |---|---|---|
 | v0.1 DRAFT | 2026-05-06 | BANK-SEC.0. C-SEC-01/02/03 + 6 HIGH + 8 MEDIUM + 2 LOW findings + exploit checklist + watchdog spec. |
 | v0.2 RE-AUDIT | 2026-05-06 | BANK-SEC.1. Re-audit Amendment Round 1 DRAFT v0.2 (Backend Lead BANK-BE.AMEND.1). 6 HIGH + 6 MEDIUM AMEND findings RESOLVED. M004 APPROVED architectural. M001 + L001 + L002 ratified. Veredicto PASS — Green-Light LOCK v1.0.1 R1. |
+| **C-SEC-01 v0.3 R2 LOCKED** | 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2) | Phase 5 ecosystem pivot amendment Round 2 reactive a Founder LOCK Q3 + Q5 + Q8 + cross-decision #2. **NEW §1.1 AH4** atomic same-TX mandate (audit insert dentro mismo SQL TX que balance + movement + idem; rollback total si paso 1-4 falla; NO audit_complete async para Tier 1/2 exports). **NEW §1.2 audit_hook_exports_mutation row** event_types: bank_credit/bank_debit/bank_transfer/admin_credit/admin_debit/admin_set_balance/account_freeze/account_unfreeze/`bank_overdraft` NEW Q5 LOCKED. **NEW §1.2.A 10-field shape canonical Tier 1/2** (actor_account_id + target_account_id + event_type + delta_minor + previous_flag_snapshot + request_nonce + correlation_id + invoker_resource + reason + created_at) + atomic insert ordering boilerplate + bank_transfer 2-row pattern + previous_flag_snapshot JSON shape canonical para freeze/unfreeze/overdraft. **DB column type delta_minor** Founder Decision #2 LOCKED — diferir migration DECIMAL→BIGINT a Phase A+1 holistic. Cross-cutting LOCK-time impacts: C-BE-04 v1.0.2 R2 + C-BE-02 v1.0.2 R2 + C-BE-05 v1.0.2 R2 atomic in-place patches. C-SEC-02/03 unchanged. Security consumer review absorbed by PM Cascade per Founder Decision #3 — BANK-SEC.2 deuda técnica re-audit pending Phase B con scope agregado (Phase 4 artifacts archived + Phase 5 implementation completa). Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested DRAFT proposal + Security consumer PM Cascade absorbed + PM Cascade promote ceremony. **C-SEC-01 v0.3 R2 LOCKED 2026-05-12.** |
 
 ---
 

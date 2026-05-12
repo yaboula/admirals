@@ -1,9 +1,9 @@
-# C-BE-05 — StateBags Global Publishers Spec (LOCKED v1.0.1 R1)
+# C-BE-05 — StateBags Global Publishers Spec (LOCKED v1.0.2 R2)
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** Frontend Lead (consume bags client-side reactive) + Security Lead (audit privacy boundaries).
-> **Status:** � **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
-> **Fecha:** 2026-05-06 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
+> **Status:** 🟢 **v1.0.2 R2 LOCKED 2026-05-12** (BANK-BE.PHASE_5.1 Phase 2 ceremony — Round 2 amendment promoted post Phase 5 ecosystem pivot Founder LOCK Q1-Q8 + §9 path (a)).
+> **Fecha:** 2026-05-12 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1 → BANK-BE.PHASE_5.1.LOCK.R2).
 > **Path canonical:** `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0.1 R1 LOCKED. Pointer cross-ref `docs/technical/02_events_catalog.md` v1.3.1 §statebags-global-publishers.
 > **CP origin:** CP1 mandatory (State Bags global mandatory) + Q-BE-pre-02/03 founder LOCKED 2026-05-06 + **M004 architectural founder APPROVED 2026-05-06** (financial PII privacy non-negotiable).
 
@@ -153,6 +153,77 @@ end
 - Per-event payload: ~150 bytes. Latent rate budget 50KB/s/player → 333 events/s sustained per player. Bank balance changes typically <1/min — headroom enormous.
 - Replaces CP1-A `GlobalState[key] = value` (FiveM native event ~80 bytes broadcast a todos N clients) → migration **REDUCES total bandwidth** en N-player server (de O(N) por balance change a O(1)).
 
+#### 2.2.1.A Tier 1/2 exports wrapper consumer pattern (NEW v1.0.2 R2 — Phase 5)
+
+Cada Tier 1/2 mutation export (C-BE-02 §10 v1.0.2 R2 — 22 públicos = 21 mutation/read + 1 GetApiVersion informational) DEBE invocar `publish_balance_update(citizen_id, balance_major_decimal, account_class, opts)` inmediatamente post-COMMIT SQL transaction y ANTES del return al caller. UNA invocación por `account_class` afectado:
+
+- Pure credit/debit sobre cuenta main → 1 call `account_class='main'`.
+- Pure credit/debit sobre cuenta savings → 1 call `account_class='savings'`.
+- Transfer cross-account interno (main → savings o reverso) → 2 calls (main + savings, mismo `correlation_id`).
+- Transfer P2P entre 2 citizens distintos → 2 calls (1 por cada citizen_id, ambos `account_class='main'` típicamente).
+
+**Boilerplate canonical Tier 1/2 wrapper post-Phase 5 LOCK:**
+
+```lua
+-- sonar_bank_app/server/exports/public_api.lua (Phase 5 implementation 4.3)
+function AddMoney(source, amount_minor, reason, opts)
+  -- ... validation + auth + idempotency lookup ...
+  -- ... SQL TX: balance update + movement insert + audit insert + idem upsert ...
+  -- TX COMMIT successful.
+
+  -- Path (a) Founder §9 LOCKED 2026-05-12: balance arg en DECIMAL major.
+  local balance_major_str = units.from_minor(new_balance_minor)  -- "1234.56" lossless string
+  publish_balance_update(citizen_id, balance_major_str, 'main', {
+    correlation_id = opts.correlation_id or generated_corr,
+    occurred_at = now_epoch_ms,
+  })
+
+  return true, nil, { new_balance_minor = new_balance_minor, iban = iban, tx_id = tx_id }
+end
+```
+
+**Notas:**
+
+1. `publish_balance_update` retorna `nil` (helper fire-and-forget). Wrapper NO espera ack — eventual consistency aceptable. Si player offline o ownership mismatch, helper hace early return silencioso (§2.2.1 body lines 122-134) sin error propagado.
+2. Cualquier Tier 1/2 wrapper que NO invoque el helper canónico ANTES del return = LOCK ceremony fail criterion. PM Cascade verifica grep en Phase 5 implementation review.
+3. `publish_balance_update` se invoca **post-COMMIT atomic** — si el TX falla, NO se invoca helper (return error code apropiado al caller, no se emite NetEvent stale).
+
+**AP-CP1-1 prohibition reafirmada Phase 5 (LOCKED §1.4):**
+
+- ❌ ~~`TriggerClientEvent('sonar:bank:custom_balance', -1, ...)`~~ — broadcast all clients PROHIBIDO.
+- ❌ ~~`GlobalState['bank.balance.<cid>'] = value`~~ — pattern removed v1.0.1 R1 M004 — financial PII leak.
+- ❌ ~~`TriggerLatentClientEvent('my:custom:balance', source, ...)`~~ — canal paralelo PROHIBIDO. Único canal canónico = `publish_balance_update` helper.
+- ✅ ÚNICA exception: wrapper puede invocar helper UNA vez por `account_class` afectado, mismo `correlation_id` para auditability.
+
+#### 2.2.1.B Value type Phase A LOCKED — path (a) Founder §9 (NEW v1.0.2 R2)
+
+**Founder LOCK 2026-05-12 (`@docs/agents/teams/decisions/founder_phase_5_pivot_q1_q8_2026_05_12.md` §9):** el arg `balance` del helper `publish_balance_update(citizen_id, balance, account_class, opts)` preserva **DECIMAL major units** durante toda Phase A (string lossless `"1234.56"` o number 1234.56). El NetEvent payload `balance` field consume el mismo tipo.
+
+**Rationale:** Q2 LOCKED literal mencionó "INTEGER minor" para el value, pero Q1 LOCKED preservó "Frontend DECIMAL major no touch Phase A". El conflicto se resolvió path (a) — boundary conversion `units.from_minor()` happens **dentro del wrapper export ANTES** de invocar el helper. El helper firma se mantiene LOCKED v1.0.1 R1 sin cambio.
+
+**Frontend consumers Phase A (LOCKED no touch):**
+
+- `@resources/sonar_bank_app/web-src/src/lib/bankStateBags.ts` (CP1-A residual) y handlers de `sonar:bank:balance:update` / `sonar:bank:savings:update` continúan parseando `balance` field como `number` DECIMAL major (e.g. `1234.56`) y formateando con `useI18n().money(value)`.
+- Wrapper Tier 1/2 ejecuta `units.from_minor(new_balance_minor)` → string `"1234.56"` o coerced number — depending de implementation Phase 4 decision (string lossless preferred, number safe para amounts < 9 trillion).
+
+**Phase A+1 migration commitment:**
+
+Phase A+1 (`@docs/planning/roadmap_phase_a_plus_1_minor_units_migration.md`) migra end-to-end:
+
+1. DB columns DECIMAL(19,2) → BIGINT (cents).
+2. Helper signature `publish_balance_update(cid, balance_int_minor, account_class, opts)`.
+3. NetEvent `balance` field type INTEGER cents.
+4. Frontend types `BankStateBagBalance.balance: number` semantic change + `useI18n().money(integer_cents / 100)`.
+5. Callbacks C001-C040 signatures.
+
+Hasta entonces Phase A path (a) LOCKED — wrapper convierte; helper preserva.
+
+**Q2 intent preserved 100%:**
+
+- CP1-B mandate (atomic NetEvent every mutation): ✅ enforced §2.2.1.A.
+- AP-CP1-1 prohibition (no parallel channels): ✅ enforced §2.2.1.A.
+- Solo aclaramos value TYPE para Phase A scope.
+
 #### 2.2.2 Initial balance snapshot — replace hydrate-on-boot pattern (NEW v1.0.1 R1 — M004)
 
 **Pre-M004 pattern:** §4.1 boot init hydrate ALL balances from DB → publish to GlobalState. Player connects → reads StateBag immediately.
@@ -275,6 +346,8 @@ publish_balance_update(cid, balance, 'main', { correlation_id = ... })
 
 **Invariant:** state value siempre refleja DB authoritative balance post-commit. Pre-commit (mid-transaction) NO update state — evita inconsistency si transaction rollback.
 
+**Cross-ref Phase 5 R2:** la nueva superficie Tier 1/2 exports (C-BE-02 §10 v1.0.2 R2) consume `publish_balance_update` con el mismo pattern boilerplate documentado aquí — ver §2.2.1.A para wrapper consumer flow específico Phase 5.
+
 ### 4.3 Cleanup on disconnect / cleanup periodic
 
 - Citizen disconnect: NO clear bag — balance persiste (otros clients podrían referenciarla; reconnect rehidrata).
@@ -381,5 +454,6 @@ NO query polling. Throughput driven by Backend emit rate.
 | **v0.1 DRAFT** | 2026-05-06 | BANK-BE.0 — DRAFT inicial post Q-BE-pre-02/03 founder LOCKED. CP1 re-definido sub-tracks A/B. 7 public bags + 7 restricted NetEvent domains. |
 | **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Frontend Lead (consumer consultative) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_05_*` → `docs/technical/bank_phase_a/c_be_05_*`. Pointer cross-ref en `docs/technical/02_events_catalog.md` v1.3 LOCKED §statebags-global-publishers. |
 | **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 architectural patch Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 DRAFT (founder yaboula APPROVED 2026-05-06): **M004** (`bank.balance.<cid>` + `bank.savings.<cid>` migrated CP1-A → CP1-B; `sonar:bank:balance:update` + `sonar:bank:savings:update` + `sonar:bank:balance:adminAudit` NEW NetEvents canonical; `publish_balance_update()` helper canonical; `playerJoining` lazy publish handler; AP-CP1-1 anti-pattern explicit; bandwidth impact O(N²)→O(1) reduction; financial-grade Zero-Knowledge principle non-negotiable). Sin schema migration impact. **Cross-cutting LOCK-time impacts** aplicados atomic: C-BE-01 (+3 NetEvents → 54 events total), C-BE-02 (callback side effects refactor + new C001b snapshot callback), C-BE-04 (reconciliation pipeline §7.1 step 5 emit refactor). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2 RE-AUDIT. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
+| **v1.0.2 R2 LOCKED** | 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2) | Phase 5 ecosystem pivot amendment Round 2 reactive a Founder LOCK Q1-Q8 + §9 path (a). **§2.2.1 body PRESERVED VERBATIM** — signature `publish_balance_update(cid, balance, account_class, opts)` unchanged Phase A. **NEW §2.2.1.A** Tier 1/2 exports wrapper consumer pattern (mandate invoke helper post-COMMIT antes del return + UNA call per `account_class` afectado + boilerplate canonical + AP-CP1-1 reafirmada para Phase 5 superficie). **NEW §2.2.1.B** value type Phase A LOCKED path (a) — wrapper convierte INTEGER minor → DECIMAL major vía `units.from_minor()` ANTES del helper invoke; Frontend ZERO touch Phase A; Phase A+1 migra holisticamente con DB + callbacks + Frontend (`@docs/planning/roadmap_phase_a_plus_1_minor_units_migration.md`). **§4.2 cross-ref nota** Tier 1/2 consumer pattern §2.2.1.A. AP-CP1-1 (§1.4 + §1.5) PRESERVED VERBATIM — REAFFIRMED para Phase 5 superficie. **Sin schema migration impact.** **Cross-cutting LOCK-time impacts** aplicados atomic: C-BE-04 NULLIFY §4 Core Override + NEW §4' Integration API surface, C-BE-02 ADDITIVE §1.2 A18 + §3.1 PLAYER_NOT_LOADED + §10 Server-to-Server Exports surface (22 públicos), C-SEC-01 v0.3 R2 (AH4 atomic mandate + §1.2.A 10-field shape Tier 1/2 + `bank_overdraft` event_type). Security consumer review absorbed by PM Cascade per Founder Decision #3 — BANK-SEC.2 deuda técnica re-audit pending Phase B. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security consumer PM Cascade absorbed + PM Cascade promote ceremony. |
 
-— **C-BE-05 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** Frontend Lead via H4 future inherits CP1-B pattern para balance/savings. Amendments adicionales require formal Round 2/3 protocol.
+— **C-BE-05 v1.0.2 R2 LOCKED** 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2 ceremony). Sign-off founder + Backend Lead + Security consumer PM-absorbed. **Effective immediately.** Phase 5 implementation Tier 1/2 exports consumes `publish_balance_update` per §2.2.1.A boilerplate. Amendments adicionales require formal Round 3 protocol.

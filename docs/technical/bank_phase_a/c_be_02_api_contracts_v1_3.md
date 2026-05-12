@@ -1,4 +1,4 @@
-# C-BE-02 — API Contracts v1.3 Bank Phase A — 40+1 callbacks (LOCKED v1.0.1 R1)
+# C-BE-02 — API Contracts v1.3 Bank Phase A — 40+1 callbacks + 22 exports (LOCKED v1.0.2 R2)
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** Frontend Lead (consume callbacks UI) + Security Lead (audit auth + ACE matrix + idempotency + rate-limits).
@@ -33,6 +33,7 @@
 - **A15** **Error codes registry centralizado §3** — todos callbacks usan ENUM canonical. NO strings ad-hoc.
 - **A16 (CP4 defensive)** **Early return BANK_DISABLED** si `Bridges.BankStatus.IsDisabled() == true` en TODOS callbacks (boilerplate first-line).
 - **A17** **Performance perf target p99 documentado** per callback (consume DB Lead benchmark Q-BE-pre-08 Opción C estimación).
+- **A18 (Phase 5 Q1 LOCKED — NEW v1.0.2 R2)** **Boundary convention split.** La superficie pública exports server-to-server (Tier 1/2 documentada en §10 abajo) usa **INTEGER minor units** en todos los amount fields. La superficie legacy callbacks (C001-C040 + C001b) y DB DECIMAL columns y Frontend display preservan **DECIMAL major units** Phase A. Boundary helpers `sonar_bank_app/server/lib/units.lua` (`to_minor` / `from_minor`, HALF_UP rounding) **mandatory** en cada wrapper Tier 1/2 — NUNCA float math en service layer una vez convertido a integer. Phase A+1 migra DB + callbacks + Frontend end-to-end a INTEGER minor — roadmap `@docs/planning/roadmap_phase_a_plus_1_minor_units_migration.md`.
 
 ---
 
@@ -184,6 +185,7 @@ A partir de v1.0.1 R1, todas estas descripciones se reescriben como `Bridges.Pla
 | `AUTH_REQUIRED` | 401 | Source not connected o citizen_id no resolvable. | NO | Reconnect first. |
 | `AUTH_FORBIDDEN` | 403 | Owner check failed. | NO | Wrong user. |
 | `AUTH_ACE_DENIED` | 403 | ACE permission denied. | NO | Need role grant. |
+| `PLAYER_NOT_LOADED` | 423 | Player source existe pero framework PlayerData no cargada (PRE-PlayerLoaded race). | YES (event-driven) | Hint en error data: `{ retry_after_event = '<framework-specific>' }`. Caller subscribe a PlayerLoaded antes de retry. NEW Q8 R2 v1.0.2 R2. Diferencia vs `RESOURCE_NOT_FOUND` que cubre source inexistente (player dropped, invalid handle); `PLAYER_NOT_LOADED` cubre source válido pero `Bridges.Identity.IsLoaded(source) == false`. |
 | `RATE_LIMIT_EXCEEDED` | 429 | Token bucket empty. | YES | Retry after `retry_after_ms`. |
 | `IDEMPOTENCY_INFLIGHT` | 409 | Same idempotency_key in `locked` state >1s. | YES | Retry timeout. |
 | `VALIDATION_FAIL` | 400 | Schema validation fail (missing field / type mismatch / out-of-range). | NO | Fix payload. |
@@ -1744,7 +1746,183 @@ interface BusinessApprovalCreateRequest {
 
 ---
 
-## 10. Cross-references contratos
+## 10. NEW — Server-to-Server Exports surface (Phase 5 R2 — 22 públicos)
+
+### 10.1 Modelo + alcance
+
+Recursos third-party server-side (vehicle shops, jobs, fines, taxes, ATMs, businesses) invocan `exports.sonar_bank_app:<Op>(...)` para mutar dinero. NO hay equivalente client-callable — los exports son **server-only** por naturaleza FiveM.
+
+Design SSoT: `@docs/design/04_sonar_bank_api.md` v0.2.
+
+**Trust model:** `GetInvokingResource()` se persiste en audit (`invoker_resource` field per C-SEC-01 §1.2.A 10-field shape v0.3 R2) y se chequea contra `sonar:admin_allowlist` convar para Tier 2 cuando `actor_src == 0` (console). NO HMAC / NO JWT (server-side exports already privileged by FiveM runtime). Detalles attack surface model: `@docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` §4'.3.
+
+**Numbering canonical — 22 públicos = 21 mutation/read + 1 informational:**
+
+- **Tier 1 (11 mutation/read):** AddMoney + RemoveMoney + CanAfford + GetBalance + TransferBySource + TransferByIban + 5 `*ByCitizen` siblings.
+- **Tier 2 (10 mutation):** AdminCredit + AdminDebit + AdminSetBalance + Freeze + Unfreeze + 5 `*ByCitizen` siblings (Founder Decision #1 LOCKED 2026-05-12 = 22 explicit explicits, NO polymorphic).
+- **GetApiVersion (informational, +1):** read-only feature-detect, no audit, no mutation. Total públicos = 22.
+
+### 10.2 Boundary helpers `lib/units.lua` (mandatory)
+
+```lua
+-- sonar_bank_app/server/lib/units.lua (NEW Phase 5 implementation 4.1)
+-- HALF_UP rounding. Float math prohibido downstream.
+
+units.to_minor(decimal_input)   -- (string|number) -> integer cents
+units.from_minor(integer_minor) -- integer cents -> string "1234.56" for DB DECIMAL
+```
+
+Every Tier 1/2 wrapper applies `to_minor` al recibir `amount_minor` desde caller (defensive — caller debe ya pasar integer pero validation idempotente) y `from_minor` al invocar service layer + DB insert + `publish_balance_update`. Property tests Phase 5 validation §5.1 ST-024.1: round-trip identity, edge cases (0, max int64 cents, negative).
+
+### 10.3 Tier 1 — Public mutation exports (11)
+
+#### 10.3.1 Tabla canónica Tier 1
+
+| # | Export | Args | Return tuple `(ok, error, data)` | Error codes possible | Idempotency | ACE gate |
+|---|---|---|---|---|---|---|
+| 1 | `AddMoney` | `(source:int, amount_minor:int, reason:string, opts?:table)` | `(boolean, string?, {new_balance_minor, iban, tx_id}?)` | `INVALID_ARGUMENT, INVALID_AMOUNT, PLAYER_NOT_FOUND, PLAYER_NOT_LOADED, ACCOUNT_NOT_FOUND, ACCOUNT_FROZEN, ACCOUNT_CLOSED, IDEMPOTENCY_REPLAY (ok=true), INTERNAL_ERROR` | `opts.idempotency_key?` | None (Tier 1) |
+| 2 | `RemoveMoney` | `(source:int, amount_minor:int, reason:string, opts?:table)` | idem + `tx_id` | + `INSUFFICIENT_FUNDS` | `opts.idempotency_key?` | None |
+| 3 | `CanAfford` | `(source:int, amount_minor:int)` | `(boolean, string?, {balance_minor, sufficient}?)` | `INVALID_ARGUMENT, PLAYER_NOT_FOUND, PLAYER_NOT_LOADED, ACCOUNT_NOT_FOUND` | N/A (read) | None |
+| 4 | `GetBalance` | `(source:int)` | `(boolean, string?, {balance_minor, savings_minor, iban}?)` | idem | N/A | None |
+| 5 | `TransferBySource` | `(from_src:int, to_src:int, amount_minor:int, reason:string, opts?:table)` | `(boolean, string?, {from_iban, to_iban, amount_minor, fee_minor, tx_id}?)` | + `INSUFFICIENT_FUNDS, LIMIT_EXCEEDED, ACCOUNT_FROZEN (either)` | `opts.idempotency_key?` | None |
+| 6 | `TransferByIban` | `(from_iban:string, to_iban:string, amount_minor:int, reason:string, opts?:table)` | idem | idem + `IBAN_INVALID` | `opts.idempotency_key?` | None |
+| 7 | `AddMoneyByCitizen` | `(citizen_id:string, amount_minor:int, reason:string, opts?:table)` | idem export #1 | `INVALID_ARGUMENT, INVALID_AMOUNT, CITIZEN_NOT_FOUND, ACCOUNT_NOT_FOUND, ACCOUNT_FROZEN, ACCOUNT_CLOSED, IDEMPOTENCY_REPLAY, INTERNAL_ERROR` | `opts.idempotency_key?` | None |
+| 8 | `RemoveMoneyByCitizen` | `(citizen_id:string, amount_minor:int, reason:string, opts?:table)` | idem export #2 | + `INSUFFICIENT_FUNDS` | `opts.idempotency_key?` | None |
+| 9 | `CanAffordByCitizen` | `(citizen_id:string, amount_minor:int)` | idem export #3 | `CITIZEN_NOT_FOUND, ACCOUNT_NOT_FOUND` | N/A | None |
+| 10 | `GetBalanceByCitizen` | `(citizen_id:string)` | idem export #4 | idem | N/A | None |
+| 11 | `TransferByCitizen` | `(from_cid:string, to_cid:string, amount_minor:int, reason:string, opts?:table)` | idem export #5 | + `INSUFFICIENT_FUNDS, LIMIT_EXCEEDED, ACCOUNT_FROZEN` | `opts.idempotency_key?` | None |
+
+**Notas Tier 1:**
+
+- `TransferByIban` (#6) NO requiere `*ByCitizen` sibling (IBAN ya citizen-agnostic). Total Tier 1 = **11 exports** (6 baseline + 5 *ByCitizen) per Q6 LOCKED.
+- `*ByCitizen` variants resuelven `citizen_id → IBAN primario` via `AccountService.GetPrimaryByCitizen(cid)`. NO requieren player online; si citizen offline, mutation persiste DB + audit; mirror sync deferred a next `PlayerLoaded` event (Q6 LOCKED offline-safe semantics).
+- Tier 1 NUNCA acepta `opts.allow_overdraft` — `RemoveMoney`/`TransferBy*` rechazan con `INSUFFICIENT_FUNDS` si balance < amount (Q5 LOCKED).
+- `CanAfford` returns ambos `balance_minor` actual y `sufficient: bool` para evitar double-fetch en caller pattern típico (`if CanAfford ... then RemoveMoney`).
+
+#### 10.3.2 `opts` table schema canonical (Tier 1 mutations)
+
+```lua
+opts = {
+  idempotency_key = string?,    -- UUIDv4 preferido; max 128 chars; persisted en sonar_bank_idem 24h TTL
+  correlation_id  = string?,    -- UUIDv4 trace cross-resource; auto-generated si absent
+  account_iban    = string?,    -- override target IBAN si player tiene multiple accounts; default = primary
+  reason_meta     = table?,     -- key-value pairs additional audit context (max 16 keys, 256 chars each)
+}
+```
+
+**Idempotency persistence:** Phase 5 introduce nueva tabla simple `sonar_bank_idem` (PRIMARY KEY `idem_key`, `result_json`, `invoker_resource`, `created_at`, 24h TTL cron purge) — migration `036_sonar_bank_idem.sql` Phase 4.2 implementation. Justificación tabla separada de `sonar_bank_idempotency_keys` LOCKED v1.0.1 R1 (callbacks): callbacks usan FSM `idempotency_lifecycle` con states (locked, completed, failed); exports surface usa modelo más simple "INSERT IGNORE + cached result_json" sin FSM, suficiente para semantic Tier 1/2 atomic exports.
+
+### 10.4 Tier 2 — Admin/operator exports (10)
+
+#### 10.4.1 Tabla canónica Tier 2
+
+| # | Export | Args | Return tuple | Error codes possible | Idempotency | Auth gate |
+|---|---|---|---|---|---|---|
+| 12 | `AdminCredit` | `(actor_src:int, target:int|string, amount_minor:int, reason:string, opts?:table)` | `(boolean, string?, {iban, new_balance_minor, tx_id}?)` | `INVALID_ARGUMENT, INVALID_AMOUNT, AUTH_ACE_DENIED, AUTH_ALLOWLIST_DENIED, PLAYER_NOT_FOUND, CITIZEN_NOT_FOUND, ACCOUNT_NOT_FOUND, ACCOUNT_CLOSED, IDEMPOTENCY_REPLAY, INTERNAL_ERROR` | `opts.idempotency_key?` | `Auth.RequireAdmin(actor_src)` OR `actor_src==0` console OR `GetInvokingResource() ∈ sonar:admin_allowlist` |
+| 13 | `AdminDebit` | idem | idem | + `INSUFFICIENT_FUNDS` (si `opts.allow_overdraft != true`) | idem | idem |
+| 14 | `AdminSetBalance` | `(actor_src, target, new_balance_minor, reason, opts?)` | `(boolean, string?, {iban, prev_balance_minor, new_balance_minor, delta_minor, tx_id}?)` | idem (sin INSUFFICIENT_FUNDS — overwrite total) | `opts.idempotency_key?` | idem |
+| 15 | `Freeze` | `(actor_src, target_iban:string, reason)` | `(boolean, string?, {iban, previous_flag_snapshot}?)` | `INVALID_ARGUMENT, AUTH_ACE_DENIED, AUTH_ALLOWLIST_DENIED, IBAN_INVALID, ACCOUNT_NOT_FOUND, ACCOUNT_ALREADY_FROZEN` | None (state mutation idempotent natively) | idem |
+| 16 | `Unfreeze` | idem | idem | + `ACCOUNT_NOT_FROZEN` | None | idem |
+| 17 | `AdminCreditByCitizen` | `(actor_src, citizen_id, amount_minor, reason, opts?)` | idem #12 | idem #12 con `CITIZEN_NOT_FOUND` reemplaza `PLAYER_NOT_FOUND` | idem | idem |
+| 18 | `AdminDebitByCitizen` | idem | idem #13 | idem #13 | idem | idem |
+| 19 | `AdminSetBalanceByCitizen` | idem | idem #14 | idem #14 | idem | idem |
+| 20 | `FreezeByCitizen` | `(actor_src, citizen_id, reason)` | resuelve citizen → IBAN primary → idem #15 | idem #15 + `CITIZEN_NOT_FOUND` | None | idem |
+| 21 | `UnfreezeByCitizen` | idem | idem #16 | idem #16 + `CITIZEN_NOT_FOUND` | None | idem |
+
+**Founder Decision #1 LOCKED 2026-05-12:** Tier 2 = 10 exports explícitos (5 baseline + 5 `*ByCitizen` siblings con type-checked args). Paridad con Tier 1, type safety contractual surface. Polymorphic auto-detect descartado.
+
+#### 10.4.2 `opts.allow_overdraft` semantic (Q5 LOCKED)
+
+```lua
+opts = {
+  -- ... Tier 1 fields ...
+  allow_overdraft = boolean?,    -- DEFAULT false. true → permite balance negativo post-mutation.
+                                 -- Audit event_type → 'bank_overdraft' (NEW C-SEC-01 v0.3 R2 enum entry).
+                                 -- Tier 1 IGNORA este flag (siempre false). Tier 2 honra explícitamente.
+}
+```
+
+#### 10.4.3 `Auth.RequireAdmin` helper canonical
+
+`Auth.RequireAdmin(actor_src)` retorna `(true, citizen_id)` o `(false, 'AUTH_ACE_DENIED' | 'AUTH_ALLOWLIST_DENIED')`. Lookup order:
+
+1. `actor_src == 0` (console) → `(true, nil)` (audit `actor_account_id = NULL`, `invoker_resource = GetInvokingResource() OR 'console'`).
+2. `actor_src > 0` + `IsPlayerAceAllowed(actor_src, 'sonar.bank.admin')` → `(true, Bridges.Player.GetCitizenId(actor_src))`.
+3. `actor_src > 0` falla ACE pero `GetInvokingResource() ∈ split(GetConvar('sonar:admin_allowlist', ''))` → `(true, Bridges.Player.GetCitizenId(actor_src))` con audit flag `actor_via_allowlist = true`.
+4. Else → `(false, 'AUTH_ACE_DENIED')` o `(false, 'AUTH_ALLOWLIST_DENIED')` según rama.
+
+ACE permission `sonar.bank.admin` documentado en C-SEC-02 §2.1 (P-ADMIN reuses P10 `sonar.bank.govt.compliance.admin` OR dedicated permission Phase 5.1 implementation decision). Convar `sonar:admin_allowlist` (comma-separated resource names) documentado en DevOps runbook H4 (NEW post-Phase 5 LOCK).
+
+### 10.5 Rigid fee policy (Q7 LOCKED — NO override)
+
+Cada `TransferBy*` Tier 1 y `AdminCredit/AdminDebit/AdminSetBalance` Tier 2 honra `Config.FeePolicies` (LOCKED Phase A `@resources/sonar_bank_app/config.lua`) automaticamente. **NO `opts.skip_fees`**, **NO `opts.fee_override_minor`**.
+
+Rationale Q7: matemáticas simples, reglas aplican a todos, audit shape limpio, operator ajusta fees globales vía config.
+
+### 10.6 Atomic guarantees per export
+
+Cada Tier 1/2 mutation export ejecuta dentro de **un solo SQL transaction** con commit atomic de:
+
+1. Balance mutation (`sonar_bank_accounts.balance` update).
+2. Movement row insert (`sonar_bank_movements` append-only).
+3. Audit row insert (`sonar_audit_log` 10-field shape per C-SEC-01 §1.2.A v0.3 R2, `event_type = bank_credit | bank_debit | bank_transfer | admin_credit | admin_debit | admin_set_balance | account_freeze | account_unfreeze | bank_overdraft`).
+4. Idempotency row insert (si `opts.idempotency_key` presente) en `sonar_bank_idem`.
+
+**Post-commit (best-effort, NO bloquea return):**
+
+5. `publish_balance_update(citizen_id, balance_decimal_major, account_class, opts)` invocado per C-BE-05 §2.2.1 NetEvent CP1-B canonical (UNA call por account_class afectado: main + savings si transfer cross-account, sino una sola call). Path (a) Founder §9 LOCKED: signature de `publish_balance_update` preservada (`balance` arg en DECIMAL major) — wrapper invoca `units.from_minor(new_balance_minor)` antes del publish. Boilerplate canonical: ver `@docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` §2.2.1.A.
+6. `MirrorSync.SetBalance` best-effort framework wallet (player online).
+
+**Si pasos 1-4 fallan → rollback total + return error.** Si paso 5 falla → log warning, NO rollback (StateBag/NetEvent eventual consistency aceptable). Si paso 6 falla → log warning, retry on next login.
+
+Atomic mandate cross-ref C-SEC-01 AH4 v0.3 R2 (`@docs/technical/08_audit_hooks.md` §1.1).
+
+### 10.7 Side effects table
+
+| Side effect | Tier 1 mutations | Tier 2 mutations | Notas |
+|---|---|---|---|
+| `sonar_bank_accounts.balance` mutation | ✅ | ✅ | Atomic same TX. |
+| `sonar_bank_movements` append | ✅ | ✅ | Append-only LOCKED Phase A. |
+| `sonar_audit_log` append | ✅ | ✅ | 10-field shape C-SEC-01 §1.2.A v0.3 R2. |
+| `sonar_bank_idem` upsert | ✅ si `opts.idempotency_key` | ✅ idem | NEW migration 036. |
+| `sonar:bank:balance:update` NetEvent (per account_class) | ✅ | ✅ | C-BE-05 §2.2.1. DECIMAL major path (a). |
+| `sonar:bank:savings:update` NetEvent | ✅ si savings affected | ✅ idem | Idem. |
+| Mirror to framework wallet | ✅ best-effort | ✅ best-effort | `MirrorSync.SetBalance` simplificado C-BE-04 §4'.4. |
+| Compliance autoraise hook | Mantained existing AR-P01/P02/P03 LOCKED | Mantained existing AR-P05 admin override LOCKED | C-SEC-03 §3.1 unchanged. |
+
+### 10.8 GetApiVersion() informational export (NEW)
+
+```lua
+exports.sonar_bank_app:GetApiVersion()
+-- returns table { major=1, minor=0, patch=0, phase='5', api_lock='2026-05-12' }
+```
+
+Consumers feature-detect via `local v = exports.sonar_bank_app:GetApiVersion(); if v.major >= 1 then ... end`. NO contado en los 21 mutation/read exports (es read-only informational, no audit). Total públicos = 22 (21 + 1 informational).
+
+### 10.9 Performance budgets per export
+
+Heredan budgets de service layer LOCKED. Wrapper overhead target:
+
+- Validation + boundary conversion + audit insert + idempotency lookup: **<5 ms p99**.
+- Total wrapper latency (incluido SQL TX): **<50 ms p99** Tier 1 reads, **<150 ms p99** Tier 1/2 mutations.
+- Idempotency replay (cached hit): **<10 ms p99** (single PRIMARY KEY lookup).
+
+Validación en Phase 5 ST-024 smoke harness (`@resources/sonar_bank/server/smoke_phase_5_exports.lua`).
+
+### 10.10 Compat existing callbacks C001-C040
+
+| Componente | Impacto | Acción |
+|---|---|---|
+| Callbacks C001-C040 + C001b signatures | ZERO breaking | None — todo LOCKED v1.0.1 R1 preservado intacto. |
+| Auth helpers §2.3 H001 R1 | ZERO breaking | None. |
+| Error codes registry §3.1 | ADDITIVE (1 NEW code `PLAYER_NOT_LOADED`) | Frontend callers tienen default branch — backwards compatible. |
+| ACE matrix §2.2 | ZERO breaking | None. NEW Tier 2 reuse `sonar.bank.admin` P-ADMIN (Phase 5.1 perm decision). |
+| Rate-limit infrastructure §4 | Exports NOT rate-limited Phase A (server-side trust) | DevOps Lead H4 runbook documents. |
+| Idempotency lifecycle FSM #8 §9.2 + table `sonar_bank_idempotency_keys` | Mantained — callbacks siguen consumiendo este. Exports usan tabla separada `sonar_bank_idem` (migration 036). | None. |
+
+---
+
+## 11. Cross-references contratos
 
 - C-BE-01 v0.1 — NetEvents emitted per callback referenciados en §9.x.7 side effects.
 - C-BE-03 v0.1 — FSM transitions invoked via `<FSM>.Transition` lib (pattern §9 callbacks marked `FSM ref`).
@@ -1755,7 +1933,7 @@ interface BusinessApprovalCreateRequest {
 
 ---
 
-## 11. Open questions BANK-BE.1
+## 12. Open questions BANK-BE.1
 
 | OQ | Tema | Resolution target |
 |---|---|---|
@@ -1767,7 +1945,7 @@ interface BusinessApprovalCreateRequest {
 
 ---
 
-## 12. Sign-off matrix C-BE-02 v1.3 LOCKED target
+## 13. Sign-off matrix C-BE-02 v1.3 LOCKED target
 
 | Stakeholder | Scope | Status DRAFT v0.1 |
 |---|---|---|
@@ -1778,7 +1956,7 @@ interface BusinessApprovalCreateRequest {
 
 ---
 
-## 13. Versioning C-BE-02
+## 14. Versioning C-BE-02
 
 | Version | Fecha | Cambios |
 |---|---|---|
@@ -1787,4 +1965,6 @@ interface BusinessApprovalCreateRequest {
 | **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic post-DRAFT v0.1 review window. Sign-off triple ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead (consumer consultative — review crítico ACE matrix §2 + error codes §3 + idempotency §5 + audit ledger ENUM §6) handoff via H2. Promoted DRAFT → canonical: `docs/agents/teams/drafts/be_phase_a/c_be_02_api_contracts_v1_3.md` → `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md`. Pointer §X.NEW Bank Phase A added en `docs/technical/04_api_contracts.md` v1.2 → v1.3 LOCKED. 40/40 callbacks C001-C040 ratificados. |
 | **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 surgical patches Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 (founder APPROVED 2026-05-06): **H001** (`source.citizen_id` nil bypass — auth helpers canonical lib §2.3.1 `auth.require_citizen` + `require_owner` + `require_participant` + `require_role_or_owner` + boilerplate rewrite §2.3 + AP-AUTH-1 prohibido + notational disclaimer §2.3.2 + 9 callsites §9 reescritos a `Bridges.Player.GetCitizenId(source)` o helper canonical) + **H006** (C038 `compliance_flag_resolved` audit shape completa C-SEC-01 §1.2 mandatory `previous_flag_snapshot` forensics + cross_ref_audit_id) + **M002** (PRNG entropy spec §5.6 multi-entropy mix referenced canonical C-BE-04 §3.3.1 + AP-UUID-1 prohibido) + **M003** (C035 dual rate-limit recursive guard §9.35.5.1 — per-citizen 1/min + global 10/min sliding window + bypass exception scope='self' single-row + 2 convars sysadmin) + **M006** (C031 ATM HMAC secret management §9.31.7 — convar `sonar_bank_atm_hmac_secret` mandatory min 64 hex chars + defensive_abort si missing/short + audit boot events + AP-HMAC-1 prohibido). **Cross-cutting M004** (founder APPROVED architectural — CP1-A → CP1-B migration `bank.balance.<cid>` + `bank.savings.<cid>`): NEW callback **C001b** `sonar:bank:balance:snapshot` §9.4b + 14 callbacks side effects §9 reescritos `StateBag emits: bank.balance.<cid>` → `publish_balance_update(cid, balance, account_class, opts)` CP1-B NetEvent emit (C001 transfer / C002 savings deposit / C003 savings withdraw / C006 close / C009 escrow fund / C010 escrow release / C012 escrow refund / C016 subsidy grant / C018 subsidy claim / C020 loan decide / C021 loan repay / C023 stocks buy / C024 stocks sell / C031 ATM / C032 card request — listing canónico §6.1) + global note §6.1.2 deprecation + §6.2 ENUM cross-reference C-SEC-01 audit hook shape. Sin schema migration impact (DB Lead consultative confirmed). 4 convars DevOps H4 runbook (`sonar_bank_audit_query_per_citizen_per_min`, `sonar_bank_audit_query_global_per_min`, `sonar_bank_atm_hmac_secret`, cross-ref C-BE-04 M007). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
 
-— **C-BE-02 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** Frontend Lead recibe vía H3 futuro (40+1 callbacks canonical). Amendments adicionales require formal Round 2/3 protocol.
+| **v1.0.2 R2 LOCKED** | 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2) | Phase 5 ecosystem pivot Round 2 reactive a Founder LOCK Q1-Q8 + §9 path (a). **ADDITIVE only** — callbacks C001-C040 + C001b LOCKED v1.0.1 R1 ZERO breaking. **NEW §1.2 A18** Boundary convention split (INTEGER minor exports surface vs DECIMAL major callbacks/DB/Frontend Phase A; helpers `units.to_minor`/`from_minor` mandatory). **NEW §3.1 PLAYER_NOT_LOADED row** (HTTP 423, retry_after_event hint, distingue de PLAYER_NOT_FOUND + RESOURCE_NOT_FOUND, Q8 LOCKED). **NEW §10 entera** Server-to-Server Exports surface — 22 públicos = 21 mutation/read + 1 informational: §10.1 modelo + alcance + trust model GetInvokingResource + Founder Decision #1 LOCKED 22 explicit (NO polymorphic), §10.2 boundary helpers `lib/units.lua` mandatory, §10.3 Tier 1 11 exports (AddMoney/RemoveMoney/CanAfford/GetBalance/TransferBy{Source,Iban} + 5 *ByCitizen) + opts schema canonical (idempotency_key + correlation_id + account_iban + reason_meta) + sonar_bank_idem migration 036, §10.4 Tier 2 10 exports (AdminCredit/AdminDebit/AdminSetBalance/Freeze/Unfreeze + 5 *ByCitizen) + opts.allow_overdraft Q5 LOCKED + Auth.RequireAdmin 4-tier helper canonical + sonar:admin_allowlist convar, §10.5 rigid fee policy Q7 LOCKED (no opts override), §10.6 atomic guarantees per export (4-step SQL TX rollback total + post-COMMIT publish_balance_update path (a) + MirrorSync best-effort + cross-ref C-SEC-01 AH4 v0.3 R2), §10.7 side effects table, §10.8 GetApiVersion informational, §10.9 perf budgets, §10.10 compat callbacks ZERO breaking. **RENUMBER:** §10 Cross-references → §11, §11 Open questions → §12, §12 Sign-off matrix → §13, §13 Versioning → §14. Cross-cutting LOCK-time impacts: C-BE-04 v1.0.2 R2 (NULLIFY §4 + NEW §4') + C-BE-05 v1.0.2 R2 (§2.2.1.A wrapper consumer pattern + §2.2.1.B value type Phase A LOCKED) + C-SEC-01 v0.3 R2 (AH4 atomic + §1.2.A 10-field shape + bank_overdraft event_type). Security consumer review absorbed by PM Cascade per Founder Decision #3 — BANK-SEC.2 deuda técnica re-audit pending Phase B. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security consumer PM Cascade absorbed + Frontend Lead consumer ack (callbacks LOCKED unchanged Phase A) + PM Cascade promote ceremony. |
+
+— **C-BE-02 v1.0.2 R2 LOCKED** 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2 ceremony). Sign-off founder + Backend Lead + Security consumer PM-absorbed + Frontend Lead consumer ack. **Effective immediately.** Phase 5 implementation Tier 1/2 exports per §10 + boundary helpers `units.lua` Phase 4.1 + sonar_bank_idem migration 036 Phase 4.2. Amendments adicionales require formal Round 3 protocol.

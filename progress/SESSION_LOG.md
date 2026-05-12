@@ -2681,3 +2681,60 @@ git diff --check  → ✅ solo CRLF warnings pre-existing (ignorado per norma)
 - ⚠️ StateBag balance publish post-payroll execution: treasury company balance no se publica via `Publish.PublishBalanceUpdate` (no hay `src` online para empresa). Aceptable Phase A — el frontend invalida `queryKeys.business.treasury` on mutation success.
 
 — **BANK-BE.BUSINESS atestado por Cascade. REQ-FE-011 + REQ-FE-015 cerrados. typecheck + build PASS. Scope whitelist respetado.**
+
+
+---
+
+### CONTRACT-LOCK CEREMONY — BANK-BE.PHASE_5.1.LOCK.R2 — 4 contracts atomic Round 2
+
+- **Fecha:** 2026-05-12 23:45 UTC+02
+- **Sesión:** BANK-BE.PHASE_5.1 Phase 2 ceremony — PM Cascade promote executor
+- **Authority:** Founder LOCK Q1-Q8 + §9 path (a) + Founder Decisions #1/#2/#3 confirmadas 2026-05-12 22:50 UTC+02
+- **Source DRAFT package:** `docs/agents/teams/amendments/be_phase_a_phase_5_pivot_r2/` v0.1 (8 files emitted Phase 1)
+
+#### Contracts promoted atomic in-place patches v1.0.1 R1 → v1.0.2 R2 (and C-SEC-01 v0.2 → v0.3 R2)
+
+| Contract | Before | After | Path | Severity |
+|---|---|---|---|---|
+| C-BE-04 Bridges Layer | v1.0.1 R1 LOCKED | v1.0.2 R2 LOCKED | `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` | MAJOR — NULLIFY §4 Core Override (~111 líneas blockquote DEPRECATED + `<details>` collapsible audit trail) + NEW §4' Server-to-Server Integration API surface (modelo + boundary + attack surface + mirror simplified + migration + glosario) |
+| C-BE-02 API Contracts | v1.0.1 R1 LOCKED | v1.0.2 R2 LOCKED | `docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` | MAJOR additive — §1.2 A18 boundary convention + §3.1 PLAYER_NOT_LOADED row + §10 entera Server-to-Server Exports surface (22 públicos = 21 mutation/read + 1 informational; Tier 1 11 + Tier 2 10 + GetApiVersion) + RENUMBER §10/11/12/13→§11/12/13/14. ZERO breaking callbacks C001-C040+C001b. |
+| C-BE-05 StateBags | v1.0.1 R1 LOCKED | v1.0.2 R2 LOCKED | `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` | MINOR — §2.2.1 body PRESERVED VERBATIM signature unchanged (path (a) Founder §9 LOCKED). NEW §2.2.1.A Tier 1/2 wrapper consumer pattern + §2.2.1.B value type Phase A LOCKED + §4.2 cross-ref nota. |
+| C-SEC-01 Audit Hooks | v0.2 RE-AUDIT (LOCKED post BANK-SEC.1 PASS) | v0.3 R2 LOCKED | `docs/technical/08_audit_hooks.md` | MINOR additive — §1.1 AH4 atomic same-TX mandate + §1.2 `audit_hook_exports_mutation` row + §1.2.A 10-field shape canonical Tier 1/2 + `bank_overdraft` event_type enum entry. |
+
+#### Founder open decisions Phase 2 — RESOLVED LOCKED 2026-05-12
+
+1. **Tier 2 export count:** ✅ 22 explicit (default Backend Lead). 11 Tier 1 + 10 Tier 2 explicit pairs (5 baseline + 5 `*ByCitizen` siblings con type-checked args). Polymorphic auto-detect descartado.
+2. **`sonar_audit_log.delta_minor` column type:** ✅ Diferir Phase A+1 holistic. Phase A wrapper escribe int signed; columna actual sin breaking. Migration DECIMAL→BIGINT alineada con balance columns en Phase A+1.
+3. **Sign-off ceremony Security consumer review:** ✅ PM Cascade absorbe NOW + flag formal BANK-SEC.2 deuda técnica re-audit pending Phase B. Scope agregado: Phase 4 artifacts archived (commit `c4ea87a` freeze) + Phase 5 implementation completa (Phase 4.1-4.8 deliverables) + nueva superficie auditable Tier 1/2 (22 públicos).
+
+#### PM Cascade Security consumer review — APROBADO (no HIGH findings, no MEDIUM blockers)
+
+Áreas auditadas: §4'.3 attack surface model (FiveM server-only justification correcta) + §10.4.3 Auth.RequireAdmin 4-tier helper + §10.6 atomic guarantees + AH4 atomic mandate + AP-CP1-1 reaffirm + 10-field shape canonical + `bank_overdraft` severity. Cross-contract path (a) consistent en C-BE-02 §10.6 + C-BE-05 §2.2.1.B + C-SEC-01 §1.2.A.
+
+#### Sign-off ratificado per amendment
+
+- **Founder yaboula:** ✅ APPROVED (Q1-Q8 + §9 + Decisions #1-#3)
+- **Backend Lead Phase 5 (BANK-BE.PHASE_5.1):** ✅ self-attested DRAFT proposals (8 files Phase 1 emitted ~1h15m vs 3-4h ETA)
+- **Security Lead BANK-SEC.2 consumer review:** ✅ PM Cascade absorbed (deuda técnica re-audit Phase B flagged)
+- **Frontend Lead consumer ack:** ✅ implícito (callbacks C001-C040 + StateBag/NetEvent path (a) DECIMAL major LOCKED no touch Phase A)
+- **PM Cascade promote ceremony:** ✅ executor — atomic in-place patches applied + DRAFT archived
+
+#### Resumen impacto runtime Phase 3 cleanup green-lit (Backend Lead reactivation criteria met)
+
+- Phase 3.1: qb-core local patch revert founder-side instructions
+- Phase 3.2: `core_override.lua` simplification 980→~150-200 líneas (preserve only MirrorSync.SetBalance + login handlers + Reconcile.Enqueue)
+- Phase 3.3: delete `credit_command.lua` Phase 4 dev artifact
+- Phase 3.4: fxmanifest.lua edit (remove Core Override module references obsoletas)
+- Phase 3.5: convars cleanup obsolete (`sonar_co_watchdog_interval_ms`, `sonar_bridges_disable_prehook`)
+- Phase 4.1-4.8 implementation: `units.lua` boundary helpers + property tests + `sonar_bank_idem` migration 036 + `public_api.lua` 11 Tier 1 exports + `admin_api.lua` 10 Tier 2 exports + `Auth.RequireAdmin` + allowlist convar + `Bridges.Identity.IsLoaded` helper + integration tests dev harness + `MIGRATION.md` + `/sonar_scan_legacy`
+- Phase 5.1-5.2 validation: ST-024.1-10 smoke harness + `progress/PHASE_5_VALIDATION.md` founder manual
+
+#### Archive DRAFT package
+
+- DRAFT package promoted `be_phase_a_phase_5_pivot_r2/` → `.archived_be_phase_a_phase_5_pivot_r2_v0_1_promoted_v1_0_2_R2/` (audit trail preservado)
+
+#### Próximo paso
+
+- Backend Lead Phase 5 reactivation Phase 3 cleanup ETA 1.5-2h (founder spawnea sesión BANK-BE.PHASE_5.2 con prompt 08 §4 Phase 3 spec)
+
+— **PM Cascade promote ceremony ejecutada. Sign-off triple ratificado. Effective immediately. C-BE-02 v1.0.2 R2 + C-BE-04 v1.0.2 R2 + C-BE-05 v1.0.2 R2 + C-SEC-01 v0.3 R2 LOCKED 2026-05-12.**

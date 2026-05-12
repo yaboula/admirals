@@ -1,4 +1,4 @@
-# C-BE-04 — Bridges Compatibility Layer v1.1 Bank Phase A (LOCKED v1.0.1 R1)
+# C-BE-04 — Bridges Compatibility Layer v1.1 Bank Phase A (LOCKED v1.0.2 R2)
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** DevOps Lead (fxmanifest + load order + boot sequence) + Security Lead (audit watchdog + ACE checks + exploit prevention).
@@ -308,16 +308,36 @@ return M
 
 ---
 
-## 4. Core Override module (QBox/QBCore) — `sonar_bridges/server/core_override.lua`
+## 4. Core Override module — DEPRECATED Phase 5 pivot (2026-05-12)
 
-### 4.1 Approach decision (per Q-BE-pre-05 founder green-light)
+> **Status:** 🚫 DEPRECATED — Phase 5 architectural pivot Founder LOCKED 2026-05-12.
+>
+> Esta sección describía el módulo Core Override (monkey-patch runtime de
+> `Player.Functions.AddMoney/RemoveMoney/SetMoney/GetMoney` en QBox/QBCore).
+> El modelo "parásito invisible" fue abandonado por bloqueos arquitectónicos
+> insuperables (FiveM resource-boundary serialization, third-party scripts
+> ignoran return values, admin tooling Lua-isolated, qb-core patch GPL-coupling).
+>
+> **Reemplazo canónico:** §4' Server-to-Server Integration API surface (abajo).
+> **Design SSoT:** `@docs/design/04_sonar_bank_api.md` v0.2.
+> **Phase 4 freeze baseline:** commit `c4ea87a` (rollback point).
+> **Migration path operator-side:** `MIGRATION.md` (Phase 4.7) + `/sonar_scan_legacy` helper (Phase 4.8). Q4 LOCKED — NO `sonar_compat` shim.
+> **Authority:** `@docs/agents/teams/decisions/founder_phase_5_pivot_q1_q8_2026_05_12.md` v1.0.
+>
+> Contenido original v1.0.1 R1 preservado en bloque siguiente para audit trail.
+> NO consume este pseudo-código; queda como artefacto histórico únicamente.
+
+<details>
+<summary>Audit trail — contenido §4 v1.0.1 R1 (DEPRECATED, do not consume)</summary>
+
+### 4.1 Approach decision (per Q-BE-pre-05 founder green-light) — DEPRECATED
 
 **Hybrid B + C combined:**
 
 - **B) Sentinel attribute** post-monkey-patch — `QBCore.__sonar_patched = { applied_at = epoch_ms, version = '1.0' }`.
 - **C) Métrica indirecta** — listener on framework events (e.g. `esx:setAccountMoney`) verifies correlation-id sonar inyectado en metadata. Si X minutos pasan sin events con correlation-id sonar AND money mutations occurring → suspect compromise.
 
-### 4.2 Pseudo-code spec
+### 4.2 Pseudo-code spec — DEPRECATED
 
 ```lua
 -- sonar_bridges/server/core_override.lua
@@ -404,7 +424,7 @@ local function install_qbcore_override()
 end
 ```
 
-### 4.2.1 SHA256 utility (NEW v1.0.1 R1 — H003 dependency)
+### 4.2.1 SHA256 utility (NEW v1.0.1 R1 — H003 dependency) — DEPRECATED
 
 `sha256_hex(input_string)` lib helper required for function bytecode hashing. Implementation options:
 
@@ -413,12 +433,104 @@ end
 
 Performance budget: bytecode hash function (typically <2KB string) → <5ms p99. Watchdog checks <1Hz → no perf concern.
 
-### 4.3 Caveats + edge cases
+### 4.3 Caveats + edge cases — DEPRECATED
 
 - **QBox API surface:** difiere ligeramente de QBCore. `qbx_core` exports + `qbx.PlayerFunctions` shape. Adapter `sonar_bridges/adapters/qbox/core_override_qbox.lua` per-framework.
 - **Multi-framework simultaneous:** if both QBox + QBCore detected → log warn + abort Core Override + transit `compromised_load_order` (config conflict).
 - **Hot-reload `restart sonar_bridges`:** sentinel idempotent boot — re-apply detect + skip if already patched same boot session.
 - **External resource patches (other resources monkey-patch same functions post-SONAR):** watchdog métrica C indirect detects. Transit `compromised_load_order`.
+
+</details>
+
+---
+
+## 4'. Server-to-Server Integration API surface (NEW v1.0.2 R2 — Phase 5)
+
+### 4'.1 Modelo arquitectónico
+
+SONAR Bank es un **ecosistema cerrado** en estilo ox_inventory (Overextended). Los recursos third-party que mutan dinero NO interceptan funciones nativas del framework — invocan explícitamente la superficie pública de exports SONAR Bank documentada en `@docs/design/04_sonar_bank_api.md` v0.2.
+
+**Cobertura de la superficie pública:**
+
+- **Tier 1 (11 exports)** — mutaciones day-to-day (`AddMoney`, `RemoveMoney`, `CanAfford`, `GetBalance`, `TransferBySource`, `TransferByIban`) + 5 `*ByCitizen` siblings para players offline (Q6 LOCKED).
+- **Tier 2 (10 exports)** — admin/operator (`AdminCredit`, `AdminDebit`, `AdminSetBalance`, `Freeze`, `Unfreeze`) explicit pairs + 5 `*ByCitizen` siblings (Founder Decision #1 LOCKED 2026-05-12 = 22 explicit). Tier 2 admite `opts.allow_overdraft = true` (Q5 LOCKED, único caso).
+- **Tier 3 (internal)** — servicios bancarios consumidos sólo por Tier 1/2 wrappers; no exportados a third parties.
+- **`GetApiVersion()` (informational, +1)** — read-only feature-detect, no audit. Total públicos = 22 (21 mutation/read + 1 informational).
+
+Spec canonical de los 22 públicos: `@docs/technical/bank_phase_a/c_be_02_api_contracts_v1_3.md` §10 (v1.0.2 R2).
+
+### 4'.2 Boundary conversion convention (Q1 LOCKED split)
+
+| Surface | Convention | Status |
+|---|---|---|
+| Exports surface (Tier 1/2) | INTEGER minor units | NEW Phase 5 |
+| Service layer internal math | INTEGER minor units | Boundary conversion at wrapper |
+| DB `sonar_bank_*` money columns | DECIMAL(19,2) major units | LOCKED Phase A (no touch) |
+| Callbacks C001-C040 (LEGACY) | DECIMAL major units | LOCKED C-BE-02 (no touch Phase A) |
+| Frontend display + input | DECIMAL major units | LOCKED Phase A (no touch) |
+
+Helpers de boundary canonical `sonar_bank_app/server/lib/units.lua`:
+
+- `units.to_minor(decimal_string|number) -> integer_minor` (HALF_UP rounding).
+- `units.from_minor(integer_minor) -> decimal_string` (lossless representation para INSERT/UPDATE DB DECIMAL).
+
+Helpers **mandatory** en el edge de cada wrapper Tier 1/2 (`to_minor` al recibir input externo, `from_minor` al invocar service layer + DB layer + a `Bridges.Player` events que esperan DECIMAL major).
+
+Phase A+1 migra DB + callbacks + Frontend a INTEGER minor end-to-end — roadmap canonical `@docs/planning/roadmap_phase_a_plus_1_minor_units_migration.md`.
+
+### 4'.3 Attack surface model
+
+FiveM server-side `exports` son **invocables únicamente por otros recursos server-side**. Clients no tienen canal directo. Por tanto:
+
+- NO se usa HMAC / JWT / signed tokens en la superficie exports — sería theater (cualquier recurso server-side es equally trusted por el FiveM runtime).
+- SÍ se usa `GetInvokingResource()` para audit (campo `invoker_resource` del shape canónico §1.2.A C-SEC-01 v0.3 R2) y — para Tier 2 admin exports — para allowlisting opcional vía convar `sonar:admin_allowlist` (Q4 LOCKED no shim; allowlist es defensa adicional, no requisito).
+- Client-triggered flows (NUI buttons, in-game commands) siguen pasando exclusivamente por `sonar:bank:*` net events / ox_lib callbacks con ACL + rate limit + ownership checks (LOCKED C-BE-02). Esa capa NO cambia.
+
+| Surface | Callable from client? | Validation |
+|---|---|---|
+| `exports.sonar_bank_app:*` (Tier 1/2) | NO | Strict arg checks + boundary helpers + audit |
+| `sonar:bank:*` callbacks (Tier 3 fronts) | YES (via NUI) | ACL + rate limit + ownership + idempotency |
+| Direct SQL | NO (DB only) | Not exposed |
+
+### 4'.4 Mirror to framework wallet (best-effort, no auth gate)
+
+Cada mutación Tier 1/2 que afecte saldo invoca atomicamente `publish_balance_update(citizen_id, balance_major_decimal, account_class, opts)` (C-BE-05 §2.2.1 canonical helper, NetEvent CP1-B post-M004 R1) — ver `@docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` §2.2.1 + §2.2.1.A.
+
+Adicionalmente, `sonar_bridges/server/core_override.lua` se simplifica a ~150-200 líneas (Phase 3.2 cleanup post-LOCK) y conserva ÚNICAMENTE:
+
+- `MirrorSync.SetBalance(citizen_id, balance_decimal, opts)` — best-effort push al wallet del framework activo (`players.money.bank` qb-core, `accounts.bank` ESX) post-mutation. Mirror failure NO bloquea la mutation — SONAR ledger es authoritative; mirror retry on player next login.
+- `QBCore:Server:PlayerLoaded` + ESX + QBox equivalents login handlers para trigger initial mirror sync al rejoin.
+- `Reconcile.Enqueue(citizen_id, drift_minor, reason)` — public API surface, consumida posiblemente Phase A+1 cuando se implemente reconciliation full.
+
+**REMOVED del module simplificado (era parte de §4 Core Override DEPRECATED):**
+
+- `install_qbcore_player` + wrappers + TRAP `__index`/`__newindex`.
+- Sentinel triple-defense + SHA256 checksum + probe `_G._sonar_core_override_probe`.
+- `state.in_flight`, `mirror_reason`, `consume_mirror_token`, `parse_mirror_token`.
+- `OnMoneyPreHook` export (consumer qb-core local patch desinstalado Phase 3.1).
+- Watchdog drift detection thread tier 1/2/3.
+- `VerifyIntercept`, `GetCoreOverrideHealth` exports.
+- `RegisterCommand('sonar_test_forge', ...)` dev probe.
+- `RegisterCommand('mirror_sync_now', ...)` (no auto-mirror).
+- QBox `registerHook` blocks (Phase 4 attempt abandonado).
+- ESX observer blocks (Phase 4 attempt abandonado).
+
+### 4'.5 Migration path operator-side (referencia)
+
+Phase 5 NO ships `sonar_compat` shim (Q4 LOCKED — DROP definitivo). El operador del server migra cada recurso third-party explícitamente:
+
+- `MIGRATION.md` top-level (Phase 4.7 implementation) con tabla `OLD → NEW` para 20+ recursos comunes (qb-vehicleshop, qb-banking, ...).
+- `/sonar_scan_legacy` dev command (Phase 4.8) — grep resources cargados buscando `Functions\.(Add|Remove|Set)Money.*bank`, `exports.qbx_core:`, `xPlayer\.(add|remove)(Money|AccountMoney)` → reporte por recurso.
+
+Forzar migración explícita es **security-positive**: el operador adquiere visibilidad completa de qué scripts tocan banco.
+
+### 4'.6 Glosario Phase 5 (NEW v1.0.2 R2)
+
+- **Exports Tier 1:** superficie pública de 11 exports server-side para recursos third-party mutar dinero (`AddMoney`, `RemoveMoney`, etc.).
+- **Exports Tier 2:** superficie admin/operator de 10 exports server-side con ACE + allowlist gates (`AdminCredit`, `AdminDebit`, `AdminSetBalance`, `Freeze`, `Unfreeze` + 5 `*ByCitizen` siblings).
+- **Boundary helper:** función `to_minor`/`from_minor` de `sonar_bank_app/server/lib/units.lua` para convertir entre INTEGER minor (exports surface) y DECIMAL major (DB + callbacks + Frontend).
+- **MirrorSync (Phase 5 simplified):** mecanismo best-effort para sincronizar el wallet del framework activo con el saldo SONAR authoritative — NO es el ledger primary.
+- **GetApiVersion (informational):** read-only export feature-detect (`{major, minor, patch, phase, api_lock}`). NO audit, NO mutation. Cuenta como público #22 pero fuera de los 21 mutation/read.
 
 ---
 
@@ -970,4 +1082,6 @@ Window reset cada tier check (per `watchdog_check_tier` cleanup at end). Alterna
 | **v1.0 LOCKED** | 2026-05-06 (BANK-BE.LOCK) | Promotion atomic. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + DevOps Lead (consumer consultative) handoff via H4 future. Promoted: `drafts/be_phase_a/c_be_04_*` → `docs/technical/bank_phase_a/c_be_04_*`. Pointer §X.NEW en `docs/technical/07_bridges_compatibility.md` v1.2 → v1.3 LOCKED. ADR-018 anchor referenced. |
 | **v1.0.1 R1 LOCKED** | 2026-05-06 (BANK-BE.LOCK.R1) | BANK-BE.AMEND.1 surgical patches Round 1 reactive a Security Lead audit C-SEC-01/02/03 v0.1 (founder APPROVED 2026-05-06): **H002** (Bridges.BankStatus.Transition ACE gate triple-path — P12 + console + whitelist internal_call + opts.caller_source mandatory + audit hook unauthorized attempts) + **H003** (Core Override sentinel hardening triple-defense: closure-upvalue + GlobalState replicated=false + SHA256 checksum + probe fn introspection — eliminated public attribute QBCore.__sonar_patched mutability vulnerability) + **H004** (reconciliation pipeline SQL prepared statements posicionales §7.1 steps 3+5 + AP-SQL-1 explicit prohibido §7.1.1) + **M002** (Bridges.UUID.v4 multi-entropy PRNG mix spec §3.3.1 + AP-UUID-1 prohibition + SHA256 helper §4.2.1) + **M007** (watchdog metric C action threshold COMPROMISED ratio<0.1 transition + INSUFFICIENT_SAMPLE skip + counter integration MutexEcho instrumentation §8.3.1 + 2 convars) + **M008** (MutexEcho delimiter `\|` escape + terminal sentinel `|END` + anchored UUID-strict regex §6.1 + invariants §6.1.1). **Cross-cutting M004 balance emit refactor** §5 Lite Mode `Bridges.Bank.AddMoney` + §7.1 step 5 reconciliation pipeline — `GlobalState['bank.balance.*']` reemplazado por `publish_balance_update()` helper canonical (per c_be_05 §2.2.1 v1.0.1 R1). 4 convars DevOps H4 runbook obligation: `sonar_status_transition_whitelist`, `sonar_bank_watchdog_compromise_ratio_threshold`, `sonar_bank_watchdog_min_sample_size`, `sonar_bank_atm_hmac_secret` (cross-ref C-BE-02 M006). Security Lead BANK-SEC.1 re-audit ✅ PASS veredicto + `08_audit_hooks.md` v0.2. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security Lead PASS. |
 
-— **C-BE-04 v1.0.1 R1 LOCKED** 2026-05-06 (BANK-BE.LOCK.R1 ceremony). Sign-off founder + Backend Lead + Security Lead PASS. **Effective immediately.** DevOps Lead via H4 (boot order + observability + 4 convars runbook). Amendments adicionales require formal Round 2/3 protocol.
+| **v1.0.2 R2 LOCKED** | 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2) | Phase 5 ecosystem pivot Round 2 reactive a Founder LOCK Q1-Q8 + §9 path (a). **NULLIFY §4 Core Override module entera** (~111 líneas §4.1 + §4.2 + §4.2.1 + §4.3) wrapped en blockquote DEPRECATED + `<details>` collapsible audit trail (contenido v1.0.1 R1 preservado verbatim, NO consume runtime). **NEW §4' Server-to-Server Integration API surface**: §4'.1 modelo arquitectónico ox_inventory-style + Tier 1/2/3 segregation + GetApiVersion informational (Founder Decision #1 LOCKED = 22 explicit públicos = 21 mutation/read + 1 informational), §4'.2 boundary conversion convention (Q1 LOCKED split + units.to_minor/from_minor mandatory en wrapper edge), §4'.3 attack surface model (FiveM server-only exports + GetInvokingResource audit + sonar:admin_allowlist Tier 2 defense), §4'.4 mirror simplified (MirrorSync.SetBalance best-effort + login handlers + Reconcile.Enqueue + REMOVED list explicit), §4'.5 migration operator-side (Q4 LOCKED no shim + MIGRATION.md + /sonar_scan_legacy), §4'.6 glosario Phase 5 (Exports Tier 1/2 + Boundary helper + MirrorSync + GetApiVersion). **Secciones preservadas verbatim:** §1 filosofía + §2 architecture overview + §3 Bridges API canonical (3.1 + 3.2 + 3.2.1 BankStatus.Transition H002 R1 + 3.3 + 3.3.1 UUID.v4 entropy M002 R1) + §5 Lite Mode + §6 Mutex + §7 Reconciliation + §8 Watchdog general (Core Override drift refs runtime preservado funcionalmente) + §9 Status FSM (4 transitions verbatim). **Cleanup runtime Phase 3 post-LOCK:** qb-core local patch revert founder-side (Phase 3.1) + `core_override.lua` simplification 980→~150-200 líneas (Phase 3.2) + `credit_command.lua` delete (Phase 3.3) + fxmanifest edit + obsolete convars cleanup (Phase 3.5: `sonar_co_watchdog_interval_ms`, `sonar_bridges_disable_prehook`). Cross-cutting LOCK-time impacts: C-BE-02 v1.0.2 R2 + C-BE-05 v1.0.2 R2 + C-SEC-01 v0.3 R2 atomic in-place patches. Security consumer review absorbed by PM Cascade per Founder Decision #3 — BANK-SEC.2 deuda técnica re-audit pending Phase B. Sign-off ratificado: founder yaboula APPROVED + Backend Lead self-attested + Security consumer PM Cascade absorbed + PM Cascade promote ceremony. |
+
+— **C-BE-04 v1.0.2 R2 LOCKED** 2026-05-12 (BANK-BE.PHASE_5.1.LOCK.R2 ceremony). Sign-off founder + Backend Lead + Security consumer PM-absorbed. **Effective immediately.** DevOps Lead via H4 absorbed runbook update post-Phase 3.5 cleanup. Phase 5 implementation Tier 1/2 exports per design SSoT `@docs/design/04_sonar_bank_api.md` v0.2. Amendments adicionales require formal Round 3 protocol.
