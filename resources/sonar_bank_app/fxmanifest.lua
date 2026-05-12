@@ -53,30 +53,31 @@ server_scripts {
   'server/lib/enums.lua',               -- 1.  no deps — canonical enums
   'server/lib/errors.lua',              -- 2.  depends enums — error codes registry
   'server/lib/validators.lua',          -- 3.  depends errors — input sanitization
-  'server/lib/db.lua',                  -- 4.  depends errors — H004 AP-SQL-1 prepared statements
-  'server/lib/uuid.lua',                -- 5.  depends errors — M002 multi-entropy
-  'server/lib/hmac.lua',                -- 6.  depends errors — M006 ATM HMAC convar enforce
-  'server/lib/rate_limit.lua',          -- 7.  depends enums, errors — M003 dual rate-limit recursive guard
-  'server/lib/audit.lua',               -- 8.  depends enums, errors, db, uuid — C-SEC-01 §1.2 + H006
-  'server/lib/idempotency.lua',         -- 9.  depends enums, errors, db, uuid, audit, hmac — M005
-  'server/lib/publish.lua',             -- 10. depends enums, validators — M004 CP1-B
-  'server/lib/auth.lua',                -- 11. depends enums, errors, db — H001 + AP-AUTH-1
-  'server/lib/perf.lua',                -- 12. depends enums — perf budget tracker
+  'server/lib/units.lua',               -- 4.  depends errors — Phase 5 minor/major boundary
+  'server/lib/db.lua',                  -- 5.  depends errors — H004 AP-SQL-1 prepared statements
+  'server/lib/uuid.lua',                -- 6.  depends errors — M002 multi-entropy
+  'server/lib/hmac.lua',                -- 7.  depends errors — M006 ATM HMAC convar enforce
+  'server/lib/rate_limit.lua',          -- 8.  depends enums, errors — M003 dual rate-limit recursive guard
+  'server/lib/audit.lua',               -- 9.  depends enums, errors, db, uuid — C-SEC-01 §1.2 + H006
+  'server/lib/idempotency.lua',         -- 10. depends enums, errors, db, uuid, audit, hmac — M005
+  'server/lib/publish.lua',             -- 11. depends enums, validators — M004 CP1-B
+  'server/lib/auth.lua',                -- 12. depends enums, errors, db — H001 + AP-AUTH-1
+  'server/lib/perf.lua',                -- 13. depends enums — perf budget tracker
 
   -- 2. State primitive (no domain deps — generic LRU class).
-  'server/state/cache.lua',             -- 13. generic LRU primitive
+  'server/state/cache.lua',             -- 14. generic LRU primitive
 
   -- 3. Repositories (DAOs — pure SQL, depends only on lib/db).
-  'server/repos/accounts.lua',          -- 14.
-  'server/repos/transactions.lua',      -- 15. REQ-FE-002 GetRecentRecipients indexed query
-  'server/repos/recipients.lua',        -- 16.
-  'server/repos/audit_query.lua',       -- 17.
-  'server/repos/recurring.lua',         -- 18.
-  'server/repos/loans.lua',             -- 19.
-  'server/repos/portfolio.lua',         -- 20.
-  'server/repos/cards.lua',             -- 21.
-  'server/repos/govt.lua',              -- 22.
-  'server/repos/business.lua',          -- 23.
+  'server/repos/accounts.lua',          -- 15.
+  'server/repos/transactions.lua',      -- 16. REQ-FE-002 GetRecentRecipients indexed query
+  'server/repos/recipients.lua',        -- 17.
+  'server/repos/audit_query.lua',       -- 18.
+  'server/repos/recurring.lua',         -- 19.
+  'server/repos/loans.lua',             -- 20.
+  'server/repos/portfolio.lua',         -- 21.
+  'server/repos/cards.lua',             -- 22.
+  'server/repos/govt.lua',              -- 23.
+  'server/repos/business.lua',          -- 24.
 
   -- 4. State (statebags hook — depends on repos.accounts).
   'server/state/statebags.lua',         -- 24. M004 §2.2.2 playerJoining lazy publish hook
