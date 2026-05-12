@@ -130,9 +130,6 @@ server_scripts {
   --     third-party resources querying canonical SONAR balance.
   'server/boot/exports.lua',            -- 55. GetPrimaryBalanceMinor
 
-  -- 11. Admin CLI commands (framework-agnostic). Loaded after services so
-  --     BankApp.services.admin is defined.
-  'server/admin/credit_command.lua',    -- 56. /sonarcredit
 }
 
 -- =============================================================================
