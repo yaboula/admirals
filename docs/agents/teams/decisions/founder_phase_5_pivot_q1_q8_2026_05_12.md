@@ -200,3 +200,54 @@ Differs from `PLAYER_NOT_FOUND` (source does not exist in server / dropped befor
 ---
 
 > **Audit reference:** PM Cascade Round 1 contractual gap analysis (chat 2026-05-12 22:05 UTC+02) flagged 4 LOCKED contracts affected + 8 open questions. Founder review + Path Y compromise reasoning (chat 2026-05-12 22:30 UTC+02). Final LOCK 2026-05-12.
+
+---
+
+## 9. Clarification 2026-05-12 22:50 UTC+02 — StateBag value type semantic (Phase A scope)
+
+### Origin
+
+PM Cascade drafting of Q2 LOCK (§2) included literal `bank.balance.<cid> = new_balance_minor (INTEGER)`. This created drafting conflict with Q1 split convention (§1) stating "Frontend display + input | DECIMAL major units | LOCKED Phase A (no touch)". Frontend reads StateBag values directly via `web-src/src/lib/bankStateBags.ts` formatted with `useI18n().money(value)` expecting DECIMAL major units.
+
+BANK-BE.PHASE_5.1 Phase 0 onboarding flagged conflict 2026-05-12 22:30 UTC+02.
+
+### Resolution (LOCKED Phase A)
+
+**Path (a) confirmed:** StateBag values preserve **DECIMAL major units** Phase A, consistent with Q1 split convention. Boundary conversion `from_minor()` happens **inside the export wrapper, BEFORE invoking `Publish.BalanceUpdate()`**.
+
+Canonical signature C-BE-05 v1.0.1 R1 §2.2.1 **unchanged Phase A**:
+
+```lua
+Publish.BalanceUpdate(citizen_id, balance_major_decimal, savings_major_decimal)
+```
+
+Wrapper internal flow:
+
+1. Mutation in service layer (minor units integer math).
+2. Convert result to DECIMAL major via `lib.units.from_minor(new_balance_minor)`.
+3. Invoke `Publish.BalanceUpdate(cid, balance_major, savings_major)`.
+4. StateBag keys `bank.balance.<cid>` + `bank.savings.<cid>` receive DECIMAL major (Phase A baseline preserved).
+5. Frontend consumers unaffected.
+
+### Phase A+1 commitment
+
+When `docs/planning/roadmap_phase_a_plus_1_minor_units_migration.md` executes, StateBag value type migrates DECIMAL major → INTEGER minor as part of holistic Frontend + DB + callback migration. Phase A+1 amendment to C-BE-05 will revise §2.2.1 signature semantically.
+
+### Intent preserved
+
+Q2 LOCK intent preserved 100%:
+
+- CP1-B mandate (atomic StateBag publish every mutation path) ✓
+- AP-CP1-1 prohibition (no parallel state propagation channels) ✓
+
+Only the value TYPE clarified for Phase A scope. No semantic change to ATOMICITY or CHANNEL.
+
+### Sign-off
+
+| Role | Status | Date |
+|---|---|---|
+| Founder yaboula | ✅ SIGNED | 2026-05-12 |
+| PM Cascade | ✅ Drafted clarification | 2026-05-12 |
+| Backend Lead (BANK-BE.PHASE_5.1) | ✅ Recommended path (a) Phase 0 | 2026-05-12 |
+
+> **Audit trail:** append-only addendum. Q2 body §2 NOT edited. Founder decisions doc immutability stamp preserved.
