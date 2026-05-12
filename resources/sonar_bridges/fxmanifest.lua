@@ -74,6 +74,7 @@ server_scripts {
   'server/core_override.lua',
   'server/lite_mode.lua',
   'server/watchdog.lua',
+  'server/identity_helpers.lua',
   'server/init.lua',
   'server/st022_esx_eval.lua',
 }

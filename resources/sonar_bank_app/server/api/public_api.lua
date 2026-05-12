@@ -47,6 +47,8 @@ local function source_to_citizen(src)
   src = tonumber(src)
   if not src or src <= 0 then return nil, 'INVALID_ARGUMENT' end
   if not GetPlayerName(src) then return nil, 'PLAYER_NOT_FOUND' end
+  local loaded_ok, loaded = pcall(function() return exports.sonar_bridges:IsIdentityLoaded(src) end)
+  if loaded_ok and loaded == false then return nil, 'PLAYER_NOT_LOADED' end
   local ok, cid = pcall(function() return exports.sonar_bridges:GetCitizenId(src) end)
   if not ok then return nil, 'INTERNAL_ERROR' end
   if type(cid) ~= 'string' or cid == '' then return nil, 'PLAYER_NOT_LOADED' end
