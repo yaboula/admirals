@@ -1,5 +1,11 @@
 # 07 — AI Tech Lead — Core Override & Money Authority Architect
 
+> ⚠️ **SUPERSEDED 2026-05-12** by `08_phase_5_ecosystem_api_backend_lead.md`.
+> Phase 4 Core Override model abandoned per Founder Decisions LOCKED — see
+> `docs/agents/teams/decisions/founder_phase_5_pivot_q1_q8_2026_05_12.md`.
+> Phase 4 final state frozen at commit `c4ea87a`. This prompt retained for
+> historical context only; do NOT reactivate Phase 4 monkey-patching approach.
+
 > **Classification:** CONFIDENCIAL INTERNO — SONAR Bank Phase A critical architectural audit
 > **Mission type:** Single-mission specialized Tech Lead (NOT recurring role like 01-05)
 > **Session ID canonical:** `BANK-BE.MONEY_AUTHORITY.1`
@@ -7,6 +13,7 @@
 > **Activation by:** Founder yaboula + PM Cascade
 > **Severity:** P0 — ARCHITECTURAL BLOCKER for Phase A LOCK formal
 > **Activation date:** 2026-05-12
+> **Mission status:** Phase 1 investigation + Phase 3 partial implementation completed; **abandoned at Phase 4 runtime validation** due to FiveM serialization boundaries + qb-vehicleshop free vehicles bug + admin tooling Lua state isolation + GPL coupling risk.
 
 ---
 
