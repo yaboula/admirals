@@ -50,7 +50,7 @@ local function is_player_online(src)
 end
 
 -- -----------------------------------------------------------------------------
--- §1.b Mirror hotpath — Core Override universal backward-compat.
+-- §1.b Mirror hotpath — framework wallet mirror.
 --
 --   When `sonar_bridge_bank_mode` is set to `mirror` (or legacy `synced`),
 --   every successful balance publish also pushes the new balance to the
@@ -64,12 +64,10 @@ end
 --   Guarantees:
 --     - Best-effort: any failure in the mirror call is logged but never
 --       breaks the primary publish contract.
---     - Loop-safe: the mirror call uses reason=`sonar_mirror_sync|<corr>`,
---       which the Core Override interceptor recognises and passes through
---       to the framework's original SetMoney — no foreign-mutation enqueue.
+--     - Loop-safe: mirror calls are best-effort SetMoney writes performed
+--       after the SONAR ledger transaction; no interception path remains.
 --     - Mode-gated: only active when the convar is set; default `standalone`
---       disables this path (Core Override still intercepts foreign writes
---       but does not push SONAR → framework).
+--       disables this path.
 -- -----------------------------------------------------------------------------
 
 local function is_mirror_mode()

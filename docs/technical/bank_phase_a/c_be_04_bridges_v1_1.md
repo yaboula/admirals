@@ -2,9 +2,9 @@
 
 > **Owner:** Backend Money & Compatibility Lead.
 > **Consumer Leads:** DevOps Lead (fxmanifest + load order + boot sequence) + Security Lead (audit watchdog + ACE checks + exploit prevention).
-> **Status:** 🟢 **v1.0.1 R1 LOCKED 2026-05-06** (BANK-BE.LOCK.R1 ceremony — Round 1 amendment promoted post Security Lead PASS veredicto BANK-SEC.1).
-> **Fecha:** 2026-05-06 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1).
-> **Path canonical:** `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0.1 R1 LOCKED. Pointer §X.NEW `docs/technical/07_bridges_compatibility.md` v1.3.1.
+> **Status:** 🟢 **v1.0.2 R2 LOCKED 2026-05-12** (BANK-BE.PHASE_5.1.LOCK.R2 ceremony — Round 2 amendment promoted post Founder LOCK Q1-Q8 + §9 path (a)).
+> **Fecha:** 2026-05-12 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1 → BANK-BE.PHASE_5.1.LOCK.R2).
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_04_bridges_v1_1.md` v1.0.2 R2 LOCKED. Pointer §X.NEW `docs/technical/07_bridges_compatibility.md` v1.3.1.
 > **ADR anchor:** ADR-018 (Bank Lite mode hybrid 3-layer + correlation-id mutex + cut ESX legacy + 8 mitigation patterns) — ratificado BANK-BE.LOCK + R1 hardening Round 1.
 
 ---

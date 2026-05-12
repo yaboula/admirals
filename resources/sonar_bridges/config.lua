@@ -49,18 +49,17 @@ for _, module in ipairs(Config.Modules) do
 end
 
 -- -----------------------------------------------------------------------------
--- Bank mode (per doc §4.1):
---   standalone     — SONAR ledger es SSoT único. Core Override intercepta
---                    mutaciones foráneas (qb-adminmenu, qb-banking, etc.) y las
---                    enruta a reconcile, pero NO empuja SONAR → framework.
---                    Consecuencia: PlayerData.money.bank (QB) puede divergir
---                    del balance SONAR. HUD/selector NO ven el saldo SONAR
---                    salvo que se parcheen explícitamente. Default.
+-- Bank mode (per C-BE-04 §4′.4):
+--   standalone     — SONAR ledger es SSoT único. No intercepta mutaciones
+--                    foráneas del framework; recursos third-party deben migrar
+--                    explícitamente a exports.sonar_bank_app:* Tier 1/2.
+--                    El wallet framework puede divergir si scripts legacy no
+--                    migrados lo mutan fuera de SONAR. Default.
 --   mirror (alias  — SONAR ledger SSoT + push unidireccional SONAR → framework
 --    'synced')        tras cada operación de balance (transfer, deposit, ATM,
 --                    loan, payroll, etc.) vía MirrorSync.SetBalance. Hot-path
 --                    wireado en sonar_bank_app/lib/publish.lua y login sync
---                    en core_override.lua. RECOMENDADO para compatibilidad
+--                    en core_override.lua. Útil para compatibilidad visual
 --                    universal con scripts QB (qb-hud, qb-multicharacter,
 --                    qb-banking, qb-phone, 3rd-party). Activación:
 --                    `setr sonar_bridge_bank_mode "mirror"` en server cfg.

@@ -4,7 +4,7 @@
 > **Consumer Leads:** Frontend Lead (consume bags client-side reactive) + Security Lead (audit privacy boundaries).
 > **Status:** 🟢 **v1.0.2 R2 LOCKED 2026-05-12** (BANK-BE.PHASE_5.1 Phase 2 ceremony — Round 2 amendment promoted post Phase 5 ecosystem pivot Founder LOCK Q1-Q8 + §9 path (a)).
 > **Fecha:** 2026-05-12 (BANK-BE.0 → BANK-BE.LOCK → BANK-BE.AMEND.1 → BANK-BE.LOCK.R1 → BANK-BE.PHASE_5.1.LOCK.R2).
-> **Path canonical:** `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0.1 R1 LOCKED. Pointer cross-ref `docs/technical/02_events_catalog.md` v1.3.1 §statebags-global-publishers.
+> **Path canonical:** `docs/technical/bank_phase_a/c_be_05_statebags_global_publishers.md` v1.0.2 R2 LOCKED. Pointer cross-ref `docs/technical/02_events_catalog.md` v1.3.1 §statebags-global-publishers.
 > **CP origin:** CP1 mandatory (State Bags global mandatory) + Q-BE-pre-02/03 founder LOCKED 2026-05-06 + **M004 architectural founder APPROVED 2026-05-06** (financial PII privacy non-negotiable).
 
 ---

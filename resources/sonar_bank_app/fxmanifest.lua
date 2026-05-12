@@ -126,7 +126,7 @@ server_scripts {
   'server/boot/init.lua',               -- 54. wires onResourceStart → Run()
 
   -- 10. Public cross-resource exports (loaded last — depends on repos).
-  --     Consumers: sonar_bridges Core Override (login mirror sync) +
+  --     Consumers: sonar_bridges MirrorSync login sync +
   --     third-party resources querying canonical SONAR balance.
   'server/boot/exports.lua',            -- 55. GetPrimaryBalanceMinor
 
