@@ -133,7 +133,9 @@ server_scripts {
   'server/api/public_api.lua',          -- 56. Phase 5 Tier 1 exports + GetApiVersion
   'server/api/auth.lua',                -- 57. Phase 5 Tier 2 admin auth gate
   'server/api/admin_api.lua',           -- 58. Phase 5 Tier 2 admin exports
-  'server/boot/exports.lua',            -- 59. GetPrimaryBalanceMinor
+  'server/api/legacy_scan.lua',         -- 59. Phase 5 migration scanner
+  'server/api/smoke_exports.lua',       -- 60. Phase 5 exports smoke
+  'server/boot/exports.lua',            -- 61. GetPrimaryBalanceMinor
 
 }
 
