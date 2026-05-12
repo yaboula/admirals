@@ -9,6 +9,7 @@ local UUID = BankApp.lib.uuid
 local Idempotency = BankApp.lib.idempotency
 local Publish = BankApp.lib.publish
 local Public = BankApp.api.public
+local ApiAuth = BankApp.api.auth
 
 local RESOURCE = 'sonar_bank_app'
 local IDEM_TTL_SECONDS = 86400
@@ -32,22 +33,9 @@ local function ensure_uuid(value)
   if value ~= nil and not Validators.IsValidUUID(value) then return nil, 'INVALID_UUID' end
   return value or UUID.V4(), nil
 end
-local function allowlisted(resource)
-  local raw = GetConvar('sonar:admin_allowlist', 'sonar_bank_app,sonar_bank,sonar_core')
-  for item in raw:gmatch('[^,]+') do
-    if item:match('^%s*(.-)%s*$') == resource then return true end
-  end
-  return false
-end
 local function require_admin(actor_src)
-  actor_src = tonumber(actor_src) or 0
-  local resource = invoker()
-  if resource ~= 'console' and allowlisted(resource) then return true, nil, resource end
-  if actor_src == 0 then return true, nil, resource end
-  if IsPlayerAceAllowed(actor_src, BankApp.Config.Permissions.ADMIN_ACE) or IsPlayerAceAllowed(actor_src, BankApp.Config.Permissions.GOVT_COMPLIANCE_ACE) then
-    return true, nil, resource
-  end
-  return false, 'AUTH_ACE_DENIED', resource
+  local ok, err, context = ApiAuth.RequireAdmin(actor_src, { ace = BankApp.Config.Permissions.GOVT_COMPLIANCE_ACE })
+  return ok, err, context and context.invoker_resource or invoker()
 end
 local function cid_from_source(src)
   src = tonumber(src)
