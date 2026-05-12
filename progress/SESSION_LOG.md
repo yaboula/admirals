@@ -2768,3 +2768,17 @@ git diff --check  → ✅ solo CRLF warnings pre-existing (ignorado per norma)
 - `sonar_bridges/server/core_override.lua` cleanup Phase 3.2 removes the matching `OnMoneyPreHook` export and all token/watchdog/trap code.
 
 — **BANK-BE.PHASE_5.2 3.1 completed.**
+
+---
+
+### BANK-BE.PHASE_5.2 — Phase 3.5 cleanup — obsolete convars audit
+
+- **Fecha:** 2026-05-13 00:05 UTC+02
+- **Scope:** remove/verify Phase 4 obsolete Core Override convars:
+  - `sonar_co_watchdog_interval_ms`
+  - `sonar_bridges_disable_prehook`
+- **Runtime result:** no active references remain in `resources/` after Phase 3.2 simplification. `resources/sonar_bridges/config.lua`, `server.cfg.example`, and `esx.cfg` contain no obsolete convar entries.
+- **Kept intentionally:** `sonar_dev_mode` remains valid for Phase 5 smoke/dev commands; `sonar_bridge_bank_mode` remains valid for standalone vs mirror/synced wallet mirror behavior.
+- **DevOps H4 note:** runbook must not document or set the obsolete Core Override watchdog/prehook convars. Future runbook should document Phase 5 convars only (`sonar:admin_allowlist`, `sonar_bridge_bank_mode`, inherited audit/HMAC/rate-limit convars).
+
+— **BANK-BE.PHASE_5.2 3.5 completed.**
