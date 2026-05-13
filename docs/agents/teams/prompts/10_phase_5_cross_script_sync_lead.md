@@ -6,7 +6,9 @@ preceded_by: BANK-BE.PHASE_5.5 (manual adversarial probe in-isolation 22 exports
 emitted_by: PM Cascade
 emitted_at: 2026-05-13 04:30 UTC+02 (revised 2026-05-13 04:55 UTC+02 post-research)
 authority: Founder yaboula doctrine (live runtime evidence mandatory MEMORY[11ff0dd5]) + Founder concern 2026-05-13 04:25 UTC+02 "es la sincronizacion completa con los otros script realmente quiero probarlo yo, porque seguramente que falla" + Founder principle 2026-05-13 04:40 UTC+02 "cuando reducimos mas trabajo es mucho mejor"
-status: ACTIVE — awaiting dev session spawn (HIGH SEVERITY) — Path E recommended primary
+status: SUPERSEDED 2026-05-13 05:00 UTC+02 by founder architectural decision — see prompt 11 + progress/MIGRATION_PATTERNS.md
+superseded_reason: Path E (passive listener) descartado por loop-risk via MirrorSync echo (mismo error que Phase 3 cleanup removió). Founder ratificó Path A AUTOMATIZADO vía Python patcher determinístico. Cero lógica reactiva runtime. Doctrine SONAR authoritative master preservada.
+superseded_by: docs/agents/teams/prompts/11_phase_5_6_a_migration_patcher_lead.md + progress/MIGRATION_PATTERNS.md
 ---
 
 # 0. Pre-Audit Research Findings (PM Cascade 2026-05-13 04:55 UTC+02)
