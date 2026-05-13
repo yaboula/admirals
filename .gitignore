@@ -73,3 +73,16 @@ cache/
 .env.local
 .env.*.local
 server.cfg
+
+# -----------------------------------------------------------------------------
+# Phase 5.6 migration patcher local artifacts
+# -----------------------------------------------------------------------------
+sandbox_qb_snapshot/
+sandbox_migration_output/
+tools/migration_patcher/.venv/
+tools/migration_patcher/.pytest_cache/
+tools/migration_patcher/.coverage
+tools/migration_patcher/htmlcov/
+tools/migration_patcher/migration_output/
+__pycache__/
+*.pyc

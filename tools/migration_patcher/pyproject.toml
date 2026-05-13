@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sonar-migration-patcher"
+version = "1.0.0"
+description = "SONAR Bank Phase 5.6 operator-side qb-* bank migration patcher"
+requires-python = ">=3.11"
+dependencies = ["click==8.1.7"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=patcher --cov-report=term-missing --cov-fail-under=85"
+testpaths = ["tests"]
+pythonpath = ["."]
