@@ -79,12 +79,12 @@ qa_movement <request_nonce_or_tx_id>
 | 14 | `AdminDebit` | `qa_admin_debit <actor_src> <target> 5000 qa_admin_debit idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5004300`, audit row id=1401, movement row id=2795 category `adjustment` |
 | 15 | `AdminSetBalance` | `qa_admin_set_balance <actor_src> <target> 100000 qa_admin_set idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5000000`, `delta_minor=-4300`, audit row id=1402, movement row id=2796 |
 | 16 | `Freeze` | `qa_freeze <actor_src> <iban> qa_freeze` | PASS | PASS | n/a | n/a | PASS | P55-003 re-test PASS: returned `ok=true`, previous snapshot `frozen=false`, final snapshot `is_frozen=true` |
-| 17 | `Unfreeze` | `qa_unfreeze <actor_src> <iban> qa_unfreeze` | PASS | PENDING | n/a | n/a | PASS | P55-003 fix re-test returned `ok=true`, previous snapshot `frozen=true`, account snapshot changed to `is_frozen=false` |
-| 18 | `AdminCreditByCitizen` | `qa_admin_credit_by_citizen <actor_src> <cid> 5000 qa_admin_credit_cid idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 19 | `AdminDebitByCitizen` | `qa_admin_debit_by_citizen <actor_src> <cid> 5000 qa_admin_debit_cid idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 20 | `AdminSetBalanceByCitizen` | `qa_admin_set_balance_by_citizen <actor_src> <cid> 100000 qa_admin_set_cid idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 21 | `FreezeByCitizen` | `qa_freeze_by_citizen <actor_src> <cid> qa_freeze_cid` | PENDING | PENDING | n/a | n/a | PENDING |  |
-| 22 | `UnfreezeByCitizen` | `qa_unfreeze_by_citizen <actor_src> <cid> qa_unfreeze_cid` | PENDING | PENDING | n/a | n/a | PENDING |  |
+| 17 | `Unfreeze` | `qa_unfreeze <actor_src> <iban> qa_unfreeze` | PASS | PASS | n/a | n/a | PASS | P55-003 re-test PASS: returned `ok=true`, previous snapshot `frozen=true`, account snapshot `is_frozen=false` |
+| 18 | `AdminCreditByCitizen` | `qa_admin_credit_by_citizen <actor_src> <cid> 5000 qa_admin_credit_cid idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5005000`, audit row id=1407, movement row id=2797 category `adjustment` |
+| 19 | `AdminDebitByCitizen` | `qa_admin_debit_by_citizen <actor_src> <cid> 5000 qa_admin_debit_cid idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5004000`, audit row id=1408, movement row id=2798 category `adjustment` |
+| 20 | `AdminSetBalanceByCitizen` | `qa_admin_set_balance_by_citizen <actor_src> <cid> 100000 qa_admin_set_cid idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5000000`, `delta_minor=-4000`, audit row id=1410, movement row id=2799 |
+| 21 | `FreezeByCitizen` | `qa_freeze_by_citizen <actor_src> <cid> qa_freeze_cid` | PASS | PASS | n/a | n/a | PASS | Returned `ok=true`, previous snapshot `frozen=false`, final account snapshot `is_frozen=true`, audit row id=1411 |
+| 22 | `UnfreezeByCitizen` | `qa_unfreeze_by_citizen <actor_src> <cid> qa_unfreeze_cid` | PASS | PASS | n/a | n/a | PASS | Returned `ok=true`, previous snapshot `frozen=true`, account snapshot `is_frozen=false`, audit row id=1409 |
 
 ## Per-export evidence log
 
@@ -213,6 +213,39 @@ Post-freeze snapshot: qa_account_by_iban AD-WKRB-ZVE8-9A1D -> ok=true err=null d
 Result: PASS — Freeze/Unfreeze correctly interpret boolean `is_frozen` after `DB.ToBool` fix.
 ```
 
+```text
+[AdminCreditByCitizen / AdminDebitByCitizen]
+Invoke mutation: qa_admin_credit_by_citizen 1 FXD56242 5000 QA_admin_credit_cid idem=cccccccc-cccc-4ccc-8ccc-cccccccccccc -> ok=true err=null data={tx_id="ff9c9344-a444-47d9-80f3-a0940c3349ed",new_balance_minor=5005000,iban="AD-WKRB-ZVE8-9A1D"}
+Audit: qa_audit cccccccc-cccc-4ccc-8ccc-cccccccccccc -> row id=1407 category=bank_exports action=admin_credit event_type=admin_credit actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=50.00 delta_minor=5000 request_nonce=cccccccc-cccc-4ccc-8ccc-cccccccccccc correlation_id=cccccccc-cccc-4ccc-8ccc-cccccccccccc invoker_resource=oxmysql reason=QA_admin_credit_cid
+Movement: qa_movement cccccccc-cccc-4ccc-8ccc-cccccccccccc -> row id=2797 category=adjustment amount=50.00 balance_after=50050.00 request_nonce=cccccccc-cccc-4ccc-8ccc-cccccccccccc related_doc_id=ff9c9344-a444-47d9-80f3-a0940c3349ed source_resource=sonar_bank_app.
+Invoke mutation: qa_admin_debit_by_citizen 1 FXD56242 1000 QA_admin_debit_cid idem=dddddddd-dddd-4ddd-8ddd-dddddddddddd -> ok=true err=null data={tx_id="0409bac4-ed2c-49e7-afb5-623f4d753a86",new_balance_minor=5004000,iban="AD-WKRB-ZVE8-9A1D"}
+Audit: qa_audit dddddddd-dddd-4ddd-8ddd-dddddddddddd -> row id=1408 category=bank_exports action=admin_debit event_type=admin_debit actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=-10.00 delta_minor=-1000 request_nonce=dddddddd-dddd-4ddd-8ddd-dddddddddddd correlation_id=dddddddd-dddd-4ddd-8ddd-dddddddddddd invoker_resource=oxmysql reason=QA_admin_debit_cid
+Movement: qa_movement dddddddd-dddd-4ddd-8ddd-dddddddddddd -> row id=2798 category=adjustment amount=-10.00 balance_after=50040.00 request_nonce=dddddddd-dddd-4ddd-8ddd-dddddddddddd related_doc_id=0409bac4-ed2c-49e7-afb5-623f4d753a86 source_resource=sonar_bank_app.
+StateBag/NetEvent/UI: PENDING.
+Result: PASS
+```
+
+```text
+[UnfreezeByCitizen / AdminSetBalanceByCitizen / FreezeByCitizen]
+Invoke mutation: qa_unfreeze_by_citizen 1 FXD56242 QA_unfreeze_cid -> ok=true err=null data={iban="AD-WKRB-ZVE8-9A1D",previous_flag_snapshot={frozen=true}}
+Post-unfreeze snapshot: qa_account_by_citizen FXD56242 -> ok=true err=null data={is_frozen=false,balance_minor=5004000,iban="AD-WKRB-ZVE8-9A1D"}
+Invoke mutation: qa_admin_set_balance_by_citizen 1 FXD56242 5000000 QA_admin_set_cid idem=eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee -> ok=true err=null data={tx_id="7371f5e5-557f-4661-8765-a7d0d4d43407",new_balance_minor=5000000,prev_balance_minor=5004000,iban="AD-WKRB-ZVE8-9A1D",delta_minor=-4000}
+Audit: qa_audit eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee -> row id=1410 category=bank_exports action=admin_set_balance event_type=admin_set_balance actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=-40.00 delta_minor=-4000 request_nonce=eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee correlation_id=eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee invoker_resource=oxmysql reason=QA_admin_set_cid previous_flag_snapshot={balance_before_minor=5004000,overdraft_authorized_by="1",frozen=false}
+Movement: qa_movement eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee -> row id=2799 category=adjustment amount=-40.00 balance_after=50000.00 request_nonce=eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee related_doc_id=7371f5e5-557f-4661-8765-a7d0d4d43407 source_resource=sonar_bank_app.
+Invoke mutation: qa_freeze_by_citizen 1 FXD56242 QA_freeze_cid -> ok=true err=null data={iban="AD-WKRB-ZVE8-9A1D",previous_flag_snapshot={frozen=false}}
+Post-freeze snapshot: qa_account_by_citizen FXD56242 -> ok=true err=null data={is_frozen=true,balance_minor=5000000,iban="AD-WKRB-ZVE8-9A1D"}
+StateBag/NetEvent/UI: PENDING.
+Result: PASS
+```
+
+```text
+[Freeze/Unfreeze audit recent helper]
+Runtime: restart sonar_bank_qa_probe -> ready, qa_help shows helper qa_audit_recent <event_type> [limit].
+Audit: qa_audit_recent account_freeze 5 -> latest row id=1411 category=bank_exports action=account_freeze event_type=account_freeze actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=0.00 delta_minor=0 request_nonce=1e304406-95dd-4b82-aa27-7036623da07a correlation_id=1e304406-95dd-4b82-aa27-7036623da07a invoker_resource=oxmysql reason=QA_freeze_cid previous_flag_snapshot={frozen=false}; prior P55-003 retest row id=1406 also present.
+Audit: qa_audit_recent account_unfreeze 5 -> latest row id=1409 category=bank_exports action=account_unfreeze event_type=account_unfreeze actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=0.00 delta_minor=0 request_nonce=79382ce9-a127-46b8-8931-9356eab6914f correlation_id=79382ce9-a127-46b8-8931-9356eab6914f invoker_resource=oxmysql reason=QA_unfreeze_cid previous_flag_snapshot={frozen=true}; prior P55-003 retest row id=1405 also present.
+Result: PASS
+```
+
 ## Cross-checks (5.3)
 
 | Cross-check | Status | Evidence |
@@ -241,10 +274,10 @@ Result: PASS — Freeze/Unfreeze correctly interpret boolean `is_frozen` after `
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| 22/22 cobertura PASS dev | PENDING | P55-001 resolved; continue remaining matrix |
-| 0 BLOCKER findings | PENDING | No BLOCKER filed so far |
+| 22/22 cobertura PASS dev | BLOCKED BY ENVIRONMENT | 21/22 functionally PASS; `TransferBySource` deferred because current live sub-session has only source `1` online |
+| 0 BLOCKER findings | ✅ | No BLOCKER filed so far |
 | HIGH/MEDIUM RESOLVED + re-test PASS | ✅ | P55-001 HIGH resolved + re-test PASS; P55-003 HIGH resolved + re-test PASS |
-| LOW/COSMETIC documented/deferred | PENDING |  |
+| LOW/COSMETIC documented/deferred | ✅ | P55-002 resolved in probe; `TransferBySource` environmental deferral documented |
 | Founder 🟢 GO MANUAL formal | PENDING |  |
 
 ## Sign-off

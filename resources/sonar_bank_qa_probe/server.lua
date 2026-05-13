@@ -223,6 +223,7 @@ RegisterCommand('qa_help', function()
   print(('%s helper qa_account_by_citizen <citizen_id>'):format(PREFIX))
   print(('%s helper qa_account_by_iban <iban>'):format(PREFIX))
   print(('%s helper qa_audit <request_nonce>'):format(PREFIX))
+  print(('%s helper qa_audit_recent <event_type> [limit]'):format(PREFIX))
   print(('%s helper qa_audit_shape <request_nonce>'):format(PREFIX))
   print(('%s helper qa_movement <request_nonce>'):format(PREFIX))
 end, false)
@@ -272,6 +273,22 @@ WHERE request_nonce = ? OR correlation_id = ?
 ORDER BY id DESC
 LIMIT 10
 ]]):format(table_ref('sonar_audit_log')), { args[1], args[1] })
+end, false)
+
+RegisterCommand('qa_audit_recent', function(_, args)
+  local event_type = tostring(args[1] or '')
+  local limit = math.max(1, math.min(tonumber(args[2]) or 5, 25))
+  if event_type == '' then
+    out('qa_audit_recent', false, 'INVALID_ARGUMENT', { usage = 'qa_audit_recent <event_type> [limit]' })
+    return
+  end
+  query('qa_audit_recent', ([[
+SELECT id, category, action, event_type, actor_account_id, actor_source, target_id, target_account_id, amount, delta_minor, request_nonce, correlation_id, invoker_resource, reason, created_at, previous_flag_snapshot
+FROM %s
+WHERE event_type = ?
+ORDER BY id DESC
+LIMIT ?
+]]):format(table_ref('sonar_audit_log')), { event_type, limit })
 end, false)
 
 RegisterCommand('qa_audit_shape', function(_, args)
