@@ -64,12 +64,12 @@ qa_movement <request_nonce_or_tx_id>
 | # | Export | Command | Status | Audit OK | StateBag OK | Movement OK | Balance OK | Notes |
 |---|---|---|---|---|---|---|---|---|
 | 1 | `GetBalance` | `qa_get_balance <src>` | PASS | n/a | n/a | n/a | PASS | P55-001 re-test PASS: returned `balance_minor=5001250`, `iban=AD-WKRB-ZVE8-9A1D` |
-| 2 | `GetBalanceByCitizen` | `qa_get_balance_by_citizen <cid>` | PENDING | n/a | n/a | n/a | PENDING |  |
+| 2 | `GetBalanceByCitizen` | `qa_get_balance_by_citizen <cid>` | PASS | n/a | n/a | n/a | PASS | Returned `balance_minor=5002500`, `iban=AD-WKRB-ZVE8-9A1D` |
 | 3 | `CanAfford` | `qa_can_afford <src> <amount_minor>` | PASS | n/a | n/a | n/a | PASS | P55-001 re-test PASS: returned `sufficient=true`, `balance_minor=5001250` |
-| 4 | `CanAffordByCitizen` | `qa_can_afford_by_citizen <cid> <amount_minor>` | PENDING | n/a | n/a | n/a | PENDING |  |
+| 4 | `CanAffordByCitizen` | `qa_can_afford_by_citizen <cid> <amount_minor>` | PASS | n/a | n/a | n/a | PASS | Returned `sufficient=true`, `balance_minor=5002500` |
 | 5 | `AddMoney` | `qa_add_money <src> 1250 qa_credit idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | P55-001 re-test PASS: returned `new_balance_minor=5002500`, audit row id=1392, movement row id=2786 |
 | 6 | `AddMoneyByCitizen` | `qa_add_money_by_citizen <cid> 500 qa_credit_offline idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 7 | `RemoveMoney` | `qa_remove_money <src> 500 qa_debit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
+| 7 | `RemoveMoney` | `qa_remove_money <src> 500 qa_debit idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5002000`, audit row id=1393, movement row id=2787 |
 | 8 | `RemoveMoneyByCitizen` | `qa_remove_money_by_citizen <cid> 200 qa_debit_offline idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
 | 9 | `TransferBySource` | `qa_transfer_by_source <src1> <src2> 1000 qa_xfer idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING | Requires two online players or controlled second source |
 | 10 | `TransferByIban` | `qa_transfer_by_iban <iban1> <iban2> 1000 qa_xfer_iban idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
@@ -136,6 +136,17 @@ Invoke mutation: qa_add_money 1 1250 QA_p55_001_retest idem=22222222-2222-4222-8
 Audit: qa_audit 22222222-2222-4222-8222-222222222222 -> row id=1392 category=bank_exports action=bank_credit event_type=bank_credit actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=12.50 delta_minor=1250 request_nonce=22222222-2222-4222-8222-222222222222 correlation_id=22222222-2222-4222-8222-222222222222 invoker_resource=oxmysql reason=QA_p55_001_retest
 Movement: qa_movement 22222222-2222-4222-8222-222222222222 -> row id=2786 category=deposit amount=12.50 balance_after=50025.00 request_nonce=22222222-2222-4222-8222-222222222222 related_doc_id=78ecbf96-be6e-4192-9e8c-e739a2399fb2 source_resource=sonar_bank_app.
 Result: PASS — success tuple data preserved across FiveM export boundary.
+```
+
+```text
+[GetBalanceByCitizen / CanAffordByCitizen / RemoveMoney]
+Invoke read: qa_get_balance_by_citizen FXD56242 -> ok=true err=null data={savings_minor=0,iban="AD-WKRB-ZVE8-9A1D",balance_minor=5002500}
+Invoke read: qa_can_afford_by_citizen FXD56242 1 -> ok=true err=null data={sufficient=true,balance_minor=5002500}
+Invoke mutation: qa_remove_money 1 500 QA_remove_happy idem=33333333-3333-4333-8333-333333333333 -> ok=true err=null data={new_balance_minor=5002000,iban="AD-WKRB-ZVE8-9A1D",tx_id="e3cff744-4ae6-409e-a277-28d203afeb26"}
+Audit: qa_audit 33333333-3333-4333-8333-333333333333 -> row id=1393 category=bank_exports action=bank_debit event_type=bank_debit actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=-5.00 delta_minor=-500 request_nonce=33333333-3333-4333-8333-333333333333 correlation_id=33333333-3333-4333-8333-333333333333 invoker_resource=oxmysql reason=QA_remove_happy
+Movement: qa_movement 33333333-3333-4333-8333-333333333333 -> row id=2787 category=withdrawal amount=-5.00 balance_after=50020.00 request_nonce=33333333-3333-4333-8333-333333333333 related_doc_id=e3cff744-4ae6-409e-a277-28d203afeb26 source_resource=sonar_bank_app.
+StateBag/NetEvent/UI: PENDING.
+Result: PASS
 ```
 
 ## Cross-checks (5.3)
