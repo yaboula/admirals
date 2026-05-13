@@ -7,7 +7,7 @@
 - Branch HEAD: `9f42ca7`
 - Dev: Cascade / Backend Lead | Founder: yaboula
 - Duration: PENDING
-- Runtime DB: Laragon MySQL local, SONAR database `sonar`
+- Runtime DB: Laragon MySQL local, active oxmysql database `QBCore_FFAED3`; `sonar_db_database=qbcore_ffaed3`
 - Bridge mode: `sonar_bridge_bank=qbcore`, `sonar_bridge_identity=qbcore`, `sonar_bridge_bank_mode=standalone`
 - QA resource: `resources/sonar_bank_qa_probe` temporary, server-only, not permanently registered in cfg
 
@@ -20,9 +20,9 @@
 | QBCore cfg active | ✅ | `qbcore.cfg` shows QBCore bridge convars and SONAR isolated DB |
 | QA probe resource created | ✅ | `resources/sonar_bank_qa_probe/fxmanifest.lua`, `server.lua` |
 | Runtime resource available in FXServer | ✅ | Temporary junction created: `D:\FiveM_Server\Sonar\resources\[sonar]\sonar_bank_qa_probe` -> `D:\theBigProject\resources\sonar_bank_qa_probe` |
-| `qa_help` lists 22 wrappers | PENDING | Await live console |
-| `sonar:admin_allowlist` includes `sonar_bank_qa_probe` | PENDING | Use `qa_context` live output |
-| `/sonar_scan_legacy` baseline | PENDING | Await live console |
+| `qa_help` lists 22 wrappers | ✅ | Live console: `22 export wrappers registered`, commands 01-22 listed |
+| `sonar:admin_allowlist` includes `sonar_bank_qa_probe` | ✅ | `qa_context` returned `admin_allowlist="sonar_bank_app,sonar_bank,sonar_core,sonar_bank_qa_probe"` |
+| `/sonar_scan_legacy` baseline | ✅ | Live console: `complete: 0 resource(s) flagged` |
 
 ## QA probe operation notes
 
@@ -36,6 +36,8 @@ qa_help
 ```
 
 If the resource is not visible to FXServer, create a temporary runtime junction from `D:\FiveM_Server\Sonar\resources\[sonar]\sonar_bank_qa_probe` to `D:\theBigProject\resources\sonar_bank_qa_probe`, then run `refresh` and `ensure sonar_bank_qa_probe`.
+
+Live console executes one command per line. Do not paste multiple `qa_*` commands into one line.
 
 Mutation command conventions:
 
@@ -61,18 +63,18 @@ qa_movement <request_nonce_or_tx_id>
 
 | # | Export | Command | Status | Audit OK | StateBag OK | Movement OK | Balance OK | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | `GetBalance` | `qa_get_balance <src>` | PENDING | n/a | n/a | n/a | PENDING |  |
+| 1 | `GetBalance` | `qa_get_balance <src>` | PASS | n/a | n/a | n/a | PASS | P55-001 re-test PASS: returned `balance_minor=5001250`, `iban=AD-WKRB-ZVE8-9A1D` |
 | 2 | `GetBalanceByCitizen` | `qa_get_balance_by_citizen <cid>` | PENDING | n/a | n/a | n/a | PENDING |  |
-| 3 | `CanAfford` | `qa_can_afford <src> <amount_minor>` | PENDING | n/a | n/a | n/a | PENDING |  |
+| 3 | `CanAfford` | `qa_can_afford <src> <amount_minor>` | PASS | n/a | n/a | n/a | PASS | P55-001 re-test PASS: returned `sufficient=true`, `balance_minor=5001250` |
 | 4 | `CanAffordByCitizen` | `qa_can_afford_by_citizen <cid> <amount_minor>` | PENDING | n/a | n/a | n/a | PENDING |  |
-| 5 | `AddMoney` | `qa_add_money <src> 1250 qa_credit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
+| 5 | `AddMoney` | `qa_add_money <src> 1250 qa_credit idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | P55-001 re-test PASS: returned `new_balance_minor=5002500`, audit row id=1392, movement row id=2786 |
 | 6 | `AddMoneyByCitizen` | `qa_add_money_by_citizen <cid> 500 qa_credit_offline idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
 | 7 | `RemoveMoney` | `qa_remove_money <src> 500 qa_debit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
 | 8 | `RemoveMoneyByCitizen` | `qa_remove_money_by_citizen <cid> 200 qa_debit_offline idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
 | 9 | `TransferBySource` | `qa_transfer_by_source <src1> <src2> 1000 qa_xfer idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING | Requires two online players or controlled second source |
 | 10 | `TransferByIban` | `qa_transfer_by_iban <iban1> <iban2> 1000 qa_xfer_iban idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
 | 11 | `TransferByCitizen` | `qa_transfer_by_citizen <cid1> <cid2> 1000 qa_xfer_cid idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 12 | `GetApiVersion` | `qa_get_api_version` | PENDING | n/a | n/a | n/a | n/a |  |
+| 12 | `GetApiVersion` | `qa_get_api_version` | PASS | n/a | n/a | n/a | n/a | Returned `{major=1, minor=0, patch=2, phase="Phase 5", api_lock="C-BE-02 v1.0.2 R2"}` |
 | 13 | `AdminCredit` | `qa_admin_credit <actor_src> <target> 5000 qa_admin_credit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING | Contract signature is `(actor_src, target, amount, reason, opts)` |
 | 14 | `AdminDebit` | `qa_admin_debit <actor_src> <target> 5000 qa_admin_debit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
 | 15 | `AdminSetBalance` | `qa_admin_set_balance <actor_src> <target> 100000 qa_admin_set idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
@@ -100,6 +102,42 @@ StateBag/NetEvent/UI: <observed evidence or n/a>
 Result: PASS / FAIL
 ```
 
+```text
+[Pre-flight runtime]
+refresh: Found new resource and warning only for unrelated bkp missing manifest.
+set sonar:admin_allowlist "sonar_bank_app,sonar_bank,sonar_core,sonar_bank_qa_probe"
+restart/ensure sonar_bank_qa_probe: ready: 22 export wrappers + read-only SQL helpers.
+qa_context: ok=true export_count=22 bridge_bank=qbcore bridge_identity=qbcore bridge_bank_mode=standalone sonar_db_database=qbcore_ffaed3 allowlist includes sonar_bank_qa_probe.
+qa_help: 22 export wrappers registered, commands 01-22 listed.
+sonar_scan_legacy: complete: 0 resource(s) flagged.
+Result: PASS
+```
+
+```text
+[GetBalance / CanAfford / GetApiVersion / AddMoney probe batch]
+Pre snapshot: qa_account_by_src 1 -> ok=true data=[{iban="AD-WKRB-ZVE8-9A1D", id="15f14368-6a82-4ad7-a646-933c5b3b49e4", balance_minor=5000000, balance="50000.00", char_id="FXD56242", is_frozen=false}]
+Invoke read: qa_can_afford 1 1 -> ok=true err=null data=null
+Invoke info: qa_get_api_version -> ok=true err=null data={major=1, minor=0, patch=2, phase="Phase 5", api_lock="C-BE-02 v1.0.2 R2"}
+Invoke read: qa_get_balance 1 -> ok=true err=null data=null
+Invoke mutation: qa_add_money 1 1250 QA_valid_uuid idem=11111111-1111-4111-8111-111111111111 -> ok=true err=null data=null
+Audit: qa_audit 11111111-1111-4111-8111-111111111111 -> row id=1391 category=bank_exports action=bank_credit event_type=bank_credit actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=12.50 delta_minor=1250 request_nonce=11111111-1111-4111-8111-111111111111 correlation_id=11111111-1111-4111-8111-111111111111 invoker_resource=oxmysql reason=QA_valid_uuid
+Audit shape: qa_audit_shape 11111111-1111-4111-8111-111111111111 -> request_nonce/correlation_id/actor_account_id/target_account_id/event_type/delta_minor/invoker_resource/reason/created_at present; previous_flag_snapshot absent for bank_credit.
+Movement: qa_movement 11111111-1111-4111-8111-111111111111 -> row id=2785 category=deposit amount=12.50 balance_after=50012.50 request_nonce=11111111-1111-4111-8111-111111111111 source_resource=sonar_bank_app.
+StateBag/NetEvent/UI: PENDING.
+Result: FAIL for contract return data on GetBalance, CanAfford, AddMoney; PASS for DB mutation, audit, movement side effects.
+```
+
+```text
+[P55-001 re-test after boundary fix]
+Load: ensure sonar_bank_qa_probe -> ready: 22 export wrappers + read-only SQL helpers.
+Invoke read: qa_can_afford 1 1 -> ok=true err=null data={sufficient=true,balance_minor=5001250}
+Invoke read: qa_get_balance 1 -> ok=true err=null data={savings_minor=0,iban="AD-WKRB-ZVE8-9A1D",balance_minor=5001250}
+Invoke mutation: qa_add_money 1 1250 QA_p55_001_retest idem=22222222-2222-4222-8222-222222222222 -> ok=true err=null data={new_balance_minor=5002500,iban="AD-WKRB-ZVE8-9A1D",tx_id="78ecbf96-be6e-4192-9e8c-e739a2399fb2"}
+Audit: qa_audit 22222222-2222-4222-8222-222222222222 -> row id=1392 category=bank_exports action=bank_credit event_type=bank_credit actor_source=1 target_id=AD-WKRB-ZVE8-9A1D amount=12.50 delta_minor=1250 request_nonce=22222222-2222-4222-8222-222222222222 correlation_id=22222222-2222-4222-8222-222222222222 invoker_resource=oxmysql reason=QA_p55_001_retest
+Movement: qa_movement 22222222-2222-4222-8222-222222222222 -> row id=2786 category=deposit amount=12.50 balance_after=50025.00 request_nonce=22222222-2222-4222-8222-222222222222 related_doc_id=78ecbf96-be6e-4192-9e8c-e739a2399fb2 source_resource=sonar_bank_app.
+Result: PASS — success tuple data preserved across FiveM export boundary.
+```
+
 ## Cross-checks (5.3)
 
 | Cross-check | Status | Evidence |
@@ -113,21 +151,23 @@ Result: PASS / FAIL
 
 ## Founder adversarial findings (6.1-6.7)
 
-- No findings recorded yet.
+- `qa_add_money 1 50000 Ingreso_Manual_Founder idem=TESTKEY123` returned `ok=false err="INVALID_UUID" data=null`. Expected reject because `idem` must be UUID v4.
+- `qa_remove_money 1 9999999999 Intento_Exploit idem=TESTKEY456` returned `ok=false err="INVALID_UUID" data=null`. Expected reject because UUID validation occurs before overdraft path.
 
 ## Bugs filed + status
 
 | ID | Severity | Status | Fix commit | Re-test |
 |---|---|---|---|---|
-| n/a | n/a | n/a | n/a | n/a |
+| P55-001 | HIGH | RESOLVED + RE-TEST PASS | n/a | Boundary wrapper added around Tier 1/2 `exports(...)` to return `false` as the internal FiveM sentinel only when `ok=true` and `err=nil`, preserving third return `data`; QA probe normalizes this sentinel back to `err=null`. Re-test confirmed `qa_can_afford`, `qa_get_balance`, and `qa_add_money` now return contract data. |
+| P55-002 | LOW | RESOLVED in probe + RE-TEST PASS | n/a | `qa_account_by_src 1` after `restart sonar_bank_qa_probe` returned account row from `qbcore_ffaed3`: IBAN `AD-WKRB-ZVE8-9A1D`, balance `50000.00`, citizen `FXD56242`. |
 
 ## GATE 5.5 to H5 criteria
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| 22/22 cobertura PASS dev | PENDING |  |
-| 0 BLOCKER findings | PENDING |  |
-| HIGH/MEDIUM RESOLVED + re-test PASS | PENDING |  |
+| 22/22 cobertura PASS dev | PENDING | P55-001 resolved; continue remaining matrix |
+| 0 BLOCKER findings | PENDING | No BLOCKER filed so far |
+| HIGH/MEDIUM RESOLVED + re-test PASS | ✅ | P55-001 HIGH resolved + re-test PASS |
 | LOW/COSMETIC documented/deferred | PENDING |  |
 | Founder 🟢 GO MANUAL formal | PENDING |  |
 

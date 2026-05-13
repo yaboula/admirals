@@ -1,7 +1,7 @@
 local RESOURCE = GetCurrentResourceName()
 local PREFIX = '[' .. RESOURCE .. ']'
 local BANK = 'sonar_bank_app'
-local DB_NAME = tostring(GetConvar('sonar_db_database', 'sonar')):match('^[%w_]+$') or 'sonar'
+local DB_NAME = tostring(GetConvar('sonar_db_database', '')):match('^[%w_]+$')
 
 local export_commands = {}
 
@@ -15,6 +15,7 @@ local function encode(value)
 end
 
 local function out(command, ok, err, data)
+  if ok == true and err == false then err = nil end
   print(('%s %s ok=%s err=%s data=%s'):format(PREFIX, command, encode(ok), encode(err), encode(data)))
 end
 
@@ -92,6 +93,7 @@ local function citizen_from_source(src)
 end
 
 local function table_ref(name)
+  if not DB_NAME or DB_NAME == '' then return ('`%s`'):format(name) end
   return ('`%s`.`%s`'):format(DB_NAME, name)
 end
 
@@ -230,7 +232,7 @@ RegisterCommand('qa_context', function()
     resource = RESOURCE,
     bank = BANK,
     export_count = #export_commands,
-    sonar_db_database = DB_NAME,
+    sonar_db_database = DB_NAME or 'active mysql_connection_string database',
     admin_allowlist = GetConvar('sonar:admin_allowlist', ''),
     bridge_bank = GetConvar('sonar_bridge_bank', ''),
     bridge_identity = GetConvar('sonar_bridge_identity', ''),

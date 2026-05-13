@@ -16,6 +16,13 @@ local IDEM_TTL_SECONDS = 86400
 local function now_sec() return os.time() end
 local function now_ms() return os.time() * 1000 end
 local function tuple(ok, err, data) return ok, err, data end
+local function export_tuple(fn)
+  return function(...)
+    local ok, err, data = fn(...)
+    if ok == true and err == nil then return ok, false, data end
+    return ok, err, data
+  end
+end
 local function sanitize_reason(reason)
   local clean = Validators.SanitizeString(reason or 'unspecified', 255) or 'unspecified'
   clean = clean:gsub('%s+', ' '):match('^%s*(.-)%s*$')
@@ -327,17 +334,17 @@ function API.TransferByCitizen(from_cid, to_cid, amount_minor, reason, opts)
   return transfer_accounts(from_account, to_account, amount_minor, reason, opts, nil)
 end
 
-exports('AddMoney', API.AddMoney)
-exports('RemoveMoney', API.RemoveMoney)
-exports('CanAfford', API.CanAfford)
-exports('GetBalance', API.GetBalance)
-exports('TransferBySource', API.TransferBySource)
-exports('TransferByIban', API.TransferByIban)
-exports('AddMoneyByCitizen', API.AddMoneyByCitizen)
-exports('RemoveMoneyByCitizen', API.RemoveMoneyByCitizen)
-exports('CanAffordByCitizen', API.CanAffordByCitizen)
-exports('GetBalanceByCitizen', API.GetBalanceByCitizen)
-exports('TransferByCitizen', API.TransferByCitizen)
+exports('AddMoney', export_tuple(API.AddMoney))
+exports('RemoveMoney', export_tuple(API.RemoveMoney))
+exports('CanAfford', export_tuple(API.CanAfford))
+exports('GetBalance', export_tuple(API.GetBalance))
+exports('TransferBySource', export_tuple(API.TransferBySource))
+exports('TransferByIban', export_tuple(API.TransferByIban))
+exports('AddMoneyByCitizen', export_tuple(API.AddMoneyByCitizen))
+exports('RemoveMoneyByCitizen', export_tuple(API.RemoveMoneyByCitizen))
+exports('CanAffordByCitizen', export_tuple(API.CanAffordByCitizen))
+exports('GetBalanceByCitizen', export_tuple(API.GetBalanceByCitizen))
+exports('TransferByCitizen', export_tuple(API.TransferByCitizen))
 function API.GetApiVersion()
   return { major = 1, minor = 0, patch = 2, phase = 'Phase 5', api_lock = 'C-BE-02 v1.0.2 R2' }
 end

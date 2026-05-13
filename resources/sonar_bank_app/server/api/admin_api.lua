@@ -16,6 +16,13 @@ local RESOURCE = 'sonar_bank_app'
 local IDEM_TTL_SECONDS = 86400
 
 local function tuple(ok, err, data) return ok, err, data end
+local function export_tuple(fn)
+  return function(...)
+    local ok, err, data = fn(...)
+    if ok == true and err == nil then return ok, false, data end
+    return ok, err, data
+  end
+end
 local function now_sec() return os.time() end
 local function json_encode(value) if json and json.encode then return json.encode(value) end return '{}' end
 local function invoker() local r = GetInvokingResource(); return type(r) == 'string' and r ~= '' and r or 'console' end
@@ -210,15 +217,15 @@ function API.AdminSetBalanceByCitizen(actor_src, citizen_id, new_balance_minor, 
 function API.FreezeByCitizen(actor_src, citizen_id, reason) local account, err = Public.ResolvePrimaryAccount(citizen_id); if err then return tuple(false, err) end; return set_frozen(actor_src, account, true, reason) end
 function API.UnfreezeByCitizen(actor_src, citizen_id, reason) local account, err = Public.ResolvePrimaryAccount(citizen_id); if err then return tuple(false, err) end; return set_frozen(actor_src, account, false, reason) end
 
-exports('AdminCredit', API.AdminCredit)
-exports('AdminDebit', API.AdminDebit)
-exports('AdminSetBalance', API.AdminSetBalance)
-exports('Freeze', API.Freeze)
-exports('Unfreeze', API.Unfreeze)
-exports('AdminCreditByCitizen', API.AdminCreditByCitizen)
-exports('AdminDebitByCitizen', API.AdminDebitByCitizen)
-exports('AdminSetBalanceByCitizen', API.AdminSetBalanceByCitizen)
-exports('FreezeByCitizen', API.FreezeByCitizen)
-exports('UnfreezeByCitizen', API.UnfreezeByCitizen)
+exports('AdminCredit', export_tuple(API.AdminCredit))
+exports('AdminDebit', export_tuple(API.AdminDebit))
+exports('AdminSetBalance', export_tuple(API.AdminSetBalance))
+exports('Freeze', export_tuple(API.Freeze))
+exports('Unfreeze', export_tuple(API.Unfreeze))
+exports('AdminCreditByCitizen', export_tuple(API.AdminCreditByCitizen))
+exports('AdminDebitByCitizen', export_tuple(API.AdminDebitByCitizen))
+exports('AdminSetBalanceByCitizen', export_tuple(API.AdminSetBalanceByCitizen))
+exports('FreezeByCitizen', export_tuple(API.FreezeByCitizen))
+exports('UnfreezeByCitizen', export_tuple(API.UnfreezeByCitizen))
 
 return API
