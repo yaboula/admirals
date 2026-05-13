@@ -110,7 +110,7 @@ local function govt_freeze_helper(ctx, freeze_bool, event_type)
 
   local previous_snapshot = {
     iban         = norm_iban,
-    frozen_flag  = (tonumber(row.frozen_flag) or 0) == 1,
+    frozen_flag  = DB.ToBool(row.frozen_flag),
     status       = row.status,
     snapshot_ms  = now_ms(),
     govt_action  = true,

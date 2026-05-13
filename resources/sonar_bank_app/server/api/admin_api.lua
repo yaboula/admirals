@@ -165,7 +165,7 @@ local function admin_set(actor_src, account, new_balance_minor, reason, opts)
   local before = tonumber(account.balance_minor) or 0
   local delta = new_balance - before
   local audit_event = new_balance < 0 and 'bank_overdraft' or 'admin_set_balance'
-  local previous = { balance_before_minor = before, frozen = tonumber(account.frozen_flag) == 1, overdraft_authorized_by = tostring(actor_src or 0) }
+  local previous = { balance_before_minor = before, frozen = DB.ToBool(account.frozen_flag), overdraft_authorized_by = tostring(actor_src or 0) }
   local payload = { op = 'admin_set_balance', iban = account.iban, new_balance_minor = new_balance, allow_overdraft = opts.allow_overdraft == true, reason = reason }
   local replay, replay_status = check_replay(idem_key, payload)
   if replay_status == 'IDEMPOTENCY_REPLAY' then return tuple(true, 'IDEMPOTENCY_REPLAY', replay) end
@@ -188,7 +188,7 @@ local function set_frozen(actor_src, account, frozen, reason)
   local ok_auth, auth_err, inv = require_admin(actor_src)
   if not ok_auth then return tuple(false, auth_err) end
   if account.status == 'closed' then return tuple(false, 'ACCOUNT_CLOSED') end
-  local currently = tonumber(account.frozen_flag) == 1
+  local currently = DB.ToBool(account.frozen_flag)
   if frozen and currently then return tuple(false, 'ACCOUNT_ALREADY_FROZEN') end
   if not frozen and not currently then return tuple(false, 'ACCOUNT_NOT_FROZEN') end
   reason = sanitize_reason(reason)

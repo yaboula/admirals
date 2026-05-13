@@ -125,7 +125,7 @@ function API.ResolveIban(iban)
   return row, nil
 end
 local function ensure_mutable(account)
-  if tonumber(account.frozen_flag) == 1 then return 'ACCOUNT_FROZEN' end
+  if DB.ToBool(account.frozen_flag) then return 'ACCOUNT_FROZEN' end
   if account.status == 'closed' then return 'ACCOUNT_CLOSED' end
   return nil
 end

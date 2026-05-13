@@ -18,6 +18,7 @@ local S = BankApp.services.account
 
 local Validators = BankApp.lib.validators
 local Errors     = BankApp.lib.errors
+local DB         = BankApp.lib.db
 local Audit      = BankApp.lib.audit
 local Auth       = BankApp.lib.auth
 local Enums      = BankApp.lib.enums
@@ -133,7 +134,7 @@ local function freeze_helper(ctx, freeze_bool, event_type)
   -- H006 — snapshot BEFORE flag flip
   local previous_snapshot = {
     iban         = norm_iban,
-    frozen_flag  = (tonumber(row.frozen_flag) or 0) == 1,
+    frozen_flag  = DB.ToBool(row.frozen_flag),
     status       = row.status,
     snapshot_ms  = now_ms(),
   }
