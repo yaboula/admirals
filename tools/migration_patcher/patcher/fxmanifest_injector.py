@@ -31,6 +31,10 @@ def inject_dependency(text: str) -> ManifestResult:
     if match:
         body = match.group('body')
         insertion = body
+        stripped = insertion.rstrip()
+        if stripped and not stripped.endswith(','):
+            last_line_start = stripped.rfind('\n') + 1
+            insertion = stripped[:last_line_start] + stripped[last_line_start:] + ',' + insertion[len(stripped):]
         if body and not body.endswith('\n'):
             insertion += '\n'
         insertion += "    'sonar_bank_app',"

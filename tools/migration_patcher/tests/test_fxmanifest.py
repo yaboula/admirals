@@ -13,6 +13,12 @@ def test_fxmanifest_existing_deps(fixtures_dir):
     assert result.injected
 
 
+def test_fxmanifest_existing_deps_without_trailing_comma(fixtures_dir):
+    result = inject_dependency((fixtures_dir / 'fxmanifest_deps_no_trailing_comma.in.lua').read_text())
+    assert result.patched_text == (fixtures_dir / 'fxmanifest_deps_no_trailing_comma.expected.lua').read_text()
+    assert result.injected
+
+
 def test_fxmanifest_already_present(fixtures_dir):
     source = (fixtures_dir / 'fxmanifest_already_present.in.lua').read_text()
     result = inject_dependency(source)

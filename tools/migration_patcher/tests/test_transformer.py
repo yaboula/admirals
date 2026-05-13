@@ -62,6 +62,21 @@ def test_custom_function_amount_is_manual_not_patched():
 
 def test_return_money_call_is_manual_not_patched():
     text = "local Player = QBCore.Functions.GetPlayer(src)\nreturn Player.Functions.AddMoney('bank', amount)\n"
-    result = transform_lua_text(text, resource='qb-custom', file_path='server/main.lua')
+    result = transform_lua_text(text, resource='qb-custom', file_path='server.lua')
     assert result.patched_text == text
     assert any(entry.pattern_id == 'S1' and 'control-flow' in entry.reason for entry in result.manual_entries)
+
+
+def test_remove_money_after_irreversible_side_effect_is_manual():
+    text = "\n".join([
+        "local Player = QBCore.Functions.GetPlayer(src)",
+        "if bank > price then",
+        "    MySQL.insert('INSERT INTO player_vehicles VALUES (?)', { plate })",
+        "    TriggerClientEvent('qb-vehicleshop:client:buyShowroomVehicle', src, vehicle, plate)",
+        "    Player.Functions.RemoveMoney('bank', price, 'vehicle-bought-in-showroom')",
+        "end",
+        "",
+    ])
+    result = transform_lua_text(text, resource='qb-vehicleshop', file_path='server.lua')
+    assert result.patched_text == text
+    assert any(entry.pattern_id == 'S1' and 'irreversible side effect' in entry.reason for entry in result.manual_entries)

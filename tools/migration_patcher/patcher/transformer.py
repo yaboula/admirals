@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import difflib
 import hashlib
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from . import __version__
 from .binding_resolver import BindingKind, resolve_binding
 from .patterns import ELSEIF_REMOVE_RE, IF_REMOVE_RE, S4_READ_RE, classify_unsafe_document, classify_unsafe_line
 from .safety import contains_marker, has_minor_unit_hint, is_float_literal, make_marker, to_minor_expr
+
+IRREVERSIBLE_SIDE_EFFECT_RE = re.compile(r"\b(MySQL\.(?:insert|update|query|rawExecute)|TriggerClientEvent|CreateVehicleServerSetter|DeleteEntity)\b")
 
 
 @dataclass
@@ -156,6 +159,24 @@ def _reason_expr(args: list[str], resource: str, file_path: str, line_no: int) -
     return f"'sonar-migration:{resource}:{file_path}:{line_no}'"
 
 
+def _indent_width(line: str) -> int:
+    return len(line) - len(line.lstrip())
+
+
+def _has_prior_irreversible_side_effect(lines: list[str], idx: int, current_indent: int) -> bool:
+    for prev_idx in range(idx - 1, -1, -1):
+        previous = lines[prev_idx]
+        stripped = previous.strip()
+        if not stripped:
+            continue
+        prev_indent = _indent_width(previous)
+        if prev_indent < current_indent and stripped.startswith(('if ', 'elseif ', 'else', 'end')):
+            return False
+        if IRREVERSIBLE_SIDE_EFFECT_RE.search(previous):
+            return True
+    return False
+
+
 def transform_lua_text(text: str, resource: str, file_path: str) -> TransformResult:
     result = TransformResult(original_text=text, patched_text=text)
     if contains_marker(text):
@@ -246,10 +267,13 @@ def transform_lua_text(text: str, resource: str, file_path: str) -> TransformRes
             if not safe:
                 result.manual_entries.append(_manual(resource, file_path, line_no, 'U9', 'HIGH', stripped, unsafe_reason or 'unsafe amount expression'))
                 break
+            indent = body[:len(body) - len(body.lstrip())]
+            if method == 'RemoveMoney' and _has_prior_irreversible_side_effect([l.rstrip('\n') for l in lines], idx, len(indent)):
+                result.manual_entries.append(_manual(resource, file_path, line_no, 'S1', 'HIGH', stripped, 'RemoveMoney after irreversible side effect must be manually reordered or gated on SONAR ok result'))
+                break
             export_name = method if binding.kind == BindingKind.ONLINE else f'{method}ByCitizen'
             target_expr = binding.source_expr
             call = _build_call(export_name, target_expr, amount_expr, reason_expr)
-            indent = body[:len(body) - len(body.lstrip())]
             pattern_id = 'S3' if binding.kind == BindingKind.OFFLINE else 'S1'
             call_start = body.find(f'{player_var}.Functions.{method}')
             patched = f'{body[:call_start]}{call}{suffix}' if call_start >= 0 else f'{indent}{call}{suffix}'

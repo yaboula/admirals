@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../FiveM_Server/Sonar_migration_clean"
 		}
 	],
 	"settings": {}
