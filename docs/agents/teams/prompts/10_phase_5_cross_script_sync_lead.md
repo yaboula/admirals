@@ -1,15 +1,95 @@
 ---
 prompt_id: 10_phase_5_cross_script_sync_lead
-title: Phase 5 Cross-Script Synchronization Audit + Adversarial Probe (QBCore live)
-phase: BANK-BE.PHASE_5.6 — Ecosystem Sync Reality Check
+title: Phase 5 Cross-Script Synchronization Audit + Path E Listener Implementation (QBCore live)
+phase: BANK-BE.PHASE_5.6 — Ecosystem Sync via Passive Event Listener
 preceded_by: BANK-BE.PHASE_5.5 (manual adversarial probe in-isolation 22 exports)
 emitted_by: PM Cascade
-emitted_at: 2026-05-13 04:30 UTC+02
-authority: Founder yaboula doctrine (live runtime evidence mandatory MEMORY[11ff0dd5]) + Founder concern 2026-05-13 04:25 UTC+02 "es la sincronizacion completa con los otros script realmente quiero probarlo yo, porque seguramente que falla"
-status: ACTIVE — awaiting dev session spawn (HIGH SEVERITY)
+emitted_at: 2026-05-13 04:30 UTC+02 (revised 2026-05-13 04:55 UTC+02 post-research)
+authority: Founder yaboula doctrine (live runtime evidence mandatory MEMORY[11ff0dd5]) + Founder concern 2026-05-13 04:25 UTC+02 "es la sincronizacion completa con los otros script realmente quiero probarlo yo, porque seguramente que falla" + Founder principle 2026-05-13 04:40 UTC+02 "cuando reducimos mas trabajo es mucho mejor"
+status: ACTIVE — awaiting dev session spawn (HIGH SEVERITY) — Path E recommended primary
 ---
 
-# Mission — BANK-BE.PHASE_5.6 — Cross-Script Sync Reality Check
+# 0. Pre-Audit Research Findings (PM Cascade 2026-05-13 04:55 UTC+02)
+
+Founder pidió investigación a fondo sobre mecanismos disponibles antes del spawn. Research ejecutado contra docs oficiales QBCore + QBox + ox_inventory + qb-banking + source code real `qb-core/server/player.lua`. Resumen findings:
+
+## 0.1 QBCore dispara evento server-side post-mutation AUTOMÁTICAMENTE
+
+Verificado en `https://github.com/qbcore-framework/qb-core/blob/main/server/player.lua` (chunks 3+4). Las 3 funciones canónicas emiten event server-side:
+
+```lua
+-- Player.Functions.AddMoney post-mutation:
+TriggerEvent('QBCore:Server:OnMoneyChange', source, moneytype, amount, 'add', reason)
+-- Player.Functions.RemoveMoney post-mutation:
+TriggerEvent('QBCore:Server:OnMoneyChange', source, moneytype, amount, 'remove', reason)
+-- Player.Functions.SetMoney post-mutation:
+TriggerEvent('QBCore:Server:OnMoneyChange', source, moneytype, amount, 'set', reason)
+```
+
+Documentación oficial QBCore (`qbcore.net/docs/resources/qb-core`) confirma uso canónico para 3rd party listeners:
+
+```lua
+AddEventHandler('QBCore:Server:OnMoneyChange', function(src, moneyType, amount, action, reason)
+  -- Public API — 3rd party listening pattern oficial
+end)
+```
+
+## 0.2 `reason` field convencional incluye attribution heuristic
+
+Muestras reales scaneadas en server `D:/FiveM_Server/Sonar`:
+- `'qb-shops:deliveryPay'`, `'qb-pawnshop:server:sellPawnItems'`, `'qb-drugs:server:sellCornerDrugs'`
+- `'financed vehicle'`, `'paid off vehicle'`, `'bought-house'`, `'bought-furniture'`, `'sold vehicle back'`
+- `'tow-received-bail'`, `'qb-drugs:server:successDelivery'`
+
+Heurística para `invoker_resource` audit field: `reason:match('^([%w_-]+):')`. Para reasons sin prefijo formal, fallback `'qb-core-unknown'` + log warning para mejorar reason convention en futuras patches.
+
+## 0.3 Inventario instalado server real (scan PM Cascade 2026-05-13 04:50 UTC)
+
+| Paquete | Status | Implicación Phase A |
+|---|---|---|
+| qb-core | ✅ INSTALLED | listener primary target |
+| qb-banking | ❌ NOT INSTALLED | future-proof listener si futuro instalan |
+| qb-inventory | ✅ INSTALLED | cash items via inventory paradigm — Phase B scope |
+| ox_inventory | ❌ NOT INSTALLED | si futuro migran → cash hooks pattern Phase B |
+| qbx_core | ❌ NOT INSTALLED | si futuro migran → registerHook pattern equivalente |
+
+**Phase A scope reducido: SOLO `moneyType == 'bank'` mutations.** Cash + crypto = Phase B scope (inventory paradigm + crypto-specific exports).
+
+## 0.4 Fuera de scope Phase A (deferido Phase B con audit listeners adicionales si aplica)
+
+- **qb-banking events** (no instalado actualmente, pero si futuro `exports['qb-banking']:AddMoney(accountName, ...)` para job/gang/shared accounts → 2do listener)
+- **ox_inventory hooks** (no instalado, pero si futuro cash-as-item paradigm → `exports.ox_inventory:registerHook('swapItems', ...)` 3er listener)
+- **qbx_core hooks** (no instalado, pero `registerHook` pattern equivalente si futuro migration)
+- **Custom standalone scripts** que mutate dinero directo SQL bypassing qb-core (architectural error operator-side, audit detected via Reconcile drift)
+
+## 0.5 Path E surgió como primary recommendation (~50-80 LOC vs ~500 patches)
+
+Ver paragraph 8.5 detalle implementation. Comparativa:
+
+| Path | Effort | Audit | Real-time | Amendment | Recomendación |
+|---|---|---|---|---|---|
+| A operator patches ~500 hits | 🔴 MASSIVE | ✅ perfect | ✅ | none | descartado por effort |
+| B re-introduce Pre-Hook | 🟡 MEDIUM | ✅ perfect | ✅ | Round 3 (4 contratos) | descartado por recursion risk + reverse Q4 |
+| C hybrid Reconcile + selective | 🟡 MEDIUM | 🟡 partial | 🔴 30s drift | C-BE-04 minor | descartado por audit gap aggregate |
+| D defer Phase B | 🟢 ZERO | 🔴 GAP | 🔴 | none | descartado por production gap |
+| **🌟 E passive event listener** | **🟢 ~50-80 LOC** | **✅ near-perfect** | **✅ same tick** | **C-SEC-01 v0.4 minor additive** | **PRIMARY** |
+
+## 0.6 Mission reframed (post-research)
+
+La mission original (paragraph 1-12 abajo) fue **AUDIT-ONLY enumerate bypasses + propose paths**. Post-research, la mission se reframe en:
+
+**Phase 5.6 = Path E listener implementation + adversarial validation** (no audit-enumerate-paths, ya tenemos suficiente evidence preliminar). Sub-fases:
+
+- **5.6.1 amendment minor C-SEC-01 v0.4** (NEW event_types `bank_external_credit/debit/set` en paragraph 1.2 audit_hook_exports_mutation row + paragraph 1.2.B shape canonical para external mutations) — Backend Lead emit DRAFT + Founder ratifies in same session.
+- **5.6.2 implement Path E listener** — `resources/sonar_bridges/server/qbcore_money_listener.lua` + nuevo wrapper `Bridges.MoneyListener.RecordExternalMutation` (atomic TX 4-step idem-store/audit/balance/movement + post-COMMIT publish).
+- **5.6.3 adversarial probe live** — los 12 escenarios S1-S12 paragraph 7 ahora son validation criteria del listener, no audit. Cada uno PASS con audit row event_type correcto + invoker_resource heurística + balance sync immediate + UI app real-time.
+- **5.6.4 sign-off founder GO MANUAL** Path E live + new MIGRATION.md paragraph "Cross-script sync via passive event listener".
+
+ETA estimada nueva: 3-4h (vs 5-6h audit-only original). Paths A/B/C/D quedan documentados como alternativas descartadas para audit trail.
+
+---
+
+# Mission — BANK-BE.PHASE_5.6 — Cross-Script Sync Reality Check (revised post-research)
 
 > **Founder gut concern 2026-05-13 04:25 UTC:**
 > *"hemos hecho con el lead tech es espectacular, pero no hemos dado en el clavo. Es la sincronización completa con los otros script realmente quiero probarlo yo. Porque seguramente que falla."*
@@ -242,6 +322,98 @@ Hook qb-core `Player.Functions.AddMoney/RemoveMoney/SetMoney` post-mutation → 
 - ❌ Founder concern actual ("seguramente falla") = **se confirma** y se acepta como Phase A trade-off
 - ❌ Production-ready depende de Phase B timing
 
+### 🌟 Path E — Passive Event Listener (PRIMARY RECOMMENDATION post-research)
+
+QBCore dispara `QBCore:Server:OnMoneyChange` server-side automáticamente post-mutation (verificado en source code, paragraph 0.1). SONAR registra un event handler pasivo que captura TODAS las mutations de `moneyType='bank'` provenientes de cualquier qb-* resource sin patches.
+
+**Architecture:**
+
+```lua
+-- resources/sonar_bridges/server/qbcore_money_listener.lua (NEW ~80 LOC)
+local Bridges = Bridges or {}
+Bridges.MoneyListener = Bridges.MoneyListener or {}
+
+AddEventHandler('QBCore:Server:OnMoneyChange', function(src, moneyType, amount, action, reason)
+  -- Phase A scope: only 'bank' moneyType
+  if moneyType ~= 'bank' then
+    -- Phase B: cash/crypto handlers
+    return
+  end
+  if not src or src <= 0 then return end
+  if not amount or amount <= 0 then return end
+  reason = reason or 'qb-core-unknown'
+
+  -- Resolve citizen via SONAR identity bridge
+  local cid_ok, cid = pcall(function() return exports.sonar_bridges:GetCitizenId(src) end)
+  if not cid_ok or type(cid) ~= 'string' or cid == '' then return end
+
+  -- Heuristic invoker_resource from reason convention
+  local invoker_resource = reason:match('^([%w_%-]+):') or 'qb-core-unknown'
+
+  -- Map QBCore action -> SONAR event_type
+  local event_type_map = {
+    add = 'bank_external_credit',
+    remove = 'bank_external_debit',
+    set = 'bank_external_set',
+  }
+  local event_type = event_type_map[action]
+  if not event_type then return end
+
+  -- Compute delta_minor (DECIMAL major QBCore amount -> INTEGER minor SONAR)
+  local delta_minor = math.floor(amount * 100)
+  if action == 'remove' then delta_minor = -delta_minor end
+  if action == 'set' then
+    -- For 'set', amount is the new total. Compute delta vs current SONAR balance.
+    -- Defer to wrapper RecordExternalMutation to compute delta.
+  end
+
+  -- Dispatch to atomic wrapper
+  exports.sonar_bank_app:RecordExternalMutation({
+    citizen_id = cid,
+    actor_src = src,
+    action = action,
+    amount_major = amount,
+    delta_minor = delta_minor,
+    reason = reason,
+    invoker_resource = invoker_resource,
+    event_type = event_type,
+    moneyType = moneyType,
+  })
+end)
+```
+
+**New wrapper `RecordExternalMutation`** (additive a `sonar_bank_app/server/api/external_sync.lua` o `wrappers.lua`, NO toca los 22 exports paragraph 4):
+
+1. SQL TX atómica AH4-compliant (mismo pattern existing exports):
+   - SELECT current SONAR balance for cid
+   - For 'set': delta_minor = new_total_minor - current_balance_minor
+   - INSERT idempotency row (key = SHA256 hash of cid+timestamp_ms+amount_major+reason — collision-resistant per-tick)
+   - INSERT audit row 10-field shape canonical event_type=`bank_external_*` + invoker_resource heurística + actor_account_id=cid + correlation_id=newly-generated UUID
+   - UPDATE balance SONAR to match QBCore (delta apply)
+   - INSERT movement row category=`adjustment_external` reason=passthrough
+2. Post-COMMIT: `publish_balance_update(cid, new_balance_minor, 'main', correlation_id, reason)` para CP1-B StateBag tier financial PII update.
+3. Return success/failure logged but NOT propagated (event listener is fire-and-observe; QBCore mutation already committed regardless of SONAR sync result; failure-to-sync triggers Reconcile.Run fallback).
+
+**Pros:**
+
+- 🟢 **Effort minimal** — ~80 LOC new file + ~150 LOC wrapper + ~30 LOC migration audit shape extension = ~260 LOC total Phase 5.6
+- 🟢 **Real-time sync** — same tick post QBCore mutation
+- 🟢 **Audit forensic recovered** — invoker_resource heurística (acceptable Phase A) + actor_account_id real + event_type canonical
+- 🟢 **StateBag CP1-B publish** — UI Bank App actualiza inmediatamente
+- 🟢 **Zero patches qb-\*** — operator drop-in, future qb-core updates resilient
+- 🟢 **No reverse Founder Q4** — Q4 LOCKED "no shim" se preserva (listener ≠ shim, listener es passive observer)
+- 🟢 **No re-introduce OnMoneyPreHook** — Pre-Hook era VETO (synchronous mutate-or-cancel), listener es POST-OBSERVE (ya commited en QBCore)
+
+**Cons:**
+
+- 🟡 **invoker_resource heurística** — reason convention not enforced; `reason:match('^([%w_%-]+):')` fallback `qb-core-unknown` para reasons sin prefijo. Mitigation: MIGRATION.md guidance "recommend qb-* maintainers prefix reason with `<resource_name>:`"
+- 🟡 **Cash + crypto fuera de scope Phase A** — handled Phase B (qb-inventory cash items + qb-crypto exports diferentes paths)
+- 🟡 **Offline player path** — `Player.Functions.AddMoney` en QBCore tiene `if not self.Offline` check antes de TriggerEvent. Offline mutations NO disparan listener. Mitigation: `Reconcile.Run` periódico cubre este edge case con eventually-consistent sync (Phase A acceptable; Phase B optional offline event hook).
+- 🟡 **Amendment minor C-SEC-01 v0.4** — agregar `bank_external_credit/debit/set` event_types al paragraph 1.2 audit_hook_exports_mutation row + paragraph 1.2.B shape canonical para external mutations (10-field con invoker_resource heurística + actor_src=qbcore-source). Scope MINOR additive 1 contrato (vs Round 3 que sería 4 contratos).
+- 🟡 **Idempotency en QBCore→SONAR direction** — QBCore no provee idem_key per-mutation. Composite SHA256 hash (cid+timestamp_ms+amount+reason) collision risk en ráfagas mismo-tick mismo-amount mismo-reason. Mitigation: include incremental counter persisted in `sonar_bank_external_seq` table (additive migration) or accept low collision probability Phase A.
+
+**Path E es la primary recommendation. Backend Lead implementa en Phase 5.6 como sub-fase 5.6.1 (amendment minor) + 5.6.2 (implementation) + 5.6.3 (validation S1-S12) + 5.6.4 (founder GO MANUAL).**
+
 ## 9. Bug intake protocol (durante audit)
 
 Si durante audit aparece comportamiento NO esperado por el modelo Phase 3+4+5.4:
@@ -320,27 +492,52 @@ Si durante audit aparece comportamiento NO esperado por el modelo Phase 3+4+5.4:
 ```
 Spawn Backend Lead BANK-BE.PHASE_5.6 with this prompt:
 
-Branch: feature/bank-security-phase-a HEAD post-9f42ca7
-Server: D:\FiveM_Server\Sonar (QBCore — 56 qb-* resources installed)
+Branch: feature/bank-security-phase-a HEAD post-aebe97e
+Server: D:\FiveM_Server\Sonar (QBCore — 56 qb-* resources, qb-inventory only, no qb-banking, no ox_inventory, no qbx)
 DB: D:\laragon — both sonar AND qbcore_ffaed3 schemas
 
-Read prompt: docs/agents/teams/prompts/10_phase_5_cross_script_sync_lead.md
+Read prompt: docs/agents/teams/prompts/10_phase_5_cross_script_sync_lead.md (paragraph 0 research findings + paragraph 8.5 Path E primary)
 
-Mission:
-- Phase 5.6 is AUDIT-ONLY. NO fixes.
-- Phase 1: code-level scan 56 qb-* resources (paragraph 6) — output inventory table.
-- Phase 2: runtime probe S1-S12 with founder paralelo (paragraph 7) — output diff matrix.
-- Phase 3: classify findings + propose Path A/B/C/D (paragraph 8) — output recommendation.
-- Phase 4: emit progress/PHASE_5_6_CROSS_SCRIPT_AUDIT.md (paragraph 10).
+Mission revised post-research (Path E primary, no más audit-only):
 
-Founder paralelo: ejecuta 12 escenarios in-game S1-S12 mientras dev captura SQL diffs.
+Sub-phase 5.6.1 — Amendment C-SEC-01 v0.3 R2 -> v0.4 R2 MINOR additive
+  - paragraph 1.2 audit_hook_exports_mutation row: extend event_type enum con bank_external_credit/debit/set
+  - paragraph 1.2.B NEW shape canonical para external mutations (10-field con invoker_resource heuristica + actor_src=qbcore-source + delta_minor signed + previous_flag_snapshot.balance_before_minor)
+  - DRAFT emit + founder ratify in same session (no Round 3 ceremony, MINOR additive 1 contract)
+  - Update docs/technical/08_audit_hooks.md atomic in-place patch
 
-Boundary:
-- NO touch contracts LOCKED v1.0.2 R2.
-- NO patch qb-* resources (operator MIGRATION.md responsibility, founder decides).
-- NO re-introduce OnMoneyPreHook sin amendment Round 3 explicit.
+Sub-phase 5.6.2 — Path E listener implementation
+  - NEW resources/sonar_bridges/server/qbcore_money_listener.lua (~80 LOC)
+  - NEW resources/sonar_bank_app/server/api/external_sync.lua (~150 LOC) con RecordExternalMutation wrapper (4-step atomic TX same pattern existing exports)
+  - Migration additive 037_sonar_bank_external_seq.sql para idempotency dedup ráfagas mismo-tick (opcional, accept low collision probability Phase A si scope tight)
+  - exports('RecordExternalMutation', ...) NEW additive (no toca los 22 exports paragraph 4)
+  - fxmanifest.lua wire ambos archivos
+  - Atomic commits: feat(bank-bridges): BANK-BE.PHASE_5.6 5.6.2 add qbcore money listener + feat(bank-api): BANK-BE.PHASE_5.6 5.6.2 add external sync wrapper
 
-ETA: 2-3h scan + 2h runtime probe + 1h analysis = 5-6h total.
+Sub-phase 5.6.3 — Adversarial probe live (S1-S12 paragraph 7 + paragraph 7.1)
+  - Founder paralelo ejecuta 12 escenarios in-game (buy car, sell drugs, paycheck, /givemoney, etc.)
+  - Dev captura para CADA escenario: balance QBCore antes/después + balance SONAR inmediato (≤1s post-event) + audit row event_type=bank_external_* + invoker_resource heuristica + StateBag publish observed + UI Bank App refresh real-time.
+  - Criterio PASS S1-S12: zero drift real-time + audit row presente + invoker_resource attribution correcta (heurística OK, fallback acceptable).
+  - Criterio FAIL: cualquier drift > 1s o audit row missing o event_type incorrecto.
+
+Sub-phase 5.6.4 — Sign-off + MIGRATION.md update
+  - progress/PHASE_5_6_CROSS_SCRIPT_AUDIT.md emit con cobertura S1-S12 PASS + listener implementation evidence.
+  - MIGRATION.md NEW paragraph "Cross-script sync via QBCore:Server:OnMoneyChange listener" + reason convention guidance + offline player limitation note + Phase B scope cash/crypto deferred.
+  - Founder GO MANUAL formal Path E ratification.
+
+Founder paralelo: ejecuta 12 escenarios in-game S1-S12 mientras dev captura SQL diffs + listener console output.
+
+Boundary STRICT:
+- NO touch contracts LOCKED v1.0.2 R2 EXCEPTO C-SEC-01 v0.3 R2 -> v0.4 R2 MINOR additive (path Founder ratify in-session, no Round 3 ceremony — additive enum + new shape canonical no breaking).
+- NO patch qb-* resources (Path E es zero-patch by design).
+- NO re-introduce OnMoneyPreHook (Path E es POST-OBSERVE listener, semánticamente distinto de Pre-Hook VETO).
+- NO scope creep cash/crypto/qb-banking/ox_inventory (Phase B scope explicit).
+
+ETA: 3-4h (vs 5-6h audit-only original):
+- 5.6.1 amendment ~30min DRAFT + founder ratify
+- 5.6.2 implementation ~1.5-2h listener + wrapper + migration + tests
+- 5.6.3 adversarial probe ~1h (12 escenarios paralelo)
+- 5.6.4 sign-off + docs ~30min
 
 GO.
 ```
