@@ -150,6 +150,12 @@ def _build_call(export_name: str, target_expr: str, amount_expr: str, reason_exp
     return f'exports.sonar_bank_app:{export_name}({target_expr}, {to_minor_expr(amount_expr)}, {reason_expr}, nil)'
 
 
+def _reason_expr(args: list[str], resource: str, file_path: str, line_no: int) -> str:
+    if len(args) >= 3 and args[2]:
+        return args[2]
+    return f"'sonar-migration:{resource}:{file_path}:{line_no}'"
+
+
 def transform_lua_text(text: str, resource: str, file_path: str) -> TransformResult:
     result = TransformResult(original_text=text, patched_text=text)
     if contains_marker(text):
@@ -192,8 +198,8 @@ def transform_lua_text(text: str, resource: str, file_path: str) -> TransformRes
             player_var = if_match.group('var')
             parsed = extract_call_args(body, player_var, 'RemoveMoney')
             binding = resolve_binding([l.rstrip('\n') for l in lines], idx, player_var)
-            if parsed and len(parsed[0]) >= 3 and parsed[0][0].strip("'\"") == 'bank' and binding and binding.kind == BindingKind.ONLINE:
-                amount_expr, reason_expr = parsed[0][1], parsed[0][2]
+            if parsed and 2 <= len(parsed[0]) <= 3 and parsed[0][0].strip("'\"") == 'bank' and binding and binding.kind == BindingKind.ONLINE:
+                amount_expr, reason_expr = parsed[0][1], _reason_expr(parsed[0], resource, file_path, line_no)
                 safe, unsafe_reason = _can_transform_amount(amount_expr)
                 if safe:
                     indent = if_match.group('indent')
@@ -226,7 +232,7 @@ def transform_lua_text(text: str, resource: str, file_path: str) -> TransformRes
             if not player_var.isidentifier():
                 continue
             parsed = extract_call_args(body, player_var, method)
-            if not parsed or len(parsed[0]) < 3:
+            if not parsed or not (2 <= len(parsed[0]) <= 3):
                 continue
             args, suffix = parsed
             if args[0].strip("'\"") != 'bank':
@@ -235,7 +241,7 @@ def transform_lua_text(text: str, resource: str, file_path: str) -> TransformRes
             if not binding:
                 result.manual_entries.append(_manual(resource, file_path, line_no, 'S1', 'MEDIUM', stripped, 'player binding unresolved'))
                 break
-            amount_expr, reason_expr = args[1], args[2]
+            amount_expr, reason_expr = args[1], _reason_expr(args, resource, file_path, line_no)
             safe, unsafe_reason = _can_transform_amount(amount_expr)
             if not safe:
                 result.manual_entries.append(_manual(resource, file_path, line_no, 'U9', 'HIGH', stripped, unsafe_reason or 'unsafe amount expression'))
@@ -245,7 +251,8 @@ def transform_lua_text(text: str, resource: str, file_path: str) -> TransformRes
             call = _build_call(export_name, target_expr, amount_expr, reason_expr)
             indent = body[:len(body) - len(body.lstrip())]
             pattern_id = 'S3' if binding.kind == BindingKind.OFFLINE else 'S1'
-            patched = f'{indent}{call}{suffix}'
+            call_start = body.find(f'{player_var}.Functions.{method}')
+            patched = f'{body[:call_start]}{call}{suffix}' if call_start >= 0 else f'{indent}{call}{suffix}'
             out_lines.append(f'{indent}{make_marker(pattern_id, line_no)}{newline}')
             out_lines.append(f'{patched}{newline}')
             result.auto_entries.append(PatchEntry(resource, file_path, line_no, pattern_id, stripped, patched.strip(), binding.original))

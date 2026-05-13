@@ -23,7 +23,7 @@
 - Patcher skeleton and core modules created under `tools/migration_patcher/`.
 - Core package implemented: CLI, safety guards, patterns, binding resolver, transformer, fxmanifest injector, reports, rollback support.
 - Pytest suite implemented with fixtures/goldens for six real qb-* resource families and offline binding coverage.
-- Validation: `22 passed`, coverage `93.12%` with `--cov-fail-under=85`.
+- Validation: `26 passed`, coverage `93.53%` with `--cov-fail-under=85`.
 - Sandbox dry-run regenerated at `D:\theBigProject\sandbox_migration_output`.
-- Dry-run totals: 55 resources scanned, 42 auto-patched call sites, 93 manual-review call sites, 13 fxmanifest injections, 27 resources with hits.
+- Dry-run totals: 55 resources scanned, 45 auto-patched call sites, 93 manual-review call sites, 13 fxmanifest injections, 27 resources with hits.
 - Safety correction applied: negated/control-flow calls such as `if not Player.Functions.RemoveMoney(...) then` are manual review, not auto-patched.

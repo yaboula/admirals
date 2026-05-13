@@ -29,7 +29,7 @@ UNSAFE_PATTERNS: tuple[PatternSpec, ...] = (
     PatternSpec('U5', 'CRITICAL', 'raw SQL money mutation bypasses both layers', re.compile(r"(MySQL\.\w+\([^\n]*UPDATE\s+players\s+SET\s+money|exports\.oxmysql:\w+\([^\n]*JSON_SET\([^\n]*money)", re.IGNORECASE), 'manual'),
     PatternSpec('U6', 'INFO', 'qb-banking society/shared account export is Phase B scope', re.compile(r"exports\[?['\"]qb-banking['\"]\]?:(AddMoney|RemoveMoney|GetAccount|GetAccountBalance|CreatePlayerAccount)"), 'manual'),
     PatternSpec('U7', 'INFO', 'cash-as-item inventory flow is Phase B scope', re.compile(r"exports\[?['\"](?:qb-inventory|ox_inventory)['\"]\]?:(?:AddItem|RemoveItem)\(\s*[^,]+,\s*['\"](?:money|cash)['\"]"), 'manual'),
-    PatternSpec('U8', 'MEDIUM', 'custom function call amount unit is unknown', re.compile(r"\b\w+\.Functions\.(AddMoney|RemoveMoney)\(\s*['\"]bank['\"]\s*,\s*\w+\([^)]*\)\s*,"), 'manual'),
+    PatternSpec('U8', 'MEDIUM', 'custom function call amount unit is unknown', re.compile(r"\b\w+\.Functions\.(AddMoney|RemoveMoney)\(\s*['\"]bank['\"]\s*,\s*[\w.]+\([^)]*\)"), 'manual'),
     PatternSpec('U9', 'HIGH', 'amount identifier suggests minor/cents and must not be double-shifted', re.compile(r"\b\w+\.Functions\.(AddMoney|RemoveMoney)\(\s*['\"]bank['\"]\s*,\s*\w*(?:_minor|_cents|_centavos|Minor|Cents)\b"), 'manual'),
 )
 

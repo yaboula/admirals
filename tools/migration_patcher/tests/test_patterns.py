@@ -15,7 +15,7 @@ def test_unsafe_line_patterns():
         'U5': "MySQL.update('UPDATE players SET money = ?', {money})",
         'U6': "exports['qb-banking']:AddMoney('realestate', 5, 'r')",
         'U7': "exports['qb-inventory']:AddItem(src, 'cash', 1)",
-        'U8': "Player.Functions.AddMoney('bank', GetPrice(), 'r')",
+        'U8': "Player.Functions.AddMoney('bank', GetPrice())",
         'U9': "Player.Functions.RemoveMoney('bank', amount_minor, 'r')",
     }
     for expected, line in samples.items():

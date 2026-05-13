@@ -39,3 +39,29 @@ def test_unresolved_binding_manual_not_patched():
     result = transform_lua_text(text, resource='x', file_path='server.lua')
     assert result.patched_text == text
     assert any(entry.pattern_id == 'S1' for entry in result.manual_entries)
+
+
+def test_two_argument_bank_call_gets_stable_reason():
+    text = "local Player = QBCore.Functions.GetPlayer(src)\nPlayer.Functions.RemoveMoney('bank', value)\n"
+    result = transform_lua_text(text, resource='qb-custom', file_path='server/main.lua')
+    assert "exports.sonar_bank_app:RemoveMoney(src, (value) * 100, 'sonar-migration:qb-custom:server/main.lua:2', nil)" in result.patched_text
+
+
+def test_assignment_call_preserves_left_hand_side():
+    text = "local Player = QBCore.Functions.GetPlayer(src)\nlocal ok = Player.Functions.AddMoney('bank', value)\n"
+    result = transform_lua_text(text, resource='qb-custom', file_path='server/main.lua')
+    assert "local ok = exports.sonar_bank_app:AddMoney(src, (value) * 100, 'sonar-migration:qb-custom:server/main.lua:2', nil)" in result.patched_text
+
+
+def test_custom_function_amount_is_manual_not_patched():
+    text = "local Player = QBCore.Functions.GetPlayer(src)\nPlayer.Functions.AddMoney('bank', Round(amount, 0))\n"
+    result = transform_lua_text(text, resource='qb-custom', file_path='server/main.lua')
+    assert result.patched_text == text
+    assert any(entry.pattern_id == 'U8' for entry in result.manual_entries)
+
+
+def test_return_money_call_is_manual_not_patched():
+    text = "local Player = QBCore.Functions.GetPlayer(src)\nreturn Player.Functions.AddMoney('bank', amount)\n"
+    result = transform_lua_text(text, resource='qb-custom', file_path='server/main.lua')
+    assert result.patched_text == text
+    assert any(entry.pattern_id == 'S1' and 'control-flow' in entry.reason for entry in result.manual_entries)
