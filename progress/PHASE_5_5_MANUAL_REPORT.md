@@ -68,12 +68,12 @@ qa_movement <request_nonce_or_tx_id>
 | 3 | `CanAfford` | `qa_can_afford <src> <amount_minor>` | PASS | n/a | n/a | n/a | PASS | P55-001 re-test PASS: returned `sufficient=true`, `balance_minor=5001250` |
 | 4 | `CanAffordByCitizen` | `qa_can_afford_by_citizen <cid> <amount_minor>` | PASS | n/a | n/a | n/a | PASS | Returned `sufficient=true`, `balance_minor=5002500` |
 | 5 | `AddMoney` | `qa_add_money <src> 1250 qa_credit idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | P55-001 re-test PASS: returned `new_balance_minor=5002500`, audit row id=1392, movement row id=2786 |
-| 6 | `AddMoneyByCitizen` | `qa_add_money_by_citizen <cid> 500 qa_credit_offline idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
+| 6 | `AddMoneyByCitizen` | `qa_add_money_by_citizen <cid> 500 qa_credit_offline idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5002500`, audit row id=1394, movement row id=2788 |
 | 7 | `RemoveMoney` | `qa_remove_money <src> 500 qa_debit idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5002000`, audit row id=1393, movement row id=2787 |
-| 8 | `RemoveMoneyByCitizen` | `qa_remove_money_by_citizen <cid> 200 qa_debit_offline idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 9 | `TransferBySource` | `qa_transfer_by_source <src1> <src2> 1000 qa_xfer idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING | Requires two online players or controlled second source |
-| 10 | `TransferByIban` | `qa_transfer_by_iban <iban1> <iban2> 1000 qa_xfer_iban idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
-| 11 | `TransferByCitizen` | `qa_transfer_by_citizen <cid1> <cid2> 1000 qa_xfer_cid idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
+| 8 | `RemoveMoneyByCitizen` | `qa_remove_money_by_citizen <cid> 200 qa_debit_offline idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned `new_balance_minor=5002300`, audit row id=1395, movement row id=2789 |
+| 9 | `TransferBySource` | `qa_transfer_by_source <src1> <src2> 1000 qa_xfer idem=<uuid>` | PENDING - REQUIRES SECOND ONLINE PLAYER | PENDING | PENDING | PENDING | PENDING | Deferred by dev/founder for current sub-session because only source `1` is online |
+| 10 | `TransferByIban` | `qa_transfer_by_iban <iban1> <iban2> 1000 qa_xfer_iban idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned transfer data, 2 audit rows ids=1396/1397, 2 movement rows ids=2790/2791 |
+| 11 | `TransferByCitizen` | `qa_transfer_by_citizen <cid1> <cid2> 1000 qa_xfer_cid idem=<uuid>` | PASS | PASS | PENDING | PASS | PASS | Returned transfer data, 2 audit rows ids=1398/1399, 2 movement rows ids=2792/2793 |
 | 12 | `GetApiVersion` | `qa_get_api_version` | PASS | n/a | n/a | n/a | n/a | Returned `{major=1, minor=0, patch=2, phase="Phase 5", api_lock="C-BE-02 v1.0.2 R2"}` |
 | 13 | `AdminCredit` | `qa_admin_credit <actor_src> <target> 5000 qa_admin_credit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING | Contract signature is `(actor_src, target, amount, reason, opts)` |
 | 14 | `AdminDebit` | `qa_admin_debit <actor_src> <target> 5000 qa_admin_debit idem=<uuid>` | PENDING | PENDING | PENDING | PENDING | PENDING |  |
@@ -147,6 +147,37 @@ Audit: qa_audit 33333333-3333-4333-8333-333333333333 -> row id=1393 category=ban
 Movement: qa_movement 33333333-3333-4333-8333-333333333333 -> row id=2787 category=withdrawal amount=-5.00 balance_after=50020.00 request_nonce=33333333-3333-4333-8333-333333333333 related_doc_id=e3cff744-4ae6-409e-a277-28d203afeb26 source_resource=sonar_bank_app.
 StateBag/NetEvent/UI: PENDING.
 Result: PASS
+```
+
+```text
+[AddMoneyByCitizen / RemoveMoneyByCitizen]
+Invoke mutation: qa_add_money_by_citizen FXD56242 500 QA_add_by_citizen idem=44444444-4444-4444-8444-444444444444 -> ok=true err=null data={new_balance_minor=5002500,iban="AD-WKRB-ZVE8-9A1D",tx_id="1ee5bfea-6d66-4aa4-ae76-766fcb8ede57"}
+Audit: qa_audit 44444444-4444-4444-8444-444444444444 -> row id=1394 category=bank_exports action=bank_credit event_type=bank_credit target_id=AD-WKRB-ZVE8-9A1D amount=5.00 delta_minor=500 request_nonce=44444444-4444-4444-8444-444444444444 correlation_id=44444444-4444-4444-8444-444444444444 invoker_resource=oxmysql reason=QA_add_by_citizen
+Movement: qa_movement 44444444-4444-4444-8444-444444444444 -> row id=2788 category=deposit amount=5.00 balance_after=50025.00 request_nonce=44444444-4444-4444-8444-444444444444 related_doc_id=1ee5bfea-6d66-4aa4-ae76-766fcb8ede57 source_resource=sonar_bank_app.
+Invoke mutation: qa_remove_money_by_citizen FXD56242 200 QA_remove_by_citizen idem=55555555-5555-4555-8555-555555555555 -> ok=true err=null data={new_balance_minor=5002300,iban="AD-WKRB-ZVE8-9A1D",tx_id="a4999689-9c51-48d3-8ca0-4467f7bcc091"}
+Audit: qa_audit 55555555-5555-4555-8555-555555555555 -> row id=1395 category=bank_exports action=bank_debit event_type=bank_debit target_id=AD-WKRB-ZVE8-9A1D amount=-2.00 delta_minor=-200 request_nonce=55555555-5555-4555-8555-555555555555 correlation_id=55555555-5555-4555-8555-555555555555 invoker_resource=oxmysql reason=QA_remove_by_citizen
+Movement: qa_movement 55555555-5555-4555-8555-555555555555 -> row id=2789 category=withdrawal amount=-2.00 balance_after=50023.00 request_nonce=55555555-5555-4555-8555-555555555555 related_doc_id=a4999689-9c51-48d3-8ca0-4467f7bcc091 source_resource=sonar_bank_app.
+StateBag/NetEvent/UI: PENDING.
+Result: PASS
+```
+
+```text
+[TransferByIban / TransferByCitizen]
+Invoke mutation: qa_transfer_by_iban AD-WKRB-ZVE8-9A1D AD24ST0240001006 1000 QA_transfer_iban idem=66666666-6666-4666-8666-666666666666 -> ok=true err=null data={fee_minor=0,amount_minor=1000,from_iban="AD-WKRB-ZVE8-9A1D",to_iban="AD24ST0240001006",tx_id="9e75a65b-f289-4029-ab87-aef0b6485fd7"}
+Audit: qa_audit 66666666-6666-4666-8666-666666666666 -> two rows ids=1396/1397 event_type=bank_transfer delta_minor=-1000/+1000 amount=-10.00/+10.00 target_id=AD-WKRB-ZVE8-9A1D/AD24ST0240001006 correlation_id=request_nonce=66666666-6666-4666-8666-666666666666
+Movement: qa_movement 66666666-6666-4666-8666-666666666666 -> two rows ids=2790/2791 category=transfer amount=-10.00/+10.00 balance_after=50013.00/22.34 related_doc_id=9e75a65b-f289-4029-ab87-aef0b6485fd7 counterpart_iban=AD24ST0240001006/AD-WKRB-ZVE8-9A1D
+Invoke mutation: qa_transfer_by_citizen FXD56242 ST024_UNITS 1000 QA_transfer_citizen idem=77777777-7777-4777-8777-777777777777 -> ok=true err=null data={fee_minor=0,amount_minor=1000,from_iban="AD-WKRB-ZVE8-9A1D",to_iban="AD24ST0240001006",tx_id="ff7ce273-8408-4bc8-b74c-d48daaddc077"}
+Audit: qa_audit 77777777-7777-4777-8777-777777777777 -> two rows ids=1398/1399 event_type=bank_transfer delta_minor=-1000/+1000 amount=-10.00/+10.00 target_id=AD-WKRB-ZVE8-9A1D/AD24ST0240001006 correlation_id=request_nonce=77777777-7777-4777-8777-777777777777
+Movement: qa_movement 77777777-7777-4777-8777-777777777777 -> two rows ids=2792/2793 category=transfer amount=-10.00/+10.00 balance_after=50003.00/32.34 related_doc_id=ff7ce273-8408-4bc8-b74c-d48daaddc077 counterpart_iban=AD24ST0240001006/AD-WKRB-ZVE8-9A1D
+StateBag/NetEvent/UI: PENDING.
+Result: PASS
+```
+
+```text
+[TransferBySource]
+Status: PENDING - REQUIRES SECOND ONLINE PLAYER.
+Reason: current live sub-session only has source 1 online. Dev/founder agreed to defer instead of forcing artificial source coverage.
+Result: DEFERRED, not failed.
 ```
 
 ## Cross-checks (5.3)
