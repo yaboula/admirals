@@ -237,6 +237,21 @@ SET ba.is_frozen = ?, ba.updated_at = UNIX_TIMESTAMP()
 WHERE sa.char_id = ? AND ba.closed_at IS NULL
 ]]
 
+local SQL_LIST_SANCTION_ACTIONS = [[
+SELECT CAST(l.id AS CHAR) AS id,
+       l.event_type,
+       l.ts * 1000 AS performedAt,
+       l.request_nonce AS idempotencyKey,
+       l.context_data,
+       COALESCE(actor.alias, actor.char_id, l.actor_account_id, 'government') AS operatorAlias
+FROM sonar_bank_audit_ledger l
+LEFT JOIN sonar_accounts actor ON actor.id = l.actor_account_id
+WHERE l.event_type IN ('govt_flag_close','govt_freeze','govt_unfreeze','govt_fine_apply')
+  AND (? IS NULL OR JSON_UNQUOTE(JSON_EXTRACT(l.context_data, '$.target_citizen_id')) = ?)
+ORDER BY l.ts DESC, l.id DESC
+LIMIT ?
+]]
+
 local SQL_DEBIT_FINE = [[
 UPDATE sonar_bank_accounts
 SET balance = balance - (? / 100.0), updated_at = UNIX_TIMESTAMP()
@@ -413,6 +428,10 @@ end
 
 function R.SetCitizenFrozen(cid, frozen)
   return DB.Execute(SQL_SET_CITIZEN_FROZEN, { frozen and 1 or 0, cid })
+end
+
+function R.ListSanctionActions(target_cid, limit)
+  return DB.Query(SQL_LIST_SANCTION_ACTIONS, { target_cid, target_cid, limit or 50 })
 end
 
 function R.BuildDebitFineQuery(account_id, amount_minor)

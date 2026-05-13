@@ -124,6 +124,43 @@ local function action_result(action_type, ctx, target_alias, extra)
   }
 end
 
+local function decode_json_object(value)
+  if type(value) == 'table' then return value end
+  if type(value) ~= 'string' or value == '' then return {} end
+  if json and json.decode then
+    local ok, decoded = pcall(json.decode, value)
+    if ok and type(decoded) == 'table' then return decoded end
+  end
+  return {}
+end
+
+local function sanction_action_type(event_type)
+  if event_type == Enums.AUDIT_EVENT_TYPE.GOVT_FLAG_CLOSE then return 'close_flag' end
+  if event_type == Enums.AUDIT_EVENT_TYPE.GOVT_FREEZE then return 'freeze_accounts' end
+  if event_type == Enums.AUDIT_EVENT_TYPE.GOVT_UNFREEZE then return 'lift_freeze' end
+  if event_type == Enums.AUDIT_EVENT_TYPE.GOVT_FINE_APPLY then return 'apply_fine' end
+  return 'close_flag'
+end
+
+local function sanction_action_from_row(row)
+  local context = decode_json_object(row.context_data)
+  local event_data = decode_json_object(context.event_data)
+  local target_cid = context.target_citizen_id or event_data.target_citizen_id or ''
+  return {
+    id = tostring(context.audit_id or row.id),
+    type = sanction_action_type(row.event_type),
+    targetCid = target_cid,
+    targetAlias = event_data.target_alias or target_cid,
+    relatedFlagId = event_data.related_flag_id,
+    amount = event_data.amount and tonumber(event_data.amount) or nil,
+    verdict = event_data.verdict,
+    reason = event_data.reason or '',
+    operator = row.operatorAlias or 'government',
+    performedAt = tonumber(row.performedAt) or now_ms(),
+    idempotencyKey = row.idempotencyKey or context.request_nonce or event_data.idempotency_key or '',
+  }
+end
+
 local function acquire_mutation(ctx, callback_id, payload)
   if not Validators.IsValidUUID(ctx.idempotency_key) then
     return nil, nil, Errors.New('VALIDATION_FAILED', { field = 'idempotencyKey' })
@@ -234,7 +271,16 @@ function S.IsCitizenFrozen(ctx)
 end
 
 function S.ListSanctionActions(ctx)
-  return { ok = true, data = {} }
+  if ctx.target_cid and not Validators.IsValidCitizenId(ctx.target_cid) then
+    return { ok = false, error = Errors.New('INVALID_CITIZEN_ID') }
+  end
+  local rows, err = Repo.ListSanctionActions(ctx.target_cid, 50)
+  if err then return { ok = false, error = err } end
+  local out = {}
+  for _, row in ipairs(rows or {}) do
+    out[#out + 1] = sanction_action_from_row(row)
+  end
+  return { ok = true, data = out }
 end
 
 function S.GetSanctionKpis(ctx)
