@@ -77,6 +77,7 @@ server_scripts {
   'server/repos/portfolio.lua',         -- 21.
   'server/repos/cards.lua',             -- 22.
   'server/repos/govt.lua',              -- 23.
+  'server/repos/tax.lua',
   'server/repos/business.lua',          -- 24.
 
   -- 4. State (statebags hook — depends on repos.accounts).
@@ -94,6 +95,7 @@ server_scripts {
   'server/services/admin_service.lua',       -- 33.
   'server/services/risk_engine.lua',         -- 34. REQ-FE-006/009 MVP risk rules
   'server/services/govt_service.lua',        -- 35. REQ-FE-006..014 GOVT data layer
+  'server/services/tax_service.lua',
   'server/services/business_service.lua',    -- 36. REQ-FE-011/015 Business data layer
 
   -- 6. Events (NetEvent emitters + audit emit helpers — depends lib + Enums).
@@ -118,6 +120,7 @@ server_scripts {
   'server/callbacks/admin.lua',         -- 49. C035, C036, C036b, C031, C041,
                                         --      C042, C043, C044, C045, C046  (10)
   'server/callbacks/govt.lua',          -- 50. REQ-FE-006..014 GOVT callbacks
+  'server/callbacks/tax.lua',
   'server/callbacks/business.lua',      -- 51. REQ-FE-011/015 Business callbacks
 
   -- 9. Boot orchestration (Step F).

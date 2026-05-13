@@ -21,6 +21,7 @@ import type { BankStateBagKey } from '@/lib/bankStateBags'
 import { getBusinessDetailMock, listBusinessMock } from '@/govt/data/mock/govtBusiness'
 import { getCensusDetailMock, listCensusMock } from '@/govt/data/mock/govtCensus'
 import { getReportsDataMock } from '@/govt/data/mock/govtReports'
+import { forceCollectionMock, getBracketsMock, getCycleStatsMock, getPolicyLogMock, saveBracketsMock } from '@/govt/data/mock/govtTax'
 import {
   applyFineMock,
   closeFlagMock,
@@ -50,10 +51,15 @@ import type {
   GovtReportsData,
   GovtReportsRange,
   GovtSanctionAction,
+  GovtForceCollectionRequest,
+  GovtSaveBracketsRequest,
   GovtSubsidyFilters,
   GovtSubsidyProgram,
   GovtSubsidyProgramDetail,
   GovtSubsidyStats,
+  GovtTaxBracket,
+  GovtTaxCycleStats,
+  GovtTaxPolicyChange,
   GovtTreasuryFilters,
   GovtTreasuryPage,
 } from '@/govt/data/contracts'
@@ -253,6 +259,29 @@ export function installMockHandlers(): void {
     return getBusinessDetailMock(String(payload.companyId ?? payload.company_id ?? '')) ?? null
   })
 
+  registerMockHandler<GovtTaxBracket[]>('sonar:bank:govt:tax:brackets:get', async () => {
+    await simulateLatency(90, 180)
+    return getBracketsMock()
+  })
+
+  registerMockHandler<GovtTaxCycleStats>('sonar:bank:govt:tax:cycle:stats', async () => {
+    await simulateLatency(90, 180)
+    return getCycleStatsMock()
+  })
+
+  registerMockHandler<GovtTaxPolicyChange[]>('sonar:bank:govt:tax:policy:log', async () => {
+    await simulateLatency(80, 160)
+    return getPolicyLogMock()
+  })
+
+  registerMockHandler<void>('sonar:bank:govt:tax:brackets:save', async (payload) => {
+    await saveBracketsMock(payload as unknown as GovtSaveBracketsRequest)
+  })
+
+  registerMockHandler<void>('sonar:bank:govt:tax:force_collection', async (payload) => {
+    await forceCollectionMock(payload as unknown as GovtForceCollectionRequest)
+  })
+
   registerMockHandler<IssueCardResult>('sonar:bank:card:issue', async (_payload) => {
     await simulateLatency(200, 420)
     const last4 = String(Math.floor(Math.random() * 9000) + 1000)
@@ -264,7 +293,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (34 endpoints) — VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (39 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {
