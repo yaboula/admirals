@@ -156,11 +156,16 @@ export function Transfer() {
       initial={reduced ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-      className="h-full w-full"
+      className="relative h-full w-full overflow-hidden"
     >
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-75">
+        <div className="absolute left-[7%] top-[-8%] h-72 w-72 rounded-full bg-[oklch(0.65_0.22_40_/_0.10)] blur-[92px]" />
+        <div className="absolute bottom-[4%] right-[10%] h-80 w-80 rounded-full bg-[rgba(72,146,168,0.10)] blur-[104px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.032),transparent_34%,rgba(255,255,255,0.02))]" />
+      </div>
       <div
         className={cn(
-          'h-full w-full mx-auto grid min-h-0',
+          'relative h-full w-full mx-auto grid min-h-0',
           showRail
             ? 'max-w-[1500px] grid-cols-[minmax(0,1fr)_320px] gap-4 2xl:gap-5'
             : 'max-w-[1080px] grid-cols-1',
@@ -482,7 +487,7 @@ function RecipientStep({ account }: { account: Account | null }) {
     try {
       await saveRecipient.mutateAsync({ counterpart_iban: normalized, alias: alias.trim() || null, is_favorite: true })
       setError(null)
-      toast.success('Recipient saved', 'This contact is now available for future transfers.')
+      toast.success(t('transfer.recipientSavedTitle'), t('transfer.recipientSavedBody'))
     } catch (err) {
       handleBankError(err)
     }
@@ -499,7 +504,7 @@ function RecipientStep({ account }: { account: Account | null }) {
   const deleteSavedRecipient = async (recipient: RecentRecipient): Promise<void> => {
     try {
       await deleteRecipient.mutateAsync({ counterpart_iban: recipient.counterpart_iban })
-      toast.success('Recipient removed', 'The saved contact was removed.')
+      toast.success(t('transfer.recipientRemovedTitle'), t('transfer.recipientRemovedBody'))
     } catch (err) {
       handleBankError(err)
     }
@@ -588,7 +593,7 @@ function RecipientStep({ account }: { account: Account | null }) {
           />
           <div className="mt-auto flex items-center justify-between gap-2 pt-3 2xl:pt-4">
             <Button variant="secondary" leftIcon={<Save size={16} />} loading={saveRecipient.isPending} onClick={saveCurrentRecipient}>
-              Save
+              {t('transfer.saveRecipient')}
             </Button>
             <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep('amount')}>
               {t('transfer.back')}
@@ -625,10 +630,10 @@ function RecipientChip({ recipient, active, onClick, onFavorite, onDelete }: { r
         </span>
         <span className="text-[11px] font-semibold text-text-secondary tactile-tabular-nums">×{recipient.transfer_count}</span>
       </button>
-      <button type="button" onClick={onFavorite} className={cn('rounded-full p-1.5 text-text-tertiary transition-colors hover:text-text-primary', recipient.is_favorite && 'text-brand-signal-orange-light')} aria-label="Toggle favorite recipient">
+      <button type="button" onClick={onFavorite} className={cn('rounded-full p-1.5 text-text-tertiary transition-colors hover:text-text-primary', recipient.is_favorite && 'text-brand-signal-orange-light')} aria-label={t('transfer.toggleFavoriteRecipient')}>
         <Star size={14} fill={recipient.is_favorite ? 'currentColor' : 'none'} />
       </button>
-      <button type="button" onClick={onDelete} className="rounded-full p-1.5 text-text-tertiary transition-colors hover:text-semantic-danger" aria-label="Delete saved recipient">
+      <button type="button" onClick={onDelete} className="rounded-full p-1.5 text-text-tertiary transition-colors hover:text-semantic-danger" aria-label={t('transfer.deleteSavedRecipient')}>
         <Trash2 size={14} />
       </button>
     </div>
@@ -899,10 +904,10 @@ function ConfirmStep({
           disabled={pdfPending}
           onClick={handleDownloadReceiptPdf}
         >
-          {pdfPending ? 'Generating PDF' : t('transfer.pdf')}
+          {pdfPending ? t('transfer.generatingPdf') : t('transfer.pdf')}
         </Button>
         <Button variant="secondary" onClick={onNew}>{t('transfer.newTransfer')}</Button>
-        <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={onDone}>Volver a inicio</Button>
+        <Button variant="primary" rightIcon={<ArrowRight size={16} />} onClick={onDone}>{t('transfer.backHome')}</Button>
       </div>
     </ResultShell>
   )
