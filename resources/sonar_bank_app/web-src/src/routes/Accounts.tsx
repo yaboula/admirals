@@ -23,7 +23,7 @@ import type { Account, Transaction } from '@/data/contracts'
 import { getMockAliasForIban } from '@/data/mock/seed'
 import { handleBankError } from '@/lib/bankError'
 import { cn } from '@/lib/utils'
-import { useI18n } from '@/lib/i18n'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { maskIbanCompact, maskIbanDisplay, maskMoneyDisplay, maskSignedMoneyDisplay, revealIbanDisplay, safeAriaLabel } from '@/lib/privacy'
 import { sfx } from '@/lib/sfx'
 import { usePrivacyMode } from '@/stores/privacy'
@@ -32,6 +32,7 @@ import { createBankOperationIds } from '@/lib/bankIdempotency'
 
 export function Accounts() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const { data, isLoading, isError, error } = useBootstrap()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -63,7 +64,7 @@ export function Accounts() {
   const handleOpenAccount = async (): Promise<void> => {
     try {
       await openAccount.mutateAsync({ initial_balance: 0, initial_savings: 0 })
-      toast.success('Account opened', 'A new SONAR account is ready.')
+      toast.success(t('accounts.accountOpenedTitle'), t('accounts.accountOpenedBody'))
     } catch (err) {
       handleBankError(err)
     }
@@ -72,7 +73,7 @@ export function Accounts() {
   const handleSubmitKyc = async (): Promise<void> => {
     try {
       await submitKyc.mutateAsync(kycSubmitPayload({ doc_count: 1 }))
-      toast.success('KYC submitted', 'Your verification package was sent for review.')
+      toast.success(t('accounts.kycSubmittedTitle'), t('accounts.kycSubmittedBody'))
     } catch (err) {
       handleBankError(err)
     }
@@ -84,10 +85,10 @@ export function Accounts() {
       const payload = accountMutationPayload({ iban: selected.iban, reason: 'self_service_account_control' })
       if (selected.status === 'frozen' || selected.frozen_flag === true || selected.frozen_flag === 1) {
         await unfreezeAccount.mutateAsync(payload)
-        toast.success('Account unfrozen', streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+        toast.success(t('accounts.accountUnfrozenTitle'), streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
       } else {
         await freezeAccount.mutateAsync(payload)
-        toast.success('Account frozen', streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+        toast.success(t('accounts.accountFrozenTitle'), streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
       }
     } catch (err) {
       handleBankError(err)
@@ -97,12 +98,12 @@ export function Accounts() {
   const handleCloseAccount = async (): Promise<void> => {
     if (!selected) return
     if (selected.balance_minor > 0 || selected.savings_minor > 0) {
-      toast.warning('Account must be empty', 'Move all available and savings funds before closing.')
+      toast.warning(t('accounts.accountMustBeEmptyTitle'), t('accounts.accountMustBeEmptyBody'))
       return
     }
     try {
       await closeAccount.mutateAsync(accountMutationPayload({ iban: selected.iban, reason: 'self_service_close' }))
-      toast.success('Account closed', streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+      toast.success(t('accounts.accountClosedTitle'), streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
     } catch (err) {
       handleBankError(err)
     }
@@ -118,10 +119,15 @@ export function Accounts() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-      className="h-full w-full"
+      className="relative h-full w-full overflow-hidden"
     >
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-75">
+        <div className="absolute left-[8%] top-[-10%] h-72 w-72 rounded-full bg-[oklch(0.65_0.22_40_/_0.09)] blur-[94px]" />
+        <div className="absolute bottom-[0%] right-[9%] h-80 w-80 rounded-full bg-[rgba(82,205,134,0.10)] blur-[104px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.032),transparent_34%,rgba(255,255,255,0.02))]" />
+      </div>
       <div
-        className="h-full w-full mx-auto max-w-[1500px] gap-4 2xl:gap-5"
+        className="relative h-full w-full mx-auto max-w-[1500px] gap-4 2xl:gap-5"
         style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 0.92fr) minmax(360px, 0.48fr)',
@@ -232,7 +238,7 @@ function AccountList({
       <div className="flex items-center justify-between gap-3 shrink-0">
         <div>
           <CardEyebrow>{t('accounts.wallet')}</CardEyebrow>
-          <CardTitle className="text-base">Cuentas</CardTitle>
+          <CardTitle className="text-base">{t('accounts.listTitle')}</CardTitle>
         </div>
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.045] text-text-secondary">
           <Wallet size={15} strokeWidth={2} />
@@ -443,15 +449,15 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
   const moveSavings = async (direction: 'to_savings' | 'from_savings'): Promise<void> => {
     if (!selected) return
     if (amountMinor <= 0) {
-      setError('Enter a valid amount')
+      setError(t('accounts.savingsInvalidAmount'))
       return
     }
     if (direction === 'to_savings' && amountMinor > selected.balance_minor) {
-      setError('Insufficient available balance')
+      setError(t('accounts.savingsInsufficientAvailable'))
       return
     }
     if (direction === 'from_savings' && amountMinor > selected.savings_minor) {
-      setError('Insufficient savings balance')
+      setError(t('accounts.savingsInsufficientSavings'))
       return
     }
     const ids = createBankOperationIds()
@@ -465,7 +471,7 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
       })
       setAmountText('')
       setError(null)
-      toast.success(direction === 'to_savings' ? 'Savings funded' : 'Savings withdrawn', streamerMode ? maskMoneyDisplay() : money(amountMinor / 100))
+      toast.success(direction === 'to_savings' ? t('accounts.savingsFundedTitle') : t('accounts.savingsWithdrawnTitle'), streamerMode ? maskMoneyDisplay() : money(amountMinor / 100))
     } catch (err) {
       handleBankError(err)
     }
@@ -476,7 +482,7 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
       <div className="flex items-start justify-between gap-3">
         <div>
           <CardEyebrow>{t('accounts.savings')}</CardEyebrow>
-          <CardTitle className="text-base">Reserva protegida</CardTitle>
+          <CardTitle className="text-base">{t('accounts.protectedReserveTitle')}</CardTitle>
         </div>
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.045] text-text-primary">
           <PiggyBank size={17} strokeWidth={2} />
@@ -486,7 +492,7 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
         <span className="text-3xl font-light tracking-[-0.055em] text-text-primary tactile-tabular-nums">
           {streamerMode ? maskMoneyDisplay() : money(totals.savingsMinor / 100)}
         </span>
-        <span className="text-xs text-text-tertiary tactile-tabular-nums">{accounts.length} cuentas</span>
+        <span className="text-xs text-text-tertiary tactile-tabular-nums">{t('accounts.accountsCount').replace('{count}', String(accounts.length))}</span>
       </div>
       <div className="mt-4 h-2 rounded-full bg-white/[0.06] overflow-hidden">
         <div
@@ -496,7 +502,7 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
       </div>
       <div className="mt-4 flex flex-col gap-2">
         <Input
-          aria-label="Savings transfer amount"
+          aria-label={t('accounts.savingsTransferAmount')}
           value={amountText}
           onChange={(e) => setAmountText(e.target.value)}
           placeholder="0.00"
@@ -506,12 +512,12 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
           inputMode="decimal"
         />
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('to_savings')}>Guardar</Button>
-          <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('from_savings')}>Retirar</Button>
+          <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('to_savings')}>{t('accounts.saveToSavings')}</Button>
+          <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('from_savings')}>{t('accounts.withdrawFromSavings')}</Button>
         </div>
       </div>
       <p className="mt-3 text-xs text-text-tertiary leading-relaxed">
-        Separar ahorro del saldo diario ayuda a mantener el dinero de roles, alquileres y gastos grandes bajo control.
+        {t('accounts.protectedReserveDescription')}
       </p>
     </Card>
   )
@@ -529,10 +535,10 @@ function QuickActionsPanel({ selected, busy, onTransfer, onCards, onOpenAccount,
       <div className="grid grid-cols-2 gap-2">
         <Button variant="primary" size="sm" leftIcon={<Send size={14} />} onClick={onTransfer}>{t('accounts.transfer')}</Button>
         <Button variant="secondary" size="sm" leftIcon={<CreditCard size={14} />} onClick={onCards}>{t('accounts.cards')}</Button>
-        <Button variant="secondary" size="sm" loading={busy} onClick={onOpenAccount}>Nueva cuenta</Button>
-        <Button variant="secondary" size="sm" loading={busy} onClick={onSubmitKyc}>Enviar KYC</Button>
-        <Button variant="secondary" size="sm" loading={busy} disabled={!selected} onClick={onToggleFreeze}>{frozen ? 'Reactivar' : 'Congelar'}</Button>
-        <Button variant="danger" size="sm" loading={busy} disabled={!canClose} onClick={onCloseAccount}>Cerrar</Button>
+        <Button variant="secondary" size="sm" loading={busy} onClick={onOpenAccount}>{t('accounts.openAccount')}</Button>
+        <Button variant="secondary" size="sm" loading={busy} onClick={onSubmitKyc}>{t('accounts.submitKyc')}</Button>
+        <Button variant="secondary" size="sm" loading={busy} disabled={!selected} onClick={onToggleFreeze}>{frozen ? t('accounts.unfreezeAccount') : t('accounts.freezeAccount')}</Button>
+        <Button variant="danger" size="sm" loading={busy} disabled={!canClose} onClick={onCloseAccount}>{t('accounts.closeAccount')}</Button>
       </div>
     </Card>
   )
@@ -591,7 +597,7 @@ function MiniTransaction({ tx, ownIban, index, streamerMode }: { tx: Transaction
         <span className="text-sm font-semibold tactile-tabular-nums" style={{ color: outgoing ? 'rgb(227, 228, 232)' : 'rgb(78, 213, 137)' }}>{amount}</span>
         <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider text-text-tertiary">
           {tx.status === 'committed' ? <Check size={9} style={{ color: statusColor }} /> : <AlertTriangle size={9} style={{ color: statusColor }} />}
-          {statusLabel(tx.status)}
+          {statusLabel(tx.status, t)}
         </span>
       </span>
     </motion.div>
@@ -715,17 +721,17 @@ function compactIban(value: string | undefined | null): string {
   return String(value ?? '').replace(/\s+/g, '')
 }
 
-function statusLabel(status: Transaction['status']): string {
+function statusLabel(status: Transaction['status'], t: (key: TranslationKey) => string): string {
   switch (status) {
     case 'committed':
-      return 'OK'
+      return t('transactions.confirmed')
     case 'pending':
-      return 'Pendiente'
+      return t('common.pending')
     case 'reconciling':
-      return 'Revisando'
+      return t('transactions.reconciling')
     case 'reverted':
-      return 'Revertida'
+      return t('transactions.reverted')
     case 'failed':
-      return 'Fallida'
+      return t('transactions.failed')
   }
 }
