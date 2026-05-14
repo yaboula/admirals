@@ -570,7 +570,7 @@ export function buildMockLoans(): Loan[] {
       created_ms: now - 128 * DAY_MS,
     },
     {
-      loan_id: 'loan-vehicle-prime',
+      loan_id: '9284c9c0-4f90-4310-93ee-6b496c24c002',
       borrower_citizen_id: MOCK_CITIZEN_ID,
       product_name: 'Vehicle Prime Financing',
       purpose: 'Vehicle purchase',
@@ -590,7 +590,7 @@ export function buildMockLoans(): Loan[] {
       created_ms: now - 90 * DAY_MS,
     },
     {
-      loan_id: 'loan-starter-settled',
+      loan_id: '43bc3b3a-7e3d-4c8c-9c17-8d6c5b1d3003',
       borrower_citizen_id: MOCK_CITIZEN_ID,
       product_name: 'Starter Bridge Credit',
       purpose: 'Account opening bridge',

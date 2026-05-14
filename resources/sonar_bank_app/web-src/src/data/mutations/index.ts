@@ -36,3 +36,11 @@ export type {
   TransferExecuteArgsInput,
   TransferReceipt,
 } from './transfers'
+export {
+  useRequestLoanMutation,
+  useMakeLoanPaymentMutation,
+} from './loans'
+export type {
+  LoanRequestArgs,
+  LoanPaymentArgs,
+} from './loans'

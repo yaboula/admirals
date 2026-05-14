@@ -154,6 +154,18 @@ export interface LoanInstallmentsResponse {
   fetched_at_ms: number
 }
 
+export interface LoanRequestResponse {
+  loan_id: string
+  status: 'requested' | 'pending'
+}
+
+export interface LoanPaymentResponse {
+  loan_id: string
+  amount_minor: number
+  payment_ms: number
+  paid_off: boolean
+}
+
 export type RecurringStatus = 'active' | 'paused' | 'cancelled'
 
 export interface Recurring {

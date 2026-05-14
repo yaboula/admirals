@@ -1,21 +1,32 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
-import { AlertTriangle, CalendarClock, CircleDollarSign, Fingerprint, Gauge, LockKeyhole, Orbit, ShieldCheck, type LucideIcon } from 'lucide-react'
-import { useLoanInstallmentsQuery, useLoanListQuery } from '@/data/queries'
+import { AlertTriangle, CalendarClock, CircleDollarSign, Fingerprint, Gauge, LockKeyhole, Orbit, ShieldCheck, X, type LucideIcon } from 'lucide-react'
+import { useBootstrap, useLoanInstallmentsQuery, useLoanListQuery } from '@/data/queries'
 import type { Loan, LoanInstallment } from '@/data/contracts'
-import { Badge, Spinner } from '@/components/ui'
+import { Badge, Button, Input, Spinner } from '@/components/ui'
 import { useI18n } from '@/lib/i18n'
 import { maskMoneyDisplay } from '@/lib/privacy'
 import { cn } from '@/lib/utils'
 import { usePrivacyMode } from '@/stores/privacy'
+import { useMakeLoanPaymentMutation, useRequestLoanMutation } from '@/data/mutations'
+import { toast } from '@/stores/toast'
 
 export function Loans() {
   const { t, money, number, dateTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const loansQuery = useLoanListQuery()
+  const bootstrapQuery = useBootstrap()
   const loans: Loan[] = loansQuery.data?.items ?? []
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null)
+  const [requestOpen, setRequestOpen] = useState(false)
+  const [requestPrincipal, setRequestPrincipal] = useState('5000')
+  const [requestRate, setRequestRate] = useState('650')
+  const [requestTermDays, setRequestTermDays] = useState('180')
+  const [paymentLoanId, setPaymentLoanId] = useState<string | null>(null)
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const requestLoanMutation = useRequestLoanMutation()
+  const loanPaymentMutation = useMakeLoanPaymentMutation()
   const selectedLoan = useMemo(() => {
     if (loans.length === 0) return null
     return loans.find((loan) => loan.loan_id === selectedLoanId) ?? loans.find((loan) => loan.status === 'active') ?? loans[0]
@@ -28,6 +39,37 @@ export function Loans() {
   const weightedRate = activeLoans.length > 0 ? activeLoans.reduce((sum, loan) => sum + loan.interest_bps, 0) / activeLoans.length / 100 : 0
   const loading = loansQuery.isLoading
   const error = loansQuery.isError
+  const primaryAccount = bootstrapQuery.data?.accounts.find((account) => account.status === 'active') ?? bootstrapQuery.data?.accounts[0] ?? null
+
+  const submitLoanRequest = async () => {
+    const principal_minor = Math.round(Number(requestPrincipal) * 100)
+    const interest_bps = Math.round(Number(requestRate))
+    const term_days = Math.round(Number(requestTermDays))
+    try {
+      await requestLoanMutation.mutateAsync({ principal_minor, interest_bps, term_days })
+      setRequestOpen(false)
+      toast.success('Loan requested', 'Your credit request was submitted for review.')
+    } catch {
+      toast.warning('Loan request failed', 'Check the amount, rate and term before retrying.')
+    }
+  }
+
+  const openPayment = (loan: Loan) => {
+    setPaymentLoanId(loan.loan_id)
+    setPaymentAmount(String((loan.next_payment_minor || Math.min(loan.outstanding_minor, 100_00)) / 100))
+  }
+
+  const submitLoanPayment = async () => {
+    if (!paymentLoanId || !primaryAccount) return
+    const amount_minor = Math.round(Number(paymentAmount) * 100)
+    try {
+      await loanPaymentMutation.mutateAsync({ loan_id: paymentLoanId, from_iban: primaryAccount.iban, amount_minor })
+      setPaymentLoanId(null)
+      toast.success('Loan payment sent', 'The installment payment was submitted.')
+    } catch {
+      toast.warning('Loan payment failed', 'Check balance, loan status and amount before retrying.')
+    }
+  }
 
   return (
     <main className="relative h-full min-h-0 overflow-y-auto bg-surface-abyss px-5 py-4 lg:px-6 scrollbar-thin">
@@ -54,7 +96,7 @@ export function Loans() {
               <div className="grid gap-2 sm:grid-cols-3">
                 <SignalPill icon={LockKeyhole} label={t('loans.mode')} value={t('loans.readOnly')} />
                 <SignalPill icon={Gauge} label={t('loans.weightedRate')} value={`${number(weightedRate, { maximumFractionDigits: 2 })}%`} />
-                <SignalPill icon={CalendarClock} label={t('loans.nextDue')} value={selectedLoan?.next_payment_due_ms ? dateTime(selectedLoan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : '—'} />
+                <SignalPill icon={CalendarClock} label={t('loans.nextDue')} value={selectedLoan?.next_payment_due_ms ? dateTime(selectedLoan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : 'â€”'} />
               </div>
             </div>
 
@@ -92,11 +134,11 @@ export function Loans() {
                   <p className="text-sm font-semibold text-text-primary">{t('loans.creditStack')}</p>
                   <p className="mt-0.5 text-xs text-text-tertiary">{t('loans.creditStackDescription')}</p>
                 </div>
-                <Badge tone="info" variant="soft" leftIcon={<ShieldCheck size={12} strokeWidth={2.2} />}>{t('loans.nonExecutable')}</Badge>
+                <Button size="sm" variant="secondary" leftIcon={<ShieldCheck size={12} strokeWidth={2.2} />} onClick={() => setRequestOpen(true)}>Solicitar prestamo</Button>
               </div>
               <div className="grid gap-2 p-3">
                 {loans.map((loan) => (
-                  <LoanRow key={loan.loan_id} loan={loan} selected={selectedLoan?.loan_id === loan.loan_id} onSelect={() => setSelectedLoanId(loan.loan_id)} />
+                  <LoanRow key={loan.loan_id} loan={loan} selected={selectedLoan?.loan_id === loan.loan_id} onSelect={() => setSelectedLoanId(loan.loan_id)} onPay={() => openPayment(loan)} paymentPending={loanPaymentMutation.isPending && paymentLoanId === loan.loan_id} />
                 ))}
               </div>
             </div>
@@ -133,10 +175,38 @@ export function Loans() {
           </motion.section>
         )}
       </div>
+      {requestOpen ? (
+        <LoanActionDialog title="Solicitar prestamo" onClose={() => setRequestOpen(false)}>
+          <Input label="Principal" type="number" value={requestPrincipal} onChange={(e) => setRequestPrincipal(e.currentTarget.value)} leftAdornment="$" />
+          <Input label="Interes bps" type="number" value={requestRate} onChange={(e) => setRequestRate(e.currentTarget.value)} />
+          <Input label="Plazo dias" type="number" value={requestTermDays} onChange={(e) => setRequestTermDays(e.currentTarget.value)} />
+          <Button loading={requestLoanMutation.isPending} onClick={submitLoanRequest}>Enviar solicitud</Button>
+        </LoanActionDialog>
+      ) : null}
+      {paymentLoanId ? (
+        <LoanActionDialog title="Abonar cuota" onClose={() => setPaymentLoanId(null)}>
+          <Input label="Cuenta origen" value={primaryAccount?.iban ?? ''} readOnly />
+          <Input label="Importe" type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.currentTarget.value)} leftAdornment="$" />
+          <Button loading={loanPaymentMutation.isPending} disabled={!primaryAccount} onClick={submitLoanPayment}>Confirmar abono</Button>
+        </LoanActionDialog>
+      ) : null}
     </main>
   )
 }
 
+function LoanActionDialog({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+      <div className="w-full max-w-md rounded-[1.75rem] border border-white/10 bg-surface-panel p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
+          <Button size="sm" variant="ghost" leftIcon={<X size={15} />} onClick={onClose}>Cerrar</Button>
+        </div>
+        <div className="grid gap-3">{children}</div>
+      </div>
+    </div>
+  )
+}
 function CreditLens({ loan, streamerMode }: { loan: Loan | null; streamerMode: boolean }) {
   const { t, money, number } = useI18n()
   const progress = loan ? loan.paid_installments / Math.max(1, loan.total_installments) : 0
@@ -153,24 +223,24 @@ function CreditLens({ loan, streamerMode }: { loan: Loan | null; streamerMode: b
         <Orbit className="text-semantic-info-deep" size={28} strokeWidth={1.8} />
         <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">{t('loans.creditLens')}</p>
         <p className="mt-1 text-2xl font-semibold text-text-primary tactile-tabular-nums">{number(progress * 100, { maximumFractionDigits: 0 })}%</p>
-        <p className="mt-1 max-w-[15ch] truncate text-xs text-text-tertiary">{loan ? streamerMode ? maskMoneyDisplay() : money(loan.outstanding_minor / 100) : '—'}</p>
+        <p className="mt-1 max-w-[15ch] truncate text-xs text-text-tertiary">{loan ? streamerMode ? maskMoneyDisplay() : money(loan.outstanding_minor / 100) : 'â€”'}</p>
       </div>
     </div>
   )
 }
 
-function LoanRow({ loan, selected, onSelect }: { loan: Loan; selected: boolean; onSelect: () => void }) {
+function LoanRow({ loan, selected, onSelect, onPay, paymentPending }: { loan: Loan; selected: boolean; onSelect: () => void; onPay: () => void; paymentPending: boolean }) {
   const { t, money, number, dateTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const progress = loan.paid_installments / Math.max(1, loan.total_installments) * 100
   return (
-    <button type="button" onClick={onSelect} className={cn('grid grid-cols-[minmax(0,1fr)_150px_132px_92px] items-center gap-3 rounded-[1.35rem] border px-4 py-3 text-left transition-colors max-lg:grid-cols-[minmax(0,1fr)_112px_82px]', selected ? 'border-white/18 bg-white/[0.075]' : 'border-white/10 bg-black/25 hover:bg-white/[0.045]')}>
+    <div role="button" tabIndex={0} onClick={onSelect} className={cn('grid grid-cols-[minmax(0,1fr)_150px_132px_92px_94px] items-center gap-3 rounded-[1.35rem] border px-4 py-3 text-left transition-colors max-lg:grid-cols-[minmax(0,1fr)_112px_82px]', selected ? 'border-white/18 bg-white/[0.075]' : 'border-white/10 bg-black/25 hover:bg-white/[0.045]')}>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-semibold text-text-primary">{loan.product_name}</p>
           <Badge tone={loan.status === 'active' ? 'success' : loan.status === 'paid' ? 'neutral' : loan.status === 'defaulted' ? 'danger' : 'warning'} variant="soft" size="xs">{t(`loans.status.${loan.status}`)}</Badge>
         </div>
-        <p className="mt-1 truncate text-xs text-text-tertiary">{loan.purpose} · {loan.collateral_label ?? t('loans.unsecured')}</p>
+        <p className="mt-1 truncate text-xs text-text-tertiary">{loan.purpose} Â· {loan.collateral_label ?? t('loans.unsecured')}</p>
       </div>
       <div className="max-lg:hidden">
         <p className="text-right text-sm font-semibold text-text-primary tactile-tabular-nums">{streamerMode ? maskMoneyDisplay() : money(loan.outstanding_minor / 100)}</p>
@@ -182,9 +252,10 @@ function LoanRow({ loan, selected, onSelect }: { loan: Loan; selected: boolean; 
       </div>
       <div className="text-right">
         <p className="text-sm font-semibold text-text-primary">{number(loan.interest_bps / 100, { maximumFractionDigits: 2 })}%</p>
-        <p className="mt-1 text-xs text-text-tertiary">{loan.next_payment_due_ms ? dateTime(loan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : '—'}</p>
+        <p className="mt-1 text-xs text-text-tertiary">{loan.next_payment_due_ms ? dateTime(loan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : 'â€”'}</p>
       </div>
-    </button>
+      <Button size="sm" variant="secondary" loading={paymentPending} disabled={loan.status !== 'active'} onClick={(event) => { event.stopPropagation(); onPay() }}>Abonar</Button>
+    </div>
   )
 }
 

@@ -30,6 +30,7 @@ Wrap.Register('sonar:bank:loan:request', {
     principal_minor = payload.principal_minor,
     interest_bps    = payload.interest_bps,
     term_days       = payload.term_days,
+    idempotency_key = payload.idempotency_key,
   })
 end)
 
@@ -44,6 +45,24 @@ Wrap.Register('sonar:bank:loan:listSelf', {
   local rows, err = LoanService.ListSelf(citizen_id)
   if err then return { ok = false, error = err } end
   return { loans = rows or {} }
+end)
+
+Wrap.Register('sonar:bank:loans:list', {
+  tier  = Enums.TIER.TIER_1_READ,
+  cb_id = 'REQ-FE-LOANS-LIST',
+}, function(src, citizen_id, payload)
+  return LoanService.ListSelfResponse(citizen_id)
+end)
+
+Wrap.Register('sonar:bank:loans:installments', {
+  tier  = Enums.TIER.TIER_1_READ,
+  cb_id = 'REQ-FE-LOANS-INSTALLMENTS',
+}, function(src, citizen_id, payload)
+  return LoanService.GetInstallments({
+    src = src,
+    citizen_id = citizen_id,
+    loan_id = payload.loan_id,
+  })
 end)
 
 -- -----------------------------------------------------------------------------

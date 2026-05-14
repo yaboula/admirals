@@ -60,7 +60,8 @@ SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id,
        END AS status,
        COALESCE(l.disbursed_at, l.approved_at) * 1000 AS issued_ms,
        l.next_payment_due_at * 1000 AS due_ms,
-       CAST(ROUND(l.amount_outstanding * 100) AS SIGNED) AS outstanding_minor
+       CAST(ROUND(l.amount_outstanding * 100) AS SIGNED) AS outstanding_minor,
+       l.created_at * 1000 AS created_ms
 FROM sonar_bank_loans l
 INNER JOIN sonar_accounts sa ON sa.id = l.borrower_account_id
 WHERE l.id = ?

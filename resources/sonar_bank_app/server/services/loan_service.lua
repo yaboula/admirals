@@ -30,6 +30,30 @@ local AccountsRepo = BankApp.repos.accounts
 
 local function now_ms() return os.time() * 1000 end
 
+local function normalize_status(status)
+  if status == 'requested' or status == 'approved' then return 'pending' end
+  if status == 'paid_off' then return 'paid' end
+  return status
+end
+
+local function decorate_loan(row)
+  if not row then return nil end
+  local term_days = tonumber(row.term_days) or 30
+  local total_installments = math.max(1, math.ceil(term_days / 30))
+  local outstanding_minor = tonumber(row.outstanding_minor) or 0
+  local principal_minor = tonumber(row.principal_minor) or 0
+  row.product_name = row.product_name or 'Personal Credit Line'
+  row.purpose = row.purpose or 'Personal financing'
+  row.status = normalize_status(row.status)
+  row.next_payment_minor = row.next_payment_minor or (outstanding_minor > 0 and math.max(1, math.ceil(outstanding_minor / total_installments)) or 0)
+  row.next_payment_due_ms = row.due_ms
+  row.total_installments = total_installments
+  row.paid_installments = row.paid_installments or math.max(0, math.min(total_installments, total_installments - math.ceil(outstanding_minor / math.max(1, math.ceil(principal_minor / total_installments)))))
+  row.risk_grade = row.risk_grade or 'B'
+  row.collateral_label = row.collateral_label or nil
+  return row
+end
+
 local function invalidate_bootstrap(citizen_id)
   if BankApp.services.bootstrap and BankApp.services.bootstrap.InvalidateCitizen then
     BankApp.services.bootstrap.InvalidateCitizen(citizen_id)
@@ -41,7 +65,57 @@ function S.ListSelf(citizen_id)
   if not Validators.IsValidCitizenId(citizen_id) then
     return nil, Errors.New('INVALID_CITIZEN_ID')
   end
-  return LoansRepo.ListByCitizen(citizen_id, 16)
+  local rows, err = LoansRepo.ListByCitizen(citizen_id, 16)
+  if err then return nil, err end
+  for _, row in ipairs(rows or {}) do decorate_loan(row) end
+  return rows
+end
+
+function S.ListSelfResponse(citizen_id)
+  local rows, err = S.ListSelf(citizen_id)
+  if err then return { ok = false, error = err } end
+  return { ok = true, data = { items = rows or {}, fetched_at_ms = now_ms() } }
+end
+
+function S.GetInstallments(ctx)
+  local loan = LoansRepo.GetById(ctx.loan_id)
+  if not loan or loan.borrower_citizen_id ~= ctx.citizen_id then
+    return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH', { reason = 'loan not owned' }) }
+  end
+  decorate_loan(loan)
+  local payments, err = LoansRepo.ListPayments(ctx.loan_id, 100)
+  if err then return { ok = false, error = err } end
+  local paid_minor = 0
+  for _, payment in ipairs(payments or {}) do
+    paid_minor = paid_minor + (tonumber(payment.amount_minor) or 0)
+  end
+  local total = math.max(1, tonumber(loan.total_installments) or 1)
+  local principal_minor = tonumber(loan.principal_minor) or 0
+  local interest_minor_total = math.max(0, math.floor(principal_minor * ((tonumber(loan.interest_bps) or 0) / 10000)))
+  local amount_minor = math.max(1, math.ceil((principal_minor + interest_minor_total) / total))
+  local principal_part = math.max(0, math.ceil(principal_minor / total))
+  local interest_part = math.max(0, amount_minor - principal_part)
+  local issued_ms = tonumber(loan.issued_ms) or tonumber(loan.created_ms) or now_ms()
+  local current_ms = now_ms()
+  local remaining_paid = paid_minor
+  local items = {}
+  for sequence = 1, total do
+    local covered = remaining_paid >= amount_minor
+    local due_ms = issued_ms + sequence * 30 * 86400 * 1000
+    items[#items + 1] = {
+      installment_id = tostring(ctx.loan_id) .. '-inst-' .. tostring(sequence),
+      loan_id = ctx.loan_id,
+      sequence = sequence,
+      due_ms = due_ms,
+      amount_minor = amount_minor,
+      principal_minor = principal_part,
+      interest_minor = interest_part,
+      status = covered and 'paid' or (due_ms < current_ms and 'late' or 'scheduled'),
+      paid_ms = covered and due_ms or nil,
+    }
+    remaining_paid = math.max(0, remaining_paid - amount_minor)
+  end
+  return { ok = true, data = { loan_id = ctx.loan_id, items = items, fetched_at_ms = current_ms } }
 end
 
 -- §2. Request
@@ -63,6 +137,23 @@ function S.Request(ctx)
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'term_days' }) }
   end
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
+  end
+
+  local idem_status, cached, idem_err = Idempotency.Acquire(
+    ctx.idempotency_key,
+    { principal_minor = ctx.principal_minor, interest_bps = ctx.interest_bps, term_days = ctx.term_days },
+    { actor_citizen_id = ctx.citizen_id, callback_id = 'C022' }
+  )
+  if idem_status == 'replay' then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = true, data = cached, replayed = true }
+  elseif idem_status ~= 'acquired' then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = idem_err or Errors.New('IDEMPOTENCY_IN_FLIGHT') }
+  end
 
   local loan_id, err = LoansRepo.Insert({
     borrower_citizen_id = ctx.citizen_id,
@@ -71,6 +162,7 @@ function S.Request(ctx)
     term_days           = ctx.term_days,
   })
   if err then
+    Idempotency.Orphan(ctx.idempotency_key)
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = err }
   end
@@ -89,8 +181,10 @@ function S.Request(ctx)
   })
 
   invalidate_bootstrap(ctx.citizen_id)
+  local result = { loan_id = loan_id, status = 'requested' }
+  Idempotency.Commit(ctx.idempotency_key, result)
   Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
-  return { ok = true, data = { loan_id = loan_id, status = 'requested' } }
+  return { ok = true, data = result }
 end
 
 -- §3. Approve (admin) — credits balance to deposit_iban (chosen by admin/borrower)
