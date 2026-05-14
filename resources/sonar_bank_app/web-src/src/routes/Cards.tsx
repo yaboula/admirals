@@ -11,6 +11,7 @@ import { RequestCardBanner } from './cards/RequestCardBanner'
 import { RequestFirstCardPanel } from './cards/RequestFirstCardPanel'
 import { LimitsModal } from './cards/LimitsModal'
 import { DesignPickerDialog } from './cards/DesignPickerDialog'
+import { useI18n } from '@/lib/i18n'
 
 /**
  * BANK-FE.4.2 — Vista Tarjetas (route /tarjetas).
@@ -35,6 +36,7 @@ import { DesignPickerDialog } from './cards/DesignPickerDialog'
  * with a 180ms tween, and the flip becomes an instant cross-fade.
  */
 export function Cards() {
+  const { t } = useI18n()
   const { cards } = useCards()
   const selectedCardId = useCardsUi((s) => s.selectedCardId)
   const setSelected = useCardsUi((s) => s.setSelected)
@@ -70,8 +72,13 @@ export function Cards() {
       transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
       className="relative h-full w-full overflow-hidden"
     >
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-70">
+        <div className="absolute left-[18%] top-[2%] h-72 w-72 rounded-full bg-[oklch(0.65_0.22_40_/_0.10)] blur-[96px]" />
+        <div className="absolute bottom-[4%] right-[8%] h-80 w-80 rounded-full bg-[rgba(89,137,255,0.10)] blur-[104px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.035),transparent_32%,rgba(255,255,255,0.025))]" />
+      </div>
       <div
-        className="h-full w-full mx-auto max-w-[1500px] gap-3 2xl:gap-5"
+        className="relative h-full w-full mx-auto max-w-[1500px] gap-3 2xl:gap-5"
         style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 1.4fr) minmax(280px, 1fr)',
@@ -97,7 +104,7 @@ export function Cards() {
                 }}
                 className="shrink-0"
               >
-                + Añadir tarjeta
+                {t('cards.addCard')}
               </Button>
             )}
           </div>
@@ -109,15 +116,7 @@ export function Cards() {
           >
             <div className="flex-1 min-h-0 flex items-center justify-center overflow-visible">
               <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto py-2">
-                {(() => {
-                  console.log('[Cards] DEBUG - cards:', cards, 'length:', cards?.length, 'type:', typeof cards, 'isArray:', Array.isArray(cards))
-                  if (!cards || cards.length === 0) {
-                    console.log('[Cards] DEBUG - Showing RequestFirstCardPanel')
-                    return <RequestFirstCardPanel />
-                  }
-                  console.log('[Cards] DEBUG - Showing CardCarousel')
-                  return <CardCarousel cards={cards} />
-                })()}
+                {cards.length === 0 ? <RequestFirstCardPanel /> : <CardCarousel cards={cards} />}
               </div>
             </div>
             {cards.length > 0 && <RequestCardBanner />}

@@ -370,5 +370,5 @@ function DesignTile({
 }
 
 function tierLabel(tier: CardDesign['tier'], t: (key: TranslationKey) => string): string {
-  return tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : t('cards.standard')
+  return tier === 'signature' ? t('cards.signature') : tier === 'premium' ? t('cards.premium') : t('cards.standard')
 }

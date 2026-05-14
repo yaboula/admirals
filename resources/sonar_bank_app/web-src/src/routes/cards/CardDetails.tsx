@@ -114,7 +114,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
       setOldPin('')
       setNewPin('')
       setPinDialogOpen(false)
-      toast.success('PIN updated', 'Your card PIN was changed securely.')
+      toast.success(t('cards.pinUpdatedTitle'), t('cards.pinUpdatedBody'))
     } catch (err) {
       handleBankError(err)
     }
@@ -276,16 +276,17 @@ export function CardDetails({ card, className }: CardDetailsProps) {
               }}
               disabled={isExpired}
             />
-            <ActionButton
-              icon={Lock}
-              label="Change PIN"
-              onClick={() => {
-                sfx.panel_open()
-                setPinDialogOpen(true)
-              }}
-              disabled={isExpired || changePinMutation.isPending}
-            />
           </div>
+          <ActionButton
+            icon={Lock}
+            label={t('cards.changePin')}
+            onClick={() => {
+              sfx.panel_open()
+              setPinDialogOpen(true)
+            }}
+            disabled={isExpired || changePinMutation.isPending}
+            fullWidth
+          />
         </div>
       </div>
       {pinDialogOpen ? (
@@ -304,17 +305,18 @@ export function CardDetails({ card, className }: CardDetailsProps) {
 }
 
 function ChangePinDialog({ oldPin, newPin, loading, onChangeOldPin, onChangeNewPin, onSubmit, onClose }: { oldPin: string; newPin: string; loading: boolean; onChangeOldPin: (value: string) => void; onChangeNewPin: (value: string) => void; onSubmit: () => void; onClose: () => void }) {
+  const { t } = useI18n()
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/72 px-4 backdrop-blur-md">
       <div className="w-full max-w-sm rounded-[1.5rem] border border-white/10 bg-surface-panel p-4 shadow-2xl">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-text-primary">Change PIN</h2>
-          <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
+          <h2 className="text-base font-semibold text-text-primary">{t('cards.changePin')}</h2>
+          <Button size="sm" variant="ghost" onClick={onClose}>{t('cards.close')}</Button>
         </div>
         <div className="grid gap-3">
-          <Input label="Current PIN" type="password" inputMode="numeric" maxLength={8} value={oldPin} onChange={(event) => onChangeOldPin(event.currentTarget.value)} />
-          <Input label="New PIN" type="password" inputMode="numeric" maxLength={8} value={newPin} onChange={(event) => onChangeNewPin(event.currentTarget.value)} />
-          <Button loading={loading} disabled={!/^\d{4,8}$/.test(oldPin) || !/^\d{4,8}$/.test(newPin)} onClick={onSubmit}>Update PIN</Button>
+          <Input label={t('cards.currentPin')} type="password" inputMode="numeric" maxLength={8} value={oldPin} onChange={(event) => onChangeOldPin(event.currentTarget.value)} />
+          <Input label={t('cards.newPin')} type="password" inputMode="numeric" maxLength={8} value={newPin} onChange={(event) => onChangeNewPin(event.currentTarget.value)} />
+          <Button loading={loading} disabled={!/^\d{4,8}$/.test(oldPin) || !/^\d{4,8}$/.test(newPin)} onClick={onSubmit}>{t('cards.updatePin')}</Button>
         </div>
       </div>
     </div>
@@ -404,7 +406,7 @@ function BenefitsPanel({
 
 function TierBadge({ tier }: { tier: 'default' | 'premium' | 'signature' }) {
   const { t } = useI18n()
-  const label = tier === 'signature' ? 'Signature' : tier === 'premium' ? 'Premium' : t('cards.standard')
+  const label = tier === 'signature' ? t('cards.signature') : tier === 'premium' ? t('cards.premium') : t('cards.standard')
   return (
     <span
       className="text-[9px] uppercase tracking-[0.16em] font-semibold px-1.5 py-0.5 rounded"
@@ -595,7 +597,7 @@ function ActionButton({
    -------------------------------------------------------------------------- */
 
 function typeLabel(cardType: BankCardMock['card_type'], t: (key: TranslationKey) => string): string {
-  return cardType === 'debit' ? t('cards.debit') : cardType === 'virtual' ? 'Virtual' : t('cards.credit')
+  return cardType === 'debit' ? t('cards.debit') : cardType === 'virtual' ? t('cards.virtual') : t('cards.credit')
 }
 
 function withAlpha(color: string, alpha: number): string {

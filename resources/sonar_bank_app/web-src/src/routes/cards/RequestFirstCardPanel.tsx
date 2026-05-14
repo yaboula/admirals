@@ -1,6 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type ChangeEvent } from 'react'
 import { motion } from 'motion/react'
-import { ShieldCheck, CreditCard, Lock, CreditCard as CardIcon } from 'lucide-react'
+import { ShieldCheck, CreditCard, Lock, CreditCard as CardIcon, X } from 'lucide-react'
 import { useIssueCard } from '@/data/mutations'
 import { useBootstrap, useCards } from '@/data/queries'
 import { useI18n } from '@/lib/i18n'
@@ -20,9 +20,7 @@ export interface RequestCardPanelProps {
   onClose?: () => void
 }
 
-export function RequestFirstCardPanel({ isInitial = true }: RequestCardPanelProps = {}) {
-  // isInitial can be used in future to customize the UI for first-time vs additional cards
-  void isInitial
+export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCardPanelProps = {}) {
   const { t } = useI18n()
   const { data: bootstrap } = useBootstrap()
   const { cards } = useCards()
@@ -152,17 +150,29 @@ export function RequestFirstCardPanel({ isInitial = true }: RequestCardPanelProp
         }}
       >
         {/* Header */}
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[9px] uppercase tracking-[0.22em] font-semibold"
-            style={{ color: 'oklch(0.65 0.22 40)' }}>
-            {t('cards.activate.eyebrow')}
-          </span>
-          <h2 className="text-base font-bold text-white leading-snug tracking-tight">
-            {t('cards.activate.title')}
-          </h2>
-          <p className="text-xs text-white/50 leading-relaxed mt-0.5">
-            {t('cards.activate.subtitle')}
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[9px] uppercase tracking-[0.22em] font-semibold"
+              style={{ color: 'oklch(0.65 0.22 40)' }}>
+              {t('cards.activate.eyebrow')}
+            </span>
+            <h2 className="text-base font-bold text-white leading-snug tracking-tight">
+              {isInitial ? t('cards.activate.title') : t('cards.activate.additionalTitle')}
+            </h2>
+            <p className="text-xs text-white/50 leading-relaxed mt-0.5">
+              {t('cards.activate.subtitle')}
+            </p>
+          </div>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t('cards.close')}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/50 transition-colors hover:bg-white/[0.08] hover:text-white"
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          ) : null}
         </div>
 
         {/* Card type selector */}
@@ -181,10 +191,15 @@ export function RequestFirstCardPanel({ isInitial = true }: RequestCardPanelProp
                   'p-3 rounded-xl text-left transition-all duration-150',
                   'flex flex-col gap-1.5',
                   cardType === type
-                    ? 'border-2 oklch(0.65 0.22 40 / 0.6) bg-oklch(0.65 0.22 40 / 0.12)'
+                    ? 'border'
                     : 'border border-white/10 bg-white/5 hover:bg-white/8',
                   isPending && 'opacity-50 cursor-not-allowed'
                 )}
+                style={cardType === type ? {
+                  background: 'oklch(0.65 0.22 40 / 0.12)',
+                  borderColor: 'oklch(0.65 0.22 40 / 0.52)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 28px -22px oklch(0.65 0.22 40 / 0.60)',
+                } : undefined}
               >
                 <div className="flex items-center gap-2">
                   <CardIcon size={14} className={cn(

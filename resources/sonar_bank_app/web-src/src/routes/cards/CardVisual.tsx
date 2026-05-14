@@ -447,7 +447,8 @@ function CardTypeBadge({
   type: BankCard['card_type']
   textTertiary: string
 }) {
-  const label = type === 'debit' ? 'DEBIT' : type === 'virtual' ? 'VIRTUAL' : 'CREDIT'
+  const { t } = useI18n()
+  const label = type === 'debit' ? t('cards.debit') : type === 'virtual' ? t('cards.virtual') : t('cards.credit')
   return (
     <span
       className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] uppercase tracking-[0.18em] font-semibold"
