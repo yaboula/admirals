@@ -1,4 +1,5 @@
 import type {
+  GovtGrantSubsidyRequest,
   GovtSubsidyDisbursement,
   GovtSubsidyFilters,
   GovtSubsidyProgram,
@@ -194,4 +195,26 @@ export function getSubsidyStatsMock(): GovtSubsidyStats {
     }
   }
   return { totalDisbursed, totalBudget, activeProgramCount, totalBeneficiaries, pendingDisbursements }
+}
+
+export async function grantSubsidyMock(req: GovtGrantSubsidyRequest): Promise<GovtSubsidyDisbursement> {
+  await new Promise((r) => setTimeout(r, 520))
+  const program = PROGRAMS.find((p) => p.programId === req.programId)
+  if (!program || program.status !== 'active') throw new Error('PROGRAM_NOT_ACTIVE')
+  if (req.amount <= 0 || program.disbursed + req.amount > program.budget) throw new Error('INVALID_AMOUNT')
+  const disbursement: GovtSubsidyDisbursement = {
+    id: req.idempotencyKey,
+    programCode: program.code,
+    recipientId: req.recipientId,
+    recipientLabel: req.recipientId,
+    recipientKind: req.recipientKind,
+    amount: req.amount,
+    disbursedAt: Date.now(),
+    note: req.note,
+    status: 'confirmed',
+  }
+  program.disbursed += req.amount
+  program.beneficiaryCount += 1
+  DISBURSEMENTS_MAP[program.programId] = [disbursement, ...(DISBURSEMENTS_MAP[program.programId] ?? [])].slice(0, 12)
+  return disbursement
 }

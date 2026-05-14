@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import {
   ArrowDownToLine, HandCoins, Sprout, Users, type LucideIcon,
@@ -5,11 +6,13 @@ import {
 import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { usePrivacyMode } from '@/stores/privacy'
 import { maskMoneyDisplay } from '@/lib/privacy'
-import { cn } from '@/lib/utils'
+import { cn, generateUuidV4 } from '@/lib/utils'
 import { GovtCard } from '../../components/GovtCard'
 import { GovtPill } from '../../components/GovtPill'
+import { useGrantSubsidyMutation } from '../../data/queries/govtSubsidies'
 import type {
   GovtSubsidyProgramDetail,
+  GovtSubsidyRecipientKind,
   GovtSubsidyStatus,
   GovtSubsidyType,
 } from '../../data/contracts'
@@ -65,6 +68,37 @@ export function SubsidyDetail({ detail, isFetching }: Props) {
   const pct = detail.budget > 0 ? Math.min(100, Math.round((detail.disbursed / detail.budget) * 100)) : 0
   const remaining = detail.budget - detail.disbursed
   const isActive = detail.status === 'active'
+  const grantMutation = useGrantSubsidyMutation()
+  const [recipientKind, setRecipientKind] = useState<GovtSubsidyRecipientKind>('citizen')
+  const [recipientId, setRecipientId] = useState('')
+  const [amountMajor, setAmountMajor] = useState('')
+  const [note, setNote] = useState('')
+  const [feedback, setFeedback] = useState<string | null>(null)
+
+  const submitGrant = async () => {
+    const amount = Math.round(Number(amountMajor) * 100)
+    setFeedback(null)
+    if (!isActive || !recipientId.trim() || !note.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setFeedback('Complete recipient, amount and note before granting.')
+      return
+    }
+    try {
+      await grantMutation.mutateAsync({
+        programId: detail.programId,
+        recipientKind,
+        recipientId: recipientId.trim(),
+        amount,
+        note: note.trim(),
+        idempotencyKey: generateUuidV4(),
+      })
+      setRecipientId('')
+      setAmountMajor('')
+      setNote('')
+      setFeedback('Grant confirmed.')
+    } catch {
+      setFeedback('Grant failed. Check permissions, budget and recipient account.')
+    }
+  }
 
   return (
     <motion.div
@@ -177,19 +211,68 @@ export function SubsidyDetail({ detail, isFetching }: Props) {
         )}
       </GovtCard>
 
-      <GovtCard variant="outline" padding="md" className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">
-            {t('govt.subsidies.detail.actionsTitle')}
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-govt-text-secondary)]">
-            {isActive ? t('govt.subsidies.detail.actionsHint') : t('govt.subsidies.detail.actionsInactive')}
-          </p>
+      <GovtCard variant="outline" padding="md" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">
+              {t('govt.subsidies.detail.actionsTitle')}
+            </p>
+            <p className="mt-1 text-xs text-[var(--color-govt-text-secondary)]">
+              {isActive ? t('govt.subsidies.detail.actionsHint') : t('govt.subsidies.detail.actionsInactive')}
+            </p>
+          </div>
+          <GovtPill tone={isActive ? 'success' : 'neutral'} size="sm">{isActive ? t('govt.subsidies.status.active') : t('govt.subsidies.status.paused')}</GovtPill>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <ActionButton icon={HandCoins} label={t('govt.subsidies.detail.disburseToCitizen')} disabled />
-          <ActionButton icon={Sprout} label={t('govt.subsidies.detail.grantToCompany')} disabled />
+        <div className="grid gap-2 sm:grid-cols-[130px_minmax(0,1fr)_120px]">
+          <select
+            value={recipientKind}
+            onChange={(event) => setRecipientKind(event.target.value as GovtSubsidyRecipientKind)}
+            disabled={!isActive || grantMutation.isPending}
+            className="h-9 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.75)] px-3 text-[11px] text-[var(--color-govt-text-primary)] outline-none"
+          >
+            <option value="citizen">{t('govt.subsidies.detail.disburseToCitizen')}</option>
+            <option value="company">{t('govt.subsidies.detail.grantToCompany')}</option>
+          </select>
+          <input
+            value={recipientId}
+            onChange={(event) => setRecipientId(event.target.value)}
+            disabled={!isActive || grantMutation.isPending}
+            placeholder={recipientKind === 'citizen' ? 'CID-1234' : 'company UUID'}
+            className="h-9 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.75)] px-3 text-[11px] text-[var(--color-govt-text-primary)] outline-none placeholder:text-[var(--color-govt-text-quaternary)]"
+          />
+          <input
+            value={amountMajor}
+            onChange={(event) => setAmountMajor(event.target.value)}
+            disabled={!isActive || grantMutation.isPending}
+            inputMode="decimal"
+            placeholder="2500.00"
+            className="h-9 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.75)] px-3 text-[11px] text-[var(--color-govt-text-primary)] outline-none placeholder:text-[var(--color-govt-text-quaternary)]"
+          />
         </div>
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <input
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            disabled={!isActive || grantMutation.isPending}
+            placeholder="Grant justification"
+            className="h-9 rounded-xl border border-[var(--color-govt-border)] bg-[rgba(0,0,1,0.75)] px-3 text-[11px] text-[var(--color-govt-text-primary)] outline-none placeholder:text-[var(--color-govt-text-quaternary)]"
+          />
+          <button
+            type="button"
+            onClick={submitGrant}
+            disabled={!isActive || grantMutation.isPending}
+            className={cn(
+              'inline-flex h-9 items-center justify-center gap-2 rounded-full border px-3.5 text-[11px] font-semibold uppercase tracking-[0.14em]',
+              isActive ? 'border-[var(--color-govt-border-strong)] text-[var(--color-govt-accent-light)]' : 'cursor-not-allowed border-[var(--color-govt-border)] text-[var(--color-govt-text-tertiary)]',
+            )}
+          >
+            <HandCoins size={13} strokeWidth={2} />
+            <span>{grantMutation.isPending ? 'Granting…' : 'Grant'}</span>
+          </button>
+        </div>
+        {feedback ? (
+          <p className="text-[11px] text-[var(--color-govt-text-tertiary)]">{feedback}</p>
+        ) : null}
       </GovtCard>
     </motion.div>
   )
@@ -218,21 +301,5 @@ function Stat({ label, value, tone = 'neutral' }: { label: string; value: string
       <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]">{label}</span>
       <span className={cn('mt-1 block truncate text-sm font-semibold tabular-nums', colorClass)}>{value}</span>
     </div>
-  )
-}
-
-function ActionButton({ icon: Icon, label, disabled }: { icon: LucideIcon; label: string; disabled: boolean }) {
-  const { t } = useI18n()
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      className="inline-flex h-9 cursor-not-allowed items-center gap-2 rounded-full border border-[var(--color-govt-border)] bg-[var(--color-govt-glass)] px-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-govt-text-tertiary)]"
-      title={`${label} (${t('nav.comingSoon')})`}
-    >
-      <Icon size={13} strokeWidth={2} />
-      <span>{label}</span>
-      <span className="ml-1 rounded-full bg-white/[0.05] px-1.5 py-0.5 text-[9px] tracking-[0.10em]">{t('nav.comingSoon')}</span>
-    </button>
   )
 }

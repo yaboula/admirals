@@ -362,6 +362,77 @@ SELECT CAST(ROUND(COALESCE(SUM(disbursed_amount), 0) * 100) AS SIGNED) AS totalD
 FROM sonar_bank_subsidy_programs
 ]]
 
+local SQL_GET_SUBSIDY_CITIZEN_RECIPIENT = [[
+SELECT sa.id AS beneficiary_account_id,
+       sa.char_id AS recipientId,
+       COALESCE(sa.alias, sa.char_id) AS recipientLabel,
+       ba.id AS bank_account_id,
+       ba.iban,
+       CAST(ROUND(ba.balance * 100) AS SIGNED) AS balance_minor
+FROM sonar_accounts sa
+INNER JOIN sonar_bank_accounts ba ON ba.owner_account_id = sa.id
+WHERE sa.char_id = ? AND ba.closed_at IS NULL AND ba.is_frozen = 0
+ORDER BY ba.created_at ASC
+LIMIT 1
+]]
+
+local SQL_GET_SUBSIDY_COMPANY_RECIPIENT = [[
+SELECT COALESCE(c.created_by_account_id, actor.id) AS beneficiary_account_id,
+       c.id AS recipientId,
+       c.name AS recipientLabel,
+       ba.id AS bank_account_id,
+       ba.iban,
+       CAST(ROUND(ba.balance * 100) AS SIGNED) AS balance_minor
+FROM sonar_companies c
+INNER JOIN sonar_bank_business_treasuries bt ON bt.company_id = c.id
+INNER JOIN sonar_bank_accounts ba ON ba.id = bt.bank_account_id
+LEFT JOIN sonar_accounts actor ON actor.char_id = ?
+WHERE c.id = ? AND c.status = 'active' AND ba.closed_at IS NULL AND ba.is_frozen = 0
+LIMIT 1
+]]
+
+local SQL_CREDIT_SUBSIDY_ACCOUNT = [[
+UPDATE sonar_bank_accounts
+SET balance = balance + (? / 100.0), updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND closed_at IS NULL AND is_frozen = 0
+  AND EXISTS (
+    SELECT 1 FROM sonar_bank_subsidy_programs
+    WHERE id = ? AND status = 'active' AND disbursed_amount + (? / 100.0) <= budget_amount
+  )
+]]
+
+local SQL_INSERT_SUBSIDY_MOVEMENT = [[
+INSERT INTO sonar_bank_movements
+  (bank_account_id, occurred_at, amount, balance_after, category, concept,
+   related_doc_id, request_nonce, initiated_by_account_id, source_resource)
+SELECT ba.id, UNIX_TIMESTAMP(), (? / 100.0), ba.balance, 'tax_subsidy', ?, ?, ?, ?, 'sonar_bank_app'
+FROM sonar_bank_accounts ba
+WHERE ba.id = ?
+LIMIT 1
+]]
+
+local SQL_INSERT_SUBSIDY_CITIZEN = [[
+INSERT INTO sonar_bank_subsidies
+  (subsidy_kind, program_id, beneficiary_account_id, bank_account_id, company_id,
+   amount, currency, issued_by_account_id, issued_by_role, reason_note, reference_period, issued_at)
+VALUES (?, ?, ?, ?, NULL, (? / 100.0), 'EUR', ?, 'government', ?, ?, UNIX_TIMESTAMP())
+]]
+
+local SQL_INSERT_SUBSIDY_COMPANY = [[
+INSERT INTO sonar_bank_subsidies
+  (subsidy_kind, program_id, beneficiary_account_id, bank_account_id, company_id,
+   amount, currency, issued_by_account_id, issued_by_role, reason_note, reference_period, issued_at)
+VALUES (?, ?, ?, ?, ?, (? / 100.0), 'EUR', ?, 'government', ?, ?, UNIX_TIMESTAMP())
+]]
+
+local SQL_UPDATE_SUBSIDY_PROGRAM_DISBURSED = [[
+UPDATE sonar_bank_subsidy_programs
+SET disbursed_amount = disbursed_amount + (? / 100.0),
+    beneficiary_count_cached = beneficiary_count_cached + 1,
+    updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND status = 'active' AND disbursed_amount + (? / 100.0) <= budget_amount
+]]
+
 function R.ListCitizens(limit)
   return DB.Query(SQL_LIST_CITIZENS, { limit or 100 })
 end
@@ -464,6 +535,61 @@ end
 
 function R.GetSubsidyStats()
   return DB.QuerySingle(SQL_SUBSIDY_STATS, {})
+end
+
+function R.GetSubsidyCitizenRecipient(cid)
+  return DB.QuerySingle(SQL_GET_SUBSIDY_CITIZEN_RECIPIENT, { cid })
+end
+
+function R.GetSubsidyCompanyRecipient(actor_cid, company_id)
+  return DB.QuerySingle(SQL_GET_SUBSIDY_COMPANY_RECIPIENT, { actor_cid, company_id })
+end
+
+function R.BuildGrantSubsidyQueries(params)
+  local insert_subsidy
+  if params.company_id then
+    insert_subsidy = {
+      query = SQL_INSERT_SUBSIDY_COMPANY,
+      values = {
+        params.subsidy_kind,
+        params.program_id,
+        params.beneficiary_account_id,
+        params.bank_account_id,
+        params.company_id,
+        params.amount_minor,
+        params.actor_account_id,
+        params.note,
+        params.reference_period,
+      },
+    }
+  else
+    insert_subsidy = {
+      query = SQL_INSERT_SUBSIDY_CITIZEN,
+      values = {
+        params.subsidy_kind,
+        params.program_id,
+        params.beneficiary_account_id,
+        params.bank_account_id,
+        params.amount_minor,
+        params.actor_account_id,
+        params.note,
+        params.reference_period,
+      },
+    }
+  end
+  return {
+    { query = SQL_CREDIT_SUBSIDY_ACCOUNT, values = { params.amount_minor, params.bank_account_id, params.program_id, params.amount_minor } },
+    { query = SQL_UPDATE_SUBSIDY_PROGRAM_DISBURSED, values = { params.amount_minor, params.program_id, params.amount_minor } },
+    { query = SQL_INSERT_SUBSIDY_MOVEMENT, values = {
+      params.amount_minor,
+      params.note,
+      params.idempotency_key,
+      params.idempotency_key,
+      params.actor_account_id,
+      params.bank_account_id,
+    } },
+    insert_subsidy,
+  }
 end
 
 return R

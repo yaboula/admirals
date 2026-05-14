@@ -370,6 +370,15 @@ export interface GovtSubsidyDisbursement {
   status: 'confirmed' | 'pending' | 'reversed'
 }
 
+export interface GovtGrantSubsidyRequest {
+  programId: string
+  recipientKind: GovtSubsidyRecipientKind
+  recipientId: string
+  amount: number
+  note: string
+  idempotencyKey: string
+}
+
 export interface GovtSubsidyProgramDetail extends GovtSubsidyProgram {
   recentDisbursements: GovtSubsidyDisbursement[]
 }

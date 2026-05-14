@@ -212,6 +212,24 @@ Wrap.Register('sonar:bank:govt:subsidies:detail', {
   })
 end)
 
+Wrap.Register('sonar:bank:govt:subsidies:grant', {
+  tier          = Enums.TIER.TIER_3_ADMIN,
+  require_admin = true,
+  admin_ace     = GOVT_COMPLIANCE_ACE,
+  cb_id         = 'REQ-FE-010G',
+}, function(src, citizen_id, payload)
+  return GovtService.GrantSubsidy({
+    src = src,
+    actor_citizen_id = citizen_id,
+    program_id = payload.programId or payload.program_id,
+    recipient_kind = payload.recipientKind or payload.recipient_kind,
+    recipient_id = payload.recipientId or payload.recipient_id,
+    amount = payload.amount,
+    note = payload.note,
+    idempotency_key = payload.idempotencyKey or payload.idempotency_key,
+  })
+end)
+
 Wrap.Register('sonar:bank:govt:reports:data', {
   tier          = Enums.TIER.TIER_3_ADMIN,
   require_admin = true,

@@ -518,6 +518,100 @@ function S.GetSubsidyDetail(ctx)
   return { ok = true, data = program }
 end
 
+function S.GrantSubsidy(ctx)
+  if not Validators.IsValidAmountMinor(ctx.amount) then return { ok = false, error = Errors.New('INVALID_AMOUNT') } end
+  if ctx.recipient_kind ~= 'citizen' and ctx.recipient_kind ~= 'company' then return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'recipientKind' }) } end
+
+  local status, cached, idem_err = acquire_mutation(ctx, 'GOVT_SUBSIDY_GRANT', {
+    program_id = ctx.program_id,
+    recipient_kind = ctx.recipient_kind,
+    recipient_id = ctx.recipient_id,
+    amount = ctx.amount,
+    note = ctx.note,
+  })
+  if status == 'replay' then return { ok = true, data = cached, replayed = true } end
+  if status ~= 'acquired' then return { ok = false, error = idem_err or Errors.New('IDEMPOTENCY_IN_FLIGHT') } end
+
+  local actor, actor_err = Repo.GetAccountByCitizen(ctx.actor_citizen_id)
+  if actor_err then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = actor_err } end
+  if not actor then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = Errors.New('ACCOUNT_NOT_FOUND') } end
+  local program, program_err = Repo.GetSubsidyProgram(ctx.program_id)
+  if program_err then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = program_err } end
+  if not program or program.status ~= 'active' then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'programId' }) } end
+  if (tonumber(program.budget) or 0) - (tonumber(program.disbursed) or 0) < ctx.amount then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS') } end
+
+  local recipient, recipient_err
+  if ctx.recipient_kind == 'citizen' then
+    if not Validators.IsValidCitizenId(ctx.recipient_id) then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = Errors.New('INVALID_CITIZEN_ID') } end
+    recipient, recipient_err = Repo.GetSubsidyCitizenRecipient(ctx.recipient_id)
+  else
+    recipient, recipient_err = Repo.GetSubsidyCompanyRecipient(ctx.actor_citizen_id, ctx.recipient_id)
+  end
+  if recipient_err then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = recipient_err } end
+  if not recipient then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = Errors.New('ACCOUNT_NOT_FOUND') } end
+
+  local note = Validators.SanitizeReason(ctx.note) or ''
+  local subsidy_kind = ctx.recipient_kind == 'company' and 'cooperative_grant' or 'targeted_aid'
+  local ok, tx_err = DB.Transaction(Repo.BuildGrantSubsidyQueries({
+    program_id = program.programId,
+    subsidy_kind = subsidy_kind,
+    beneficiary_account_id = recipient.beneficiary_account_id,
+    bank_account_id = recipient.bank_account_id,
+    company_id = ctx.recipient_kind == 'company' and ctx.recipient_id or nil,
+    amount_minor = ctx.amount,
+    actor_account_id = actor and actor.id or nil,
+    note = note,
+    reference_period = os.date('%Y-%m'),
+    idempotency_key = ctx.idempotency_key,
+  }))
+  if not ok then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = tx_err } end
+
+  local terminal = terminal_context(ctx.src)
+  Audit.Write({
+    event_type = Enums.AUDIT_EVENT_TYPE.GOVT_SUBSIDY_GRANT,
+    actor_citizen_id = ctx.actor_citizen_id,
+    actor_src = ctx.src,
+    actor_role = 'government',
+    actor_account_id = actor and actor.id or nil,
+    target_citizen_id = ctx.recipient_kind == 'citizen' and ctx.recipient_id or nil,
+    target_account_id = recipient.bank_account_id,
+    target_iban = recipient.iban,
+    request_nonce = ctx.idempotency_key,
+    severity = 'notice',
+    event_data = {
+      program_id = program.programId,
+      program_code = program.code,
+      recipient_kind = ctx.recipient_kind,
+      recipient_id = ctx.recipient_id,
+      recipient_label = recipient.recipientLabel,
+      amount = ctx.amount,
+      note = note,
+      terminal_id = terminal.terminal_id,
+      ip = terminal.ip,
+      idempotency_key = ctx.idempotency_key,
+    },
+    correlation_id = ctx.idempotency_key,
+  })
+
+  if ctx.recipient_kind == 'citizen' and BankApp.services.bootstrap and BankApp.services.bootstrap.InvalidateCitizen then
+    BankApp.services.bootstrap.InvalidateCitizen(ctx.recipient_id)
+  end
+
+  local result = {
+    id = ctx.idempotency_key,
+    programCode = program.code,
+    recipientId = ctx.recipient_id,
+    recipientLabel = recipient.recipientLabel,
+    recipientKind = ctx.recipient_kind,
+    amount = ctx.amount,
+    disbursedAt = now_ms(),
+    note = note,
+    status = 'confirmed',
+  }
+  Idempotency.Commit(ctx.idempotency_key, result)
+  return { ok = true, data = result }
+end
+
 function S.GetReports(ctx)
   local treasury = S.GetTreasuryPage({ page = 1, per_page = 50 })
   if not treasury.ok then return treasury end

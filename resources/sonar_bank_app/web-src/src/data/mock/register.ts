@@ -33,7 +33,7 @@ import {
   listFlagQueueMock,
   listSanctionActionsMock,
 } from '@/govt/data/mock/govtSanctions'
-import { getSubsidyDetailMock, getSubsidyStatsMock, listSubsidyProgramsMock } from '@/govt/data/mock/govtSubsidies'
+import { getSubsidyDetailMock, getSubsidyStatsMock, grantSubsidyMock, listSubsidyProgramsMock } from '@/govt/data/mock/govtSubsidies'
 import { getTreasuryPageMock } from '@/govt/data/mock/govtTreasury'
 import type {
   GovtApplyFineRequest,
@@ -52,7 +52,9 @@ import type {
   GovtReportsRange,
   GovtSanctionAction,
   GovtForceCollectionRequest,
+  GovtGrantSubsidyRequest,
   GovtSaveBracketsRequest,
+  GovtSubsidyDisbursement,
   GovtSubsidyFilters,
   GovtSubsidyProgram,
   GovtSubsidyProgramDetail,
@@ -244,6 +246,10 @@ export function installMockHandlers(): void {
     return getSubsidyDetailMock(String(payload.programId ?? payload.program_id ?? '')) ?? null
   })
 
+  registerMockHandler<GovtSubsidyDisbursement>('sonar:bank:govt:subsidies:grant', async (payload) => {
+    return grantSubsidyMock(payload as unknown as GovtGrantSubsidyRequest)
+  })
+
   registerMockHandler<GovtReportsData>('sonar:bank:govt:reports:data', async (payload) => {
     await simulateLatency(120, 240)
     return getReportsDataMock((payload.range ?? 'month') as GovtReportsRange)
@@ -293,7 +299,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (39 endpoints) — VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (40 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

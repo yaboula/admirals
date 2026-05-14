@@ -85,6 +85,7 @@ M.AUDIT_EVENT_TYPE = {
   GOVT_FLAG_CLOSE       = 'govt_flag_close',
   GOVT_TAX_BRACKETS_SAVE = 'govt_tax_brackets_save',
   GOVT_TAX_FORCE_COLLECTION = 'govt_tax_force_collection',
+  GOVT_SUBSIDY_GRANT    = 'govt_subsidy_grant',
 
   BUSINESS_PAYROLL_REQUEST = 'business_payroll_request',
   BUSINESS_PAYROLL_EXECUTE = 'business_payroll_execute',
