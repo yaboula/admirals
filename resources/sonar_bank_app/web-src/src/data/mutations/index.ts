@@ -56,3 +56,13 @@ export type {
   RecurringSubscribeResponse,
   RecurringStatusResponse,
 } from './recurring'
+export {
+  useBuyAssetMutation,
+  useSellAssetMutation,
+} from './portfolio'
+export type {
+  PortfolioBuyArgs,
+  PortfolioSellArgs,
+  PortfolioBuyResponse,
+  PortfolioSellResponse,
+} from './portfolio'

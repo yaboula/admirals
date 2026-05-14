@@ -3,10 +3,12 @@
 -- =============================================================================
 -- Investment portfolio.
 --
--- Callbacks (3):
+-- Callbacks (5):
 --   C027 sonar:bank:portfolio:buy
 --   C028 sonar:bank:portfolio:sell
 --   C029 sonar:bank:portfolio:list
+--   REQ-FE-STOCKS-PORTFOLIO sonar:bank:stocks:portfolio
+--   REQ-FE-STOCKS-LIST sonar:bank:stocks:list
 -- =============================================================================
 
 local Wrap   = BankApp.callbacks._wrap
@@ -22,9 +24,21 @@ Wrap.Register('sonar:bank:portfolio:list', {
   tier  = Enums.TIER.TIER_1_READ,
   cb_id = 'C029',
 }, function(src, citizen_id, payload)
-  local rows, err = PortfolioService.ListSelf(citizen_id)
-  if err then return { ok = false, error = err } end
-  return { holdings = rows or {} }
+  return PortfolioService.ListSelfResponse(citizen_id)
+end)
+
+Wrap.Register('sonar:bank:stocks:portfolio', {
+  tier  = Enums.TIER.TIER_1_READ,
+  cb_id = 'REQ-FE-STOCKS-PORTFOLIO',
+}, function(src, citizen_id, payload)
+  return PortfolioService.ListSelfResponse(citizen_id)
+end)
+
+Wrap.Register('sonar:bank:stocks:list', {
+  tier  = Enums.TIER.TIER_1_READ,
+  cb_id = 'REQ-FE-STOCKS-LIST',
+}, function(src, citizen_id, payload)
+  return PortfolioService.ListMarketAssets(payload or {})
 end)
 
 -- -----------------------------------------------------------------------------
@@ -59,5 +73,6 @@ Wrap.Register('sonar:bank:portfolio:sell', {
     to_iban       = payload.to_iban,
     asset_symbol  = payload.asset_symbol,
     units         = payload.units,
+    idempotency_key = payload.idempotency_key,
   })
 end)

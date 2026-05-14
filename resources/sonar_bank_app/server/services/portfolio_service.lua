@@ -50,6 +50,25 @@ local function get_market_price_minor(asset_symbol)
   return 1000 + (h % 50000)  -- price between 1000 and 51000 minor units
 end
 
+local function decorate_holding(row)
+  if not row then return nil end
+  local qty = tonumber(row.units or row.qty) or 0
+  local cost_basis_minor = math.floor(qty * (tonumber(row.avg_cost_minor) or 0))
+  local price_minor = get_market_price_minor(row.asset_symbol or row.symbol or '')
+  local market_value_minor = math.floor(qty * price_minor)
+  row.symbol = row.asset_symbol or row.symbol
+  row.qty = qty
+  row.cost_basis_minor = cost_basis_minor
+  row.market_value_minor = market_value_minor
+  row.delta_pct = cost_basis_minor > 0 and ((market_value_minor - cost_basis_minor) / cost_basis_minor) * 100 or 0
+  row.created_ms = tonumber(row.updated_ms) or os.time() * 1000
+  row.asset_symbol = nil
+  row.units = nil
+  row.avg_cost_minor = nil
+  row.updated_ms = nil
+  return row
+end
+
 -- -----------------------------------------------------------------------------
 -- §2. ListSelf
 -- -----------------------------------------------------------------------------
@@ -58,7 +77,46 @@ function S.ListSelf(citizen_id)
   if not Validators.IsValidCitizenId(citizen_id) then
     return nil, Errors.New('INVALID_CITIZEN_ID')
   end
-  return PortfolioRepo.ListByCitizen(citizen_id, 64)
+  local rows, err = PortfolioRepo.ListByCitizen(citizen_id, 64)
+  if err then return nil, err end
+  for _, row in ipairs(rows or {}) do decorate_holding(row) end
+  return rows, nil
+end
+
+function S.ListSelfResponse(citizen_id)
+  local rows, err = S.ListSelf(citizen_id)
+  if err then return { ok = false, error = err } end
+  local total_cost_basis_minor = 0
+  local total_market_value_minor = 0
+  for _, row in ipairs(rows or {}) do
+    total_cost_basis_minor = total_cost_basis_minor + (tonumber(row.cost_basis_minor) or 0)
+    total_market_value_minor = total_market_value_minor + (tonumber(row.market_value_minor) or 0)
+  end
+  local total_delta_minor = total_market_value_minor - total_cost_basis_minor
+  return {
+    ok = true,
+    data = {
+      holdings = rows or {},
+      total_cost_basis_minor = total_cost_basis_minor,
+      total_market_value_minor = total_market_value_minor,
+      total_delta_minor = total_delta_minor,
+      total_delta_pct = total_cost_basis_minor > 0 and (total_delta_minor / total_cost_basis_minor) * 100 or 0,
+      fetched_at_ms = os.time() * 1000,
+    },
+  }
+end
+
+function S.ListMarketAssets(ctx)
+  local rows, err = PortfolioRepo.ListAssets((ctx and ctx.limit) or 64)
+  if err then return { ok = false, error = err } end
+  for _, row in ipairs(rows or {}) do
+    row.price_minor = (tonumber(row.price_minor) or 0) > 0 and tonumber(row.price_minor) or get_market_price_minor(row.symbol)
+    row.change_24h_pct = 0
+    row.market_cap_minor = row.price_minor * 100000
+    row.volume_24h = 0
+    row.updated_ms = tonumber(row.updated_ms) or os.time() * 1000
+  end
+  return { ok = true, data = { items = rows or {}, fetched_at_ms = os.time() * 1000 } }
 end
 
 -- -----------------------------------------------------------------------------
@@ -83,6 +141,10 @@ function S.Buy(ctx)
   if type(ctx.units) ~= 'number' or ctx.units <= 0 then
     Perf.EndTimer(timer, 'C027', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'units' }) }
+  end
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    Perf.EndTimer(timer, 'C027', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
   end
 
   local owner_cid, account, own_err = Auth.RequireOwnership(ctx.src, norm_iban)
@@ -177,6 +239,18 @@ function S.Sell(ctx)
     Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('INVALID_IBAN') }
   end
+  if type(ctx.asset_symbol) ~= 'string' or #ctx.asset_symbol < 1 or #ctx.asset_symbol > 16 then
+    Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'asset_symbol' }) }
+  end
+  if type(ctx.units) ~= 'number' or ctx.units <= 0 then
+    Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'units' }) }
+  end
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
+  end
 
   local owner_cid, _, own_err = Auth.RequireOwnership(ctx.src, norm_iban)
   if own_err then
@@ -197,6 +271,19 @@ function S.Sell(ctx)
   local price = get_market_price_minor(ctx.asset_symbol)
   local proceeds = math.floor(ctx.units * price)
 
+  local idem_status, cached, idem_err = Idempotency.Acquire(
+    ctx.idempotency_key,
+    { iban = norm_iban, asset = ctx.asset_symbol, units = ctx.units, price = price },
+    { actor_citizen_id = owner_cid, callback_id = 'C028' }
+  )
+  if idem_status == 'replay' then
+    Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = true, data = cached, replayed = true }
+  elseif idem_status ~= 'acquired' then
+    Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = idem_err or Errors.New('IDEMPOTENCY_IN_FLIGHT') }
+  end
+
   local tx_queries = {}
   for _, q in ipairs(PortfolioRepo.BuildSellQueries(owner_cid, norm_iban, ctx.asset_symbol, ctx.units, price, proceeds)) do
     tx_queries[#tx_queries + 1] = q
@@ -204,6 +291,7 @@ function S.Sell(ctx)
   tx_queries[#tx_queries + 1] = AccountsRepo.BuildCreditBalanceQuery(norm_iban, proceeds)
   local ok, tx_err = DB.Transaction(tx_queries)
   if not ok then
+    Idempotency.Orphan(ctx.idempotency_key)
     Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = tx_err }
   end
@@ -233,8 +321,10 @@ function S.Sell(ctx)
   end
 
   invalidate_bootstrap(owner_cid)
+  local result = { asset = ctx.asset_symbol, units = ctx.units, proceeds = proceeds }
+  Idempotency.Commit(ctx.idempotency_key, result)
   Perf.EndTimer(timer, 'C028', { tier = Enums.TIER.TIER_2_WRITE })
-  return { ok = true, data = { asset = ctx.asset_symbol, units = ctx.units, proceeds = proceeds } }
+  return { ok = true, data = result }
 end
 
 return S

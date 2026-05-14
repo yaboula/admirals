@@ -41,6 +41,16 @@ WHERE sa.char_id = ? AND a.ticker = ?
 LIMIT 1
 ]]
 
+local SQL_LIST_ASSETS = [[
+SELECT ticker AS symbol, display_name AS name, COALESCE(exchange, 'Market') AS sector,
+       CAST(ROUND(COALESCE(current_price, 0) * 100) AS SIGNED) AS price_minor,
+       COALESCE(price_updated_at, UNIX_TIMESTAMP()) * 1000 AS updated_ms
+FROM sonar_bank_stocks_assets
+WHERE enabled = TRUE
+ORDER BY ticker ASC
+LIMIT ?
+]]
+
 local SQL_UPSERT_ASSET = [[
 INSERT INTO sonar_bank_stocks_assets
   (ticker, display_name, enabled, current_price, price_updated_at)
@@ -93,6 +103,10 @@ end
 
 function R.Get(citizen_id, asset_symbol)
   return DB.QuerySingle(SQL_GET, { citizen_id, asset_symbol })
+end
+
+function R.ListAssets(limit)
+  return DB.Query(SQL_LIST_ASSETS, { limit or 64 })
 end
 
 function R.BuildBuyQueries(citizen_id, fiat_iban, asset_symbol, units, price_per_unit_minor, total_cost_minor)

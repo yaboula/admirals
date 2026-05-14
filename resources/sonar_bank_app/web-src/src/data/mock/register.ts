@@ -166,6 +166,18 @@ export function installMockHandlers(): void {
     return buildMockStockPortfolio()
   })
 
+  registerMockHandler<{ asset: string; units: number; price_minor: number; total_cost: number }>('sonar:bank:portfolio:buy', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as { asset_symbol: string; units: number }
+    return { asset: request.asset_symbol, units: request.units, price_minor: 250_00, total_cost: Math.max(1, Math.floor(request.units * 250_00)) }
+  })
+
+  registerMockHandler<{ asset: string; units: number; proceeds: number }>('sonar:bank:portfolio:sell', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as { asset_symbol: string; units: number }
+    return { asset: request.asset_symbol, units: request.units, proceeds: Math.max(1, Math.floor(request.units * 250_00)) }
+  })
+
   registerMockHandler<LoanListResponse>('sonar:bank:loans:list', async () => {
     await simulateLatency(80, 180)
     return buildMockLoanList()
@@ -356,7 +368,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (47 endpoints) - VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (49 endpoints) - VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {
