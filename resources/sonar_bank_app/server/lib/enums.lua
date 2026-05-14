@@ -89,7 +89,9 @@ M.AUDIT_EVENT_TYPE = {
 
   BUSINESS_PAYROLL_REQUEST = 'business_payroll_request',
   BUSINESS_PAYROLL_EXECUTE = 'business_payroll_execute',
+  BUSINESS_PAYROLL_EXECUTED = 'business_payroll_executed',
   BUSINESS_APPROVAL_DECIDE = 'business_approval_decide',
+  BUSINESS_WITHDRAWAL_REQUEST = 'business_withdrawal_request',
 
   -- Anti-fraud
   FRAUD_REVIEW_OPEN     = 'fraud_review_open',

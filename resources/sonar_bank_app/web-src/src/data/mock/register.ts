@@ -15,7 +15,7 @@ import {
   simulateLatency,
 } from './seed'
 import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, PayrollPreviewRequest, PayrollPreviewResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
-import type { BusinessApprovalDecideRequest, BusinessApprovalDecideResponse, BusinessPayrollExecuteRequest, BusinessPayrollExecuteResponse } from '@/data/contracts'
+import type { BusinessApprovalDecideRequest, BusinessApprovalDecideResponse, BusinessPayrollExecuteRequest, BusinessPayrollExecuteResponse, BusinessWithdrawalRequest, BusinessWithdrawalResponse } from '@/data/contracts'
 import type { IssueCardResult } from '@/data/mutations'
 import type { BankStateBagKey } from '@/lib/bankStateBags'
 import { getBusinessDetailMock, listBusinessMock } from '@/govt/data/mock/govtBusiness'
@@ -118,6 +118,21 @@ export function installMockHandlers(): void {
       status: 'pending_approval',
       total_net_minor: 1_240_000,
       employee_count: 12,
+      requires_approvals: 2,
+      cross_ref_audit_id: `mock-audit-${now}`,
+      committed_at_ms: now,
+    }
+  })
+
+  registerMockHandler<BusinessWithdrawalResponse>('sonar:bank:business:withdrawal:request', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as BusinessWithdrawalRequest
+    const now = Date.now()
+    return {
+      company_id: request.company_id,
+      approval_id: `mock-withdrawal-${now}`,
+      status: 'pending',
+      amount_minor: request.amount_minor,
       requires_approvals: 2,
       cross_ref_audit_id: `mock-audit-${now}`,
       committed_at_ms: now,
@@ -299,7 +314,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (40 endpoints) — VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (41 endpoints) — VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

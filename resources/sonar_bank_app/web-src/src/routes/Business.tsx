@@ -18,7 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useBusinessTreasuryQuery, usePayrollPreviewQuery } from '@/data/queries'
-import { useDecideBusinessApprovalMutation, useExecuteBusinessPayrollMutation } from '@/data/mutations'
+import { useDecideBusinessApprovalMutation, useExecuteBusinessPayrollMutation, useRequestBusinessWithdrawalMutation } from '@/data/mutations'
 import type { BusinessMemberRole, BusinessMovement, BusinessPendingApproval, PayrollPreviewLine, PayrollPreviewResponse } from '@/data/contracts'
 import { Badge, Card, Spinner } from '@/components/ui'
 import { AceLockedState } from '@/components/security'
@@ -55,6 +55,7 @@ export function Business() {
   const payrollPreview = payrollQuery.data
   const executePayrollMutation = useExecuteBusinessPayrollMutation(companyId ?? undefined)
   const decideApprovalMutation = useDecideBusinessApprovalMutation(companyId ?? undefined)
+  const withdrawalMutation = useRequestBusinessWithdrawalMutation(companyId ?? undefined)
   const totalInMinor = snapshot?.recent_movements.filter((m) => m.direction === 'in').reduce((sum, m) => sum + m.amount_minor, 0) ?? 0
   const totalOutMinor = snapshot?.recent_movements.filter((m) => m.direction === 'out').reduce((sum, m) => sum + m.amount_minor, 0) ?? 0
   const netFlowMinor = totalInMinor - totalOutMinor
@@ -67,6 +68,16 @@ export function Business() {
   const operationsScore = snapshot
     ? Math.max(44, Math.min(96, Math.round(74 + snapshot.delta_4w_pct - snapshot.pending_approvals.length * 4 - heldPayroll * 3 + Math.min(payrollCoverageMonths, 4) * 3)))
     : 0
+
+  const requestWithdrawal = () => {
+    if (!snapshot) return
+    const amountText = window.prompt(t('business.withdraw'), '1000')
+    if (!amountText) return
+    const amount_minor = Math.round(Number(amountText) * 100)
+    if (!Number.isFinite(amount_minor) || amount_minor <= 0) return
+    const note = window.prompt(t('business.withdrawHint'), 'Owner cash-out request') ?? undefined
+    withdrawalMutation.mutate({ company_id: snapshot.company_id, amount_minor, note })
+  }
 
   return (
     <main className="h-full min-h-0 overflow-y-auto px-5 py-4 lg:px-6 scrollbar-thin">
@@ -172,7 +183,13 @@ export function Business() {
                     primary
                     onClick={() => executePayrollMutation.mutate({ company_id: snapshot.company_id })}
                   />
-                  <ActionPreview icon={CircleDollarSign} label={t('business.withdraw')} description={t('business.withdrawHint')} locked />
+                  <ActionPreview
+                    icon={CircleDollarSign}
+                    label={t('business.withdraw')}
+                    description={t('business.withdrawHint')}
+                    locked={snapshot.role === 'employee' || withdrawalMutation.isPending}
+                    onClick={requestWithdrawal}
+                  />
                   <ActionPreview icon={ReceiptText} label={t('business.auditBusiness')} description={t('business.auditBusinessHint')} locked={snapshot.role === 'employee'} />
                 </div>
               </Card>

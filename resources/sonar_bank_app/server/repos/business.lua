@@ -291,6 +291,28 @@ LIMIT 1
 ]], { actor_cid, company_id })
 end
 
+function R.CreateWithdrawalApproval(params)
+  return DB.Transaction({
+    {
+      query = [[
+INSERT INTO sonar_bank_business_treasury_approvals
+  (id, treasury_id, operation_kind, operation_payload, operation_amount, operation_target_iban, operation_description, state, signers_required, signers_approved, approvals_json, initiated_by_account_id, expires_at)
+VALUES (?, ?, 'large_withdraw', ?, (? / 100.0), NULL, ?, 'pending', ?, 0, ?, ?, UNIX_TIMESTAMP() + 259200)
+]],
+      values = {
+        params.approval_id,
+        params.treasury_id,
+        params.operation_payload,
+        params.amount_minor,
+        params.description,
+        params.signers_required,
+        params.approvals_json,
+        params.actor_account_id,
+      },
+    },
+  })
+end
+
 function R.ListPayrollExecutionLines(company_id)
   return DB.Query([[
 SELECT cm.id AS member_id,

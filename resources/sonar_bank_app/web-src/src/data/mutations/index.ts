@@ -1,6 +1,7 @@
 export {
   useExecuteBusinessPayrollMutation,
   useDecideBusinessApprovalMutation,
+  useRequestBusinessWithdrawalMutation,
 } from './business'
 export {
   useFreezeCard,
@@ -13,6 +14,8 @@ export type {
   BusinessPayrollExecuteResponse,
   BusinessApprovalDecideRequest,
   BusinessApprovalDecideResponse,
+  BusinessWithdrawalRequest,
+  BusinessWithdrawalResponse,
 } from '@/data/contracts'
 export type {
   FreezeCardArgs,

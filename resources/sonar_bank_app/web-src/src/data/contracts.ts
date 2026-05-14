@@ -422,6 +422,22 @@ export interface BusinessPayrollExecuteResponse {
   committed_at_ms: number
 }
 
+export interface BusinessWithdrawalRequest {
+  company_id: string
+  amount_minor: number
+  note?: string
+}
+
+export interface BusinessWithdrawalResponse {
+  company_id: string
+  approval_id: string
+  status: 'pending'
+  amount_minor: number
+  requires_approvals: number
+  cross_ref_audit_id?: string
+  committed_at_ms: number
+}
+
 export interface BusinessApprovalDecideRequest {
   approval_id: string
   decision: 'approve' | 'reject'

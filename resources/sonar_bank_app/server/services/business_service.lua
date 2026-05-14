@@ -385,6 +385,68 @@ function S.RequestPayrollExecution(ctx)
   return { ok = true, data = result }
 end
 
+function S.RequestWithdrawal(ctx)
+  if not is_valid_company_id(ctx.company_id) then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'company_id' }) }
+  end
+  if not Validators.IsValidAmountMinor(ctx.amount_minor) then
+    return { ok = false, error = Errors.New('INVALID_AMOUNT', { field = 'amount_minor' }) }
+  end
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key', reason = 'must be UUID v4' }) }
+  end
+
+  local exec, exec_err = Repo.GetPayrollExecutionContext(ctx.company_id, ctx.actor_citizen_id)
+  if exec_err then return { ok = false, error = exec_err } end
+  if not exec then return { ok = false, error = Errors.New('RESOURCE_NOT_FOUND', { field = 'company_id' }) } end
+  if (tonumber(exec.treasury_balance) or 0) * 100 < ctx.amount_minor then
+    return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { company_id = ctx.company_id }) }
+  end
+
+  local note = Validators.SanitizeReason(ctx.note) or 'Business withdrawal request'
+  local acquired, replay = acquire_idempotency(ctx, 'REQ-FE-015W', { company_id = ctx.company_id, operation = 'withdrawal_request', amount_minor = ctx.amount_minor, note = note }, exec.actor_account_id, exec.treasury_account_id)
+  if not acquired then return replay end
+
+  local approval_id = UUID.V4()
+  local threshold = math.max(1, tonumber(exec.signing_threshold) or 1)
+  local ok, tx_err = Repo.CreateWithdrawalApproval({
+    approval_id = approval_id,
+    treasury_id = exec.treasury_id,
+    actor_account_id = exec.actor_account_id,
+    amount_minor = ctx.amount_minor,
+    signers_required = threshold,
+    approvals_json = encode_json({}),
+    description = note,
+    operation_payload = encode_json({ kind = 'withdrawal', company_id = ctx.company_id, amount_minor = ctx.amount_minor, note = note, request_id = ctx.idempotency_key }),
+  })
+  if not ok then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = tx_err } end
+
+  local audit_id = Audit.Write({
+    event_type = Enums.AUDIT_EVENT_TYPE.BUSINESS_WITHDRAWAL_REQUEST,
+    actor_citizen_id = ctx.actor_citizen_id,
+    actor_account_id = exec.actor_account_id,
+    actor_src = ctx.src,
+    actor_role = 'business',
+    target_account_id = exec.treasury_account_id,
+    target_iban = exec.treasury_iban,
+    event_data = { company_id = ctx.company_id, approval_id = approval_id, amount_minor = ctx.amount_minor, note = note },
+    correlation_id = ctx.correlation_id or ctx.idempotency_key,
+    request_nonce = ctx.idempotency_key,
+  })
+
+  local result = {
+    company_id = ctx.company_id,
+    approval_id = approval_id,
+    status = 'pending',
+    amount_minor = ctx.amount_minor,
+    requires_approvals = threshold,
+    cross_ref_audit_id = audit_id,
+    committed_at_ms = now_ms(),
+  }
+  Idempotency.Commit(ctx.idempotency_key, result)
+  return { ok = true, data = result }
+end
+
 function S.DecideApproval(ctx)
   if type(ctx.approval_id) ~= 'string' or ctx.approval_id == '' then
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'approval_id' }) }

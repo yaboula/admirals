@@ -81,3 +81,18 @@ Wrap.Register('sonar:bank:business:approval:decide', {
     correlation_id = payload.correlation_id,
   })
 end)
+
+Wrap.Register('sonar:bank:business:withdrawal:request', {
+  tier  = Enums.TIER.TIER_2_WRITE,
+  cb_id = 'REQ-FE-015W',
+}, function(src, citizen_id, payload)
+  return BusinessService.RequestWithdrawal({
+    src = src,
+    actor_citizen_id = citizen_id,
+    company_id = payload.company_id,
+    amount_minor = payload.amount_minor,
+    note = payload.note,
+    idempotency_key = payload.idempotency_key,
+    correlation_id = payload.correlation_id,
+  })
+end)
