@@ -2782,3 +2782,63 @@ git diff --check  â†’ âœ… solo CRLF warnings pre-existing (ignorado per norma)
 - **DevOps H4 note:** runbook must not document or set the obsolete Core Override watchdog/prehook convars. Future runbook should document Phase 5 convars only (`sonar:admin_allowlist`, `sonar_bridge_bank_mode`, inherited audit/HMAC/rate-limit convars).
 
 â€” **BANK-BE.PHASE_5.2 3.5 completed.**
+
+---
+
+### BANK-GOV.1 — Gov + Business closeout implementation
+
+- **Fecha:** 2026-05-14
+- **Duración:** ~multi-session continuation
+- **Founder + Agent:** yaboula + Cascade
+- **Sprint / Phase:** Gov/Business closeout — Phase 1.1 to 2.1
+- **Perfil:** Backend + Frontend implementation
+- **Goal:** Complete Tax, Sanctions, Subsidies, Reports, Business withdrawal, Security risk review request, and ST-025 smoke harness.
+- **Status:** ? Done (runtime evidence pending for ST-025 + Security sign-off)
+
+#### Outcomes
+
+- Implemented Tax Engine backend + FE callback wiring.
+- Implemented real sanction actions lookup from audit ledger.
+- Implemented subsidy grant endpoint with idempotency/audit + FE action.
+- Implemented real GOVT reports aggregations.
+- Implemented Business withdrawal approval request flow.
+- Created Security risk formula review request without changing gated formula.
+- Created ST-025 callback lag smoke harness.
+
+#### Done criteria
+
+- [x] Fase 1.1 Tax Engine backend + FE wiring ? commits `4848aa2`.
+- [x] Fase 1.2 ListSanctionActions real ? commit `03ad07d`.
+- [x] Fase 1.3 Subsidy grant endpoint ? commit `2c61820`.
+- [x] Fase 1.4 Reports aggregations ? commit `11c1bb2`.
+- [x] Fase 1.5 Business withdrawal request ? commit `740f71d`.
+- [x] Fase 1.6 Security risk-formula review request ? commit `274a070`.
+- [x] Fase 2.1 ST-025 smoke harness ? commit `50c5955`.
+- [ ] Live ST-025 evidence ?? pending runtime execution.
+- [ ] Security risk formula sign-off ?? pending Security Lead response.
+
+#### Anti-tech-debt verification
+
+- [x] No blind automation for money flows.
+- [x] No direct legacy `bank_*` runtime SQL introduced.
+- [x] No risk formula change without Security/Founder sign-off.
+- [x] Mutations use idempotency where implemented.
+- [x] FE typecheck/build passed for changed UI/data flows.
+
+#### Files in scope respetados
+
+- ? Modificados: `resources/sonar_bank_app/server/**`, `resources/sonar_bank_app/web-src/src/**`, `progress/**`, `scripts/**`.
+- ? No permanent runtime server cfg edits.
+
+#### Pendientes próximos
+
+1. Run ST-025 live and record evidence.
+2. Get Security Lead sign-off on `progress/SECURITY_RISK_FORMULA_REVIEW_REQUEST.md`.
+3. Founder approval before push.
+4. Decide next closeout/handoff ceremony scope.
+
+#### Próxima sesión sugerida
+
+- Session ID: **BANK-GOV.2**
+- Goal: Runtime validation + evidence capture + Security sign-off resolution.
+- Files in scope: `progress/GOV_BUSINESS_CLOSEOUT.md`, `scripts/smoke_test_st025.md`, runtime evidence report.
