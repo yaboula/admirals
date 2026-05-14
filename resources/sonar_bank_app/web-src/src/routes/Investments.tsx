@@ -12,6 +12,8 @@ import { usePrivacyMode } from '@/stores/privacy'
 import { useBuyAssetMutation, useSellAssetMutation } from '@/data/mutations'
 import { toast } from '@/stores/toast'
 
+const EMPTY_MARK = '—'
+
 export function Investments() {
   const { t, money, number, dateTime } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -32,7 +34,7 @@ export function Investments() {
   const error = stocksQuery.isError || portfolioQuery.isError
   const updatedAt = Math.max(stocksQuery.data?.fetched_at_ms ?? 0, portfolio?.fetched_at_ms ?? 0)
   const topMover = [...quotes].sort((a, b) => Math.abs(b.change_24h_pct) - Math.abs(a.change_24h_pct))[0] ?? null
-  const allocation = buildAllocation(holdings, quoteBySymbol)
+  const allocation = buildAllocation(holdings, quoteBySymbol, t)
   const primaryAccount = bootstrapQuery.data?.accounts.find((account) => account.status === 'active') ?? bootstrapQuery.data?.accounts[0] ?? null
 
   const openTrade = (mode: 'buy' | 'sell', symbol: string) => {
@@ -48,9 +50,9 @@ export function Investments() {
       if (tradeOpen === 'buy') await buyMutation.mutateAsync({ from_iban: primaryAccount.iban, asset_symbol: selectedSymbol, units })
       if (tradeOpen === 'sell') await sellMutation.mutateAsync({ to_iban: primaryAccount.iban, asset_symbol: selectedSymbol, units })
       setTradeOpen(null)
-      toast.success('Investment order sent', selectedSymbol)
+      toast.success(t('investments.orderSentTitle'), t('investments.orderSentBody').replace('{symbol}', selectedSymbol))
     } catch {
-      toast.warning('Investment order failed', selectedSymbol)
+      toast.warning(t('investments.orderFailedTitle'), t('investments.orderFailedBody').replace('{symbol}', selectedSymbol))
     }
   }
 
@@ -80,8 +82,8 @@ export function Investments() {
               </div>
               <div className="grid gap-2 sm:grid-cols-3">
                 <IdentityPill icon={LockKeyhole} label={t('investments.readOnly')} value={t('investments.executionLocked')} />
-                <IdentityPill icon={Radar} label={t('investments.dataPlane')} value={updatedAt ? dateTime(updatedAt, { timeStyle: 'short' }) : 'â€”'} />
-                <IdentityPill icon={Gauge} label={t('investments.topMover')} value={topMover ? topMover.symbol : 'â€”'} tone={topMover && topMover.change_24h_pct < 0 ? 'danger' : 'success'} />
+                <IdentityPill icon={Radar} label={t('investments.dataPlane')} value={updatedAt ? dateTime(updatedAt, { timeStyle: 'short' }) : EMPTY_MARK} />
+                <IdentityPill icon={Gauge} label={t('investments.topMover')} value={topMover ? topMover.symbol : EMPTY_MARK} tone={topMover && topMover.change_24h_pct < 0 ? 'danger' : 'success'} />
               </div>
             </div>
 
@@ -91,17 +93,17 @@ export function Investments() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-tertiary">{t('investments.portfolioValue')}</p>
                 <p className="mt-2 truncate text-4xl font-semibold tracking-[-0.06em] text-text-primary tactile-tabular-nums">
-                  {portfolio ? streamerMode ? maskMoneyDisplay() : money(portfolio.total_market_value_minor / 100) : 'â€”'}
+                  {portfolio ? streamerMode ? maskMoneyDisplay() : money(portfolio.total_market_value_minor / 100) : EMPTY_MARK}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Badge tone={(portfolio?.total_delta_pct ?? 0) >= 0 ? 'success' : 'danger'} variant="soft">
-                    {portfolio ? number(portfolio.total_delta_pct, { signDisplay: 'exceptZero', maximumFractionDigits: 1 }) : 'â€”'}%
+                    {portfolio ? number(portfolio.total_delta_pct, { signDisplay: 'exceptZero', maximumFractionDigits: 1 }) : EMPTY_MARK}%
                   </Badge>
                   <span className="text-xs text-text-tertiary">{t('investments.totalReturn')}</span>
                 </div>
               </div>
               <div className="grid gap-2">
-                <TerminalStat label={t('investments.costBasis')} value={portfolio ? streamerMode ? maskMoneyDisplay() : money(portfolio.total_cost_basis_minor / 100) : 'â€”'} />
+                <TerminalStat label={t('investments.costBasis')} value={portfolio ? streamerMode ? maskMoneyDisplay() : money(portfolio.total_cost_basis_minor / 100) : EMPTY_MARK} />
                 <TerminalStat label={t('investments.dayWatchlist')} value={number(quotes.length)} />
                 <TerminalStat label={t('investments.holdings')} value={number(holdings.length)} />
               </div>
@@ -184,17 +186,18 @@ export function Investments() {
 }
 
 function TradeDialog({ mode, symbol, units, accountIban, loading, onChangeUnits, onSubmit, onClose }: { mode: 'buy' | 'sell'; symbol: string; units: string; accountIban: string; loading: boolean; onChangeUnits: (value: string) => void; onSubmit: () => void; onClose: () => void }) {
+  const { t } = useI18n()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
       <div className="w-full max-w-md rounded-[1.75rem] border border-white/10 bg-surface-panel p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-text-primary">{mode === 'buy' ? 'Buy asset' : 'Sell asset'} · {symbol}</h2>
-          <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
+          <h2 className="text-lg font-semibold text-text-primary">{mode === 'buy' ? t('investments.buyAsset') : t('investments.sellAsset')} · {symbol}</h2>
+          <Button size="sm" variant="ghost" onClick={onClose}>{t('common.close')}</Button>
         </div>
         <div className="grid gap-3">
-          <Input label="Account" value={accountIban} readOnly />
-          <Input label="Units" type="number" value={units} onChange={(event) => onChangeUnits(event.currentTarget.value)} />
-          <Button loading={loading} disabled={!accountIban} onClick={onSubmit}>{mode === 'buy' ? 'Buy' : 'Sell'}</Button>
+          <Input label={t('investments.account')} value={accountIban} readOnly />
+          <Input label={t('investments.units')} type="number" value={units} onChange={(event) => onChangeUnits(event.currentTarget.value)} />
+          <Button loading={loading} disabled={!accountIban} onClick={onSubmit}>{mode === 'buy' ? t('investments.buy') : t('investments.sell')}</Button>
         </div>
       </div>
     </div>
@@ -224,7 +227,7 @@ function VaultCore({ holdings, quotes, streamerMode }: { holdings: PortfolioHold
         return (
           <div key={holding.holding_id} className="absolute left-1/2 top-1/2 z-[2] rounded-full border border-white/10 bg-black/70 px-3 py-1 text-[11px] font-semibold text-text-primary shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-xl" style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}>
             <span className="text-brand-signal-orange-light">{holding.symbol}</span>
-            <span className="ml-2 text-text-tertiary">{quote ? number(quote.change_24h_pct, { signDisplay: 'exceptZero', maximumFractionDigits: 1 }) : 'â€”'}%</span>
+            <span className="ml-2 text-text-tertiary">{quote ? number(quote.change_24h_pct, { signDisplay: 'exceptZero', maximumFractionDigits: 1 }) : EMPTY_MARK}%</span>
           </div>
         )
       })}
@@ -273,8 +276,8 @@ function MarketPulseRow({ quote, holding, rank, onBuy, onSell, actionPending }: 
         <span className="truncate text-right text-sm font-semibold text-text-primary tactile-tabular-nums max-sm:hidden">{streamerMode ? maskMoneyDisplay() : money(quote.price_minor / 100)}</span>
         <Badge tone={positive ? 'success' : 'danger'} variant="soft" leftIcon={<Icon size={12} strokeWidth={2.3} />}>{number(quote.change_24h_pct, { signDisplay: 'exceptZero', maximumFractionDigits: 1 })}%</Badge>
         <div className="flex gap-2">
-          <Button size="sm" variant="secondary" loading={actionPending} onClick={onBuy}>Buy</Button>
-          <Button size="sm" variant="ghost" loading={actionPending} disabled={!holding} onClick={onSell}>Sell</Button>
+          <Button size="sm" variant="secondary" loading={actionPending} onClick={onBuy}>{t('investments.buy')}</Button>
+          <Button size="sm" variant="ghost" loading={actionPending} disabled={!holding} onClick={onSell}>{t('investments.sell')}</Button>
         </div>
       </div>
     </div>
@@ -386,11 +389,11 @@ interface AllocationItem {
   weight: number
 }
 
-function buildAllocation(holdings: PortfolioHolding[], quotes: Map<string, StockQuote>): AllocationItem[] {
+function buildAllocation(holdings: PortfolioHolding[], quotes: Map<string, StockQuote>, t: (key: 'investments.unclassified') => string): AllocationItem[] {
   const total = holdings.reduce((sum, holding) => sum + holding.market_value_minor, 0)
   if (total <= 0) return []
   const bySector = holdings.reduce<Record<string, number>>((acc, holding) => {
-    const sector = quotes.get(holding.symbol)?.sector ?? 'Unclassified'
+    const sector = quotes.get(holding.symbol)?.sector ?? t('investments.unclassified')
     acc[sector] = (acc[sector] ?? 0) + holding.market_value_minor
     return acc
   }, {})
