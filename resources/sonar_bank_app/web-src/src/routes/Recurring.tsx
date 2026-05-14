@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Wallet,
 } from 'lucide-react'
-import { Button, Card, CardEyebrow, CardTitle, Spinner } from '@/components/ui'
+import { Button, Card, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import { useBootstrap } from '@/data/queries'
 import type { Recurring, RecurringStatus } from '@/data/contracts'
@@ -25,6 +25,7 @@ import { maskIbanCompact, maskMoneyDisplay, revealIbanDisplay, safeAriaLabel } f
 import { sfx } from '@/lib/sfx'
 import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
+import { useCancelRecurringMutation, usePauseRecurringMutation, useResumeRecurringMutation, useSubscribeRecurringMutation } from '@/data/mutations'
 
 type RecurringTab = 'active' | 'paused' | 'history'
 
@@ -33,6 +34,16 @@ export function RecurringPayments() {
   const { data, isLoading, isError, error } = useBootstrap()
   const [tab, setTab] = useState<RecurringTab>('active')
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [toIban, setToIban] = useState('')
+  const [amountMajor, setAmountMajor] = useState('')
+  const [intervalDays, setIntervalDays] = useState('30')
+  const [firstChargeDays, setFirstChargeDays] = useState('1')
+  const [reason, setReason] = useState('')
+  const subscribeMutation = useSubscribeRecurringMutation()
+  const pauseMutation = usePauseRecurringMutation()
+  const resumeMutation = useResumeRecurringMutation()
+  const cancelMutation = useCancelRecurringMutation()
 
   useEffect(() => {
     if (isError && error) handleBankError(error)
@@ -45,6 +56,38 @@ export function RecurringPayments() {
   const visibleRules = tab === 'active' ? activeRules : tab === 'paused' ? pausedRules : historyRules
   const stats = useMemo(() => computeRecurringStats(rules), [rules])
   const nextRule = activeRules.slice().sort((a, b) => a.next_charge_ms - b.next_charge_ms)[0]
+  const primaryAccount = data?.accounts.find((account) => account.status === 'active') ?? data?.accounts[0] ?? null
+
+  const submitCreateRule = async () => {
+    if (!primaryAccount) return
+    const amount_minor = Math.round(Number(amountMajor) * 100)
+    const first_charge_ms = Date.now() + Math.max(1, Math.round(Number(firstChargeDays))) * 24 * 60 * 60 * 1000
+    try {
+      await subscribeMutation.mutateAsync({
+        from_iban: primaryAccount.iban,
+        to_iban: toIban,
+        amount_minor,
+        reason: reason.trim() || null,
+        interval_days: Math.round(Number(intervalDays)),
+        first_charge_ms,
+      })
+      setCreateOpen(false)
+      toast.success(t('recurring.createRule'), t('recurring.createRuleDescription'))
+    } catch {
+      toast.warning(t('recurring.createRule'), t('recurring.createRuleDescription'))
+    }
+  }
+
+  const runRuleAction = async (rule: Recurring, action: 'pause' | 'resume' | 'cancel') => {
+    try {
+      if (action === 'pause') await pauseMutation.mutateAsync({ recurring_id: rule.recurring_id })
+      if (action === 'resume') await resumeMutation.mutateAsync({ recurring_id: rule.recurring_id })
+      if (action === 'cancel') await cancelMutation.mutateAsync({ recurring_id: rule.recurring_id })
+      toast.success(t('recurring.rules'), statusText(action === 'pause' ? 'paused' : action === 'resume' ? 'active' : 'cancelled'))
+    } catch {
+      toast.warning(t('recurring.rules'), t('recurring.createRuleDescription'))
+    }
+  }
 
   if (isLoading && rules.length === 0) {
     return <RecurringLoading />
@@ -77,7 +120,7 @@ export function RecurringPayments() {
                 variant="secondary"
                 size="sm"
                 leftIcon={<Plus size={14} />}
-                onClick={() => toast.info(t('recurring.createRule'), t('recurring.createRuleDescription'))}
+                onClick={() => setCreateOpen(true)}
               >
                 {t('recurring.create')}
               </Button>
@@ -87,7 +130,7 @@ export function RecurringPayments() {
               {visibleRules.length === 0 ? (
                 <EmptyRecurring tab={tab} />
               ) : visibleRules.map((rule, index) => (
-                <RecurringRuleCard key={rule.recurring_id} rule={rule} index={index} streamerMode={streamerMode} />
+                <RecurringRuleCard key={rule.recurring_id} rule={rule} index={index} streamerMode={streamerMode} onAction={runRuleAction} actionPending={pauseMutation.isPending || resumeMutation.isPending || cancelMutation.isPending} />
               ))}
             </div>
           </Card>
@@ -99,6 +142,24 @@ export function RecurringPayments() {
           <RecurringSafetyPanel />
         </aside>
       </div>
+      {createOpen ? (
+        <RecurringCreateDialog
+          fromIban={primaryAccount?.iban ?? ''}
+          toIban={toIban}
+          amountMajor={amountMajor}
+          intervalDays={intervalDays}
+          firstChargeDays={firstChargeDays}
+          reason={reason}
+          loading={subscribeMutation.isPending}
+          onChangeToIban={setToIban}
+          onChangeAmount={setAmountMajor}
+          onChangeIntervalDays={setIntervalDays}
+          onChangeFirstChargeDays={setFirstChargeDays}
+          onChangeReason={setReason}
+          onSubmit={submitCreateRule}
+          onClose={() => setCreateOpen(false)}
+        />
+      ) : null}
     </motion.div>
   )
 }
@@ -133,13 +194,64 @@ function RecurringHero({ stats, streamerMode }: { stats: RecurringStats; streame
         <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[420px]">
           <HeroMetric label={t('recurring.activeCount')} value={String(stats.activeCount)} />
           <HeroMetric label={t('recurring.monthEstimate')} value={streamerMode ? maskMoneyDisplay() : money(stats.monthlyMinor / 100)} />
-          <HeroMetric label={t('recurring.next')} value={stats.nextChargeMs ? relativeTime(stats.nextChargeMs) : '—'} />
+          <HeroMetric label={t('recurring.next')} value={stats.nextChargeMs ? relativeTime(stats.nextChargeMs) : '-'} />
         </div>
       </div>
     </Card>
   )
 }
 
+function RecurringCreateDialog({
+  fromIban,
+  toIban,
+  amountMajor,
+  intervalDays,
+  firstChargeDays,
+  reason,
+  loading,
+  onChangeToIban,
+  onChangeAmount,
+  onChangeIntervalDays,
+  onChangeFirstChargeDays,
+  onChangeReason,
+  onSubmit,
+  onClose,
+}: {
+  fromIban: string
+  toIban: string
+  amountMajor: string
+  intervalDays: string
+  firstChargeDays: string
+  reason: string
+  loading: boolean
+  onChangeToIban: (value: string) => void
+  onChangeAmount: (value: string) => void
+  onChangeIntervalDays: (value: string) => void
+  onChangeFirstChargeDays: (value: string) => void
+  onChangeReason: (value: string) => void
+  onSubmit: () => void
+  onClose: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+      <div className="w-full max-w-md rounded-[1.75rem] border border-white/10 bg-surface-panel p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-text-primary">Create recurring rule</h2>
+          <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
+        </div>
+        <div className="grid gap-3">
+          <Input label="From" value={fromIban} readOnly />
+          <Input label="Destination IBAN" value={toIban} onChange={(event) => onChangeToIban(event.currentTarget.value)} />
+          <Input label="Amount" type="number" value={amountMajor} onChange={(event) => onChangeAmount(event.currentTarget.value)} leftAdornment="$" />
+          <Input label="Interval days" type="number" value={intervalDays} onChange={(event) => onChangeIntervalDays(event.currentTarget.value)} />
+          <Input label="First charge in days" type="number" value={firstChargeDays} onChange={(event) => onChangeFirstChargeDays(event.currentTarget.value)} />
+          <Input label="Reason" value={reason} onChange={(event) => onChangeReason(event.currentTarget.value)} />
+          <Button loading={loading} onClick={onSubmit}>Create rule</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 function HeroMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border-subtle bg-white/[0.04] px-3 py-3 text-right min-w-0">
@@ -182,7 +294,7 @@ function RecurringTabs({ tab, counts, onChange }: { tab: RecurringTab; counts: R
   )
 }
 
-function RecurringRuleCard({ rule, index, streamerMode }: { rule: Recurring; index: number; streamerMode: boolean }) {
+function RecurringRuleCard({ rule, index, streamerMode, onAction, actionPending }: { rule: Recurring; index: number; streamerMode: boolean; onAction: (rule: Recurring, action: 'pause' | 'resume' | 'cancel') => void; actionPending: boolean }) {
   const { t, money, relativeTime } = useI18n()
   const meta = getRecurringMeta(rule)
   const alias = streamerMode ? t('recurring.hiddenDestination') : getMockAliasForIban(rule.to_iban) ?? t('recurring.beneficiary')
@@ -196,7 +308,7 @@ function RecurringRuleCard({ rule, index, streamerMode }: { rule: Recurring; ind
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 8) * 0.025, duration: 0.24 }}
-      aria-label={safeAriaLabel(`${reason} · ${alias} · ${amount} · ${fromIban}`)}
+      aria-label={safeAriaLabel(`${reason} - ${alias} - ${amount} - ${fromIban}`)}
       className="rounded-[1.35rem] border border-white/[0.075] bg-white/[0.035] p-3.5 hover:bg-white/[0.055] transition-colors"
     >
       <div className="flex items-start gap-3">
@@ -213,7 +325,7 @@ function RecurringRuleCard({ rule, index, streamerMode }: { rule: Recurring; ind
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-text-primary truncate">{reason}</h2>
-              <p className="text-xs text-text-tertiary truncate">{alias} · {fromIban}</p>
+        <p className="text-xs text-text-tertiary truncate">{alias}</p>
             </div>
             <div className="shrink-0 text-right">
               <p className="text-base font-semibold text-text-primary tactile-tabular-nums">{amount}</p>
@@ -222,8 +334,13 @@ function RecurringRuleCard({ rule, index, streamerMode }: { rule: Recurring; ind
           </div>
           <div className="grid grid-cols-3 gap-2">
             <RuleMetric label={t('recurring.next')} value={rule.status === 'cancelled' ? t('recurring.finished') : relativeTime(rule.next_charge_ms)} />
-            <RuleMetric label={t('recurring.last')} value={rule.last_charge_ms ? relativeTime(rule.last_charge_ms) : '—'} />
+            <RuleMetric label={t('recurring.last')} value={rule.last_charge_ms ? relativeTime(rule.last_charge_ms) : '-'} />
             <RuleMetric label={t('common.status')} value={statusText(rule.status)} tone={meta.color} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {rule.status === 'active' ? <Button size="sm" variant="ghost" loading={actionPending} onClick={() => onAction(rule, 'pause')}>Pause</Button> : null}
+            {rule.status === 'paused' ? <Button size="sm" variant="ghost" loading={actionPending} onClick={() => onAction(rule, 'resume')}>Resume</Button> : null}
+            {rule.status !== 'cancelled' ? <Button size="sm" variant="danger" loading={actionPending} onClick={() => onAction(rule, 'cancel')}>Cancel</Button> : null}
           </div>
         </div>
       </div>

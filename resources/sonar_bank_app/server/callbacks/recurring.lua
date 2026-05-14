@@ -46,6 +46,7 @@ Wrap.Register('sonar:bank:recurring:subscribe', {
     reason          = payload.reason,
     interval_days   = payload.interval_days,
     first_charge_ms = payload.first_charge_ms,
+    idempotency_key = payload.idempotency_key,
   })
 end)
 
@@ -60,6 +61,7 @@ Wrap.Register('sonar:bank:recurring:cancel', {
   return RecurringService.Cancel({
     src          = src,
     recurring_id = payload.recurring_id,
+    idempotency_key = payload.idempotency_key,
   })
 end)
 
@@ -74,6 +76,7 @@ Wrap.Register('sonar:bank:recurring:pause', {
   return RecurringService.Pause({
     src          = src,
     recurring_id = payload.recurring_id,
+    idempotency_key = payload.idempotency_key,
   })
 end)
 
@@ -88,5 +91,6 @@ Wrap.Register('sonar:bank:recurring:resume', {
   return RecurringService.Resume({
     src          = src,
     recurring_id = payload.recurring_id,
+    idempotency_key = payload.idempotency_key,
   })
 end)

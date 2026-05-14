@@ -20,6 +20,7 @@ local UUID       = BankApp.lib.uuid
 local Audit      = BankApp.lib.audit
 local Auth       = BankApp.lib.auth
 local Enums      = BankApp.lib.enums
+local Idempotency= BankApp.lib.idempotency
 
 local RecurringRepo = BankApp.repos.recurring
 
@@ -50,11 +51,24 @@ function S.Subscribe(ctx)
   if not Validators.IsInRange(ctx.interval_days, 1, 365) then
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'interval_days' }) }
   end
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
+  end
 
   local owner_cid, _, own_err = Auth.RequireOwnership(ctx.src, from_iban)
   if own_err then return { ok = false, error = own_err } end
 
   local first_charge = ctx.first_charge_ms or (now_ms() + ctx.interval_days * 86400 * 1000)
+  local idem_status, cached, idem_err = Idempotency.Acquire(
+    ctx.idempotency_key,
+    { from_iban = from_iban, to_iban = to_iban, amount_minor = ctx.amount_minor, interval_days = ctx.interval_days, first_charge_ms = first_charge },
+    { actor_citizen_id = owner_cid, callback_id = 'C014' }
+  )
+  if idem_status == 'replay' then
+    return { ok = true, data = cached, replayed = true }
+  elseif idem_status ~= 'acquired' then
+    return { ok = false, error = idem_err or Errors.New('IDEMPOTENCY_IN_FLIGHT') }
+  end
 
   local id, err = RecurringRepo.Insert({
     owner_citizen_id = owner_cid,
@@ -65,7 +79,7 @@ function S.Subscribe(ctx)
     interval_days    = ctx.interval_days,
     next_charge_ms   = first_charge,
   })
-  if err then return { ok = false, error = err } end
+  if err then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = err } end
 
   Audit.Write({
     event_type       = Enums.AUDIT_EVENT_TYPE.RECURRING_SUBSCRIBE,
@@ -83,10 +97,15 @@ function S.Subscribe(ctx)
   })
 
   invalidate_bootstrap(owner_cid)
-  return { ok = true, data = { recurring_id = id, next_charge_ms = first_charge } }
+  local result = { recurring_id = id, next_charge_ms = first_charge }
+  Idempotency.Commit(ctx.idempotency_key, result)
+  return { ok = true, data = result }
 end
 
-local function set_status_helper(ctx, new_status, event_type)
+local function set_status_helper(ctx, new_status, event_type, callback_id)
+  if not Validators.IsValidUUID(ctx.idempotency_key) then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
+  end
   local row = RecurringRepo.GetById(ctx.recurring_id)
   if not row then return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'recurring not found' }) } end
 
@@ -96,8 +115,19 @@ local function set_status_helper(ctx, new_status, event_type)
     return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH') }
   end
 
+  local idem_status, cached, idem_err = Idempotency.Acquire(
+    ctx.idempotency_key,
+    { recurring_id = ctx.recurring_id, status = new_status },
+    { actor_citizen_id = owner_cid, callback_id = callback_id }
+  )
+  if idem_status == 'replay' then
+    return { ok = true, data = cached, replayed = true }
+  elseif idem_status ~= 'acquired' then
+    return { ok = false, error = idem_err or Errors.New('IDEMPOTENCY_IN_FLIGHT') }
+  end
+
   local _, err = RecurringRepo.SetStatus(ctx.recurring_id, owner_cid, new_status)
-  if err then return { ok = false, error = err } end
+  if err then Idempotency.Orphan(ctx.idempotency_key); return { ok = false, error = err } end
 
   Audit.Write({
     event_type       = event_type,
@@ -107,12 +137,14 @@ local function set_status_helper(ctx, new_status, event_type)
     event_data       = { recurring_id = ctx.recurring_id, new_status = new_status },
   })
   invalidate_bootstrap(owner_cid)
-  return { ok = true, data = { recurring_id = ctx.recurring_id, status = new_status } }
+  local result = { recurring_id = ctx.recurring_id, status = new_status }
+  Idempotency.Commit(ctx.idempotency_key, result)
+  return { ok = true, data = result }
 end
 
-function S.Cancel(ctx) return set_status_helper(ctx, 'cancelled', Enums.AUDIT_EVENT_TYPE.RECURRING_UNSUBSCRIBE) end
-function S.Pause(ctx)  return set_status_helper(ctx, 'paused',    'recurring_pause') end
-function S.Resume(ctx) return set_status_helper(ctx, 'active',    'recurring_resume') end
+function S.Cancel(ctx) return set_status_helper(ctx, 'cancelled', Enums.AUDIT_EVENT_TYPE.RECURRING_UNSUBSCRIBE, 'C017') end
+function S.Pause(ctx)  return set_status_helper(ctx, 'paused',    'recurring_pause', 'C018a') end
+function S.Resume(ctx) return set_status_helper(ctx, 'active',    'recurring_resume', 'C018b') end
 
 -- -----------------------------------------------------------------------------
 -- §3. ChargeDue — cron pickup → delegates to TransferService.Execute per row

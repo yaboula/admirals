@@ -195,6 +195,29 @@ export function installMockHandlers(): void {
     }
   })
 
+  registerMockHandler<{ recurring_id: string; next_charge_ms: number }>('sonar:bank:recurring:subscribe', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as { interval_days: number; first_charge_ms?: number }
+    return {
+      recurring_id: `mock-recurring-${Date.now()}`,
+      next_charge_ms: request.first_charge_ms ?? Date.now() + Math.max(1, request.interval_days) * 24 * 60 * 60 * 1000,
+    }
+  })
+
+  registerMockHandler<{ recurring_id: string; status: 'cancelled' }>('sonar:bank:recurring:cancel', async (payload) => {
+    await simulateLatency(100, 220)
+    return { recurring_id: String(payload.recurring_id ?? ''), status: 'cancelled' }
+  })
+
+  registerMockHandler<{ recurring_id: string; status: 'paused' }>('sonar:bank:recurring:pause', async (payload) => {
+    await simulateLatency(100, 220)
+    return { recurring_id: String(payload.recurring_id ?? ''), status: 'paused' }
+  })
+
+  registerMockHandler<{ recurring_id: string; status: 'active' }>('sonar:bank:recurring:resume', async (payload) => {
+    await simulateLatency(100, 220)
+    return { recurring_id: String(payload.recurring_id ?? ''), status: 'active' }
+  })
   registerMockHandler<AtmSessionResponse>('sonar:bank:atm:session', async () => {
     await simulateLatency(70, 160)
     return buildMockAtmSession()
@@ -333,7 +356,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (43 endpoints) — VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (47 endpoints) - VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

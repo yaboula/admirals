@@ -44,3 +44,15 @@ export type {
   LoanRequestArgs,
   LoanPaymentArgs,
 } from './loans'
+export {
+  useSubscribeRecurringMutation,
+  useCancelRecurringMutation,
+  usePauseRecurringMutation,
+  useResumeRecurringMutation,
+} from './recurring'
+export type {
+  RecurringSubscribeArgs,
+  RecurringIdArgs,
+  RecurringSubscribeResponse,
+  RecurringStatusResponse,
+} from './recurring'
