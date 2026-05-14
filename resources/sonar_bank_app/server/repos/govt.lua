@@ -433,6 +433,74 @@ SET disbursed_amount = disbursed_amount + (? / 100.0),
 WHERE id = ? AND status = 'active' AND disbursed_amount + (? / 100.0) <= budget_amount
 ]]
 
+local SQL_REPORT_REVENUE_HISTORY = [[
+SELECT DATE_FORMAT(FROM_UNIXTIME(m.occurred_at), '%Y-%m') AS label,
+       CAST(ROUND(SUM(CASE WHEN m.category IN ('tax','fine_collected') THEN ABS(m.amount) ELSE 0 END) * 100) AS SIGNED) AS collected,
+       CAST(ROUND(SUM(CASE WHEN m.category = 'tax' THEN ABS(m.amount) ELSE 0 END) * 125) AS SIGNED) AS obligation
+FROM sonar_bank_movements m
+WHERE m.occurred_at >= UNIX_TIMESTAMP() - ?
+  AND m.category IN ('tax','fine_collected')
+GROUP BY DATE_FORMAT(FROM_UNIXTIME(m.occurred_at), '%Y-%m')
+ORDER BY MIN(m.occurred_at) ASC
+LIMIT ?
+]]
+
+local SQL_REPORT_REVENUE_PRIOR = [[
+SELECT CAST(ROUND(SUM(CASE WHEN m.occurred_at >= UNIX_TIMESTAMP() - ? THEN ABS(m.amount) ELSE 0 END) * 100) AS SIGNED) AS currentRevenue,
+       CAST(ROUND(SUM(CASE WHEN m.occurred_at < UNIX_TIMESTAMP() - ? AND m.occurred_at >= UNIX_TIMESTAMP() - (? * 2) THEN ABS(m.amount) ELSE 0 END) * 100) AS SIGNED) AS priorRevenue
+FROM sonar_bank_movements m
+WHERE m.occurred_at >= UNIX_TIMESTAMP() - (? * 2)
+  AND m.category IN ('tax','fine_collected')
+]]
+
+local SQL_REPORT_SECTOR_REVENUE = [[
+SELECT c.sector,
+       CAST(ROUND(SUM(ABS(m.amount)) * 100) AS SIGNED) AS collected,
+       COUNT(DISTINCT c.id) AS entityCount
+FROM sonar_bank_movements m
+INNER JOIN sonar_bank_accounts ba ON ba.id = m.bank_account_id
+LEFT JOIN sonar_bank_business_treasuries bt ON bt.bank_account_id = ba.id
+INNER JOIN sonar_companies c ON c.id = COALESCE(ba.owner_company_id, bt.company_id)
+WHERE m.occurred_at >= UNIX_TIMESTAMP() - ?
+  AND m.category = 'tax'
+GROUP BY c.sector
+ORDER BY collected DESC
+LIMIT 12
+]]
+
+local SQL_REPORT_TOP_CONTRIBUTORS = [[
+SELECT id, label, kind, CAST(ROUND(SUM(tax_major) * 100) AS SIGNED) AS taxPaid, bracketCode, compliance
+FROM (
+  SELECT sa.char_id AS id,
+         COALESCE(sa.alias, sa.char_id) AS label,
+         'citizen' AS kind,
+         ABS(m.amount) AS tax_major,
+         'P' AS bracketCode,
+         CASE WHEN COUNT(cf.id) > 0 THEN 'pending' ELSE 'current' END AS compliance
+  FROM sonar_bank_movements m
+  INNER JOIN sonar_bank_accounts ba ON ba.id = m.bank_account_id
+  INNER JOIN sonar_accounts sa ON sa.id = ba.owner_account_id
+  LEFT JOIN sonar_bank_compliance_flags cf ON cf.citizen_account_id = sa.id AND cf.status IN ('open','investigating')
+  WHERE m.occurred_at >= UNIX_TIMESTAMP() - ? AND m.category = 'tax'
+  GROUP BY sa.char_id, sa.alias, m.id, m.amount
+  UNION ALL
+  SELECT c.id AS id,
+         c.name AS label,
+         'company' AS kind,
+         ABS(m.amount) AS tax_major,
+         'C' AS bracketCode,
+         CASE WHEN c.status = 'active' THEN 'current' ELSE 'overdue' END AS compliance
+  FROM sonar_bank_movements m
+  INNER JOIN sonar_bank_accounts ba ON ba.id = m.bank_account_id
+  LEFT JOIN sonar_bank_business_treasuries bt ON bt.bank_account_id = ba.id
+  INNER JOIN sonar_companies c ON c.id = COALESCE(ba.owner_company_id, bt.company_id)
+  WHERE m.occurred_at >= UNIX_TIMESTAMP() - ? AND m.category = 'tax'
+) x
+GROUP BY id, label, kind, bracketCode, compliance
+ORDER BY taxPaid DESC
+LIMIT 10
+]]
+
 function R.ListCitizens(limit)
   return DB.Query(SQL_LIST_CITIZENS, { limit or 100 })
 end
@@ -590,6 +658,22 @@ function R.BuildGrantSubsidyQueries(params)
     } },
     insert_subsidy,
   }
+end
+
+function R.GetReportRevenueHistory(range_seconds, limit)
+  return DB.Query(SQL_REPORT_REVENUE_HISTORY, { range_seconds, limit or 12 })
+end
+
+function R.GetReportRevenuePrior(range_seconds)
+  return DB.QuerySingle(SQL_REPORT_REVENUE_PRIOR, { range_seconds, range_seconds, range_seconds, range_seconds })
+end
+
+function R.GetReportSectorRevenue(range_seconds)
+  return DB.Query(SQL_REPORT_SECTOR_REVENUE, { range_seconds })
+end
+
+function R.GetReportTopContributors(range_seconds)
+  return DB.Query(SQL_REPORT_TOP_CONTRIBUTORS, { range_seconds, range_seconds })
 end
 
 return R

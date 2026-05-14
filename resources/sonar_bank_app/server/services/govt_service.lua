@@ -613,31 +613,50 @@ function S.GrantSubsidy(ctx)
 end
 
 function S.GetReports(ctx)
-  local treasury = S.GetTreasuryPage({ page = 1, per_page = 50 })
-  if not treasury.ok then return treasury end
+  local range = ctx.range == 'year' and 'year' or ctx.range == 'quarter' and 'quarter' or 'month'
+  local range_seconds = range == 'year' and 31536000 or range == 'quarter' and 7776000 or 2592000
   local census = S.ListCensus({ filters = {} })
   if not census.ok then return census end
+  local history, history_err = Repo.GetReportRevenueHistory(range_seconds, range == 'month' and 4 or range == 'quarter' and 6 or 12)
+  if history_err then return { ok = false, error = history_err } end
+  local prior, prior_err = Repo.GetReportRevenuePrior(range_seconds)
+  if prior_err then return { ok = false, error = prior_err } end
+  local sector, sector_err = Repo.GetReportSectorRevenue(range_seconds)
+  if sector_err then return { ok = false, error = sector_err } end
+  local contributors, contributors_err = Repo.GetReportTopContributors(range_seconds)
+  if contributors_err then return { ok = false, error = contributors_err } end
+
   local risk = { low = 0, medium = 0, high = 0, critical = 0 }
+  local compliance = { current = 0, overdue = 0, pending = 0, exempt = 0 }
   for _, citizen in ipairs(census.data or {}) do
     risk[citizen.riskLevel] = (risk[citizen.riskLevel] or 0) + 1
+    compliance[citizen.taxCompliance] = (compliance[citizen.taxCompliance] or 0) + 1
   end
-  local stats = treasury.data.stats
-  local total_obligation = math.floor((stats.taxCollected or 0) * 1.25)
+  local total_revenue = 0
+  local total_obligation = 0
+  for _, point in ipairs(history or {}) do
+    point.collected = tonumber(point.collected) or 0
+    point.obligation = tonumber(point.obligation) or 0
+    total_revenue = total_revenue + point.collected
+    total_obligation = total_obligation + point.obligation
+  end
+  prior = prior or {}
+  local prior_revenue = tonumber(prior.priorRevenue) or 0
+  local revenue_vs_prior = prior_revenue > 0 and math.floor(((total_revenue - prior_revenue) / prior_revenue) * 100) or 0
+
   return { ok = true, data = {
-    range = ctx.range or 'month',
+    range = range,
     kpis = {
-      totalRevenue = stats.totalInflow or 0,
+      totalRevenue = total_revenue,
       totalObligation = total_obligation,
-      complianceRate = total_obligation > 0 and math.floor(((stats.taxCollected or 0) / total_obligation) * 100) or 100,
+      complianceRate = total_obligation > 0 and math.floor((total_revenue / total_obligation) * 100) or 100,
       activeTaxpayers = #(census.data or {}),
-      revenueVsPriorPct = 0,
+      revenueVsPriorPct = revenue_vs_prior,
     },
-    revenueHistory = {
-      { label = 'MVP', collected = stats.taxCollected or 0, obligation = total_obligation },
-    },
-    sectorRevenue = {},
-    topContributors = {},
-    complianceBreakdown = { current = #(census.data or {}), overdue = 0, pending = 0, exempt = 0 },
+    revenueHistory = history or {},
+    sectorRevenue = sector or {},
+    topContributors = contributors or {},
+    complianceBreakdown = compliance,
     riskBreakdown = risk,
   } }
 end
