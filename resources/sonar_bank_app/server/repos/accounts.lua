@@ -31,7 +31,7 @@ local SQL_SELECT_BY_IBAN = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
        JSON_ARRAY() AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
-       0 AS savings_minor,
+       CAST(ROUND(COALESCE(a.savings, 0) * 100) AS SIGNED) AS savings_minor,
        CASE
          WHEN a.closed_at IS NOT NULL THEN 'closed'
          WHEN a.is_frozen = 1 THEN 'frozen'
@@ -50,7 +50,7 @@ local SQL_SELECT_BY_ID = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
        JSON_ARRAY() AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
-       0 AS savings_minor,
+       CAST(ROUND(COALESCE(a.savings, 0) * 100) AS SIGNED) AS savings_minor,
        CASE
          WHEN a.closed_at IS NOT NULL THEN 'closed'
          WHEN a.is_frozen = 1 THEN 'frozen'
@@ -69,7 +69,7 @@ local SQL_LIST_BY_CITIZEN = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
        JSON_ARRAY() AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
-       0 AS savings_minor,
+       CAST(ROUND(COALESCE(a.savings, 0) * 100) AS SIGNED) AS savings_minor,
        CASE WHEN a.is_frozen = 1 THEN 'frozen' ELSE 'active' END AS status,
        a.is_frozen AS frozen_flag,
        a.created_at * 1000 AS created_ms
@@ -82,7 +82,7 @@ LIMIT ?
 ]]
 
 local SQL_GET_BALANCE = [[
-SELECT CAST(ROUND(balance * 100) AS SIGNED) AS balance_minor, 0 AS savings_minor
+SELECT CAST(ROUND(balance * 100) AS SIGNED) AS balance_minor, CAST(ROUND(COALESCE(savings, 0) * 100) AS SIGNED) AS savings_minor
 FROM sonar_bank_accounts
 WHERE iban = ?
 LIMIT 1
@@ -122,8 +122,8 @@ end
 local SQL_INSERT = [[
 INSERT INTO sonar_bank_accounts
   (id, iban, owner_type, account_class, owner_account_id, owner_company_id,
-   balance, is_frozen, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, NULL, (? / 100.0), 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+   balance, savings, is_frozen, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, NULL, (? / 100.0), (? / 100.0), 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 ]]
 
 local SQL_SELECT_OWNER_ACCOUNT_ID = [[
@@ -141,9 +141,6 @@ LIMIT 1
 ---@return integer|nil account_id, table|nil err
 function R.Insert(iban, owner_citizen_id, opts)
   opts = opts or {}
-  if (tonumber(opts.initial_savings) or 0) > 0 then
-    return nil, Errors.New('VALIDATION_FAILED', { reason = 'canonical savings account not available' })
-  end
   local owner, owner_err = DB.QuerySingle(SQL_SELECT_OWNER_ACCOUNT_ID, { owner_citizen_id })
   if owner_err then return nil, owner_err end
   if not owner or not owner.id then
@@ -157,6 +154,7 @@ function R.Insert(iban, owner_citizen_id, opts)
     opts.account_class or 'checking',
     owner.id,
     opts.initial_balance or 0,
+    opts.initial_savings or 0,
   })
   if err then return nil, err end
   return account_id, nil
@@ -182,11 +180,15 @@ WHERE iban = ? AND closed_at IS NULL
 ]]
 
 local SQL_DEBIT_SAVINGS = [[
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'canonical savings account unavailable'
+UPDATE sonar_bank_accounts
+SET savings = savings - (? / 100.0), updated_at = UNIX_TIMESTAMP()
+WHERE iban = ? AND savings >= (? / 100.0) AND closed_at IS NULL AND is_frozen = 0
 ]]
 
 local SQL_CREDIT_SAVINGS = [[
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'canonical savings account unavailable'
+UPDATE sonar_bank_accounts
+SET savings = savings + (? / 100.0), updated_at = UNIX_TIMESTAMP()
+WHERE iban = ? AND closed_at IS NULL AND is_frozen = 0
 ]]
 
 --- BuildDebitBalanceQuery — TX descriptor (caller composes batch).
@@ -204,12 +206,12 @@ end
 
 --- BuildDebitSavingsQuery
 function R.BuildDebitSavingsQuery(iban, amount_minor)
-  return { query = SQL_DEBIT_SAVINGS, values = {} }
+  return { query = SQL_DEBIT_SAVINGS, values = { amount_minor, iban, amount_minor } }
 end
 
 --- BuildCreditSavingsQuery
 function R.BuildCreditSavingsQuery(iban, amount_minor)
-  return { query = SQL_CREDIT_SAVINGS, values = {} }
+  return { query = SQL_CREDIT_SAVINGS, values = { amount_minor, iban } }
 end
 
 -- -----------------------------------------------------------------------------

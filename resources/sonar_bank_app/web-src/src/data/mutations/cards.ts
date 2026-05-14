@@ -3,7 +3,8 @@ import { queryKeys } from '@/data/queryKeys'
 import type { BankCardMock, BootstrapSnapshot, CardStatus } from '@/data/contracts'
 import { simulateLatency } from '@/data/mock/seed'
 import { BankError } from '@/lib/bankError'
-import { useBankMutation } from '@/lib/bankQuery'
+import { createBankOperationIds } from '@/lib/bankIdempotency'
+import { bankMutation, useBankMutation } from '@/lib/bankQuery'
 
 /* ---------------------------------------------------------------------------
    BANK-FE.4.3 — Card mutations (Phase A · MOCK).
@@ -46,29 +47,29 @@ function patchCardInBootstrap(
    useFreezeCard — toggle a card's status between 'active' and 'locked'.
    ============================================================================ */
 
-export interface FreezeCardArgs {
+export interface FreezeCardArgs extends Record<string, unknown> {
   cardId: string
   freeze: boolean
+}
+
+export interface CardStatusResponse {
+  card_id: string
+  status: CardStatus
 }
 
 export function useFreezeCard() {
   const qc = useQueryClient()
 
-  return useMutation<BankCardMock, BankError, FreezeCardArgs, MutationContext>({
+  return useMutation<CardStatusResponse, BankError, FreezeCardArgs, MutationContext>({
     mutationFn: async ({ cardId, freeze }) => {
-      await simulateLatency(180, 360)
-      const snap = qc.getQueryData<BootstrapSnapshot>(queryKeys.bootstrap())
-      const card = snap?.cards.find((c) => c.card_id === cardId)
-      if (!card) {
-        throw new BankError({
-          code: 'CARD_NOT_FOUND',
-          category: 'not_found',
-          message: 'No se encontró la tarjeta',
-          retryable: false,
-        })
-      }
+      const eventName = freeze ? 'sonar:bank:card:freeze' : 'sonar:bank:card:unfreeze'
+      const response = await bankMutation<{ card_id: string }, { card_id: string; status: string }>(
+        eventName,
+        { card_id: cardId },
+        { idempotency: createBankOperationIds },
+      )
       const newStatus: CardStatus = freeze ? 'locked' : 'active'
-      return { ...card, status: newStatus }
+      return { card_id: response.card_id, status: newStatus }
     },
     onMutate: async ({ cardId, freeze }) => {
       await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
@@ -87,12 +88,46 @@ export function useFreezeCard() {
         qc.setQueryData(queryKeys.bootstrap(), context.previous)
       }
     },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+    },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
+      void qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
     },
   })
 }
 
+export interface ChangeCardPinArgs extends Record<string, unknown> {
+  card_id: string
+  old_pin: string
+  new_pin: string
+}
+
+export interface ChangeCardPinResponse {
+  card_id: string
+  pin_changed_ms: number
+}
+
+export function useChangeCardPinMutation() {
+  const qc = useQueryClient()
+  return useMutation<ChangeCardPinResponse, BankError, ChangeCardPinArgs>({
+    mutationFn: async (args) => {
+      if (!/^\d{4,8}$/.test(args.old_pin) || !/^\d{4,8}$/.test(args.new_pin)) {
+        throw new BankError({
+          code: 'VALIDATION_FAILED',
+          category: 'validation',
+          message: 'PIN must contain 4-8 digits',
+          retryable: false,
+        })
+      }
+      return bankMutation<ChangeCardPinArgs, ChangeCardPinResponse>('sonar:bank:card:changePin', args)
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      void qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
+    },
+  })
+}
 /* ============================================================================
    useUpdateCardLimits — patch daily and monthly limit ceilings.
    ============================================================================ */
@@ -154,7 +189,7 @@ export function useUpdateCardLimits() {
       }
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
+      void qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
     },
   })
 }

@@ -6,6 +6,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Check,
+  Coins,
   Copy,
   CreditCard,
   Landmark,
@@ -14,8 +15,9 @@ import {
   ShieldCheck,
   Wallet,
 } from 'lucide-react'
-import { Button, Card, CardEyebrow, CardTitle, Spinner } from '@/components/ui'
+import { Button, Card, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
 import { BankAvatar } from '@/components/brand/BankAvatar'
+import { accountMutationPayload, kycSubmitPayload, useCloseAccountMutation, useFreezeAccountMutation, useOpenAccountMutation, useSavingsTransferMutation, useSubmitKycMutation, useUnfreezeAccountMutation } from '@/data/mutations'
 import { useBootstrap } from '@/data/queries'
 import type { Account, Transaction } from '@/data/contracts'
 import { getMockAliasForIban } from '@/data/mock/seed'
@@ -26,12 +28,18 @@ import { maskIbanCompact, maskIbanDisplay, maskMoneyDisplay, maskSignedMoneyDisp
 import { sfx } from '@/lib/sfx'
 import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
+import { createBankOperationIds } from '@/lib/bankIdempotency'
 
 export function Accounts() {
   const navigate = useNavigate()
   const { data, isLoading, isError, error } = useBootstrap()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
+  const openAccount = useOpenAccountMutation()
+  const freezeAccount = useFreezeAccountMutation()
+  const unfreezeAccount = useUnfreezeAccountMutation()
+  const closeAccount = useCloseAccountMutation()
+  const submitKyc = useSubmitKycMutation()
 
   useEffect(() => {
     if (isError && error) handleBankError(error)
@@ -51,6 +59,55 @@ export function Accounts() {
   )
 
   const totals = useMemo(() => computeAccountTotals(accounts), [accounts])
+
+  const handleOpenAccount = async (): Promise<void> => {
+    try {
+      await openAccount.mutateAsync({ initial_balance: 0, initial_savings: 0 })
+      toast.success('Account opened', 'A new SONAR account is ready.')
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
+  const handleSubmitKyc = async (): Promise<void> => {
+    try {
+      await submitKyc.mutateAsync(kycSubmitPayload({ doc_count: 1 }))
+      toast.success('KYC submitted', 'Your verification package was sent for review.')
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
+  const handleToggleFreeze = async (): Promise<void> => {
+    if (!selected) return
+    try {
+      const payload = accountMutationPayload({ iban: selected.iban, reason: 'self_service_account_control' })
+      if (selected.status === 'frozen' || selected.frozen_flag === true || selected.frozen_flag === 1) {
+        await unfreezeAccount.mutateAsync(payload)
+        toast.success('Account unfrozen', streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+      } else {
+        await freezeAccount.mutateAsync(payload)
+        toast.success('Account frozen', streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+      }
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
+  const handleCloseAccount = async (): Promise<void> => {
+    if (!selected) return
+    if (selected.balance_minor > 0 || selected.savings_minor > 0) {
+      toast.warning('Account must be empty', 'Move all available and savings funds before closing.')
+      return
+    }
+    try {
+      await closeAccount.mutateAsync(accountMutationPayload({ iban: selected.iban, reason: 'self_service_close' }))
+      toast.success('Account closed', streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
 
   if (isLoading && accounts.length === 0) {
     return <AccountsLoading />
@@ -88,10 +145,16 @@ export function Accounts() {
         </section>
 
         <aside className="min-h-0 flex flex-col gap-4 2xl:gap-5">
-          <SavingsPanel accounts={accounts} totals={totals} streamerMode={streamerMode} />
+          <SavingsPanel accounts={accounts} selected={selected} totals={totals} streamerMode={streamerMode} />
           <QuickActionsPanel
+            selected={selected}
+            busy={openAccount.isPending || freezeAccount.isPending || unfreezeAccount.isPending || closeAccount.isPending || submitKyc.isPending}
             onTransfer={() => navigate('/transferir')}
             onCards={() => navigate('/tarjetas')}
+            onOpenAccount={handleOpenAccount}
+            onToggleFreeze={handleToggleFreeze}
+            onCloseAccount={handleCloseAccount}
+            onSubmitKyc={handleSubmitKyc}
           />
           <AccountActivity transactions={accountTransactions} ownIban={selected?.iban} streamerMode={streamerMode} />
         </aside>
@@ -367,10 +430,46 @@ function DetailMetric({ label, value, strong }: { label: string; value: string; 
   )
 }
 
-function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[]; totals: AccountTotals; streamerMode: boolean }) {
+function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: Account[]; selected: Account | undefined; totals: AccountTotals; streamerMode: boolean }) {
   const { money, t } = useI18n()
+  const [amountText, setAmountText] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const savingsTransfer = useSavingsTransferMutation()
   const ratio = totals.totalMinor > 0 ? totals.savingsMinor / totals.totalMinor : 0
   const displayRatio = streamerMode ? 0.56 : ratio
+  const amountMinor = parseAmountMinor(amountText)
+  const canMove = Boolean(selected && amountMinor > 0 && !savingsTransfer.isPending)
+
+  const moveSavings = async (direction: 'to_savings' | 'from_savings'): Promise<void> => {
+    if (!selected) return
+    if (amountMinor <= 0) {
+      setError('Enter a valid amount')
+      return
+    }
+    if (direction === 'to_savings' && amountMinor > selected.balance_minor) {
+      setError('Insufficient available balance')
+      return
+    }
+    if (direction === 'from_savings' && amountMinor > selected.savings_minor) {
+      setError('Insufficient savings balance')
+      return
+    }
+    const ids = createBankOperationIds()
+    try {
+      await savingsTransfer.mutateAsync({
+        iban: selected.iban,
+        amount_minor: amountMinor,
+        direction,
+        idempotency_key: ids.idempotencyKey,
+        correlation_id: ids.correlationId,
+      })
+      setAmountText('')
+      setError(null)
+      toast.success(direction === 'to_savings' ? 'Savings funded' : 'Savings withdrawn', streamerMode ? maskMoneyDisplay() : money(amountMinor / 100))
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
 
   return (
     <Card variant="glass" padding="md" className="relative overflow-hidden border-white/10 shrink-0">
@@ -395,15 +494,32 @@ function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[];
           style={{ width: `${Math.round(displayRatio * 100)}%` }}
         />
       </div>
+      <div className="mt-4 flex flex-col gap-2">
+        <Input
+          aria-label="Savings transfer amount"
+          value={amountText}
+          onChange={(e) => setAmountText(e.target.value)}
+          placeholder="0.00"
+          inputSize="sm"
+          error={error}
+          leftAdornment={<Coins size={14} />}
+          inputMode="decimal"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('to_savings')}>Guardar</Button>
+          <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('from_savings')}>Retirar</Button>
+        </div>
+      </div>
       <p className="mt-3 text-xs text-text-tertiary leading-relaxed">
         Separar ahorro del saldo diario ayuda a mantener el dinero de roles, alquileres y gastos grandes bajo control.
       </p>
     </Card>
   )
 }
-
-function QuickActionsPanel({ onTransfer, onCards }: { onTransfer: () => void; onCards: () => void }) {
+function QuickActionsPanel({ selected, busy, onTransfer, onCards, onOpenAccount, onToggleFreeze, onCloseAccount, onSubmitKyc }: { selected: Account | undefined; busy: boolean; onTransfer: () => void; onCards: () => void; onOpenAccount: () => void; onToggleFreeze: () => void; onCloseAccount: () => void; onSubmitKyc: () => void }) {
   const { t } = useI18n()
+  const frozen = selected?.status === 'frozen' || selected?.frozen_flag === true || selected?.frozen_flag === 1
+  const canClose = Boolean(selected && selected.balance_minor === 0 && selected.savings_minor === 0)
   return (
     <Card variant="glass" padding="md" className="border-white/10 shrink-0">
       <div className="flex items-center gap-2 text-text-secondary mb-3">
@@ -413,11 +529,14 @@ function QuickActionsPanel({ onTransfer, onCards }: { onTransfer: () => void; on
       <div className="grid grid-cols-2 gap-2">
         <Button variant="primary" size="sm" leftIcon={<Send size={14} />} onClick={onTransfer}>{t('accounts.transfer')}</Button>
         <Button variant="secondary" size="sm" leftIcon={<CreditCard size={14} />} onClick={onCards}>{t('accounts.cards')}</Button>
+        <Button variant="secondary" size="sm" loading={busy} onClick={onOpenAccount}>Nueva cuenta</Button>
+        <Button variant="secondary" size="sm" loading={busy} onClick={onSubmitKyc}>Enviar KYC</Button>
+        <Button variant="secondary" size="sm" loading={busy} disabled={!selected} onClick={onToggleFreeze}>{frozen ? 'Reactivar' : 'Congelar'}</Button>
+        <Button variant="danger" size="sm" loading={busy} disabled={!canClose} onClick={onCloseAccount}>Cerrar</Button>
       </div>
     </Card>
   )
 }
-
 function AccountActivity({ transactions, ownIban, streamerMode }: { transactions: Transaction[]; ownIban: string | undefined; streamerMode: boolean }) {
   const { t } = useI18n()
   return (
@@ -563,6 +682,13 @@ function getAccountKind(account: Account, index: number): {
   }
 }
 
+function parseAmountMinor(value: string): number {
+  const normalized = value.replace(',', '.').trim()
+  if (!normalized) return 0
+  const amount = Number(normalized)
+  if (!Number.isFinite(amount) || amount <= 0) return 0
+  return Math.round(amount * 100)
+}
 function computeAccountTotals(accounts: Account[]): AccountTotals {
   return accounts.reduce<AccountTotals>(
     (acc, account) => ({

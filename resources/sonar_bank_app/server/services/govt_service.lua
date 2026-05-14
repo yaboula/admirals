@@ -36,6 +36,12 @@ local function map_flag_status(status)
   return status or 'open'
 end
 
+local function map_compliance_severity(severity)
+  if severity == 'critical' then return 'critical' end
+  if severity == 'warning' then return 'medium' end
+  if severity == 'notice' or severity == 'info' then return 'low' end
+  return 'low'
+end
 local function citizen_status(row)
   if DB.ToBool(row.anyFrozen) then return 'sanctioned' end
   if (tonumber(row.flagCount) or 0) > 0 then return 'flagged' end
@@ -69,6 +75,18 @@ local function summary_from_row(row)
   }
 end
 
+local function mask_cid(cid)
+  cid = tostring(cid or '')
+  if #cid <= 4 then return cid end
+  return cid:sub(1, 2) .. '***' .. cid:sub(-2)
+end
+
+local function mask_iban(iban)
+  iban = tostring(iban or '')
+  if iban == '' then return '' end
+  if #iban <= 8 then return iban end
+  return iban:sub(1, 4) .. ' **** ' .. iban:sub(-4)
+end
 local function flag_summary(row)
   local observed = tonumber(row.observed_value) or 0
   if row.flag_type == 'large_transfer' then
@@ -93,6 +111,30 @@ local function flag_from_row(row)
   }
 end
 
+local function compliance_flag_from_row(row)
+  local status = map_flag_status(row.status)
+  local severity = map_compliance_severity(row.severity)
+  local reason = flag_summary(row)
+  return {
+    flag_id = tostring(row.flag_id),
+    event_type = row.event_type or ('compliance.' .. tostring(row.flag_type or 'flag')),
+    subject_cid_masked = mask_cid(row.subject_cid),
+    account_iban_masked = mask_iban(row.account_iban),
+    counterparty_iban_masked = row.counterparty_iban and mask_iban(row.counterparty_iban) or nil,
+    amount_minor = row.amount_minor ~= nil and tonumber(row.amount_minor) or nil,
+    currency = row.currency or 'USD',
+    severity = severity,
+    status = status,
+    created_at_ms = tonumber(row.created_at_ms) or now_ms(),
+    updated_at_ms = tonumber(row.updated_at_ms) or tonumber(row.created_at_ms) or now_ms(),
+    risk_score = tonumber(row.risk_score) or 0,
+    reason = reason,
+    assigned_unit = severity == 'critical' and 'Financial Intelligence Unit' or 'Compliance Desk',
+    evidence_count = tonumber(row.evidence_count) or 0,
+    correlation_id = ('CMP-%s'):format(tostring(row.flag_id)),
+    details_json = row.details_json,
+  }
+end
 local function queue_item_from_row(row)
   return {
     flagId = tostring(row.flagId),
@@ -240,6 +282,27 @@ function S.ListFlagQueue(ctx)
   return { ok = true, data = out }
 end
 
+function S.ListComplianceFlags(ctx)
+  local filters = ctx.filters or {}
+  local rows, err = Repo.ListComplianceFlags(filters)
+  if err then return { ok = false, error = err } end
+  local limit = math.max(1, math.min(tonumber(filters.limit) or 24, 50))
+  local out = {}
+  for idx, row in ipairs(rows or {}) do
+    if idx <= limit then
+      out[#out + 1] = compliance_flag_from_row(row)
+    end
+  end
+  return {
+    ok = true,
+    data = {
+      items = out,
+      cursor_next = #(rows or {}) > limit and tostring(limit) or nil,
+      has_more = #(rows or {}) > limit,
+      fetched_at_ms = now_ms(),
+    },
+  }
+end
 function S.GetFlagDetail(ctx)
   local row, err = Repo.GetFlag(ctx.flag_id)
   if err then return { ok = false, error = err } end

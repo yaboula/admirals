@@ -1,0 +1,2 @@
+ALTER TABLE sonar_bank_accounts
+  ADD COLUMN IF NOT EXISTS savings DECIMAL(14,2) NOT NULL DEFAULT 0 AFTER balance;

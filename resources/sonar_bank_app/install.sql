@@ -1,4 +1,4 @@
-﻿-- SONAR Bank Deployment Kit install.sql
+-- SONAR Bank Deployment Kit install.sql
 -- Generated from resources/sonar_core/migrations
 -- Do not edit manually; update source migrations instead.
 
@@ -4161,3 +4161,6 @@ COMMIT;
 -- ============================================================================
 -- END 033_bank_saved_recipients.sql
 -- ============================================================================
+
+ALTER TABLE sonar_bank_accounts
+  ADD COLUMN IF NOT EXISTS savings DECIMAL(14,2) NOT NULL DEFAULT 0 AFTER balance;

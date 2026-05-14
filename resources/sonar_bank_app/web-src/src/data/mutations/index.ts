@@ -8,6 +8,7 @@ export {
   useUpdateCardLimits,
   useApplyCardDesign,
   useIssueCard,
+  useChangeCardPinMutation,
 } from './cards'
 export type {
   BusinessPayrollExecuteRequest,
@@ -23,9 +24,42 @@ export type {
   ApplyCardDesignArgs,
   IssueCardArgs,
   IssueCardResult,
+  ChangeCardPinArgs,
+  ChangeCardPinResponse,
 } from './cards'
 export {
+  useOpenAccountMutation,
+  useFreezeAccountMutation,
+  useUnfreezeAccountMutation,
+  useCloseAccountMutation,
+  useSubmitKycMutation,
+  accountMutationPayload,
+  kycSubmitPayload,
+} from './accounts'
+export type {
+  AccountOpenArgs,
+  AccountIbanMutationArgs,
+  KycSubmitArgs,
+  AccountOpenResponse,
+  AccountStatusResponse,
+  KycSubmitResponse,
+} from './accounts'
+export {
+  useSaveRecipientMutation,
+  useDeleteRecipientMutation,
+  useToggleRecipientFavoriteMutation,
+} from './recipients'
+export type {
+  RecipientSaveArgs,
+  RecipientDeleteArgs,
+  RecipientFavoriteArgs,
+  RecipientSaveResponse,
+  RecipientDeleteResponse,
+  RecipientFavoriteResponse,
+} from './recipients'
+export {
   useExecuteTransfer,
+  useSavingsTransferMutation,
   formatIban,
   isLargeTransfer,
   isValidSonarIban,
@@ -35,6 +69,9 @@ export type {
   TransferExecuteArgs,
   TransferExecuteArgsInput,
   TransferReceipt,
+  SavingsTransferArgsInput,
+  SavingsTransferArgs,
+  SavingsTransferResponse,
 } from './transfers'
 export {
   useRequestLoanMutation,

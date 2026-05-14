@@ -96,6 +96,7 @@ Wrap.Register('sonar:bank:account:close', {
     src     = src,
     iban    = payload.iban,
     reason  = payload.reason,
+    correlation_id = payload.correlation_id,
   })
 end)
 

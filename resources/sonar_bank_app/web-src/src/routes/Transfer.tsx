@@ -13,14 +13,17 @@ import {
   LockKeyhole,
   ReceiptText,
   Search,
+  Save,
   SendHorizontal,
+  Star,
+  Trash2,
   ShieldCheck,
   Sparkles,
   UserRound,
   Zap,
 } from 'lucide-react'
 import { Button, Card, CardContent, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
-import { useExecuteTransfer, formatIban, isLargeTransfer, isValidSonarIban, normalizeIban } from '@/data/mutations'
+import { useDeleteRecipientMutation, useExecuteTransfer, useSaveRecipientMutation, useToggleRecipientFavoriteMutation, formatIban, isLargeTransfer, isValidSonarIban, normalizeIban } from '@/data/mutations'
 import type { TransferReceipt } from '@/data/mutations'
 import { useBootstrap, useInvalidateBootstrap, useInvalidateRecentRecipients, useRecentRecipients } from '@/data/queries'
 import type { Account, RecentRecipient } from '@/data/contracts'
@@ -455,6 +458,9 @@ function RecipientStep({ account }: { account: Account | null }) {
   const [alias, setAlias] = useState(storeAlias ?? '')
   const [searchText, setSearchText] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const saveRecipient = useSaveRecipientMutation()
+  const deleteRecipient = useDeleteRecipientMutation()
+  const toggleFavorite = useToggleRecipientFavoriteMutation()
   const normalized = normalizeIban(iban)
   const searchQuery = normalizeRecipientSearch(searchText)
   const filteredRecipients = (data?.recipients ?? []).filter((recipient) => {
@@ -468,6 +474,36 @@ function RecipientStep({ account }: { account: Account | null }) {
     return haystack.includes(searchQuery)
   })
 
+  const saveCurrentRecipient = async (): Promise<void> => {
+    if (!isValidSonarIban(iban)) {
+      setError(t('transfer.validSpanishIban'))
+      return
+    }
+    try {
+      await saveRecipient.mutateAsync({ counterpart_iban: normalized, alias: alias.trim() || null, is_favorite: true })
+      setError(null)
+      toast.success('Recipient saved', 'This contact is now available for future transfers.')
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
+  const toggleRecipientFavorite = async (recipient: RecentRecipient): Promise<void> => {
+    try {
+      await toggleFavorite.mutateAsync({ counterpart_iban: recipient.counterpart_iban, is_favorite: !recipient.is_favorite })
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
+  const deleteSavedRecipient = async (recipient: RecentRecipient): Promise<void> => {
+    try {
+      await deleteRecipient.mutateAsync({ counterpart_iban: recipient.counterpart_iban })
+      toast.success('Recipient removed', 'The saved contact was removed.')
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
   const submit = (): void => {
     if (!isValidSonarIban(iban)) {
       setError(t('transfer.validSpanishIban'))
@@ -526,6 +562,8 @@ function RecipientStep({ account }: { account: Account | null }) {
                     recipient={recipient}
                     active={normalizeIban(recipient.counterpart_iban) === normalized}
                     onClick={() => selectRecipient(recipient)}
+                    onFavorite={() => toggleRecipientFavorite(recipient)}
+                    onDelete={() => deleteSavedRecipient(recipient)}
                   />
                 ))}
               </div>
@@ -549,6 +587,9 @@ function RecipientStep({ account }: { account: Account | null }) {
             placeholder={t('transfer.aliasPlaceholder')}
           />
           <div className="mt-auto flex items-center justify-between gap-2 pt-3 2xl:pt-4">
+            <Button variant="secondary" leftIcon={<Save size={16} />} loading={saveRecipient.isPending} onClick={saveCurrentRecipient}>
+              Save
+            </Button>
             <Button variant="secondary" leftIcon={<ArrowLeft size={16} />} onClick={() => setStep('amount')}>
               {t('transfer.back')}
             </Button>
@@ -562,15 +603,13 @@ function RecipientStep({ account }: { account: Account | null }) {
   )
 }
 
-function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipient; active: boolean; onClick: () => void }) {
+function RecipientChip({ recipient, active, onClick, onFavorite, onDelete }: { recipient: RecentRecipient; active: boolean; onClick: () => void; onFavorite: () => void; onDelete: () => void }) {
   const { t } = useI18n()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const ibanLabel = streamerMode ? maskIbanCompact(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)
   const label = streamerMode ? t('transfer.hiddenRecipientChip') : recipient.alias ?? ibanLabel
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       className={cn(
         'w-full rounded-2xl border px-3 py-3 flex items-center gap-3 text-left transition-colors tactile-focus-ring',
         active
@@ -578,13 +617,21 @@ function RecipientChip({ recipient, active, onClick }: { recipient: RecentRecipi
           : 'border-border-subtle bg-white/[0.025] hover:bg-white/[0.055]',
       )}
     >
-      <BankAvatar name={label} size="md" />
-      <span className="min-w-0 flex-1 flex flex-col gap-0.5">
-        <span className="text-sm font-semibold text-text-primary truncate">{label}</span>
-        <span className="text-[11px] text-text-tertiary truncate">{streamerMode ? maskIbanDisplay(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)}</span>
-      </span>
-      <span className="text-[11px] font-semibold text-text-secondary tactile-tabular-nums">×{recipient.transfer_count}</span>
-    </button>
+      <button type="button" onClick={onClick} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+        <BankAvatar name={label} size="md" />
+        <span className="min-w-0 flex-1 flex flex-col gap-0.5">
+          <span className="text-sm font-semibold text-text-primary truncate">{label}</span>
+          <span className="text-[11px] text-text-tertiary truncate">{streamerMode ? maskIbanDisplay(recipient.counterpart_iban) : revealIbanDisplay(recipient.counterpart_iban)}</span>
+        </span>
+        <span className="text-[11px] font-semibold text-text-secondary tactile-tabular-nums">×{recipient.transfer_count}</span>
+      </button>
+      <button type="button" onClick={onFavorite} className={cn('rounded-full p-1.5 text-text-tertiary transition-colors hover:text-text-primary', recipient.is_favorite && 'text-brand-signal-orange-light')} aria-label="Toggle favorite recipient">
+        <Star size={14} fill={recipient.is_favorite ? 'currentColor' : 'none'} />
+      </button>
+      <button type="button" onClick={onDelete} className="rounded-full p-1.5 text-text-tertiary transition-colors hover:text-semantic-danger" aria-label="Delete saved recipient">
+        <Trash2 size={14} />
+      </button>
+    </div>
   )
 }
 

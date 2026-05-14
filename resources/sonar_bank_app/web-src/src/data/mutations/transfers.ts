@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { queryKeys } from '@/data/queryKeys'
 import type {
@@ -6,7 +6,7 @@ import type {
   RecentRecipientsResponse,
 } from '@/data/contracts'
 import { BankError } from '@/lib/bankError'
-import { useBankMutation } from '@/lib/bankQuery'
+import { bankMutation, useBankMutation } from '@/lib/bankQuery'
 
 const SONAR_IBAN_RE = /^AD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/
 const LARGE_TRANSFER_MINOR = 1_000_00
@@ -147,6 +147,93 @@ export function useExecuteTransfer() {
         correlation_id: parsed.data.correlation_id,
         large_transfer: isLargeTransfer(parsed.data.amount_minor),
       }
+    },
+  }
+}
+
+export const savingsTransferSchema = z.object({
+  iban: z.string().transform(normalizeIban).pipe(z.string().regex(SONAR_IBAN_RE, 'INVALID_IBAN')),
+  amount_minor: z.number().int().positive().max(MAX_TRANSFER_MINOR),
+  direction: z.enum(['to_savings', 'from_savings']),
+  idempotency_key: z.string().uuid(),
+  correlation_id: z.string().uuid(),
+})
+
+export type SavingsTransferArgsInput = z.input<typeof savingsTransferSchema>
+export type SavingsTransferArgs = z.output<typeof savingsTransferSchema>
+
+export interface SavingsTransferResponse {
+  iban: string
+  amount_minor: number
+  direction: 'to_savings' | 'from_savings'
+  committed_ms: number
+}
+
+interface SavingsTransferMutationContext {
+  previousBootstrap?: BootstrapSnapshot
+}
+
+export function useSavingsTransferMutation() {
+  const qc = useQueryClient()
+
+  const mutation = useMutation<SavingsTransferResponse, BankError, SavingsTransferArgsInput, SavingsTransferMutationContext>({
+    mutationFn: async (input) => {
+      const parsed = savingsTransferSchema.safeParse(input)
+      if (!parsed.success) {
+        throw new BankError({
+          code: 'VALIDATION_FAILED',
+          category: 'validation',
+          message: 'El movimiento de ahorro contiene campos no válidos',
+          retryable: false,
+          details: { issues: parsed.error.flatten() },
+        })
+      }
+      const { direction, correlation_id: _correlationId, ...payload } = parsed.data
+      const eventName = direction === 'to_savings' ? 'sonar:bank:transfer:toSavings' : 'sonar:bank:transfer:fromSavings'
+      return bankMutation<typeof payload, SavingsTransferResponse>(eventName, payload)
+    },
+    retry: 0,
+    onMutate: async (input) => {
+      const parsed = savingsTransferSchema.safeParse(input)
+      if (!parsed.success) return {}
+      const args = parsed.data
+      await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
+      const previousBootstrap = qc.getQueryData<BootstrapSnapshot>(queryKeys.bootstrap())
+      if (previousBootstrap) {
+        qc.setQueryData<BootstrapSnapshot>(queryKeys.bootstrap(), {
+          ...previousBootstrap,
+          accounts: previousBootstrap.accounts.map((account) => {
+            if (normalizeIban(account.iban) !== args.iban) return account
+            return args.direction === 'to_savings'
+              ? { ...account, balance_minor: account.balance_minor - args.amount_minor, savings_minor: account.savings_minor + args.amount_minor }
+              : { ...account, balance_minor: account.balance_minor + args.amount_minor, savings_minor: account.savings_minor - args.amount_minor }
+          }),
+        })
+      }
+      return { previousBootstrap }
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previousBootstrap) qc.setQueryData(queryKeys.bootstrap(), context.previousBootstrap)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+    },
+  })
+
+  return {
+    ...mutation,
+    mutateAsync: async (input: SavingsTransferArgsInput) => {
+      const parsed = savingsTransferSchema.safeParse(input)
+      if (!parsed.success) {
+        throw new BankError({
+          code: 'VALIDATION_FAILED',
+          category: 'validation',
+          message: 'El movimiento de ahorro contiene campos no válidos',
+          retryable: false,
+          details: { issues: parsed.error.flatten() },
+        })
+      }
+      return mutation.mutateAsync(parsed.data)
     },
   }
 }

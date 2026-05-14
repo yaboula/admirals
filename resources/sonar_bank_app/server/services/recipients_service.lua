@@ -140,6 +140,7 @@ function S.GetRecent(citizen_id)
 
   -- Compose final shape
   local recipients = {}
+  local seen_recipients = {}
   for i, row in ipairs(rows) do
     local meta = alias_lookup[row.counterpart_iban] or {}
     recipients[i] = {
@@ -151,6 +152,22 @@ function S.GetRecent(citizen_id)
       preset_amounts      = csv_to_int_array(row.recent_amounts_csv),
       last_reason         = row.last_reason and row.last_reason ~= '' and row.last_reason or nil,
     }
+    seen_recipients[row.counterpart_iban] = true
+  end
+
+
+  for _, sr in ipairs(saved) do
+    if not seen_recipients[sr.counterpart_iban] then
+      recipients[#recipients + 1] = {
+        counterpart_iban    = sr.counterpart_iban,
+        alias               = sr.alias,
+        is_favorite         = sr.is_favorite == 1 or sr.is_favorite == true,
+        last_transfer_ms    = tonumber(sr.created_ms) or 0,
+        transfer_count      = 0,
+        preset_amounts      = {},
+        last_reason         = nil,
+      }
+    end
   end
 
   cache_set(citizen_id, recipients)

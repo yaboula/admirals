@@ -82,6 +82,53 @@ export function installMockHandlers(): void {
     return buildMockRecentRecipientsResponse()
   })
 
+  registerMockHandler<{ saved: boolean; counterpart_iban: string }>('sonar:bank:recipients:save', async (payload) => {
+    await simulateLatency(100, 220)
+    return { saved: true, counterpart_iban: String(payload.counterpart_iban ?? '') }
+  })
+
+  registerMockHandler<{ deleted: boolean; counterpart_iban: string }>('sonar:bank:recipients:delete', async (payload) => {
+    await simulateLatency(100, 220)
+    return { deleted: true, counterpart_iban: String(payload.counterpart_iban ?? '') }
+  })
+
+  registerMockHandler<{ counterpart_iban: string; is_favorite: boolean }>('sonar:bank:recipients:toggleFavorite', async (payload) => {
+    await simulateLatency(100, 220)
+    return { counterpart_iban: String(payload.counterpart_iban ?? ''), is_favorite: Boolean(payload.is_favorite) }
+  })
+  registerMockHandler<{ iban: string; amount_minor: number; direction: 'to_savings'; committed_ms: number }>('sonar:bank:transfer:toSavings', async (payload) => {
+    await simulateLatency(110, 240)
+    return { iban: String(payload.iban ?? ''), amount_minor: Number(payload.amount_minor ?? 0), direction: 'to_savings', committed_ms: Date.now() }
+  })
+
+  registerMockHandler<{ iban: string; amount_minor: number; direction: 'from_savings'; committed_ms: number }>('sonar:bank:transfer:fromSavings', async (payload) => {
+    await simulateLatency(110, 240)
+    return { iban: String(payload.iban ?? ''), amount_minor: Number(payload.amount_minor ?? 0), direction: 'from_savings', committed_ms: Date.now() }
+  })
+  registerMockHandler<{ account_id: string; iban: string; citizen_id: string }>('sonar:bank:account:open', async () => {
+    await simulateLatency(130, 280)
+    return { account_id: `mock-account-${Date.now()}`, iban: 'AD-MOCK-0000-0001', citizen_id: 'mock-citizen' }
+  })
+
+  registerMockHandler<{ iban: string; frozen: boolean }>('sonar:bank:account:freeze', async (payload) => {
+    await simulateLatency(110, 240)
+    return { iban: String(payload.iban ?? ''), frozen: true }
+  })
+
+  registerMockHandler<{ iban: string; frozen: boolean }>('sonar:bank:account:unfreeze', async (payload) => {
+    await simulateLatency(110, 240)
+    return { iban: String(payload.iban ?? ''), frozen: false }
+  })
+
+  registerMockHandler<{ iban: string; status: 'closed' }>('sonar:bank:account:close', async (payload) => {
+    await simulateLatency(110, 240)
+    return { iban: String(payload.iban ?? ''), status: 'closed' }
+  })
+
+  registerMockHandler<{ submitted_ms: number }>('sonar:bank:kyc:submit', async () => {
+    await simulateLatency(120, 260)
+    return { submitted_ms: Date.now() }
+  })
   registerMockHandler<ClientConfigSnapshot>('sonar:bank:nui:getConfig', async () => {
     await simulateLatency(40, 120)
     return buildMockClientConfig()
@@ -357,6 +404,20 @@ export function installMockHandlers(): void {
     await forceCollectionMock(payload as unknown as GovtForceCollectionRequest)
   })
 
+  registerMockHandler<{ card_id: string; status: 'locked' }>('sonar:bank:card:freeze', async (payload) => {
+    await simulateLatency(120, 260)
+    return { card_id: String(payload.card_id ?? ''), status: 'locked' }
+  })
+
+  registerMockHandler<{ card_id: string; status: 'active' }>('sonar:bank:card:unfreeze', async (payload) => {
+    await simulateLatency(120, 260)
+    return { card_id: String(payload.card_id ?? ''), status: 'active' }
+  })
+
+  registerMockHandler<{ card_id: string; pin_changed_ms: number }>('sonar:bank:card:changePin', async (payload) => {
+    await simulateLatency(140, 280)
+    return { card_id: String(payload.card_id ?? ''), pin_changed_ms: Date.now() }
+  })
   registerMockHandler<IssueCardResult>('sonar:bank:card:issue', async (_payload) => {
     await simulateLatency(200, 420)
     const last4 = String(Math.floor(Math.random() * 9000) + 1000)
@@ -368,7 +429,7 @@ export function installMockHandlers(): void {
     }
   })
 
-  console.info('[mock] handlers installed (49 endpoints) - VITE_MOCK_MODE=true')
+  console.info('[mock] handlers installed (62 endpoints) - VITE_MOCK_MODE=true')
 }
 
 function resolveMockStateBag(key: BankStateBagKey): unknown {

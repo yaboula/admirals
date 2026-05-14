@@ -46,6 +46,18 @@ Wrap.Register('sonar:bank:govt:sanctions:queue', {
   })
 end)
 
+Wrap.Register('sonar:bank:compliance:flags', {
+  tier          = Enums.TIER.TIER_3_ADMIN,
+  require_admin = true,
+  admin_ace     = GOVT_READ_ACE,
+  cb_id         = 'REQ-FE-COMPLIANCE-FLAGS',
+}, function(src, citizen_id, payload)
+  return GovtService.ListComplianceFlags({
+    src = src,
+    actor_citizen_id = citizen_id,
+    filters = payload or {},
+  })
+end)
 Wrap.Register('sonar:bank:govt:sanctions:flagDetail', {
   tier          = Enums.TIER.TIER_3_ADMIN,
   require_admin = true,

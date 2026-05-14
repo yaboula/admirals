@@ -216,6 +216,7 @@ function S.CloseAccount(ctx)
     target_iban      = norm_iban,
     target_account_id= row.account_id,
     event_data       = { reason = Validators.SanitizeReason(ctx.reason) },
+    correlation_id   = ctx.correlation_id,
   })
 
   invalidate_bootstrap(owner_cid)
@@ -247,6 +248,7 @@ function S.AddJointOwner(ctx)
     target_iban      = norm_iban,
     target_citizen_id= ctx.joint_citizen_id,
     event_data       = { reason = Validators.SanitizeReason(ctx.reason) },
+    correlation_id   = ctx.correlation_id,
   })
 
   invalidate_bootstrap(owner_cid)

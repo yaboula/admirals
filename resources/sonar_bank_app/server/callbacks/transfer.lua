@@ -71,6 +71,7 @@ Wrap.Register('sonar:bank:transfer:toSavings', {
     from_iban        = payload.iban,
     amount_minor     = payload.amount_minor,
     idempotency_key  = payload.idempotency_key,
+    correlation_id   = payload.correlation_id,
   })
 end)
 
@@ -88,5 +89,6 @@ Wrap.Register('sonar:bank:transfer:fromSavings', {
     from_iban        = payload.iban,
     amount_minor     = payload.amount_minor,
     idempotency_key  = payload.idempotency_key,
+    correlation_id   = payload.correlation_id,
   })
 end)

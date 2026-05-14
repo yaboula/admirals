@@ -27,7 +27,7 @@ end
 local SQL_LIST = [[
 SELECT c.id AS card_id, sa.char_id AS owner_citizen_id, ba.iban AS iban,
        c.last_4_digits AS pan_last_four,
-       CASE WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
+       CASE WHEN c.state = 'frozen' THEN 'locked' WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
        c.issued_at * 1000 AS created_ms,
        (c.issued_at + 4 * 365 * 24 * 3600) * 1000 AS expiry_ms,
        c.card_kind AS card_type,
@@ -48,7 +48,7 @@ LIMIT ?
 local SQL_GET = [[
 SELECT c.id AS card_id, sa.char_id AS owner_citizen_id, ba.iban AS account_iban,
        CONCAT('**** **** **** ', c.last_4_digits) AS masked_number,
-       c.pin_hash, CASE WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
+       c.pin_hash, CASE WHEN c.state = 'frozen' THEN 'locked' WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
        CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS spend_limit_minor
 FROM sonar_bank_physical_cards c
 INNER JOIN sonar_accounts sa ON sa.id = c.holder_account_id

@@ -337,7 +337,7 @@ local function execute_internal_move(ctx, direction)
       ctx.src, owner_cid,
       tonumber(fresh.balance_minor) or 0,
       tonumber(fresh.savings_minor) or 0,
-      { reason = direction == 'to_savings' and 'savings_deposit' or 'savings_withdraw' }
+      { reason = direction == 'to_savings' and 'savings_deposit' or 'savings_withdraw', correlation = ctx.correlation_id }
     )
   end
 
@@ -346,7 +346,7 @@ local function execute_internal_move(ctx, direction)
     actor_citizen_id = owner_cid,
     actor_src        = ctx.src,
     target_iban      = ctx.from_iban,
-    event_data       = { amount_minor = ctx.amount_minor, direction = direction },
+    event_data       = { amount_minor = ctx.amount_minor, direction = direction, correlation_id = ctx.correlation_id },
   })
 
   local result = {
@@ -354,6 +354,7 @@ local function execute_internal_move(ctx, direction)
     amount_minor = ctx.amount_minor,
     direction    = direction,
     committed_ms = now_ms(),
+    correlation_id = ctx.correlation_id,
   }
   Idempotency.Commit(ctx.idempotency_key, result)
 

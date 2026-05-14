@@ -205,6 +205,32 @@ ORDER BY cf.raised_at DESC
 LIMIT ?
 ]]
 
+local SQL_LIST_COMPLIANCE_FLAGS = [[
+SELECT CAST(cf.id AS CHAR) AS flag_id,
+       CONCAT('compliance.', cf.flag_type) AS event_type,
+       sa.char_id AS subject_cid,
+       COALESCE(ba.iban, '') AS account_iban,
+       NULL AS counterparty_iban,
+       CASE WHEN cf.observed_value IS NULL THEN NULL ELSE CAST(ROUND(cf.observed_value * 100) AS SIGNED) END AS amount_minor,
+       'USD' AS currency,
+       cf.severity,
+       cf.status,
+       cf.raised_at * 1000 AS created_at_ms,
+       cf.updated_at * 1000 AS updated_at_ms,
+       COALESCE(rs.score, 0) AS risk_score,
+       cf.flag_type,
+       cf.evidence AS details_json,
+       COALESCE(JSON_LENGTH(cf.related_movement_ids), 0) AS evidence_count
+FROM sonar_bank_compliance_flags cf
+INNER JOIN sonar_accounts sa ON sa.id = cf.citizen_account_id
+LEFT JOIN sonar_bank_accounts ba ON ba.id = cf.bank_account_id
+LEFT JOIN sonar_bank_govt_risk_scores rs ON rs.subject_type = 'citizen' AND rs.subject_id = sa.id
+WHERE (? IS NULL OR cf.status = ?)
+  AND (? IS NULL OR cf.severity = ?)
+  AND (? = '' OR sa.char_id LIKE ? OR cf.flag_type LIKE ? OR CAST(cf.id AS CHAR) LIKE ?)
+ORDER BY cf.raised_at DESC, cf.id DESC
+LIMIT ?
+]]
 local SQL_GET_FLAG = [[
 SELECT cf.*, sa.char_id AS citizenCid, sa.alias AS citizenAlias
 FROM sonar_bank_compliance_flags cf
@@ -552,6 +578,27 @@ function R.ListFlagQueue(limit)
   return DB.Query(SQL_LIST_FLAG_QUEUE, { limit or 100 })
 end
 
+function R.ListComplianceFlags(filters)
+  filters = filters or {}
+  local status = filters.status
+  if status == 'reviewing' then status = 'investigating' end
+  if status == 'dismissed' then status = 'false_positive' end
+  if status == 'all' then status = nil end
+  local severity = filters.severity
+  if severity == 'medium' then severity = 'warning' end
+  if severity == 'low' then severity = 'notice' end
+  if severity == 'high' or severity == 'critical' then severity = 'critical' end
+  if severity == 'all' then severity = nil end
+  local query = type(filters.query) == 'string' and filters.query or ''
+  local like = ('%%%s%%'):format(query)
+  local limit = math.max(1, math.min(tonumber(filters.limit) or 24, 50))
+  return DB.Query(SQL_LIST_COMPLIANCE_FLAGS, {
+    status, status,
+    severity, severity,
+    query, like, like, like,
+    limit + 1,
+  })
+end
 function R.GetFlag(flag_id)
   return DB.QuerySingle(SQL_GET_FLAG, { tonumber(flag_id) or flag_id })
 end

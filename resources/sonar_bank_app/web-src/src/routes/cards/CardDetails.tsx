@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check, Loader2 } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
-import { Card } from '@/components/ui'
+import { Button, Card, Input } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { sfx } from '@/lib/sfx'
@@ -11,10 +12,10 @@ import { maskIbanCompact, maskMoneyDisplay, revealIbanDisplay } from '@/lib/priv
 import { usePrivacyMode } from '@/stores/privacy'
 import { resolveCardDesign } from './cardDesigns'
 import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
-import { useFreezeCard } from '@/data/mutations'
+import { useChangeCardPinMutation, useFreezeCard } from '@/data/mutations'
 
 /**
- * BANK-FE.4.2 — CardDetails
+ * BANK-FE.4.2 â€” CardDetails
  *
  * Right column of the /tarjetas route. Shows the focused card's metadata
  * (holder, expiry, linked IBAN, design) plus a calm preview of the daily and
@@ -26,7 +27,7 @@ import { useFreezeCard } from '@/data/mutations'
  * final visual rhythm during Phase 4.2 sign-off.
  *
  * The Reveal + Flip controls are wired NOW because they have no contract
- * dependency — they manipulate UI state only.
+ * dependency â€” they manipulate UI state only.
  */
 export interface CardDetailsProps {
   card: BankCardMock | null
@@ -43,6 +44,10 @@ export function CardDetails({ card, className }: CardDetailsProps) {
   const cardId = card?.card_id ?? '__none__'
   const { revealed, reveal, hide } = useCardReveal(cardId)
   const freezeMutation = useFreezeCard()
+  const changePinMutation = useChangeCardPinMutation()
+  const [pinDialogOpen, setPinDialogOpen] = useState(false)
+  const [oldPin, setOldPin] = useState('')
+  const [newPin, setNewPin] = useState('')
 
   if (!card) {
     return (
@@ -103,6 +108,18 @@ export function CardDetails({ card, className }: CardDetailsProps) {
     )
   }
 
+  const handleChangePin = async () => {
+    try {
+      await changePinMutation.mutateAsync({ card_id: card.card_id, old_pin: oldPin, new_pin: newPin })
+      setOldPin('')
+      setNewPin('')
+      setPinDialogOpen(false)
+      toast.success('PIN updated', 'Your card PIN was changed securely.')
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
   const expiry = new Date(card.expiry_ms)
   const expiryStr = `${String(expiry.getMonth() + 1).padStart(2, '0')}/${expiry.getFullYear()}`
 
@@ -159,7 +176,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
                   {design.name}
                 </span>
                 <span className="text-[11px] text-text-tertiary truncate">
-                  {design.tagline} · ···· {card.pan_last_four}
+                  {design.tagline} Â· Â·Â·Â·Â· {card.pan_last_four}
                 </span>
               </div>
             </div>
@@ -167,7 +184,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           </div>
         </motion.div>
 
-      {/* Meta grid — holder · expiry · linked iban · type */}
+      {/* Meta grid â€” holder Â· expiry Â· linked iban Â· type */}
         <dl className="grid grid-cols-2 gap-2.5">
           <MetaItem icon={User2} label={t('cards.holder')} value={card.holder_name} accent={design.accent} />
           <MetaItem icon={CalendarDays} label={t('cards.expires')} value={expiryStr} accent={design.accent} mono />
@@ -180,7 +197,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           />
         </dl>
 
-      {/* Limits preview — soft meters; full controls land in 4.3 */}
+      {/* Limits preview â€” soft meters; full controls land in 4.3 */}
         <div
           className="rounded-[1.35rem] p-3.5 flex flex-col gap-3 2xl:p-4"
           style={{
@@ -216,14 +233,14 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           />
         </div>
 
-      {/* Benefits — tier-driven perks bring brand storytelling into the panel
+      {/* Benefits â€” tier-driven perks bring brand storytelling into the panel
           and naturally absorb any leftover vertical real-estate. */}
         <BenefitsPanel tier={design.tier} accent={design.accent} />
 
-      {/* Action row — Phase 4.3: all four actions are now LIVE.
+      {/* Action row â€” Phase 4.3: all four actions are now LIVE.
           Reveal toggles a 30s window with countdown surfaced inline.
           Freeze/Unfreeze fires the optimistic mutation + toast feedback.
-          Límites + Diseño open dialogs (LimitsModal / DesignPickerDialog). */}
+          LÃ­mites + DiseÃ±o open dialogs (LimitsModal / DesignPickerDialog). */}
         <div className="mt-auto flex flex-col gap-2">
           <div className="grid grid-cols-2 gap-2">
             <ActionButton
@@ -259,18 +276,55 @@ export function CardDetails({ card, className }: CardDetailsProps) {
               }}
               disabled={isExpired}
             />
+            <ActionButton
+              icon={Lock}
+              label="Change PIN"
+              onClick={() => {
+                sfx.panel_open()
+                setPinDialogOpen(true)
+              }}
+              disabled={isExpired || changePinMutation.isPending}
+            />
           </div>
         </div>
       </div>
+      {pinDialogOpen ? (
+        <ChangePinDialog
+          oldPin={oldPin}
+          newPin={newPin}
+          loading={changePinMutation.isPending}
+          onChangeOldPin={setOldPin}
+          onChangeNewPin={setNewPin}
+          onSubmit={handleChangePin}
+          onClose={() => setPinDialogOpen(false)}
+        />
+      ) : null}
     </Card>
   )
 }
 
+function ChangePinDialog({ oldPin, newPin, loading, onChangeOldPin, onChangeNewPin, onSubmit, onClose }: { oldPin: string; newPin: string; loading: boolean; onChangeOldPin: (value: string) => void; onChangeNewPin: (value: string) => void; onSubmit: () => void; onClose: () => void }) {
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/72 px-4 backdrop-blur-md">
+      <div className="w-full max-w-sm rounded-[1.5rem] border border-white/10 bg-surface-panel p-4 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-text-primary">Change PIN</h2>
+          <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
+        </div>
+        <div className="grid gap-3">
+          <Input label="Current PIN" type="password" inputMode="numeric" maxLength={8} value={oldPin} onChange={(event) => onChangeOldPin(event.currentTarget.value)} />
+          <Input label="New PIN" type="password" inputMode="numeric" maxLength={8} value={newPin} onChange={(event) => onChangeNewPin(event.currentTarget.value)} />
+          <Button loading={loading} disabled={!/^\d{4,8}$/.test(oldPin) || !/^\d{4,8}$/.test(newPin)} onClick={onSubmit}>Update PIN</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 /* --------------------------------------------------------------------------
-   BenefitsPanel — tier-aware perk list driven by design.tier.
-   - default   → 3 baseline perks
-   - premium   → +1 cashback / +1 priority support
-   - signature → premium set + concierge / early access
+   BenefitsPanel â€” tier-aware perk list driven by design.tier.
+   - default   â†’ 3 baseline perks
+   - premium   â†’ +1 cashback / +1 priority support
+   - signature â†’ premium set + concierge / early access
    The accent colour ties the check marks to the focused card's chromatic
    identity so the panel reads as part of the same visual story.
    -------------------------------------------------------------------------- */

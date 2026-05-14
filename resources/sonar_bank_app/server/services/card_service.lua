@@ -129,7 +129,8 @@ local function set_status_helper(ctx, new_status, event_type)
     event_data       = { card_id = ctx.card_id, new_status = new_status },
   })
   invalidate_bootstrap(actor_cid)
-  return { ok = true, data = { card_id = ctx.card_id, status = new_status } }
+  local response_status = new_status == 'frozen' and 'locked' or new_status
+  return { ok = true, data = { card_id = ctx.card_id, status = response_status } }
 end
 
 function S.Freeze(ctx)   return set_status_helper(ctx, 'frozen', Enums.AUDIT_EVENT_TYPE.CARD_FREEZE) end
@@ -173,6 +174,7 @@ function S.ChangePin(ctx)
     target_citizen_id= actor_cid,
     event_data       = { card_id = ctx.card_id },
   })
+  invalidate_bootstrap(actor_cid)
   return { ok = true, data = { card_id = ctx.card_id, pin_changed_ms = os.time() * 1000 } }
 end
 
