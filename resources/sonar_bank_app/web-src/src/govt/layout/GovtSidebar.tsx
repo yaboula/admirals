@@ -41,14 +41,7 @@ export function GovtSidebar() {
 function BureauSeal() {
   return (
     <div className="flex items-center justify-center pb-4 pt-5" aria-hidden>
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{
-          border: '1.5px solid var(--color-govt-gold-ring)',
-        }}
-      >
-        <SonarBureauSeal size={52} showText={false} />
-      </div>
+      <SonarBureauSeal size={56} showText={false} />
     </div>
   )
 }
@@ -91,14 +84,23 @@ function GovtSidebarItem({ item }: { item: GovtNavItem }) {
       title={label}
       className={({ isActive }) =>
         cn(
-          'group relative flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200',
+          'group relative flex h-11 w-11 items-center justify-center rounded-2xl transition-[background-color,color,box-shadow,transform] duration-180',
           isActive
-            ? 'border border-[var(--color-govt-gold-ring)] bg-[var(--color-govt-accent-soft)] text-white shadow-[0_0_18px_var(--color-govt-gold-glow)]'
+            ? 'bg-white/[0.06] text-white'
             : 'text-[var(--color-govt-text-tertiary)] hover:bg-white/[0.05] hover:text-[var(--color-govt-text-primary)]',
         )
       }
     >
-      <Icon size={18} strokeWidth={1.8} />
+      {({ isActive }) => (
+        <>
+          {isActive && <span aria-hidden className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-[var(--color-govt-gold)] shadow-[0_0_14px_var(--color-govt-gold-glow)]" />}
+          {isActive && <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl border border-white/[0.08]" />}
+          <Icon size={18} strokeWidth={1.8} />
+          <span className="pointer-events-none absolute left-[calc(100%+0.55rem)] top-1/2 z-50 -translate-y-1/2 rounded-xl border border-white/[0.08] bg-black/85 px-2.5 py-1.5 text-[11px] font-semibold text-white opacity-0 shadow-[0_12px_28px_rgba(0,0,0,0.35)] transition-opacity group-hover:opacity-100">
+            {label}
+          </span>
+        </>
+      )}
     </NavLink>
   )
 }

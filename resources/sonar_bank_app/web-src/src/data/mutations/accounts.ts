@@ -166,6 +166,130 @@ export function useSubmitKycMutation() {
   return useBankMutation<KycSubmitResponse, KycSubmitArgs>('sonar:bank:kyc:submit')
 }
 
+/* ============================================================================
+   Joint owners (C020 / C021)
+
+   Adds and removes joint owners on a primary-owned bank account. The optimistic
+   patch updates `account.joint_owners` so the UI reflects the change before
+   the BE round-trip; on error we restore the snapshot. The BE caps at three
+   joints per account and rejects self / duplicates / unknown citizens with
+   canonical BankErrors mapped from the registry.
+   ============================================================================ */
+
+const jointOwnerMutationSchema = z.object({
+  iban: z.string().transform(normalizeIban).pipe(z.string().min(1)),
+  joint_citizen_id: z.string().trim().min(1).max(64),
+  reason: z.string().trim().max(140).nullable().optional(),
+  correlation_id: z.string().uuid().optional(),
+})
+
+export type JointOwnerMutationArgs = z.input<typeof jointOwnerMutationSchema>
+
+export interface JointOwnerAddResponse {
+  iban: string
+  joint_added: string
+  total_joints?: number
+}
+
+export interface JointOwnerRemoveResponse {
+  iban: string
+  joint_removed: string
+}
+
+function coerceJointArray(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw.filter((v): v is string => typeof v === 'string')
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (trimmed === '' || trimmed === '[]') return []
+    try {
+      const parsed = JSON.parse(trimmed) as unknown
+      if (Array.isArray(parsed)) return parsed.filter((v): v is string => typeof v === 'string')
+    } catch {
+      /* fall through */
+    }
+  }
+  return []
+}
+
+function patchJointOwners(
+  previous: BootstrapSnapshot | undefined,
+  iban: string,
+  mutator: (current: string[]) => string[],
+): BootstrapSnapshot | undefined {
+  return patchAccount(previous, iban, (account) => {
+    const current = coerceJointArray(account.joint_owners)
+    const next = mutator(current)
+    return { ...account, joint_owners: next.length > 0 ? next : null }
+  })
+}
+
+export function useAddJointOwnerMutation() {
+  const qc = useQueryClient()
+  return useBankMutation<JointOwnerAddResponse, JointOwnerMutationArgs, AccountMutationContext>(
+    'sonar:bank:account:addJoint',
+    {
+      onMutate: async (input) => {
+        const parsed = jointOwnerMutationSchema.safeParse(input)
+        if (!parsed.success) return {}
+        await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
+        const previousBootstrap = qc.getQueryData<BootstrapSnapshot>(queryKeys.bootstrap())
+        qc.setQueryData<BootstrapSnapshot | undefined>(
+          queryKeys.bootstrap(),
+          patchJointOwners(previousBootstrap, parsed.data.iban, (current) =>
+            current.includes(parsed.data.joint_citizen_id)
+              ? current
+              : [...current, parsed.data.joint_citizen_id],
+          ),
+        )
+        return { previousBootstrap }
+      },
+      onError: (_err, _input, context) => {
+        if (context?.previousBootstrap) qc.setQueryData(queryKeys.bootstrap(), context.previousBootstrap)
+      },
+      onSettled: () => {
+        void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      },
+    },
+  )
+}
+
+export function useRemoveJointOwnerMutation() {
+  const qc = useQueryClient()
+  return useBankMutation<JointOwnerRemoveResponse, JointOwnerMutationArgs, AccountMutationContext>(
+    'sonar:bank:account:removeJoint',
+    {
+      onMutate: async (input) => {
+        const parsed = jointOwnerMutationSchema.safeParse(input)
+        if (!parsed.success) return {}
+        await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
+        const previousBootstrap = qc.getQueryData<BootstrapSnapshot>(queryKeys.bootstrap())
+        qc.setQueryData<BootstrapSnapshot | undefined>(
+          queryKeys.bootstrap(),
+          patchJointOwners(previousBootstrap, parsed.data.iban, (current) =>
+            current.filter((id) => id !== parsed.data.joint_citizen_id),
+          ),
+        )
+        return { previousBootstrap }
+      },
+      onError: (_err, _input, context) => {
+        if (context?.previousBootstrap) qc.setQueryData(queryKeys.bootstrap(), context.previousBootstrap)
+      },
+      onSettled: () => {
+        void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      },
+    },
+  )
+}
+
+export function jointOwnerMutationPayload(input: JointOwnerMutationArgs): JointOwnerMutationArgs {
+  const parsed = jointOwnerMutationSchema.safeParse({
+    ...input,
+    correlation_id: input.correlation_id ?? createBankOperationIds().correlationId,
+  })
+  if (!parsed.success) throwValidation('Invalid joint owner payload', parsed.error.flatten())
+  return parsed.data
+}
+
 export async function openAccountPayload(input: AccountOpenArgs): Promise<AccountOpenArgs> {
   const parsed = accountOpenSchema.safeParse(input)
   if (!parsed.success) throwValidation('Invalid account opening payload', parsed.error.flatten())

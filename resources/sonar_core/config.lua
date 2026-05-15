@@ -204,6 +204,7 @@ Config.MigrationsFiles = {
   '036_sonar_bank_idem.sql',
   '037_sonar_bank_accounts_savings_column.sql',
   '038_sonar_bank_physical_cards_monthly_limit.sql',
+  '039_sonar_bank_account_joints.sql',
 }
 
 -- =============================================================================

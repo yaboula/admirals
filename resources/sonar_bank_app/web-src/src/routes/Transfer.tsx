@@ -159,7 +159,7 @@ export function Transfer() {
       className="relative h-full w-full overflow-hidden"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 opacity-75">
-        <div className="absolute left-[7%] top-[-8%] h-72 w-72 rounded-full bg-[oklch(0.65_0.22_40_/_0.10)] blur-[92px]" />
+        <div className="absolute left-[7%] top-[-8%] h-72 w-72 rounded-full bg-[rgb(255, 140, 80)_/_0.10)] blur-[92px]" />
         <div className="absolute bottom-[4%] right-[10%] h-80 w-80 rounded-full bg-[rgba(72,146,168,0.10)] blur-[104px]" />
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.032),transparent_34%,rgba(255,255,255,0.02))]" />
       </div>
@@ -175,7 +175,6 @@ export function Transfer() {
           {!isConfirmStep ? (
             <TransferHero
               expressMode={expressMode}
-              account={primaryAccount}
               amount={amount}
               recipientAlias={recipientAlias}
               recipientIban={recipientIban}
@@ -231,13 +230,11 @@ export function Transfer() {
 
 function TransferHero({
   expressMode,
-  account,
   amount,
   recipientAlias,
   recipientIban,
 }: {
   expressMode: boolean
-  account: Account | null
   amount: number | null
   recipientAlias: string | null
   recipientIban: string | null
@@ -247,8 +244,9 @@ function TransferHero({
   const destination = recipientIban
     ? streamerMode ? maskIbanCompact(recipientIban) : revealIbanDisplay(recipientIban)
     : t('transfer.pendingDestination')
-  const availableLabel = account ? streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100) : '—'
   const amountLabel = amount ? streamerMode ? maskMoneyDisplay() : money(amount / 100) : '—'
+  const hasAmount = Boolean(amount)
+  const hasDestination = Boolean(recipientAlias || recipientIban)
 
   return (
     <Card variant="glass" padding="none" className="relative overflow-hidden border-white/10 shrink-0 rounded-[1.75rem]">
@@ -260,36 +258,53 @@ function TransferHero({
             'radial-gradient(circle at 12% 0%, rgba(246,75,0,0.13), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 54%)',
         }}
       />
-      <div className="relative flex items-center justify-between gap-5 p-5 2xl:p-6">
-        <div className="flex flex-col gap-2">
+      <div className="relative flex items-center justify-between gap-4 p-4 2xl:p-5">
+        <div className="flex flex-col gap-1.5">
           <CardEyebrow>
             <span className="inline-flex items-center gap-1.5">
-              {expressMode ? <Zap size={12} strokeWidth={2.4} /> : <SendHorizontal size={12} strokeWidth={2.4} />}
+              {expressMode ? <Zap size={11} strokeWidth={2.4} /> : <SendHorizontal size={11} strokeWidth={2.4} />}
               {expressMode ? t('transfer.expressQuick') : t('transfer.secureTransfer')}
             </span>
           </CardEyebrow>
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl 2xl:text-4xl font-light tracking-[-0.055em] text-text-primary">{t('transfer.transferMoney')}</h1>
-            <p className="text-sm text-text-secondary max-w-[58ch] leading-relaxed">
+          <div className="flex flex-col gap-0.5">
+            <h1 className="text-2xl 2xl:text-3xl font-light tracking-[-0.055em] text-text-primary">{t('transfer.transferMoney')}</h1>
+            <p className="text-xs text-text-secondary max-w-[52ch] leading-relaxed">
               {t('transfer.transferDescriptionFull')}
             </p>
           </div>
         </div>
-        <div className="shrink-0 grid grid-cols-3 gap-2 min-w-[430px]">
-          <HeroMetric label={t('transfer.available')} value={availableLabel} />
+        <div className="shrink-0 grid grid-cols-3 gap-1.5 min-w-[380px]">
           <HeroMetric label={t('transfer.amountLabel')} value={amountLabel} />
           <HeroMetric label={t('transfer.destination')} value={streamerMode ? t('common.hidden') : recipientAlias ?? destination} />
+          <HeroMetric label={t('transfer.secureBadge')} value={t('transfer.operationProtected')} accent={hasAmount && hasDestination} />
         </div>
       </div>
+      <div aria-hidden className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-30"
+        style={{
+          background: 'radial-gradient(circle at 88% 50%, rgba(82,205,134,0.08), transparent 40%), radial-gradient(circle at 12% 50%, rgba(246,75,0,0.06), transparent 35%)',
+        }}
+      />
     </Card>
   )
 }
 
-function HeroMetric({ label, value }: { label: string; value: string }) {
+function HeroMetric({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-white/[0.04] px-3 py-3 text-right min-w-0">
+    <div
+      className={cn(
+        'rounded-2xl border px-3 py-3 text-right min-w-0 transition-all duration-300',
+        accent
+          ? 'border-[rgb(255, 140, 80))/0.25] bg-[rgb(255, 140, 80))/[0.08] shadow-[0_0_16px_rgb(255, 140, 80)/0.15)]'
+          : 'border-border-subtle bg-white/[0.04]',
+      )}
+    >
       <span className="block text-[10px] uppercase tracking-[0.16em] text-text-tertiary truncate">{label}</span>
-      <span className="block text-sm 2xl:text-base font-semibold tactile-tabular-nums text-text-primary truncate">{value}</span>
+      <span className={cn('block text-sm 2xl:text-base font-semibold tactile-tabular-nums truncate', accent ? 'text-[rgb(255, 140, 80))]' : 'text-text-primary')}>
+        {value}
+      </span>
     </div>
   )
 }
@@ -310,7 +325,7 @@ function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: Arr
               active
                 ? 'border-white/18 bg-white/[0.075] text-text-primary'
                 : complete
-                  ? 'border-emerald-300/20 bg-emerald-300/[0.055] text-text-secondary'
+                  ? 'border-[rgb(255, 140, 80))/0.20] bg-[rgb(255, 140, 80))/[0.055] text-text-secondary'
                   : 'border-border-subtle bg-white/[0.025] text-text-tertiary',
             )}
           >
@@ -321,7 +336,7 @@ function TransferStepper({ step, steps }: { step: TransferWizardStep; steps: Arr
                   active
                     ? 'border-white/20 bg-white/[0.10]'
                     : complete
-                      ? 'border-emerald-300/20 bg-emerald-300/[0.10] text-emerald-200'
+                      ? 'border-[rgb(255, 140, 80))/0.20] bg-[rgb(255, 140, 80))/[0.10] text-[rgb(255, 140, 80))]'
                       : 'border-border-subtle bg-transparent',
                 )}
               >
@@ -344,6 +359,8 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   const storeAmount = useTransferWizard((s) => s.amount)
   const storeMemo = useTransferWizard((s) => s.memo)
   const setAmount = useTransferWizard((s) => s.setAmount)
+  const setDraftAmount = useTransferWizard((s) => s.setDraftAmount)
+  const setMemo = useTransferWizard((s) => s.setMemo)
   const setStep = useTransferWizard((s) => s.setStep)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const recipientIban = useTransferWizard((s) => s.recipientIban)
@@ -352,7 +369,22 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   const [error, setError] = useState<string | null>(null)
 
   const amountMinor = parseAmountMinor(amountText)
-  const presets = [25_00, 50_00, 120_00, 250_00]
+  const presets = [25_00, 50_00, 100_00, 250_00]
+  const selectedPreset = amountMinor && presets.includes(amountMinor) ? amountMinor : null
+
+  const updateAmountText = (next: string): void => {
+    const normalized = next.replace(',', '.')
+    const nextMinor = parseAmountMinor(normalized)
+    setAmountText(normalized)
+    setDraftAmount(nextMinor !== null && nextMinor > 0 ? nextMinor : null)
+    setError(account && nextMinor !== null && nextMinor > account.balance_minor ? t('transfer.insufficientFundsError') : null)
+  }
+
+  const updateMemoText = (next: string): void => {
+    const clipped = next.slice(0, 140)
+    setMemoText(clipped)
+    setMemo(clipped)
+  }
 
   const submit = (): void => {
     if (!account) {
@@ -374,81 +406,109 @@ function AmountStep({ account, expressMode }: { account: Account | null; express
   }
 
   return (
-    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-[minmax(0,1fr)_280px] gap-4 2xl:gap-5 pb-1">
+    <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="pb-1">
       <div className="flex flex-col gap-4 2xl:gap-5">
-        <StepHeader icon={<CircleDollarSign size={18} />} title={t('transfer.amountTitle')} description={t('transfer.amountDescription')} />
-        <div className="rounded-3xl border border-border-subtle bg-white/[0.035] p-4 2xl:p-5 flex flex-col gap-3 2xl:gap-4">
-          <Input
-            label={t('transfer.amountLabel')}
-            inputMode="decimal"
-            value={amountText}
-            onChange={(e) => setAmountText(e.target.value.replace(',', '.'))}
-            placeholder="0.00"
-            leftAdornment={<span className="text-lg font-semibold">{currencySymbol}</span>}
-            error={error}
-            inputSize="lg"
-            className="text-3xl font-semibold tracking-[-0.04em] tactile-tabular-nums"
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <StepHeader icon={<CircleDollarSign size={18} />} title={t('transfer.amountTitle')} description={t('transfer.amountDescription')} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="rounded-[2rem] border border-border-subtle bg-black/[0.25] p-6 2xl:p-8 relative overflow-hidden"
+        >
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 0%, rgba(246,75,0,0.12), transparent 50%), linear-gradient(180deg, rgba(255,255,255,0.02), transparent)',
+            }}
           />
-          <div className="grid grid-cols-4 gap-2">
-            {presets.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => {
-                  setAmountText(formatMajorInput(preset))
-                  setError(null)
-                }}
-                className="rounded-xl border border-border-subtle bg-white/[0.035] px-3 py-2 text-sm font-semibold tactile-tabular-nums text-text-secondary hover:bg-white/[0.075] hover:text-text-primary transition-colors tactile-focus-ring"
-              >
-                {streamerMode ? maskMoneyDisplay() : money(preset / 100)}
-              </button>
-            ))}
+          {amountMinor && amountMinor > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 bg-[rgba(246,75,0,0.04)]"
+            />
+          )}
+          <div className="relative z-10 flex flex-col items-center gap-6 2xl:gap-8">
+            <div className="w-full max-w-md relative">
+              <label className="block text-[11px] uppercase tracking-[0.16em] text-text-tertiary mb-3 text-center">{t('transfer.amountLabel')}</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={amountText}
+                  onChange={(e) => updateAmountText(e.target.value)}
+                  placeholder="0.00"
+                  className={cn(
+                    'w-full bg-transparent text-center text-5xl 2xl:text-6xl font-light tracking-[-0.06em] tactile-tabular-nums outline-none transition-all duration-300',
+                    amountMinor && amountMinor > 0 && !error ? 'text-[rgba(246,75,0,1)]' : 'text-text-primary',
+                    error ? 'text-red-400' : ''
+                  )}
+                />
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-2xl 2xl:text-3xl font-light text-text-secondary pointer-events-none">{currencySymbol}</span>
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute -bottom-8 left-0 right-0 text-center text-xs text-red-400"
+                  >
+                    {error}
+                  </motion.p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 2xl:gap-4">
+              {presets.map((preset, index) => (
+                <motion.button
+                  key={preset}
+                  type="button"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                  aria-pressed={selectedPreset === preset}
+                  onClick={() => {
+                    updateAmountText(formatMajorInput(preset))
+                    sfx.console_tap()
+                  }}
+                  className={cn(
+                    'h-14 2xl:h-16 px-5 2xl:px-6 rounded-full border text-base 2xl:text-lg font-semibold tactile-tabular-nums transition-all tactile-focus-ring',
+                    selectedPreset === preset
+                      ? 'border-[rgba(246,75,0,0.5)] bg-[rgba(246,75,0,0.15)] text-[rgba(246,75,0,1)] shadow-[0_0_20px_rgba(246,75,0,0.3)] scale-105'
+                      : 'border-border-subtle bg-white/[0.04] text-text-secondary hover:bg-white/[0.08] hover:text-text-primary hover:scale-105',
+                  )}
+                >
+                  {streamerMode ? maskMoneyDisplay() : money(preset / 100)}
+                </motion.button>
+              ))}
+            </div>
+            <div className="w-full max-w-md flex gap-3">
+              <div className="flex-1">
+                <Input
+                  label={t('transfer.memoLabel')}
+                  value={memoText}
+                  onChange={(e) => updateMemoText(e.target.value)}
+                  placeholder={t('transfer.memoPlaceholder')}
+                  maxLength={140}
+                  hint={`${memoText.length}/140`}
+                  className="text-sm"
+                  inputSize="md"
+                />
+              </div>
+              <Button variant="secondary" rightIcon={<ArrowRight size={16} />} onClick={submit} className="mt-6">
+                {expressMode && recipientIban ? t('transfer.reviewDestination') : t('transfer.nextDestination')}
+              </Button>
+            </div>
           </div>
-          <Input
-            label={t('transfer.memoLabel')}
-            value={memoText}
-            onChange={(e) => setMemoText(e.target.value.slice(0, 140))}
-            placeholder={t('transfer.memoPlaceholder')}
-            maxLength={140}
-            hint={`${memoText.length}/140`}
-          />
-        </div>
-        <div className="flex items-center justify-end gap-2 pb-1">
-          <Button variant="secondary" rightIcon={<ArrowRight size={16} />} onClick={submit}>
-            {t('transfer.reviewDestination')}
-          </Button>
-        </div>
+        </motion.div>
       </div>
-      <AmountInsight account={account} amountMinor={amountMinor} />
     </motion.div>
-  )
-}
-
-function AmountInsight({ account, amountMinor }: { account: Account | null; amountMinor: number | null }) {
-  const { t, money } = useI18n()
-  const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const remaining = account && amountMinor ? account.balance_minor - amountMinor : account?.balance_minor ?? 0
-  const risk = amountMinor ? Math.min(1, amountMinor / Math.max(account?.balance_minor ?? 1, 1)) : 0
-
-  return (
-    <div className="rounded-3xl border border-border-subtle bg-white/[0.03] p-4 flex flex-col gap-3 2xl:gap-4 h-fit">
-      <div className="flex items-center gap-2 text-text-secondary">
-        <ShieldCheck size={16} strokeWidth={1.8} />
-        <span className="text-sm font-semibold">{t('transfer.safeView')}</span>
-      </div>
-      <div className="space-y-3">
-        <Metric label={t('transfer.available')} value={account ? streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100) : '—'} />
-        <Metric label={t('transfer.afterSend')} value={account ? streamerMode ? maskMoneyDisplay() : money(Math.max(0, remaining) / 100) : '—'} />
-      </div>
-      <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-        <div className="h-full rounded-full bg-white/35" style={{ width: `${Math.round(risk * 100)}%` }} />
-      </div>
-      {amountMinor && isLargeTransfer(amountMinor) ? (
-        <div className="rounded-2xl border border-[var(--color-semantic-warning-deep)] bg-[var(--color-semantic-warning-glow)] p-3 text-xs text-[var(--color-semantic-warning-deep)] leading-relaxed">
-          {t('transfer.largeAmountWarning')}
-        </div>
-      ) : null}
-    </div>
   )
 }
 
@@ -714,13 +774,13 @@ function LargeTransferWarning({ amount }: { amount: number }) {
 function SecurityPanel() {
   const { t } = useI18n()
   return (
-    <Card variant="elevated" padding="md" className="border-emerald-300/20 bg-emerald-300/[0.045]">
+    <Card variant="elevated" padding="md" className="border-[rgb(255, 140, 80))/0.20] bg-[rgb(255, 140, 80))/[0.045]">
       <CardContent className="gap-3">
-        <div className="flex items-center gap-2 text-emerald-100">
+        <div className="flex items-center gap-2 text-[rgb(255, 140, 80))]">
           <ShieldCheck size={17} strokeWidth={2} />
           <span className="text-sm font-semibold">{t('transfer.operationProtected')}</span>
         </div>
-        <p className="text-xs text-emerald-100/75 leading-relaxed">{t('transfer.operationDescription')}</p>
+        <p className="text-xs text-[rgb(255, 140, 80))/75 leading-relaxed">{t('transfer.operationDescription')}</p>
       </CardContent>
     </Card>
   )
@@ -914,7 +974,7 @@ function ConfirmStep({
 }
 
 function ResultShell({ tone, icon, title, description, children }: { tone: 'pending' | 'success' | 'error'; icon: React.ReactNode; title: string; description: string; children?: React.ReactNode }) {
-  const toneClass = tone === 'success' ? 'text-emerald-100 border-emerald-300/20 bg-emerald-300/[0.055]' : tone === 'error' ? 'text-red-100 border-red-300/20 bg-red-300/[0.055]' : 'text-text-primary border-border-subtle bg-white/[0.035]'
+  const toneClass = tone === 'success' ? 'text-[rgb(255, 140, 80))] border-[rgb(255, 140, 80))/0.20] bg-[rgb(255, 140, 80))/[0.055]' : tone === 'error' ? 'text-red-100 border-red-300/20 bg-red-300/[0.055]' : 'text-text-primary border-border-subtle bg-white/[0.035]'
 
   return (
     <div className="h-full min-h-0 flex items-center justify-center py-1">
@@ -960,6 +1020,10 @@ function TransferRail({
   const destinationLabel = streamerMode ? t('transfer.hiddenRecipient') : recipientAlias ?? (recipientIban ? revealIbanDisplay(recipientIban) : t('transfer.selectDestination'))
   const hasDestination = Boolean(recipientAlias || recipientIban)
   const hasAmount = Boolean(amount)
+  const balanceMinor = account?.balance_minor ?? 0
+  const remainingMinor = amount ? Math.max(0, balanceMinor - amount) : balanceMinor
+  const usedRatio = amount && balanceMinor > 0 ? Math.min(1, amount / balanceMinor) : 0
+  const usedPercent = Math.round(usedRatio * 100)
   return (
     <aside className="min-h-0 flex flex-col gap-4 2xl:gap-5">
       <Card variant="glass" padding="none" className="relative min-h-0 overflow-hidden rounded-[1.75rem] border-white/10 flex-1">
@@ -971,46 +1035,124 @@ function TransferRail({
               'radial-gradient(circle at 84% 0%, rgba(255,255,255,0.08), transparent 34%), linear-gradient(180deg, rgba(4,1,1,0.86), rgba(0,0,0,0.92))',
           }}
         />
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none opacity-30"
+          style={{
+            background: 'radial-gradient(circle at 12% 50%, rgb(255, 140, 80)/0.06), transparent 45%), radial-gradient(circle at 88% 50%, rgba(246,75,0,0.04), transparent 40%)',
+          }}
+        />
         <div className="relative h-full min-h-0 flex flex-col p-5 2xl:p-6">
           <div className="flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-white/72" />
               <CardTitle className="text-base text-white">{t('transfer.railTitle')}</CardTitle>
             </div>
-            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-white/68" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(255, 140, 80))/0.18] bg-[rgb(255, 140, 80))/[0.09] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-[rgb(255, 140, 80))]"
+              title={t('transfer.operationProtected')}
+            >
+              <ShieldCheck size={11} strokeWidth={2.3} />
               {t('transfer.secureBadge')}
             </span>
           </div>
 
-          <div className="mt-5 rounded-[1.55rem] border border-white/10 bg-white/[0.045] px-4 py-4">
-            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46">{t('transfer.amountLabel')}</span>
-            <span className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums text-white">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-5 rounded-[1.55rem] border border-white/10 bg-white/[0.045] px-4 py-4 relative overflow-hidden"
+          >
+            {hasAmount && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="absolute inset-0 bg-[rgb(255, 140, 80))/[0.08]"
+              />
+            )}
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 relative z-10">{t('transfer.amountLabel')}</span>
+            <span className="block text-3xl font-light tracking-[-0.055em] tactile-tabular-nums text-white relative z-10">
               {amount ? streamerMode ? maskMoneyDisplay() : money(amount / 100) : '—'}
             </span>
+          </motion.div>
+
+          <div className="mt-3 rounded-[1.35rem] border border-white/10 bg-black/[0.18] p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-white/46">{t('transfer.afterSend')}</span>
+              <span className="text-xs font-semibold text-white tactile-tabular-nums">{account ? streamerMode ? maskMoneyDisplay() : money(remainingMinor / 100) : '—'}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-white/[0.10] relative">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.max(hasAmount ? 4 : 0, usedPercent)}%` }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full rounded-full bg-[rgb(255, 140, 80))] shadow-[0_0_12px_rgb(255, 140, 80)/0.35)]"
+              />
+            </div>
+            <div className="mt-1.5 flex items-center justify-between text-[10px] text-white/46">
+              <span>{t('transfer.available')}</span>
+              <span className="tactile-tabular-nums">{account ? streamerMode ? maskMoneyDisplay() : money(balanceMinor / 100) : '—'}</span>
+            </div>
           </div>
 
-          <div className="mt-4 rounded-[1.55rem] border border-white/10 bg-white/[0.035] p-3.5">
-            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 mb-3">{t('transfer.destination')}</span>
-            <div className="flex items-center gap-3">
-              <BankAvatar name={destinationLabel} size="lg" />
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-4 rounded-[1.55rem] border border-white/10 bg-white/[0.035] p-3.5 relative overflow-hidden"
+          >
+            {hasDestination && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="absolute inset-0 bg-[rgb(255, 140, 80))/[0.06]"
+              />
+            )}
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-white/46 mb-3 relative z-10">{t('transfer.destination')}</span>
+            <div className="flex items-center gap-3 relative z-10">
+              {hasDestination ? (
+                <BankAvatar name={destinationLabel} size="lg" />
+              ) : (
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.045] text-white/38">
+                  <UserRound size={18} strokeWidth={1.8} />
+                </span>
+              )}
               <span className="min-w-0 flex flex-col">
                 <span className="text-sm font-semibold text-white truncate">{destinationLabel}</span>
                 <span className="text-[11px] text-white/46 truncate">{recipientIban ? streamerMode ? maskIbanDisplay(recipientIban) : revealIbanDisplay(recipientIban) : t('transfer.destinationPending')}</span>
               </span>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="mt-4 space-y-2">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-4 space-y-2"
+          >
             <RailCheck done={hasAmount} label={t('transfer.amountSelected')} />
             <RailCheck done={hasDestination} label={t('transfer.destinationVerified')} />
             <RailCheck done={hasAmount && hasDestination} label={t('transfer.readyForReview')} />
-          </div>
+          </motion.div>
 
           <div className="mt-auto pt-4 space-y-2">
             <Metric label={t('common.from')} value={account ? streamerMode ? maskIbanCompact(account.iban) : revealIbanDisplay(account.iban) : '—'} />
             {memo.trim() ? <Metric label={t('transfer.concept')} value={streamerMode ? t('transfer.hiddenConcept') : memo.trim()} /> : null}
           </div>
         </div>
+        {hasAmount && hasDestination && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="absolute inset-0 pointer-events-none rounded-[1.75rem]"
+            style={{
+              boxShadow: 'inset 0 0 32px rgb(255, 140, 80)/0.12), 0 0 24px rgb(255, 140, 80)/0.08)',
+            }}
+          />
+        )}
       </Card>
     </aside>
   )

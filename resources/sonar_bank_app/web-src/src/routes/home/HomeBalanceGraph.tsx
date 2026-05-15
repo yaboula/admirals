@@ -19,19 +19,19 @@ export interface HomeBalanceGraphProps {
 const ORANGE = 'var(--color-brand-signal-orange)'
 const ORANGE_SOFT = 'rgb(206, 71, 20)'
 const PERIODS = [
-  { key: '1y', label: '1 year', days: 365 },
-  { key: '6m', label: '6 month', days: 180 },
-  { key: '3m', label: '3 month', days: 90 },
-  { key: '1m', label: '1 month', days: 30 },
+  { key: '3d', label: 'home.period3d', days: 3 },
+  { key: '1w', label: 'home.period1w', days: 7 },
+  { key: '2w', label: 'home.period2w', days: 14 },
+  { key: '1m', label: 'home.period1m', days: 30 },
 ] as const
 
 type PeriodKey = (typeof PERIODS)[number]['key']
 
 export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProps) {
   const { t, money, number, intlLocale } = useI18n()
-  const [period, setPeriod] = useState<PeriodKey>('6m')
+  const [period, setPeriod] = useState<PeriodKey>('1m')
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
-  const activePeriod = PERIODS.find((item) => item.key === period) ?? PERIODS[1]
+  const activePeriod = PERIODS.find((item) => item.key === period) ?? PERIODS[3]
   const data = useMemo(
     () => buildGraph(account, transactions, activePeriod.days, intlLocale),
     [account, activePeriod.days, transactions, intlLocale],
@@ -81,7 +81,7 @@ export function HomeBalanceGraph({ account, transactions }: HomeBalanceGraphProp
                     : undefined
                 }
               >
-                {item.label}
+                {t(item.label)}
               </button>
               )
             })}
@@ -170,18 +170,21 @@ function compactIban(value: string | undefined | null): string {
 function buildGraph(account: Account | undefined, transactions: Transaction[], periodDays: number, locale: string): GraphPoint[] {
   const balance = account ? account.balance_minor / 100 : 0
   const own = compactIban(account?.iban)
-  const bucketCount = 6
   const end = new Date()
   end.setHours(23, 59, 59, 999)
   const start = new Date(end)
-  start.setDate(start.getDate() - periodDays)
+  start.setDate(start.getDate() - (periodDays - 1))
   start.setHours(0, 0, 0, 0)
-  const bucketMs = (end.getTime() - start.getTime()) / bucketCount
-  const buckets = Array.from({ length: bucketCount }, (_, index) => {
-    const from = start.getTime() + bucketMs * index
-    const to = index === bucketCount - 1 ? end.getTime() : start.getTime() + bucketMs * (index + 1)
-    return { from, to, date: new Date(to) }
-  })
+  const bucketStepDays = periodDays <= 7 ? 1 : periodDays <= 14 ? 2 : 7
+  const buckets = []
+  for (let cursor = new Date(start); cursor.getTime() <= end.getTime(); cursor.setDate(cursor.getDate() + bucketStepDays)) {
+    const from = new Date(cursor)
+    from.setHours(0, 0, 0, 0)
+    const to = new Date(cursor)
+    to.setDate(to.getDate() + bucketStepDays - 1)
+    to.setHours(23, 59, 59, 999)
+    buckets.push({ from: from.getTime(), to: Math.min(to.getTime(), end.getTime()), date: new Date(Math.min(to.getTime(), end.getTime())) })
+  }
   const bucketNet = buckets.map((bucket) => {
     return transactions.reduce((sum, tx) => {
       if (tx.timestamp_ms < bucket.from || tx.timestamp_ms > bucket.to || tx.status !== 'committed') return sum
@@ -197,7 +200,7 @@ function buildGraph(account: Account | undefined, transactions: Transaction[], p
   buckets.forEach((bucket, index) => {
     rolling += bucketNet[index] ?? 0
     points.push({
-      label: String(bucket.date.toLocaleDateString(locale, periodDays <= 45 ? { day: '2-digit', month: 'short' } : { month: 'short' }) ?? '').replace('.', ''),
+      label: String(bucket.date.toLocaleDateString(locale, { day: '2-digit', month: 'short' }) ?? '').replace('.', ''),
       balance: Math.max(0, rolling),
     })
   })

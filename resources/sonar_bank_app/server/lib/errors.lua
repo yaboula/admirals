@@ -128,6 +128,22 @@ M.REGISTRY = {
     category = 'VALIDATION', code = 'INVALID_LIMITS', retryable = false,
     message  = 'Card limits invalid (monthly cannot be lower than daily).',
   },
+  JOINT_SELF = {
+    category = 'VALIDATION', code = 'JOINT_SELF', retryable = false,
+    message  = 'Cannot add yourself as joint owner.',
+  },
+  JOINT_CITIZEN_NOT_FOUND = {
+    category = 'BUSINESS', code = 'JOINT_CITIZEN_NOT_FOUND', retryable = false,
+    message  = 'Citizen does not exist or is not registered.',
+  },
+  JOINT_LIMIT_EXCEEDED = {
+    category = 'BUSINESS', code = 'JOINT_LIMIT_EXCEEDED', retryable = false,
+    message  = 'Maximum joint owners reached for this account.',
+  },
+  JOINT_ALREADY_EXISTS = {
+    category = 'BUSINESS', code = 'JOINT_ALREADY_EXISTS', retryable = false,
+    message  = 'Citizen is already a joint owner of this account.',
+  },
 
   -- IDEMPOTENCY
   IDEMPOTENCY_KEY_REUSED = {

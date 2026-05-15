@@ -4168,3 +4168,30 @@ COMMIT;
 
 ALTER TABLE sonar_bank_accounts
   ADD COLUMN IF NOT EXISTS savings DECIMAL(14,2) NOT NULL DEFAULT 0 AFTER balance;
+
+-- ============================================================================
+-- 039_sonar_bank_account_joints.sql
+-- ============================================================================
+START TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS sonar_bank_account_joints (
+  id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  account_id            CHAR(36)        NOT NULL,
+  joint_citizen_id      VARCHAR(64)     NOT NULL COMMENT 'sonar_accounts.char_id',
+  added_by_citizen_id   VARCHAR(64)     NOT NULL,
+  added_at              INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sonar_bank_account_joints_pair (account_id, joint_citizen_id),
+  KEY idx_sonar_bank_account_joints_citizen (joint_citizen_id),
+
+  CONSTRAINT fk_sonar_bank_account_joints_account
+    FOREIGN KEY (account_id) REFERENCES sonar_bank_accounts(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+COMMIT;
+
+-- ============================================================================
+-- END 039_sonar_bank_account_joints.sql
+-- ============================================================================

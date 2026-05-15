@@ -125,6 +125,23 @@ export function installMockHandlers(): void {
     return { iban: String(payload.iban ?? ''), status: 'closed' }
   })
 
+  registerMockHandler<{ iban: string; joint_added: string; total_joints: number }>('sonar:bank:account:addJoint', async (payload) => {
+    await simulateLatency(120, 260)
+    return {
+      iban: String(payload.iban ?? ''),
+      joint_added: String(payload.joint_citizen_id ?? ''),
+      total_joints: 1,
+    }
+  })
+
+  registerMockHandler<{ iban: string; joint_removed: string }>('sonar:bank:account:removeJoint', async (payload) => {
+    await simulateLatency(110, 240)
+    return {
+      iban: String(payload.iban ?? ''),
+      joint_removed: String(payload.joint_citizen_id ?? ''),
+    }
+  })
+
   registerMockHandler<{ submitted_ms: number }>('sonar:bank:kyc:submit', async () => {
     await simulateLatency(120, 260)
     return { submitted_ms: Date.now() }

@@ -28,7 +28,7 @@ export const useToastQueue = create<ToastQueueState>((set) => ({
   toasts: [],
   push: (toast) => {
     const id = generateUuidV4()
-    set((s) => ({ toasts: [...s.toasts, { ...toast, id, duration: toast.duration ?? 4000 }] }))
+    set((s) => ({ toasts: [...s.toasts, { ...toast, id, duration: toast.duration ?? 1500 }] }))
     return id
   },
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),

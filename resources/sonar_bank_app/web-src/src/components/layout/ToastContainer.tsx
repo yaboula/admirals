@@ -8,30 +8,30 @@ import { useI18n } from '@/lib/i18n'
 
 const TONE_META: Record<
   ToastTone,
-  { icon: typeof CheckCircle2; bg: string; ring: string; iconColor: string }
+  { icon: typeof CheckCircle2; bg: string; border: string; iconColor: string }
 > = {
   success: {
     icon: CheckCircle2,
-    bg: 'rgba(0,173,91,0.16)',
-    ring: 'rgba(0,173,91,0.4)',
+    bg: '#0a1f12',
+    border: 'rgb(0, 173, 91)',
     iconColor: 'rgb(0, 173, 91)',
   },
   warning: {
     icon: AlertTriangle,
-    bg: 'rgba(230,173,0,0.16)',
-    ring: 'rgba(230,173,0,0.4)',
+    bg: '#1a1508',
+    border: 'rgb(230, 173, 0)',
     iconColor: 'rgb(230, 173, 0)',
   },
   danger: {
     icon: AlertOctagon,
-    bg: 'rgba(234,60,63,0.16)',
-    ring: 'rgba(234,60,63,0.4)',
+    bg: '#1a0a0a',
+    border: 'rgb(234, 60, 63)',
     iconColor: 'rgb(234, 60, 63)',
   },
   info: {
     icon: Info,
-    bg: 'rgba(0,173,228,0.16)',
-    ring: 'rgba(0,173,228,0.4)',
+    bg: '#0a151f',
+    border: 'rgb(0, 173, 228)',
     iconColor: 'rgb(0, 173, 228)',
   },
 }
@@ -83,12 +83,13 @@ function ToastItem({
       exit={reduced ? { opacity: 0 } : { opacity: 0, x: 32, scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 380, damping: 28 }}
       className={cn(
-        'tactile-glass-card pointer-events-auto rounded-xl px-4 py-3',
+        'pointer-events-auto rounded-xl px-4 py-3',
         'flex items-start gap-3',
       )}
       style={{
         background: meta.bg,
-        boxShadow: `var(--shadow-toast), 0 0 0 1px ${meta.ring}`,
+        border: `1px solid ${meta.border}`,
+        boxShadow: 'var(--shadow-toast)',
       }}
       role="status"
     >

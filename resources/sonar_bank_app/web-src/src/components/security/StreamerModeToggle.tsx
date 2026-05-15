@@ -28,7 +28,7 @@ export function StreamerModeToggle() {
       aria-pressed={streamerMode}
       aria-label={streamerMode ? t('settings.disableStreamerMode') : t('settings.enableStreamerMode')}
       className={cn(
-        'tactile-focus-ring inline-flex h-8 items-center gap-2 rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.14em] transition-all duration-180',
+        'tactile-focus-ring inline-flex h-8 min-w-[132px] items-center justify-center gap-2 rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.14em] transition-all duration-180',
         streamerMode ? 'text-brand-signal-orange-light' : 'text-text-primary',
       )}
       style={{
@@ -42,7 +42,7 @@ export function StreamerModeToggle() {
       }}
     >
       {streamerMode ? <RadioTower size={13} strokeWidth={2.2} /> : <Eye size={13} strokeWidth={2.2} />}
-      <span className="hidden xl:inline">{t('settings.streamerMode')}</span>
+      <span className="inline whitespace-nowrap">{t('settings.streamerMode')}</span>
       <span
         className="inline-flex h-4 min-w-8 items-center justify-center rounded-full px-1.5 text-[9px] tracking-[0.12em]"
         style={{

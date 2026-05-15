@@ -17,6 +17,8 @@ export interface TransferWizardState {
   setStep: (step: TransferWizardStep) => void
   setExpressMode: (v: boolean) => void
   setAmount: (amount: number, memo?: string) => void
+  setDraftAmount: (amount: number | null) => void
+  setMemo: (memo: string) => void
   setRecipient: (iban: string, alias?: string | null) => void
   clearOperationIds: () => void
   reset: () => void
@@ -24,7 +26,7 @@ export interface TransferWizardState {
 
 const initial: Omit<
   TransferWizardState,
-  'init' | 'setStep' | 'setExpressMode' | 'setAmount' | 'setRecipient' | 'clearOperationIds' | 'reset'
+  'init' | 'setStep' | 'setExpressMode' | 'setAmount' | 'setDraftAmount' | 'setMemo' | 'setRecipient' | 'clearOperationIds' | 'reset'
 > = {
   step: 'amount',
   expressMode: false,
@@ -55,6 +57,8 @@ export const useTransferWizard = create<TransferWizardState>((set) => ({
   setStep: (step) => set({ step }),
   setExpressMode: (v) => set({ expressMode: v }),
   setAmount: (amount, memo) => set({ amount, memo: memo ?? '' }),
+  setDraftAmount: (amount) => set({ amount }),
+  setMemo: (memo) => set({ memo }),
   setRecipient: (iban, alias) => set({ recipientIban: iban, recipientAlias: alias ?? null }),
   clearOperationIds: () => set({ idempotencyKey: null, correlationId: null }),
   reset: () => set(initial),

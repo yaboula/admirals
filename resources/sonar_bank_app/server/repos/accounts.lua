@@ -29,7 +29,12 @@ local UUID = BankApp.lib.uuid
 
 local SQL_SELECT_BY_IBAN = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
-       JSON_ARRAY() AS joint_owners,
+       COALESCE(
+         (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
+          FROM sonar_bank_account_joints j
+          WHERE j.account_id = a.id),
+         JSON_ARRAY()
+       ) AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
        CAST(ROUND(COALESCE(a.savings, 0) * 100) AS SIGNED) AS savings_minor,
        CASE
@@ -48,7 +53,12 @@ LIMIT 1
 
 local SQL_SELECT_BY_ID = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
-       JSON_ARRAY() AS joint_owners,
+       COALESCE(
+         (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
+          FROM sonar_bank_account_joints j
+          WHERE j.account_id = a.id),
+         JSON_ARRAY()
+       ) AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
        CAST(ROUND(COALESCE(a.savings, 0) * 100) AS SIGNED) AS savings_minor,
        CASE
@@ -67,7 +77,12 @@ LIMIT 1
 
 local SQL_LIST_BY_CITIZEN = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
-       JSON_ARRAY() AS joint_owners,
+       COALESCE(
+         (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
+          FROM sonar_bank_account_joints j
+          WHERE j.account_id = a.id),
+         JSON_ARRAY()
+       ) AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
        CAST(ROUND(COALESCE(a.savings, 0) * 100) AS SIGNED) AS savings_minor,
        CASE WHEN a.is_frozen = 1 THEN 'frozen' ELSE 'active' END AS status,
@@ -240,12 +255,65 @@ function R.SetFrozenFlag(iban, frozen_bool)
   return DB.Execute(SQL_SET_FROZEN, { frozen_bool and 1 or 0, iban })
 end
 
-function R.AddJointOwner(iban, citizen_id, primary_owner_citizen_id)
-  return nil, Errors.New('VALIDATION_FAILED', { reason = 'canonical joint owner table not available' })
+-- Joint owners (canonical table sonar_bank_account_joints, mig 039)
+
+local SQL_INSERT_JOINT = [[
+INSERT INTO sonar_bank_account_joints
+  (account_id, joint_citizen_id, added_by_citizen_id, added_at)
+SELECT a.id, ?, ?, UNIX_TIMESTAMP()
+FROM sonar_bank_accounts a
+WHERE a.iban = ?
+LIMIT 1
+]]
+
+local SQL_DELETE_JOINT = [[
+DELETE j
+FROM sonar_bank_account_joints j
+INNER JOIN sonar_bank_accounts a ON a.id = j.account_id
+WHERE a.iban = ? AND j.joint_citizen_id = ?
+]]
+
+local SQL_LIST_JOINTS_FOR_IBAN = [[
+SELECT j.joint_citizen_id, j.added_by_citizen_id, j.added_at
+FROM sonar_bank_account_joints j
+INNER JOIN sonar_bank_accounts a ON a.id = j.account_id
+WHERE a.iban = ?
+ORDER BY j.added_at ASC
+]]
+
+local SQL_COUNT_JOINTS_FOR_IBAN = [[
+SELECT COUNT(*) AS n
+FROM sonar_bank_account_joints j
+INNER JOIN sonar_bank_accounts a ON a.id = j.account_id
+WHERE a.iban = ?
+]]
+
+local SQL_CITIZEN_EXISTS = [[
+SELECT 1 AS ok FROM sonar_accounts WHERE char_id = ? LIMIT 1
+]]
+
+function R.AddJointOwner(iban, joint_citizen_id, primary_owner_citizen_id)
+  return DB.Execute(SQL_INSERT_JOINT, { joint_citizen_id, primary_owner_citizen_id, iban })
 end
 
-function R.RemoveJointOwner(iban, citizen_id)
-  return nil, Errors.New('VALIDATION_FAILED', { reason = 'canonical joint owner table not available' })
+function R.RemoveJointOwner(iban, joint_citizen_id)
+  return DB.Execute(SQL_DELETE_JOINT, { iban, joint_citizen_id })
+end
+
+function R.ListJointOwners(iban)
+  return DB.Query(SQL_LIST_JOINTS_FOR_IBAN, { iban })
+end
+
+function R.CountJointOwners(iban)
+  local row, err = DB.QuerySingle(SQL_COUNT_JOINTS_FOR_IBAN, { iban })
+  if err then return nil, err end
+  return tonumber(row and row.n) or 0, nil
+end
+
+function R.CitizenExists(citizen_id)
+  local row, err = DB.QuerySingle(SQL_CITIZEN_EXISTS, { citizen_id })
+  if err then return false, err end
+  return row ~= nil and row.ok == 1, nil
 end
 
 -- -----------------------------------------------------------------------------

@@ -176,10 +176,36 @@ function S.BuildSnapshot(citizen_id)
     })
   end
 
+  -- Decode joint_owners JSON string → Lua array per account row.
+  -- MySQL JSON_ARRAYAGG returns a JSON-encoded string; FE contract expects
+  -- string[] | null so we normalise here once before payload composition.
+  local raw_accounts = results[QUERY_INDEX.ACCOUNTS] or {}
+  for _, account in ipairs(raw_accounts) do
+    local raw = account.joint_owners
+    if type(raw) == 'string' then
+      if raw == '' or raw == '[]' then
+        account.joint_owners = nil
+      elseif json and json.decode then
+        local ok_decode, decoded = pcall(json.decode, raw)
+        if ok_decode and type(decoded) == 'table' and #decoded > 0 then
+          account.joint_owners = decoded
+        else
+          account.joint_owners = nil
+        end
+      else
+        account.joint_owners = nil
+      end
+    elseif type(raw) == 'table' then
+      if #raw == 0 then account.joint_owners = nil end
+    else
+      account.joint_owners = nil
+    end
+  end
+
   -- Compose payload
   local payload = {
     citizen_id          = citizen_id,
-    accounts            = results[QUERY_INDEX.ACCOUNTS] or {},
+    accounts            = raw_accounts,
     recent_transactions = results[QUERY_INDEX.RECENT_TX] or {},
     recent_recipients   = results[QUERY_INDEX.RECENT_RECIPIENTS] or {},
     saved_recipients    = results[QUERY_INDEX.SAVED_RECIPIENTS] or {},

@@ -56,6 +56,10 @@ M.AUDIT_EVENT_TYPE = {
   CARD_PIN_CHANGE       = 'card_pin_change',
   CARD_LIMITS_UPDATE    = 'card_limits_update',
 
+  -- Joint owners
+  JOINT_OWNER_ADDED     = 'joint_owner_added',
+  JOINT_OWNER_REMOVED   = 'joint_owner_removed',
+
   -- Loans
   LOAN_REQUEST          = 'loan_request',
   LOAN_APPROVE          = 'loan_approve',

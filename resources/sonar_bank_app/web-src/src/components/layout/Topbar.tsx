@@ -67,7 +67,7 @@ export function Topbar({
         }}
       />
 
-      <form onSubmit={submitSearch} className="relative z-10 w-[280px]">
+      <form onSubmit={submitSearch} className="relative z-10 w-[320px]">
         <div
           className="h-10 rounded-full flex items-center gap-2.5 px-3.5"
           style={{
@@ -87,25 +87,27 @@ export function Topbar({
         </div>
       </form>
 
-      <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+      <div className="relative z-10 ml-3">
         <StreamerModeToggle />
       </div>
 
       <div className="relative z-10 ml-auto flex items-center gap-2">
-        <IconButton
-          icon={<RotateCcw size={16} strokeWidth={1.9} />}
-          aria-label={t('topbar.refreshAriaLabel')}
-          variant="ghost"
-          size="sm"
-          onClick={() => toast.info(t('topbar.refreshToastTitle'), t('topbar.refreshToastBody'))}
-        />
-        <IconButton
-          icon={<Bell size={16} strokeWidth={1.9} />}
-          aria-label={t('topbar.notificationsAriaLabel')}
-          variant="ghost"
-          size="sm"
-          onClick={() => toast.info(t('topbar.notificationsToastTitle'), t('topbar.notificationsToastBody'))}
-        />
+        <div className="flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] p-1">
+          <IconButton
+            icon={<RotateCcw size={16} strokeWidth={1.9} />}
+            aria-label={t('topbar.refreshAriaLabel')}
+            variant="ghost"
+            size="sm"
+            onClick={() => toast.info(t('topbar.refreshToastTitle'), t('topbar.refreshToastBody'))}
+          />
+          <IconButton
+            icon={<Bell size={16} strokeWidth={1.9} />}
+            aria-label={t('topbar.notificationsAriaLabel')}
+            variant="ghost"
+            size="sm"
+            onClick={() => toast.info(t('topbar.notificationsToastTitle'), t('topbar.notificationsToastBody'))}
+          />
+        </div>
         <TopbarLocaleSelector value={locale} onChange={changeLocale} label={t('settings.language')} />
         <ProfileChip
           initials={userInitials}

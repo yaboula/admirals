@@ -126,12 +126,19 @@ export function RecurringPayments() {
               </Button>
             </div>
             <RecurringTabs tab={tab} counts={{ active: activeRules.length, paused: pausedRules.length, history: historyRules.length }} onChange={setTab} />
-            <div className="min-h-0 flex-1 overflow-y-auto space-y-2 scrollbar-thin">
+            <div className="min-h-0 flex-1 overflow-y-auto space-y-2 scrollbar-thin relative">
               {visibleRules.length === 0 ? (
                 <EmptyRecurring tab={tab} />
-              ) : visibleRules.map((rule, index) => (
-                <RecurringRuleCard key={rule.recurring_id} rule={rule} index={index} streamerMode={streamerMode} onAction={runRuleAction} actionPending={pauseMutation.isPending || resumeMutation.isPending || cancelMutation.isPending} />
-              ))}
+              ) : (
+                <>
+                  {visibleRules.map((rule, index) => (
+                    <RecurringRuleCard key={rule.recurring_id} rule={rule} index={index} streamerMode={streamerMode} onAction={runRuleAction} actionPending={pauseMutation.isPending || resumeMutation.isPending || cancelMutation.isPending} />
+                  ))}
+                  {visibleRules.length > 2 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-surface-panel to-transparent pointer-events-none" />
+                  )}
+                </>
+              )}
             </div>
           </Card>
         </section>
@@ -233,20 +240,32 @@ function RecurringCreateDialog({
   onClose: () => void
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
-      <div className="w-full max-w-md rounded-[1.75rem] border border-white/10 bg-surface-panel p-5 shadow-2xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-text-primary">Create recurring rule</h2>
-          <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className="w-full max-w-md rounded-[1.75rem] border border-white/[0.08] bg-black p-6 shadow-2xl relative overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-32 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 140, 80, 0.10), transparent)' }}
+        />
+        <div className="relative flex items-center justify-between gap-3 mb-5">
+          <div>
+            <h2 className="text-xl font-semibold text-text-primary tracking-[-0.02em]">Create recurring rule</h2>
+            <p className="text-xs text-text-secondary mt-1">Set up automatic recurring payments</p>
+          </div>
+          <Button size="sm" variant="ghost" onClick={onClose} className="shrink-0">Close</Button>
         </div>
-        <div className="grid gap-3">
+        <div className="relative space-y-4">
           <Input label="From" value={fromIban} readOnly />
           <Input label="Destination IBAN" value={toIban} onChange={(event) => onChangeToIban(event.currentTarget.value)} />
           <Input label="Amount" type="number" value={amountMajor} onChange={(event) => onChangeAmount(event.currentTarget.value)} leftAdornment="$" />
-          <Input label="Interval days" type="number" value={intervalDays} onChange={(event) => onChangeIntervalDays(event.currentTarget.value)} />
-          <Input label="First charge in days" type="number" value={firstChargeDays} onChange={(event) => onChangeFirstChargeDays(event.currentTarget.value)} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Interval days" type="number" value={intervalDays} onChange={(event) => onChangeIntervalDays(event.currentTarget.value)} />
+            <Input label="First charge in days" type="number" value={firstChargeDays} onChange={(event) => onChangeFirstChargeDays(event.currentTarget.value)} />
+          </div>
           <Input label="Reason" value={reason} onChange={(event) => onChangeReason(event.currentTarget.value)} />
-          <Button loading={loading} onClick={onSubmit}>Create rule</Button>
+          <div className="pt-2">
+            <Button loading={loading} onClick={onSubmit} fullWidth variant="primary" className="h-11" style={{ background: 'var(--color-brand-signal-orange)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.12)', boxShadow: 'rgba(246, 75, 0, 0.9) 0px 16px 28px -20px' }}>Create rule</Button>
+          </div>
         </div>
       </div>
     </div>
@@ -338,9 +357,9 @@ function RecurringRuleCard({ rule, index, streamerMode, onAction, actionPending 
             <RuleMetric label={t('common.status')} value={statusText(rule.status)} tone={meta.color} />
           </div>
           <div className="flex flex-wrap gap-2">
-            {rule.status === 'active' ? <Button size="sm" variant="ghost" loading={actionPending} onClick={() => onAction(rule, 'pause')}>Pause</Button> : null}
-            {rule.status === 'paused' ? <Button size="sm" variant="ghost" loading={actionPending} onClick={() => onAction(rule, 'resume')}>Resume</Button> : null}
-            {rule.status !== 'cancelled' ? <Button size="sm" variant="danger" loading={actionPending} onClick={() => onAction(rule, 'cancel')}>Cancel</Button> : null}
+            {rule.status === 'active' ? <Button size="sm" variant="secondary" loading={actionPending} onClick={() => onAction(rule, 'pause')}>Pause</Button> : null}
+            {rule.status === 'paused' ? <Button size="sm" variant="secondary" loading={actionPending} onClick={() => onAction(rule, 'resume')}>Resume</Button> : null}
+            {rule.status !== 'cancelled' ? <Button size="sm" variant="secondary" loading={actionPending} onClick={() => onAction(rule, 'cancel')}>Cancel</Button> : null}
           </div>
         </div>
       </div>
@@ -421,14 +440,18 @@ function RecurringBudgetPanel({ stats, streamerMode }: { stats: RecurringStats; 
 function RecurringSafetyPanel() {
   const { t } = useI18n()
   return (
-    <Card variant="glass" padding="md" className="border-white/10 min-h-0 flex-1">
+    <Card variant="glass" padding="md" className="border-white/10 min-h-0 flex-1 flex flex-col">
       <div className="flex items-center gap-2 text-text-secondary mb-3">
         <ShieldCheck size={15} strokeWidth={2} />
         <span className="text-sm font-semibold">{t('recurring.accountControl')}</span>
       </div>
-      <div className="space-y-2 text-xs text-text-tertiary leading-relaxed">
-        <p>{t('recurring.accountControlLine1')}</p>
-        <p>{t('recurring.accountControlLine2')}</p>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <ShieldCheck size={24} className="text-text-tertiary mx-auto mb-2" strokeWidth={1.5} />
+          <p className="text-xs text-text-tertiary leading-relaxed max-w-[28ch]">
+            {t('recurring.accountControlLine1')} {t('recurring.accountControlLine2')}
+          </p>
+        </div>
       </div>
     </Card>
   )
@@ -506,6 +529,6 @@ function getRecurringMeta(rule: Recurring): { icon: typeof RefreshCw; color: str
   if (rule.status === 'cancelled') return { icon: Receipt, color: 'rgba(247,248,252,0.48)' }
   if (rule.next_charge_ms - Date.now() < 3 * 24 * 60 * 60 * 1000) return { icon: AlertTriangle, color: 'rgb(230, 173, 0)' }
   if (rule.interval_days <= 7) return { icon: Clock, color: 'rgb(0, 173, 228)' }
-  if (rule.amount_minor >= 500_00) return { icon: Landmark, color: 'var(--color-brand-signal-orange)' }
+  if (rule.amount_minor >= 500_00) return { icon: Landmark, color: 'rgb(255, 140, 80)' }
   return { icon: Check, color: 'rgb(53, 193, 119)' }
 }

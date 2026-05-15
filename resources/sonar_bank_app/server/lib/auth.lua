@@ -106,7 +106,12 @@ end
 
 local SQL_LOOKUP_ACCOUNT = [[
 SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
-       JSON_ARRAY() AS joint_owners,
+       COALESCE(
+         (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
+          FROM sonar_bank_account_joints j
+          WHERE j.account_id = a.id),
+         JSON_ARRAY()
+       ) AS joint_owners,
        CAST(ROUND(a.balance * 100) AS SIGNED) AS balance_minor,
        0 AS savings_minor,
        CASE

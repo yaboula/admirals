@@ -75,7 +75,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       whileTap={!isInactive && !reduced ? { scale: 0.98 } : undefined}
       transition={{ type: 'spring', stiffness: 600, damping: 25, mass: 0.6 }}
       className={cn(
-        'tactile-focus-ring inline-flex items-center justify-center font-medium select-none rounded-lg',
+        'tactile-focus-ring inline-flex items-center justify-center font-medium select-none rounded-xl',
         'whitespace-nowrap',
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],

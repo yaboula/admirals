@@ -51,7 +51,7 @@
 | **F13** | Account open (C002) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | |
 | **F14** | Account freeze/unfreeze self (C015/C016) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | |
 | **F15** | Account close (C019) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | Zero-balance guard en UI |
-| **F16** | Account addJoint/removeJoint (C020/C021) | 🔴 | 🔴 | 🟢 | 🟢 | 🟢 | 🟢 | ⚫ | ⚫ | 🔴 | BE listo, **sin UI** en Accounts.tsx |
+| **F16** | Account addJoint/removeJoint (C020/C021) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | Implementado 2026-05-15: migration 039 (tabla canónica `sonar_bank_account_joints`), repos reales con `JSON_ARRAYAGG`, validaciones (no self, max 3, citizen exists), UI panel completo con add/remove + confirm dialog + toasts. Pending live runtime. **Follow-up UX (Founder 2026-05-15)**: cambiar input de `char_id` por **player server ID** (numérico FiveM) — más usable. Service convertiría server_id → char_id antes de persistir. |
 | **F17** | KYC submit (C037) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | Player side OK |
 | **F18** | KYC approve/reject admin (C038/C039) | 🔴 | ⚫ | 🟢 | 🟢 | 🟢 | 🟢 | ⚫ | ⚫ | 🔴 | BE listo, **sin admin UI** |
 | **F19** | Loans read-only listado | 🟢 | ➖ | 🟢 | 🟢 | ➖ | ➖ | ➖ | 🟢 | 🟢 | `Loans.tsx` consumed |
@@ -91,8 +91,8 @@
 | Bucket | Count |
 |---|---|
 | 🟢 Complete | 17 |
-| 🟡 Partial (mostly missing live evidence) | 18 |
-| 🔴 Broken / contradicción | 9 |
+| 🟡 Partial (mostly missing live evidence) | 19 |
+| 🔴 Broken / contradicción | 8 |
 | ⚫ Not started / Phase B | 3 |
 | **Total flows** | **47** |
 
@@ -104,7 +104,7 @@ Ordenados por impacto producto × esfuerzo bajo:
 
 1. ~~**F11 Card setLimits**~~ — ✅ implementado 2026-05-15 (pending live runtime).
 2. **F12 Card design picker** — solo client. Persistir `design_id` en `sonar_bank_physical_cards` o documentar como cosmético local.
-3. **F16 Account joint owners** — BE listo (C020/C021), falta panel UI en `Accounts.tsx`. Quick win.
+3. ~~**F16 Account joint owners**~~ — ✅ implementado 2026-05-15 (pending live runtime). BE estaba stubbed; reescrito con tabla canonical mig 039.
 4. **F41 Notifications center** — gap visible (campana topbar sin queue). Crear store + drawer + NetEvent ingestion.
 5. **F20/F21 Loans player flow** — decisión founder: ¿abrir player loan request/payment con UI o sellar Phase B y borrar hooks no wired?
 
@@ -138,5 +138,6 @@ Ordenados por impacto producto × esfuerzo bajo:
 | Fecha | Flow | Commit | Evidencia runtime |
 |---|---|---|---|
 | 2026-05-15 | F11 Card setLimits | feat(bank): F11 implement card setLimits flow (C035) | ✅ Live validated — Founder confirmed save persists in DB + bootstrap refresh |
+| 2026-05-15 | F16 Joint Owners | (pending) | Pending — requires live txAdmin restart with migration 039 + UI add/remove test |
 
 *Append-only. Nunca borrar entries.*

@@ -228,6 +228,8 @@ end
 -- §5. Joint owners
 -- -----------------------------------------------------------------------------
 
+local JOINTS_MAX_PER_ACCOUNT = 3
+
 function S.AddJointOwner(ctx)
   local norm_iban = Validators.NormalizeIBAN(ctx.iban)
   if not norm_iban then return { ok = false, error = Errors.New('INVALID_IBAN') } end
@@ -238,11 +240,37 @@ function S.AddJointOwner(ctx)
   local owner_cid, _, own_err = Auth.RequireOwnership(ctx.src, norm_iban, { allow_joint = false })
   if own_err then return { ok = false, error = own_err } end
 
+  -- Cannot add yourself as joint
+  if owner_cid == ctx.joint_citizen_id then
+    return { ok = false, error = Errors.New('JOINT_SELF') }
+  end
+
+  -- Joint citizen must exist
+  local exists, exists_err = AccountsRepo.CitizenExists(ctx.joint_citizen_id)
+  if exists_err then return { ok = false, error = exists_err } end
+  if not exists then
+    return { ok = false, error = Errors.New('JOINT_CITIZEN_NOT_FOUND', { citizen_id = ctx.joint_citizen_id }) }
+  end
+
+  -- Cap on joints per account
+  local count, count_err = AccountsRepo.CountJointOwners(norm_iban)
+  if count_err then return { ok = false, error = count_err } end
+  if count >= JOINTS_MAX_PER_ACCOUNT then
+    return { ok = false, error = Errors.New('JOINT_LIMIT_EXCEEDED', { max = JOINTS_MAX_PER_ACCOUNT }) }
+  end
+
   local _, err = AccountsRepo.AddJointOwner(norm_iban, ctx.joint_citizen_id, owner_cid)
-  if err then return { ok = false, error = err } end
+  if err then
+    -- UNIQUE constraint => already a joint
+    local raw = type(err) == 'table' and (err.message or err.code or '') or tostring(err)
+    if string.find(string.lower(tostring(raw)), 'duplicate', 1, true) then
+      return { ok = false, error = Errors.New('JOINT_ALREADY_EXISTS', { citizen_id = ctx.joint_citizen_id }) }
+    end
+    return { ok = false, error = err }
+  end
 
   Audit.Write({
-    event_type       = 'joint_owner_added',
+    event_type       = Enums.AUDIT_EVENT_TYPE.JOINT_OWNER_ADDED or 'joint_owner_added',
     actor_citizen_id = owner_cid,
     actor_src        = ctx.src,
     target_iban      = norm_iban,
@@ -253,12 +281,15 @@ function S.AddJointOwner(ctx)
 
   invalidate_bootstrap(owner_cid)
   invalidate_bootstrap(ctx.joint_citizen_id)
-  return { ok = true, data = { iban = norm_iban, joint_added = ctx.joint_citizen_id } }
+  return { ok = true, data = { iban = norm_iban, joint_added = ctx.joint_citizen_id, total_joints = count + 1 } }
 end
 
 function S.RemoveJointOwner(ctx)
   local norm_iban = Validators.NormalizeIBAN(ctx.iban)
   if not norm_iban then return { ok = false, error = Errors.New('INVALID_IBAN') } end
+  if not Validators.IsValidCitizenId(ctx.joint_citizen_id) then
+    return { ok = false, error = Errors.New('INVALID_CITIZEN_ID') }
+  end
 
   local owner_cid, _, own_err = Auth.RequireOwnership(ctx.src, norm_iban, { allow_joint = false })
   if own_err then return { ok = false, error = own_err } end
@@ -267,7 +298,7 @@ function S.RemoveJointOwner(ctx)
   if err then return { ok = false, error = err } end
 
   Audit.Write({
-    event_type       = 'joint_owner_removed',
+    event_type       = Enums.AUDIT_EVENT_TYPE.JOINT_OWNER_REMOVED or 'joint_owner_removed',
     actor_citizen_id = owner_cid,
     actor_src        = ctx.src,
     target_iban      = norm_iban,

@@ -83,18 +83,13 @@ export function Sidebar({ defaultCollapsed: _defaultCollapsed }: SidebarProps) {
       >
       <div className="flex items-center justify-center pt-5 pb-4">
         <div
-          className="relative flex h-11 w-11 items-center justify-center rounded-full"
-          style={{
-            border: '1.5px solid rgba(221,167,52,0.38)',
-            boxShadow: '0 0 14px rgba(221,167,52,0.22)',
-          }}
+          className="relative flex h-14 w-14 items-center justify-center"
           aria-hidden
         >
           <img
             src={sonarMonogramUrl}
             alt=""
-            className="h-[42px] w-[42px] max-w-none object-contain"
-            style={{ filter: 'drop-shadow(0 0 10px rgba(255,100,19,0.7)) drop-shadow(0 0 18px rgba(221,167,52,0.3))' }}
+            className="h-[56px] w-[56px] max-w-none object-contain"
           />
         </div>
       </div>
@@ -153,9 +148,12 @@ function SidebarItem({ item }: { item: NavItem }) {
       to={item.to}
       end={item.end}
       onClick={() => sfx.console_tap()}
+      title={label}
+      aria-label={label}
       className={({ isActive }) =>
         cn(
           'group relative flex h-11 w-11 items-center justify-center rounded-2xl',
+          'sidebar-item',
           'transition-[background-color,color,box-shadow,transform] duration-180',
           isActive && 'sidebar-item--active',
         )
@@ -163,6 +161,7 @@ function SidebarItem({ item }: { item: NavItem }) {
     >
       {({ isActive }) => (
         <>
+          {isActive && <span aria-hidden className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-brand-signal-orange shadow-[0_0_14px_rgba(246,75,0,0.55)]" />}
           {isActive && <span aria-hidden className="absolute inset-0 rounded-2xl tactile-conic-edge pointer-events-none" />}
           <Icon
             size={18}
@@ -170,6 +169,9 @@ function SidebarItem({ item }: { item: NavItem }) {
             className="shrink-0"
             style={{ color: 'currentColor' }}
           />
+          <span className="pointer-events-none absolute left-[calc(100%+0.55rem)] top-1/2 z-50 -translate-y-1/2 rounded-xl border border-white/[0.08] bg-black/85 px-2.5 py-1.5 text-[11px] font-semibold text-white opacity-0 shadow-[0_12px_28px_rgba(0,0,0,0.35)] transition-opacity group-hover:opacity-100">
+            {label}
+          </span>
         </>
       )}
     </NavLink>

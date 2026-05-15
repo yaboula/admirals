@@ -87,10 +87,11 @@ export function Auth() {
             </div>
 
             <div className="relative pt-8">
-              <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(255,255,255,0.06),rgba(255,255,255,0.02)_52%,transparent_53%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
+              <div className="relative mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-black/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
                 <div className="absolute inset-0 m-auto h-32 w-32 rounded-full border border-white/10" />
-                <div className="absolute inset-0 m-auto h-40 w-40 rounded-full bg-[conic-gradient(from_210deg,transparent,rgba(246,75,0,0.42),transparent_38%)] opacity-80" />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-surface-abyss/90 shadow-[0_18px_46px_-30px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="absolute inset-0 m-auto h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(246,75,0,0.22),rgba(246,75,0,0.10)_38%,transparent_68%)]" />
+                <div className="absolute inset-0 m-auto h-40 w-40 rounded-full bg-[conic-gradient(from_230deg,transparent_0deg,rgba(246,75,0,0.46)_42deg,transparent_118deg)] opacity-70" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-[#050505] shadow-[0_18px_46px_-30px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.08)]">
                   <span className="absolute inset-3 rounded-full bg-brand-signal-orange/10 blur-xl" />
                   <Fingerprint size={55} strokeWidth={1.25} className="relative text-brand-signal-orange-light drop-shadow-[0_0_18px_rgba(246,75,0,0.35)]" />
                 </div>

@@ -33,7 +33,10 @@ export {
   useUnfreezeAccountMutation,
   useCloseAccountMutation,
   useSubmitKycMutation,
+  useAddJointOwnerMutation,
+  useRemoveJointOwnerMutation,
   accountMutationPayload,
+  jointOwnerMutationPayload,
   kycSubmitPayload,
 } from './accounts'
 export type {
@@ -43,6 +46,9 @@ export type {
   AccountOpenResponse,
   AccountStatusResponse,
   KycSubmitResponse,
+  JointOwnerMutationArgs,
+  JointOwnerAddResponse,
+  JointOwnerRemoveResponse,
 } from './accounts'
 export {
   useSaveRecipientMutation,
