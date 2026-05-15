@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/data/queryKeys'
 import type { BankCardMock, BootstrapSnapshot, CardStatus } from '@/data/contracts'
-import { simulateLatency } from '@/data/mock/seed'
 import { BankError } from '@/lib/bankError'
 import { createBankOperationIds } from '@/lib/bankIdempotency'
 import { bankMutation, useBankMutation } from '@/lib/bankQuery'
@@ -281,23 +280,30 @@ export interface ApplyCardDesignArgs {
   designId: string
 }
 
+export interface ApplyCardDesignResponse {
+  card_id: string
+  design_id: string
+  updated_ms: number
+}
+
+/**
+ * useApplyCardDesign — persist the chosen visual design for a card (C036).
+ *
+ * Calls the real BE callback `sonar:bank:card:applyDesign` so the choice
+ * survives reload / re-login. Optimistically patches the bootstrap snapshot
+ * so the carousel + detail card react instantly; on error we restore the
+ * previous snapshot and surface a canonical BankError to the dialog.
+ */
 export function useApplyCardDesign() {
   const qc = useQueryClient()
 
-  return useMutation<BankCardMock, BankError, ApplyCardDesignArgs, MutationContext>({
+  return useMutation<ApplyCardDesignResponse, BankError, ApplyCardDesignArgs, MutationContext>({
     mutationFn: async ({ cardId, designId }) => {
-      await simulateLatency(160, 340)
-      const snap = qc.getQueryData<BootstrapSnapshot>(queryKeys.bootstrap())
-      const card = snap?.cards.find((c) => c.card_id === cardId)
-      if (!card) {
-        throw new BankError({
-          code: 'CARD_NOT_FOUND',
-          category: 'not_found',
-          message: 'No se encontró la tarjeta',
-          retryable: false,
-        })
-      }
-      return { ...card, design_id: designId }
+      return bankMutation<{ card_id: string; design_id: string }, ApplyCardDesignResponse>(
+        'sonar:bank:card:applyDesign',
+        { card_id: cardId, design_id: designId },
+        { idempotency: createBankOperationIds },
+      )
     },
     onMutate: async ({ cardId, designId }) => {
       await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
@@ -316,7 +322,8 @@ export function useApplyCardDesign() {
       }
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
+      void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      void qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
     },
   })
 }

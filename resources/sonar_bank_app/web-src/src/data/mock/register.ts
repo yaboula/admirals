@@ -438,6 +438,18 @@ export function installMockHandlers(): void {
 
   registerMockHandler<{
     card_id: string
+    design_id: string
+    updated_ms: number
+  }>('sonar:bank:card:applyDesign', async (payload) => {
+    await simulateLatency(120, 260)
+    return {
+      card_id: String(payload.card_id ?? ''),
+      design_id: String(payload.design_id ?? 'sonar_signature'),
+      updated_ms: Date.now(),
+    }
+  })
+  registerMockHandler<{
+    card_id: string
     daily_limit_minor: number
     monthly_limit_minor: number
     updated_ms: number

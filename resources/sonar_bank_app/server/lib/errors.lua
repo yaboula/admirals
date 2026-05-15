@@ -128,6 +128,10 @@ M.REGISTRY = {
     category = 'VALIDATION', code = 'INVALID_LIMITS', retryable = false,
     message  = 'Card limits invalid (monthly cannot be lower than daily).',
   },
+  INVALID_DESIGN = {
+    category = 'VALIDATION', code = 'INVALID_DESIGN', retryable = false,
+    message  = 'Unknown card design.',
+  },
   JOINT_SELF = {
     category = 'VALIDATION', code = 'JOINT_SELF', retryable = false,
     message  = 'Cannot add yourself as joint owner.',

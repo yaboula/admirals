@@ -203,6 +203,70 @@ function S.SetLimits(ctx)
   }
 end
 
+-- C036 — ApplyDesign
+-- Updates the visual design_id of a card the caller owns. Whitelisted to the
+-- known FE registry ids (`cardDesigns.ts`); unknown ids are rejected. The
+-- bootstrap snapshot is invalidated so the cards array reflects immediately.
+local KNOWN_DESIGN_IDS = {
+  noir            = true,
+  sonar_signature = true,
+  aurora          = true,
+  sunset          = true,
+  titanium        = true,
+  deep_space      = true,
+  emerald_vault   = true,
+}
+
+function S.ApplyDesign(ctx)
+  local card_id = ctx.card_id
+  if type(card_id) ~= 'string' or #card_id == 0 then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'card_id' }) }
+  end
+  local design_id = ctx.design_id
+  if type(design_id) ~= 'string' or #design_id == 0 or #design_id > 64 then
+    return { ok = false, error = Errors.New('INVALID_DESIGN', { field = 'design_id' }) }
+  end
+  if not KNOWN_DESIGN_IDS[design_id] then
+    return { ok = false, error = Errors.New('INVALID_DESIGN', { design_id = design_id }) }
+  end
+
+  local card = CardsRepo.GetById(card_id)
+  if not card then
+    return { ok = false, error = Errors.New('CARD_NOT_FOUND') }
+  end
+
+  local actor_cid, auth_err = Auth.RequireCitizen(ctx.src)
+  if auth_err then return { ok = false, error = auth_err } end
+  if card.owner_citizen_id ~= actor_cid then
+    return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH') }
+  end
+
+  local _, err = CardsRepo.SetDesign(card_id, actor_cid, design_id)
+  if err then return { ok = false, error = err } end
+
+  Audit.Write({
+    event_type        = Enums.AUDIT_EVENT_TYPE.CARD_DESIGN_APPLIED or 'card_design_applied',
+    actor_citizen_id  = actor_cid,
+    actor_src         = ctx.src,
+    target_citizen_id = actor_cid,
+    event_data        = {
+      card_id   = card_id,
+      design_id = design_id,
+    },
+  })
+
+  invalidate_bootstrap(actor_cid)
+
+  return {
+    ok = true,
+    data = {
+      card_id    = card_id,
+      design_id  = design_id,
+      updated_ms = os.time() * 1000,
+    },
+  }
+end
+
 function S.ChangePin(ctx)
   local card = CardsRepo.GetById(ctx.card_id)
   if not card then return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'card not found' }) } end

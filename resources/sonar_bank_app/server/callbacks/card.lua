@@ -9,6 +9,7 @@
 --   C033 sonar:bank:card:freeze
 --   C034 sonar:bank:card:unfreeze
 --   C035 sonar:bank:card:setLimits
+--   C036 sonar:bank:card:applyDesign
 --   C040 sonar:bank:card:changePin
 -- =============================================================================
 
@@ -89,6 +90,22 @@ Wrap.Register('sonar:bank:card:setLimits', {
     card_id              = payload.card_id,
     daily_limit_minor    = payload.daily_limit_minor,
     monthly_limit_minor  = payload.monthly_limit_minor,
+  })
+end)
+
+-- -----------------------------------------------------------------------------
+-- C036 — applyDesign
+-- -----------------------------------------------------------------------------
+
+Wrap.Register('sonar:bank:card:applyDesign', {
+  tier  = Enums.TIER.TIER_2_WRITE,
+  cb_id = 'C036',
+}, function(src, citizen_id, payload)
+  return CardService.ApplyDesign({
+    src        = src,
+    citizen_id = citizen_id,
+    card_id    = payload.card_id,
+    design_id  = payload.design_id,
   })
 end)
 
