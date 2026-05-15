@@ -136,6 +136,73 @@ end
 function S.Freeze(ctx)   return set_status_helper(ctx, 'frozen', Enums.AUDIT_EVENT_TYPE.CARD_FREEZE) end
 function S.Unfreeze(ctx) return set_status_helper(ctx, 'active', Enums.AUDIT_EVENT_TYPE.CARD_UNFREEZE) end
 
+-- C035 — SetLimits
+-- Updates the daily and monthly spending ceilings on a card the caller owns.
+-- Validation:
+--   * Both limits are integers in minor units, >= 0, <= 100_000_000 (= 1M EUR)
+--   * monthly_limit_minor must be >= daily_limit_minor (matches FE guard)
+--   * Caller must own the card
+-- Audit row references the card_id, previous limits and new limits.
+function S.SetLimits(ctx)
+  local card_id = ctx.card_id
+  if type(card_id) ~= 'string' or #card_id == 0 then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'card_id' }) }
+  end
+
+  local daily = tonumber(ctx.daily_limit_minor)
+  local monthly = tonumber(ctx.monthly_limit_minor)
+  local MAX_LIMIT_MINOR = 100000000 -- 1,000,000.00
+  if not daily or daily < 0 or daily > MAX_LIMIT_MINOR or math.floor(daily) ~= daily then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'daily_limit_minor' }) }
+  end
+  if not monthly or monthly < 0 or monthly > MAX_LIMIT_MINOR or math.floor(monthly) ~= monthly then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'monthly_limit_minor' }) }
+  end
+  if monthly < daily then
+    return { ok = false, error = Errors.New('INVALID_LIMITS', { reason = 'monthly_below_daily' }) }
+  end
+
+  local card = CardsRepo.GetById(card_id)
+  if not card then
+    return { ok = false, error = Errors.New('CARD_NOT_FOUND') }
+  end
+
+  local actor_cid, auth_err = Auth.RequireCitizen(ctx.src)
+  if auth_err then return { ok = false, error = auth_err } end
+  if card.owner_citizen_id ~= actor_cid then
+    return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH') }
+  end
+
+  local previous_daily_minor = tonumber(card.spend_limit_minor) or 0
+
+  local _, err = CardsRepo.SetLimits(card_id, actor_cid, daily, monthly)
+  if err then return { ok = false, error = err } end
+
+  Audit.Write({
+    event_type        = Enums.AUDIT_EVENT_TYPE.CARD_LIMITS_UPDATE,
+    actor_citizen_id  = actor_cid,
+    actor_src         = ctx.src,
+    target_citizen_id = actor_cid,
+    target_iban       = card.account_iban,
+    event_data        = {
+      card_id                       = card_id,
+      previous_daily_limit_minor    = previous_daily_minor,
+      new_daily_limit_minor         = daily,
+      new_monthly_limit_minor       = monthly,
+    },
+  })
+  invalidate_bootstrap(actor_cid)
+  return {
+    ok   = true,
+    data = {
+      card_id              = card_id,
+      daily_limit_minor    = daily,
+      monthly_limit_minor  = monthly,
+      updated_ms           = os.time() * 1000,
+    },
+  }
+end
+
 function S.ChangePin(ctx)
   local card = CardsRepo.GetById(ctx.card_id)
   if not card then return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'card not found' }) } end

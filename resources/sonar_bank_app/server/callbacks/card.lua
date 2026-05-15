@@ -3,11 +3,12 @@
 -- =============================================================================
 -- Virtual cards (PIN HMAC-salted).
 --
--- Callbacks (5):
+-- Callbacks (6):
 --   C030 sonar:bank:card:list
 --   C032 sonar:bank:card:issue
 --   C033 sonar:bank:card:freeze
 --   C034 sonar:bank:card:unfreeze
+--   C035 sonar:bank:card:setLimits
 --   C040 sonar:bank:card:changePin
 -- =============================================================================
 
@@ -71,6 +72,23 @@ Wrap.Register('sonar:bank:card:unfreeze', {
   return CardService.Unfreeze({
     src     = src,
     card_id = payload.card_id,
+  })
+end)
+
+-- -----------------------------------------------------------------------------
+-- C035 — setLimits
+-- -----------------------------------------------------------------------------
+
+Wrap.Register('sonar:bank:card:setLimits', {
+  tier  = Enums.TIER.TIER_2_WRITE,
+  cb_id = 'C035',
+}, function(src, citizen_id, payload)
+  return CardService.SetLimits({
+    src                  = src,
+    citizen_id           = citizen_id,
+    card_id              = payload.card_id,
+    daily_limit_minor    = payload.daily_limit_minor,
+    monthly_limit_minor  = payload.monthly_limit_minor,
   })
 end)
 

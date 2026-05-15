@@ -6,6 +6,8 @@ import { BankError } from '@/lib/bankError'
 import { createBankOperationIds } from '@/lib/bankIdempotency'
 import { bankMutation, useBankMutation } from '@/lib/bankQuery'
 
+const MAX_LIMIT_MINOR = 100_000_000 // 1,000,000.00
+
 /* ---------------------------------------------------------------------------
    BANK-FE.4.3 — Card mutations (Phase A · MOCK).
 
@@ -138,13 +140,50 @@ export interface UpdateCardLimitsArgs {
   monthly_limit_minor: number
 }
 
+interface SetLimitsBackendPayload extends Record<string, unknown> {
+  card_id: string
+  daily_limit_minor: number
+  monthly_limit_minor: number
+}
+
+export interface SetLimitsResponse {
+  card_id: string
+  daily_limit_minor: number
+  monthly_limit_minor: number
+  updated_ms: number
+}
+
+/**
+ * useUpdateCardLimits — wires C035 sonar:bank:card:setLimits.
+ *
+ * Validates the same invariants as the BE (non-negative integers in minor units,
+ * monthly >= daily, capped at MAX_LIMIT_MINOR) before crossing the bridge so
+ * obvious mistakes never reach the server. On success the bootstrap snapshot is
+ * patched optimistically and re-fetched; on failure the previous snapshot is
+ * restored and a canonical BankError is surfaced.
+ */
 export function useUpdateCardLimits() {
   const qc = useQueryClient()
 
-  return useMutation<BankCardMock, BankError, UpdateCardLimitsArgs, MutationContext>({
+  return useMutation<SetLimitsResponse, BankError, UpdateCardLimitsArgs, MutationContext>({
     mutationFn: async (args) => {
-      await simulateLatency(220, 420)
-      // Mock validation: monthly must be >= daily.
+      const isInt = (n: number) => Number.isFinite(n) && Math.floor(n) === n
+      if (!isInt(args.daily_limit_minor) || args.daily_limit_minor < 0 || args.daily_limit_minor > MAX_LIMIT_MINOR) {
+        throw new BankError({
+          code: 'VALIDATION_FAILED',
+          category: 'validation',
+          message: 'Límite diario inválido',
+          retryable: false,
+        })
+      }
+      if (!isInt(args.monthly_limit_minor) || args.monthly_limit_minor < 0 || args.monthly_limit_minor > MAX_LIMIT_MINOR) {
+        throw new BankError({
+          code: 'VALIDATION_FAILED',
+          category: 'validation',
+          message: 'Límite mensual inválido',
+          retryable: false,
+        })
+      }
       if (args.monthly_limit_minor < args.daily_limit_minor) {
         throw new BankError({
           code: 'INVALID_LIMITS',
@@ -163,11 +202,16 @@ export function useUpdateCardLimits() {
           retryable: false,
         })
       }
-      return {
-        ...card,
+      const payload: SetLimitsBackendPayload = {
+        card_id: args.cardId,
         daily_limit_minor: args.daily_limit_minor,
         monthly_limit_minor: args.monthly_limit_minor,
       }
+      return bankMutation<SetLimitsBackendPayload, SetLimitsResponse>(
+        'sonar:bank:card:setLimits',
+        payload,
+        { idempotency: createBankOperationIds },
+      )
     },
     onMutate: async (args) => {
       await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
@@ -187,6 +231,9 @@ export function useUpdateCardLimits() {
       if (context?.previous) {
         qc.setQueryData(queryKeys.bootstrap(), context.previous)
       }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
     },
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.cards.all() })

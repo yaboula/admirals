@@ -34,9 +34,9 @@ SELECT c.id AS card_id, sa.char_id AS owner_citizen_id, ba.iban AS iban,
        'sonar_signature' AS design_id,
        'SONAR Cardholder' AS holder_name,
        CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS daily_limit_minor,
-       0 AS daily_spent_minor,
-       CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS monthly_limit_minor,
-       0 AS monthly_spent_minor
+       CAST(ROUND(COALESCE(c.daily_used_today, 0) * 100) AS SIGNED) AS daily_spent_minor,
+       CAST(ROUND(COALESCE(c.monthly_limit, 0) * 100) AS SIGNED) AS monthly_limit_minor,
+       CAST(ROUND(COALESCE(c.monthly_used, 0) * 100) AS SIGNED) AS monthly_spent_minor
 FROM sonar_bank_physical_cards c
 INNER JOIN sonar_accounts sa ON sa.id = c.holder_account_id
 INNER JOIN sonar_bank_accounts ba ON ba.id = c.bank_account_id
@@ -83,6 +83,14 @@ SET c.pin_hash = ?
 WHERE c.id = ? AND sa.char_id = ?
 ]]
 
+local SQL_SET_LIMITS = [[
+UPDATE sonar_bank_physical_cards c
+INNER JOIN sonar_accounts sa ON sa.id = c.holder_account_id
+SET c.daily_limit = (? / 100.0),
+    c.monthly_limit = (? / 100.0)
+WHERE c.id = ? AND sa.char_id = ?
+]]
+
 function R.ListByCitizen(citizen_id, limit)
   return DB.Query(SQL_LIST, { citizen_id, limit or 8 })
 end
@@ -109,6 +117,15 @@ end
 
 function R.SetPinHash(card_id, owner_citizen_id, pin_hash)
   return DB.Execute(SQL_SET_PIN, { pin_hash, card_id, owner_citizen_id })
+end
+
+function R.SetLimits(card_id, owner_citizen_id, daily_limit_minor, monthly_limit_minor)
+  return DB.Execute(SQL_SET_LIMITS, {
+    daily_limit_minor or 0,
+    monthly_limit_minor or 0,
+    card_id,
+    owner_citizen_id,
+  })
 end
 
 --- BuildSnapshotQuery — REQ-FE-001 bootstrap parallel.

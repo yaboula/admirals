@@ -120,6 +120,14 @@ M.REGISTRY = {
     category = 'BUSINESS', code = 'ESCROW_RELEASE_INVALID', retryable = false,
     message  = 'Escrow release amount invalid (must be > 0 and ≤ held balance).',  -- H005
   },
+  CARD_NOT_FOUND = {
+    category = 'BUSINESS', code = 'CARD_NOT_FOUND', retryable = false,
+    message  = 'Card not found.',
+  },
+  INVALID_LIMITS = {
+    category = 'VALIDATION', code = 'INVALID_LIMITS', retryable = false,
+    message  = 'Card limits invalid (monthly cannot be lower than daily).',
+  },
 
   -- IDEMPOTENCY
   IDEMPOTENCY_KEY_REUSED = {

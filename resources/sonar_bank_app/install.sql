@@ -3153,6 +3153,10 @@ CREATE TABLE IF NOT EXISTS sonar_bank_physical_cards (
   daily_used_today      DECIMAL(14,2)   NOT NULL DEFAULT 0,
   daily_reset_at        INT UNSIGNED    NULL,
 
+  monthly_limit         DECIMAL(14,2)   NULL COMMENT 'NULL = no monthly cap (mig 038)',
+  monthly_used          DECIMAL(14,2)   NOT NULL DEFAULT 0,
+  monthly_reset_at      INT UNSIGNED    NULL,
+
   issued_at             INT UNSIGNED    NOT NULL DEFAULT (UNIX_TIMESTAMP()),
   expires_at            INT UNSIGNED    NULL,
   frozen_at             INT UNSIGNED    NULL,

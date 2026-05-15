@@ -418,6 +418,21 @@ export function installMockHandlers(): void {
     await simulateLatency(140, 280)
     return { card_id: String(payload.card_id ?? ''), pin_changed_ms: Date.now() }
   })
+
+  registerMockHandler<{
+    card_id: string
+    daily_limit_minor: number
+    monthly_limit_minor: number
+    updated_ms: number
+  }>('sonar:bank:card:setLimits', async (payload) => {
+    await simulateLatency(140, 280)
+    return {
+      card_id: String(payload.card_id ?? ''),
+      daily_limit_minor: Number(payload.daily_limit_minor ?? 0),
+      monthly_limit_minor: Number(payload.monthly_limit_minor ?? 0),
+      updated_ms: Date.now(),
+    }
+  })
   registerMockHandler<IssueCardResult>('sonar:bank:card:issue', async (_payload) => {
     await simulateLatency(200, 420)
     const last4 = String(Math.floor(Math.random() * 9000) + 1000)

@@ -54,6 +54,7 @@ M.AUDIT_EVENT_TYPE = {
   CARD_FREEZE           = 'card_freeze',
   CARD_UNFREEZE         = 'card_unfreeze',
   CARD_PIN_CHANGE       = 'card_pin_change',
+  CARD_LIMITS_UPDATE    = 'card_limits_update',
 
   -- Loans
   LOAN_REQUEST          = 'loan_request',
