@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type ChangeEvent } from 'react'
 import { motion } from 'motion/react'
 import { ShieldCheck, CreditCard, Lock, CreditCard as CardIcon, X } from 'lucide-react'
 import { useIssueCard } from '@/data/mutations'
@@ -9,11 +9,31 @@ import { usePrivacyMode } from '@/stores/privacy'
 import { handleBankError } from '@/lib/bankError'
 import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
+import { getCardDesignsForProductTier, resolveCardDesign, type CardProductTier } from './cardDesigns'
 
 const PIN_LENGTH = 4
 const MAX_CARDS = 3
-const CARD_TYPES = ['debit', 'virtual'] as const
-type CardType = (typeof CARD_TYPES)[number]
+const CARD_TYPES = ['classic', 'premium'] as const
+
+const CARD_PRODUCT_LIMITS = {
+  classic: {
+    daily_limit_minor: 200000,
+    monthly_limit_minor: 2500000,
+    cash_limit_minor: 50000,
+    interest_bps: 0,
+  },
+  premium: {
+    daily_limit_minor: 1000000,
+    monthly_limit_minor: 10000000,
+    cash_limit_minor: 250000,
+    interest_bps: 850,
+  },
+} satisfies Record<CardProductTier, {
+  daily_limit_minor: number
+  monthly_limit_minor: number
+  cash_limit_minor: number
+  interest_bps: number
+}>
 
 export interface RequestCardPanelProps {
   isInitial?: boolean
@@ -21,7 +41,7 @@ export interface RequestCardPanelProps {
 }
 
 export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCardPanelProps = {}) {
-  const { t } = useI18n()
+  const { t, money } = useI18n()
   const { data: bootstrap } = useBootstrap()
   const { cards } = useCards()
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
@@ -30,12 +50,22 @@ export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCard
   const primaryIban = bootstrap?.accounts?.[0]?.iban ?? ''
 
   const [digits, setDigits] = useState<string[]>(Array(PIN_LENGTH).fill(''))
-  const [cardType, setCardType] = useState<CardType>('debit')
+  const [cardType, setCardType] = useState<CardProductTier>('classic')
+  const [designId, setDesignId] = useState<string>('noir')
   const [error, setError] = useState<string | null>(null)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const pin = digits.join('')
   const pinReady = pin.length === PIN_LENGTH && /^\d{4}$/.test(pin)
+  const allowedDesigns = getCardDesignsForProductTier(cardType)
+  const selectedDesign = resolveCardDesign(designId)
+  const productLimits = CARD_PRODUCT_LIMITS[cardType]
+
+  useEffect(() => {
+    if (!allowedDesigns.some((design) => design.id === designId)) {
+      setDesignId(allowedDesigns[0]?.id ?? 'noir')
+    }
+  }, [allowedDesigns, designId])
 
   function focusNext(index: number) {
     const next = inputRefs.current[index + 1]
@@ -86,7 +116,13 @@ export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCard
     }
     sfx.depth_press()
     try {
-      await issueCard({ account_iban: primaryIban, pin, card_type: cardType })
+      await issueCard({
+        account_iban: primaryIban,
+        pin,
+        card_type: cardType,
+        design_id: designId,
+        spend_limit_minor: productLimits.daily_limit_minor,
+      })
       sfx.coin_clink()
     } catch (err) {
       handleBankError(err)
@@ -103,14 +139,17 @@ export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCard
       {/* ── Card placeholder ── */}
       <div className="relative mx-auto w-full max-w-[320px] aspect-[1.586/1] rounded-2xl overflow-hidden select-none"
         style={{
-          background: 'linear-gradient(135deg, oklch(0.14 0.04 40) 0%, oklch(0.08 0.02 250) 60%, oklch(0.06 0.015 260) 100%)',
-          boxShadow: '0 28px 56px -20px oklch(0.65 0.22 40 / 0.45), 0 8px 24px -8px rgba(0,0,0,0.7)',
+          background: selectedDesign.surface,
+          boxShadow: `0 28px 56px -20px ${selectedDesign.accent}, 0 8px 24px -8px rgba(0,0,0,0.7)`,
           border: '1px solid rgba(255,255,255,0.1)',
         }}
       >
+        {selectedDesign.overlay ? (
+          <div className="absolute inset-0 pointer-events-none" style={{ background: selectedDesign.overlay }} />
+        ) : null}
         <div className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 20% 20%, oklch(0.65 0.22 40 / 0.22) 0%, transparent 55%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.06) 0%, transparent 40%)',
+            background: 'radial-gradient(circle at 80% 80%, rgba(255,255,255,0.06) 0%, transparent 40%)',
           }}
         />
         {/* Chip placeholder */}
@@ -131,7 +170,7 @@ export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCard
         </div>
         {/* Cardholder placeholder */}
         <div className="absolute bottom-4 left-5 text-[10px] tracking-[0.14em] text-white/30 uppercase">
-          {'SONAR BANK'}
+          {cardType === 'premium' ? 'SONAR PREMIUM' : 'SONAR CLASSIC'}
         </div>
         {/* Lock badge */}
         <div className="absolute bottom-4 right-5 flex items-center gap-1 opacity-40">
@@ -206,15 +245,50 @@ export function RequestFirstCardPanel({ isInitial = true, onClose }: RequestCard
                     cardType === type ? 'text-white' : 'text-white/40'
                   )} />
                   <span className="text-xs font-semibold text-white">
-                    {t(type === 'debit' ? 'cards.activate.typeDebit' : 'cards.activate.typeVirtual')}
+                    {t(type === 'classic' ? 'cards.activate.typeClassic' : 'cards.activate.typePremium')}
                   </span>
                 </div>
                 <span className="text-[10px] text-white/50 leading-tight">
-                  {t(type === 'debit' ? 'cards.activate.typeDebitDesc' : 'cards.activate.typeVirtualDesc')}
+                  {t(type === 'classic' ? 'cards.activate.typeClassicDesc' : 'cards.activate.typePremiumDesc')}
+                </span>
+                <span className="text-[9px] text-white/35 leading-tight">
+                  {t('cards.activate.cashLimit').replace('{amount}', money(CARD_PRODUCT_LIMITS[type].cash_limit_minor / 100, { maximumFractionDigits: 0, minimumFractionDigits: 0 }))}
                 </span>
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] uppercase tracking-[0.16em] font-semibold text-white/50">
+            {t('cards.activate.designLabel')}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {allowedDesigns.map((design) => (
+              <button
+                key={design.id}
+                type="button"
+                onClick={() => { setDesignId(design.id); setError(null) }}
+                disabled={isPending}
+                className={cn(
+                  'rounded-xl overflow-hidden text-left transition-all duration-150 border',
+                  designId === design.id ? 'border-white/35' : 'border-white/10 hover:border-white/20',
+                  isPending && 'opacity-50 cursor-not-allowed',
+                )}
+              >
+                <div className="h-12" style={{ background: design.surface }}>
+                  {design.overlay ? <div className="h-full w-full" style={{ background: design.overlay }} /> : null}
+                </div>
+                <div className="px-2.5 py-2 bg-white/[0.04]">
+                  <div className="text-[11px] font-semibold text-white">{design.name}</div>
+                  <div className="text-[9px] text-white/45 truncate">{design.tagline}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-white/35 leading-relaxed">
+            {cardType === 'premium' ? t('cards.activate.premiumTerms') : t('cards.activate.classicTerms')}
+          </p>
         </div>
 
         {/* PIN input */}

@@ -30,7 +30,7 @@ SELECT c.id AS card_id, sa.char_id AS owner_citizen_id, ba.iban AS iban,
        CASE WHEN c.state = 'frozen' THEN 'locked' WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
        c.issued_at * 1000 AS created_ms,
        (c.issued_at + 4 * 365 * 24 * 3600) * 1000 AS expiry_ms,
-       c.card_kind AS card_type,
+       CASE WHEN c.card_kind = 'credit' THEN 'premium' ELSE 'classic' END AS card_type,
        COALESCE(c.design_id, 'sonar_signature') AS design_id,
        'SONAR Cardholder' AS holder_name,
        CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS daily_limit_minor,
@@ -48,8 +48,9 @@ LIMIT ?
 local SQL_GET = [[
 SELECT c.id AS card_id, sa.char_id AS owner_citizen_id, ba.iban AS account_iban,
        CONCAT('**** **** **** ', c.last_4_digits) AS masked_number,
-       c.pin_hash, CASE WHEN c.state = 'frozen' THEN 'locked' WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
-       CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS spend_limit_minor
+       c.pin_hash, c.card_kind, CASE WHEN c.state = 'frozen' THEN 'locked' WHEN c.state = 'lost' THEN 'revoked' ELSE c.state END AS status,
+       CAST(ROUND(COALESCE(c.daily_limit, 0) * 100) AS SIGNED) AS spend_limit_minor,
+       CAST(ROUND(COALESCE(c.monthly_limit, 0) * 100) AS SIGNED) AS monthly_limit_minor
 FROM sonar_bank_physical_cards c
 INNER JOIN sonar_accounts sa ON sa.id = c.holder_account_id
 INNER JOIN sonar_bank_accounts ba ON ba.id = c.bank_account_id
@@ -60,11 +61,11 @@ LIMIT 1
 local SQL_INSERT = [[
 INSERT INTO sonar_bank_physical_cards
   (id, bank_account_id, holder_account_id, card_token, last_4_digits,
-   card_kind, state, pin_hash, pin_salt, daily_limit)
+   card_kind, design_id, state, pin_hash, pin_salt, daily_limit, monthly_limit)
 VALUES (
   ?, (SELECT id FROM sonar_bank_accounts WHERE iban = ? LIMIT 1),
   (SELECT id FROM sonar_accounts WHERE char_id = ? LIMIT 1),
-  ?, ?, ?, 'active', ?, ?, (? / 100.0)
+  ?, ?, ?, ?, 'active', ?, ?, (? / 100.0), (? / 100.0)
 )
 ]]
 
@@ -105,7 +106,7 @@ function R.Insert(t)
   local last4 = tostring(t.masked_number or ''):match('(%d%d%d%d)$') or card_token:sub(-4)
   local _, err = DB.Execute(SQL_INSERT, {
     card_id, t.account_iban, t.owner_citizen_id,
-    card_token, last4, t.card_kind or 'debit', t.pin_hash, card_token:sub(1, 32), t.spend_limit_minor,
+    card_token, last4, t.card_kind or 'debit', t.design_id or 'noir', t.pin_hash, card_token:sub(1, 32), t.spend_limit_minor, t.monthly_limit_minor,
   })
   if err then return nil, err end
   return card_id, nil

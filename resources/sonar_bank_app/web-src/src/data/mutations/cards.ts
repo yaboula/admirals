@@ -249,14 +249,16 @@ export function useUpdateCardLimits() {
 export interface IssueCardArgs extends Record<string, unknown> {
   account_iban: string
   pin: string
-  card_type: 'debit' | 'virtual'
+  card_type: 'classic' | 'premium'
+  design_id?: string
   spend_limit_minor?: number
 }
 
 export interface IssueCardResult {
   card_id: string
   masked_number: string
-  card_type: 'debit' | 'virtual'
+  card_type: 'classic' | 'premium'
+  design_id?: string
 }
 
 export function useIssueCard() {

@@ -47,7 +47,7 @@
 | **F09** | Card freeze/unfreeze | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | C033/C034 OK |
 | **F10** | Card changePin (C040) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | Bootstrap invalidate sí; StateBag no aplica |
 | **F11** | Card setLimits | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | C035 implementado + live validated 2026-05-15. Migration 038 + audit `card_limits_update`. |
-| **F12** | Card design picker | 🟢 | � | � | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | � | Implementado 2026-05-15: migration 040 `design_id` columna, C036 callback TIER_2_WRITE, service `ApplyDesign` con whitelist 7 designs (`noir`/`sonar_signature`/`aurora`/`sunset`/`titanium`/`deep_space`/`emerald_vault`), audit `card_design_applied`, error `INVALID_DESIGN`, FE useApplyCardDesign llama BE real con optimistic patch. Pending live runtime. |
+| **F12** | Card tier + issuance design lock | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | Refactor 2026-05-15: diseño se elige solo en emisión C032; tiers `classic/premium` mapean a `debit/credit`; whitelist por tier; límites iniciales por producto; C036 `ApplyDesign` bloqueado con `DESIGN_LOCKED`; FE elimina picker post-emisión. `npm run typecheck` + `npm run build` OK. Pending live runtime. |
 | **F13** | Account open (C002) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | |
 | **F14** | Account freeze/unfreeze self (C015/C016) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | |
 | **F15** | Account close (C019) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | Zero-balance guard en UI |
@@ -103,7 +103,7 @@
 Ordenados por impacto producto × esfuerzo bajo:
 
 1. ~~**F11 Card setLimits**~~ — ✅ implementado 2026-05-15 (pending live runtime).
-2. ~~**F12 Card design picker**~~ — ✅ implementado 2026-05-15 (pending live runtime). Migration 040 + C036 real + audit `card_design_applied`.
+2. ~~**F12 Card tier + issuance design lock**~~ — ✅ implementado 2026-05-15 (pending live runtime). C032 emite `classic/premium` + `design_id`; C036 bloqueado con `DESIGN_LOCKED`; typecheck/build OK.
 3. ~~**F16 Account joint owners**~~ — ✅ implementado 2026-05-15 (pending live runtime). BE estaba stubbed; reescrito con tabla canonical mig 039.
 4. **F41 Notifications center** — gap visible (campana topbar sin queue). Crear store + drawer + NetEvent ingestion.
 5. **F20/F21 Loans player flow** — decisión founder: ¿abrir player loan request/payment con UI o sellar Phase B y borrar hooks no wired?
@@ -139,6 +139,6 @@ Ordenados por impacto producto × esfuerzo bajo:
 |---|---|---|---|
 | 2026-05-15 | F11 Card setLimits | feat(bank): F11 implement card setLimits flow (C035) | ✅ Live validated — Founder confirmed save persists in DB + bootstrap refresh |
 | 2026-05-15 | F16 Joint Owners | (pending) | Pending — requires live txAdmin restart with migration 039 + UI add/remove test |
-| 2026-05-15 | F12 Card design picker | (pending) | Pending — requires live txAdmin restart with migration 040 + apply design + reload persistence test |
+| 2026-05-15 | F12 Card tier + issuance design lock | (pending) | Pending — requires live txAdmin restart + issue Classic/Premium cards, verify tier design whitelist, DB `card_kind/design_id/limits`, bootstrap persistence, and C036 `DESIGN_LOCKED` |
 
 *Append-only. Nunca borrar entries.*

@@ -597,7 +597,7 @@ function ActionButton({
    -------------------------------------------------------------------------- */
 
 function typeLabel(cardType: BankCardMock['card_type'], t: (key: TranslationKey) => string): string {
-  return cardType === 'debit' ? t('cards.debit') : cardType === 'virtual' ? t('cards.virtual') : t('cards.credit')
+  return cardType === 'premium' || cardType === 'credit' ? t('cards.premium') : t('cards.classic')
 }
 
 function withAlpha(color: string, alpha: number): string {

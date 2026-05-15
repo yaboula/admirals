@@ -22,6 +22,40 @@ local HMAC       = BankApp.lib.hmac
 
 local CardsRepo = BankApp.repos.cards
 
+local CARD_PRODUCTS = {
+  classic = {
+    card_kind = 'debit',
+    default_design_id = 'noir',
+    daily_limit_minor = 200000,
+    monthly_limit_minor = 2500000,
+    designs = { noir = true, sonar_signature = true },
+  },
+  premium = {
+    card_kind = 'credit',
+    default_design_id = 'sonar_signature',
+    daily_limit_minor = 1000000,
+    monthly_limit_minor = 10000000,
+    designs = {
+      noir = true,
+      sonar_signature = true,
+      aurora = true,
+      sunset = true,
+      titanium = true,
+      deep_space = true,
+      emerald_vault = true,
+    },
+  },
+}
+
+local function normalize_card_product(card_type)
+  if card_type == 'premium' or card_type == 'credit' then return 'premium' end
+  return 'classic'
+end
+
+local function product_for_card_kind(card_kind)
+  return card_kind == 'credit' and CARD_PRODUCTS.premium or CARD_PRODUCTS.classic
+end
+
 local function invalidate_bootstrap(citizen_id)
   if BankApp.services.bootstrap and BankApp.services.bootstrap.InvalidateCitizen then
     BankApp.services.bootstrap.InvalidateCitizen(citizen_id)
@@ -71,19 +105,28 @@ function S.Issue(ctx)
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'cards', reason = 'max 3 cards per citizen' }) }
   end
 
-  -- Map card_type to card_kind (virtual maps to debit for schema compatibility)
-  local card_type = ctx.card_type or 'debit'
-  local card_kind = card_type == 'virtual' and 'debit' or card_type
+  local product_key = normalize_card_product(ctx.card_type)
+  local product = CARD_PRODUCTS[product_key]
+  local design_id = ctx.design_id or product.default_design_id
+  if not product.designs[design_id] then
+    return { ok = false, error = Errors.New('INVALID_DESIGN', { design_id = design_id, card_type = product_key }) }
+  end
+
+  local daily_limit_minor = tonumber(ctx.spend_limit_minor) or product.daily_limit_minor
+  if daily_limit_minor < 0 or daily_limit_minor > product.daily_limit_minor or math.floor(daily_limit_minor) ~= daily_limit_minor then
+    return { ok = false, error = Errors.New('INVALID_LIMITS', { field = 'spend_limit_minor', card_type = product_key }) }
+  end
 
   local masked = generate_masked_number()
-  -- Insert with placeholder hash, update once we know card_id (PIN salted by card_id)
   local card_id, ins_err = CardsRepo.Insert({
     owner_citizen_id  = owner_cid,
     account_iban      = norm_iban,
     masked_number     = masked,
-    pin_hash          = hash_pin(ctx.pin, owner_cid, 0),  -- temporary salt = 0
-    spend_limit_minor = ctx.spend_limit_minor,
-    card_kind         = card_kind,
+    pin_hash          = hash_pin(ctx.pin, owner_cid, 0),
+    spend_limit_minor = daily_limit_minor,
+    monthly_limit_minor = product.monthly_limit_minor,
+    card_kind         = product.card_kind,
+    design_id         = design_id,
   })
   if ins_err then return { ok = false, error = ins_err } end
 
@@ -100,11 +143,14 @@ function S.Issue(ctx)
     event_data       = {
       card_id           = card_id,
       masked_number     = masked,
-      spend_limit_minor = ctx.spend_limit_minor,
+      card_type         = product_key,
+      design_id         = design_id,
+      spend_limit_minor = daily_limit_minor,
+      monthly_limit_minor = product.monthly_limit_minor,
     },
   })
   invalidate_bootstrap(owner_cid)
-  return { ok = true, data = { card_id = card_id, masked_number = masked } }
+  return { ok = true, data = { card_id = card_id, masked_number = masked, card_type = product_key, design_id = design_id } }
 end
 
 local function set_status_helper(ctx, new_status, event_type)
@@ -151,20 +197,21 @@ function S.SetLimits(ctx)
 
   local daily = tonumber(ctx.daily_limit_minor)
   local monthly = tonumber(ctx.monthly_limit_minor)
-  local MAX_LIMIT_MINOR = 100000000 -- 1,000,000.00
-  if not daily or daily < 0 or daily > MAX_LIMIT_MINOR or math.floor(daily) ~= daily then
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'daily_limit_minor' }) }
-  end
-  if not monthly or monthly < 0 or monthly > MAX_LIMIT_MINOR or math.floor(monthly) ~= monthly then
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'monthly_limit_minor' }) }
-  end
-  if monthly < daily then
-    return { ok = false, error = Errors.New('INVALID_LIMITS', { reason = 'monthly_below_daily' }) }
-  end
 
   local card = CardsRepo.GetById(card_id)
   if not card then
     return { ok = false, error = Errors.New('CARD_NOT_FOUND') }
+  end
+
+  local product = product_for_card_kind(card.card_kind)
+  if not daily or daily < 0 or daily > product.daily_limit_minor or math.floor(daily) ~= daily then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'daily_limit_minor' }) }
+  end
+  if not monthly or monthly < 0 or monthly > product.monthly_limit_minor or math.floor(monthly) ~= monthly then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'monthly_limit_minor' }) }
+  end
+  if monthly < daily then
+    return { ok = false, error = Errors.New('INVALID_LIMITS', { reason = 'monthly_below_daily' }) }
   end
 
   local actor_cid, auth_err = Auth.RequireCitizen(ctx.src)
@@ -218,6 +265,10 @@ local KNOWN_DESIGN_IDS = {
 }
 
 function S.ApplyDesign(ctx)
+  return { ok = false, error = Errors.New('DESIGN_LOCKED') }
+end
+
+function S.ApplyDesignLegacy(ctx)
   local card_id = ctx.card_id
   if type(card_id) ~= 'string' or #card_id == 0 then
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'card_id' }) }

@@ -465,11 +465,13 @@ export function installMockHandlers(): void {
   registerMockHandler<IssueCardResult>('sonar:bank:card:issue', async (_payload) => {
     await simulateLatency(200, 420)
     const last4 = String(Math.floor(Math.random() * 9000) + 1000)
-    const card_type = _payload.card_type ?? 'debit'
+    const card_type = _payload.card_type === 'premium' ? 'premium' : 'classic'
+    const design_id = typeof _payload.design_id === 'string' ? _payload.design_id : undefined
     return {
       card_id: `mock-card-${Date.now()}`,
       masked_number: `**** **** **** ${last4}`,
-      card_type: card_type as 'debit' | 'virtual',
+      card_type,
+      design_id,
     }
   })
 

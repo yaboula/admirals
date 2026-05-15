@@ -132,6 +132,10 @@ M.REGISTRY = {
     category = 'VALIDATION', code = 'INVALID_DESIGN', retryable = false,
     message  = 'Unknown card design.',
   },
+  DESIGN_LOCKED = {
+    category = 'BUSINESS', code = 'DESIGN_LOCKED', retryable = false,
+    message  = 'Card design is locked after issue.',
+  },
   JOINT_SELF = {
     category = 'VALIDATION', code = 'JOINT_SELF', retryable = false,
     message  = 'Cannot add yourself as joint owner.',

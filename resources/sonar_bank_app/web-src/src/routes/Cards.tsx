@@ -7,10 +7,8 @@ import { Button } from '@/components/ui'
 import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
-import { RequestCardBanner } from './cards/RequestCardBanner'
 import { RequestFirstCardPanel } from './cards/RequestFirstCardPanel'
 import { LimitsModal } from './cards/LimitsModal'
-import { DesignPickerDialog } from './cards/DesignPickerDialog'
 import { useI18n } from '@/lib/i18n'
 
 /**
@@ -119,7 +117,6 @@ export function Cards() {
                 {cards.length === 0 ? <RequestFirstCardPanel /> : <CardCarousel cards={cards} />}
               </div>
             </div>
-            {cards.length > 0 && <RequestCardBanner />}
           </Card>
         </section>
 
@@ -155,23 +152,6 @@ export function Cards() {
         open={dialog === 'limits'}
         onClose={closeDialog}
       />
-      <DesignPickerDialog
-        card={focusedForDialog}
-        open={dialog === 'design'}
-        onClose={closeDialog}
-      />
     </motion.div>
   )
-}
-
-/**
- * Convenience export: opens the design picker for the currently focused card.
- * Used by external card CTAs so they can stay decoupled from route-local state.
- */
-export function useOpenDesignPicker(): () => void {
-  const openDialog = useCardsUi((s) => s.openDialog)
-  const selectedCardId = useCardsUi((s) => s.selectedCardId)
-  return () => {
-    if (selectedCardId) openDialog('design', selectedCardId)
-  }
 }

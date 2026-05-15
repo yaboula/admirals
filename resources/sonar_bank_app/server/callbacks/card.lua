@@ -44,6 +44,8 @@ Wrap.Register('sonar:bank:card:issue', {
     citizen_id         = citizen_id,
     account_iban       = payload.account_iban,
     pin                = payload.pin,
+    card_type          = payload.card_type,
+    design_id          = payload.design_id,
     spend_limit_minor  = payload.spend_limit_minor,
   })
 end)

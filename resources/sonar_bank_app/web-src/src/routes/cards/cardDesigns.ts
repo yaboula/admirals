@@ -141,6 +141,19 @@ export const CARD_DESIGNS_BY_ID: Record<string, CardDesign> = Object.fromEntries
 
 export const DEFAULT_CARD_DESIGN: CardDesign = CARD_DESIGNS_BY_ID.sonar_signature
 
+export type CardProductTier = 'classic' | 'premium'
+
+export const CLASSIC_CARD_DESIGN_IDS = ['noir', 'sonar_signature'] as const
+
+export function getCardDesignsForProductTier(tier: CardProductTier): CardDesign[] {
+  if (tier === 'premium') return CARD_DESIGNS
+  return CARD_DESIGNS.filter((design) => CLASSIC_CARD_DESIGN_IDS.includes(design.id as (typeof CLASSIC_CARD_DESIGN_IDS)[number]))
+}
+
+export function isCardDesignAllowedForProductTier(designId: string, tier: CardProductTier): boolean {
+  return getCardDesignsForProductTier(tier).some((design) => design.id === designId)
+}
+
 /**
  * Resolve a design by id with a safe fallback.
  */

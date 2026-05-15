@@ -219,7 +219,7 @@ export interface StockPortfolioResponse {
 
 export type CardStatus = 'active' | 'locked' | 'expired' | 'pending'
 
-export type CardType = 'debit' | 'virtual' | 'credit'
+export type CardType = 'debit' | 'virtual' | 'credit' | 'classic' | 'premium'
 
 /**
  * REQ-FE-014 — BankCard contract.
