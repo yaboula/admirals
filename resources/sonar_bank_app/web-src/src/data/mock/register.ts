@@ -436,6 +436,11 @@ export function installMockHandlers(): void {
     return { card_id: String(payload.card_id ?? ''), pin_changed_ms: Date.now() }
   })
 
+  registerMockHandler<{ card_id: string; status: 'revoked'; revoked_ms: number }>('sonar:bank:card:revoke', async (payload) => {
+    await simulateLatency(160, 320)
+    return { card_id: String(payload.card_id ?? ''), status: 'revoked', revoked_ms: Date.now() }
+  })
+
   registerMockHandler<{
     card_id: string
     design_id: string
@@ -472,6 +477,7 @@ export function installMockHandlers(): void {
       masked_number: `**** **** **** ${last4}`,
       card_type,
       design_id,
+      issue_fee_minor: card_type === 'premium' ? 15000 : 2500,
     }
   })
 

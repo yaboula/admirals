@@ -217,7 +217,7 @@ export interface StockPortfolioResponse {
   fetched_at_ms: number
 }
 
-export type CardStatus = 'active' | 'locked' | 'expired' | 'pending'
+export type CardStatus = 'active' | 'locked' | 'expired' | 'pending' | 'revoked'
 
 export type CardType = 'debit' | 'virtual' | 'credit' | 'classic' | 'premium'
 
@@ -578,6 +578,7 @@ export type NuiNetEventName =
   | 'sonar:bank:transfer:committed'
   | 'sonar:bank:status:transition'
   | 'sonar:bank:notice:new'
+  | 'sonar:bank:notification:push'
 
 export interface NuiNetEventMessage {
   type: 'NET_EVENT'

@@ -166,8 +166,9 @@ export function CardCarousel({ cards, className }: CardCarouselProps) {
                     revealed={!streamerMode && ((revealedUntil[card.card_id] ?? 0) > now || Boolean(card.full_pan))}
                     onToggleReveal={() => {
                       const expiry = revealedUntil[card.card_id] ?? 0
-                      if (!streamerMode && expiry > now) {
+                      if (!streamerMode && (expiry > now || Boolean(card.full_pan))) {
                         hideReveal(card.card_id)
+                        setStreamerMode(true)
                       } else {
                         if (streamerMode) setStreamerMode(false)
                         revealCard(card.card_id)

@@ -8,6 +8,7 @@ import { BankDeviceFrame } from '@/components/layout/BankDeviceFrame'
 import { useBankNetEvent } from './lib/bankEvents'
 import { useBankStatus } from './stores/status'
 import { toast } from './stores/toast'
+import { useNotifications } from './stores/notifications'
 import { useInvalidateBootstrap } from './data/queries'
 import { useI18n } from './lib/i18n'
 
@@ -139,6 +140,7 @@ function NetEventBridge() {
   const { t } = useI18n()
   const setStatus = useBankStatus((s) => s.setStatus)
   const invalidateBootstrap = useInvalidateBootstrap()
+  const addNotification = useNotifications((s) => s.addNotification)
 
   useBankNetEvent<{ to?: string }>('sonar:bank:status:transition', (payload) => {
     if (payload?.to) {
@@ -163,6 +165,26 @@ function NetEventBridge() {
     toast.warning(t('app.newNoticeToastTitle'), t('app.newNoticeToastBody'))
   })
 
+  useBankNetEvent<{
+    type?: 'info' | 'success' | 'warning' | 'danger'
+    title: string
+    message?: string
+    actionLabel?: string
+  }>('sonar:bank:notification:push', (payload) => {
+    addNotification({
+      type: payload?.type ?? 'info',
+      title: payload?.title ?? t('app.defaultNotificationTitle'),
+      message: payload?.message,
+      action: payload?.actionLabel
+        ? {
+            label: payload.actionLabel,
+            onClick: () => {
+              // Action handler can be extended later with routing or callbacks
+            },
+          }
+        : undefined,
+    })
+  })
 
   return null
 }

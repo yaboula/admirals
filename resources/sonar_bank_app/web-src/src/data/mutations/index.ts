@@ -9,6 +9,7 @@ export {
   useApplyCardDesign,
   useIssueCard,
   useChangeCardPinMutation,
+  useRevokeCardMutation,
 } from './cards'
 export type {
   BusinessPayrollExecuteRequest,
@@ -26,6 +27,8 @@ export type {
   IssueCardResult,
   ChangeCardPinArgs,
   ChangeCardPinResponse,
+  RevokeCardArgs,
+  RevokeCardResponse,
 } from './cards'
 export {
   useOpenAccountMutation,

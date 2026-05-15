@@ -61,6 +61,41 @@ function R.BuildInsertQuery(t)
   }
 end
 
+-- -----------------------------------------------------------------------------
+-- §1.b SINGLE DEBIT — one-sided movement (fees, charges, no counterpart)
+-- -----------------------------------------------------------------------------
+-- Used by card_service (issue fee), and any other one-sided expense recorded
+-- against the holder's account where there is no counterpart bank account.
+-- The balance_after column reads the post-debit balance as long as the
+-- accompanying AccountsRepo.BuildDebitBalanceQuery runs earlier in the same
+-- DB.Transaction batch.
+local SQL_INSERT_SINGLE_DEBIT = [[
+INSERT INTO sonar_bank_movements
+  (bank_account_id, occurred_at, amount, balance_after, category, concept,
+   related_doc_id, request_nonce, initiated_by_account_id, source_resource)
+SELECT ba.id, FLOOR(? / 1000), -(? / 100.0), ba.balance, ?, ?, ?, ?, ba.id, 'sonar_bank_app'
+FROM sonar_bank_accounts ba
+WHERE ba.iban = ?
+LIMIT 1
+]]
+
+--- BuildSingleDebitQuery — single-sided debit (fees / charges).
+--- @param t table { iban, amount_minor, category, reason, txn_id, timestamp_ms, idempotency_key }
+function R.BuildSingleDebitQuery(t)
+  return {
+    query  = SQL_INSERT_SINGLE_DEBIT,
+    values = {
+      t.timestamp_ms,
+      t.amount_minor,
+      t.category or 'expense',
+      t.reason,
+      t.txn_id,
+      t.idempotency_key or t.txn_id,
+      t.iban,
+    },
+  }
+end
+
 local SQL_UPDATE_STATUS = [[
 DO 0
 ]]

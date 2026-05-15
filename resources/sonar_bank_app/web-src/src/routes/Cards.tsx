@@ -1,15 +1,14 @@
 import { useEffect } from 'react'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useCards, useCardById } from '@/data/queries'
 import { useCardsUi } from '@/stores/cardsUi'
 import { Card } from '@/components/ui'
-import { Button } from '@/components/ui'
 import { CardsHero } from './cards/CardsHero'
 import { CardCarousel } from './cards/CardCarousel'
 import { CardDetails } from './cards/CardDetails'
+import { RequestCardBanner } from './cards/RequestCardBanner'
 import { RequestFirstCardPanel } from './cards/RequestFirstCardPanel'
 import { LimitsModal } from './cards/LimitsModal'
-import { useI18n } from '@/lib/i18n'
 
 /**
  * BANK-FE.4.2 — Vista Tarjetas (route /tarjetas).
@@ -34,14 +33,12 @@ import { useI18n } from '@/lib/i18n'
  * with a 180ms tween, and the flip becomes an instant cross-fade.
  */
 export function Cards() {
-  const { t } = useI18n()
   const { cards } = useCards()
   const selectedCardId = useCardsUi((s) => s.selectedCardId)
   const setSelected = useCardsUi((s) => s.setSelected)
   const dialog = useCardsUi((s) => s.dialog)
   const dialogCardId = useCardsUi((s) => s.dialogCardId)
   const closeDialog = useCardsUi((s) => s.closeDialog)
-  const openDialog = useCardsUi((s) => s.openDialog)
 
   // Bind the store to the resolved focused card, gracefully handling the
   // empty list and a stale id that no longer exists in the resolved set.
@@ -52,6 +49,19 @@ export function Cards() {
       setSelected(cards[0].card_id)
     }
   }, [cards, selectedCardId, setSelected])
+
+  // ESC closes the issue dialog (limits dialog handles its own key listener).
+  useEffect(() => {
+    if (dialog !== 'issue') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeDialog()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [dialog, closeDialog])
 
   const focused =
     cards.find((c) => c.card_id === selectedCardId) ?? cards[0] ?? null
@@ -93,18 +103,6 @@ export function Cards() {
         >
           <div className="flex items-center justify-between gap-3">
             <CardsHero totalCount={cards.length} activeCount={activeCount} />
-            {cards.length > 0 && cards.length < 3 && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  openDialog('issue', selectedCardId || cards[0]?.card_id || '')
-                }}
-                className="shrink-0"
-              >
-                {t('cards.addCard')}
-              </Button>
-            )}
           </div>
 
           <Card
@@ -113,10 +111,17 @@ export function Cards() {
             className="min-h-0 border-white/10 flex flex-col gap-3 2xl:gap-4 overflow-hidden"
           >
             <div className="flex-1 min-h-0 flex items-center justify-center overflow-visible">
-              <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto py-2">
-                {cards.length === 0 ? <RequestFirstCardPanel /> : <CardCarousel cards={cards} />}
-              </div>
+              {cards.length === 0 ? (
+                <div className="w-full mx-auto py-2">
+                  <RequestFirstCardPanel />
+                </div>
+              ) : (
+                <div className="w-full max-w-[480px] 2xl:max-w-[540px] mx-auto py-2">
+                  <CardCarousel cards={cards} />
+                </div>
+              )}
             </div>
+            {cards.length > 0 && <RequestCardBanner cardsCount={cards.length} />}
           </Card>
         </section>
 
@@ -127,26 +132,38 @@ export function Cards() {
       </div>
 
       {/* ── OVERLAYS ───────────────────────────────────────── */}
+      <AnimatePresence>
       {dialog === 'issue' && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={closeDialog}
-        >
+        <>
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
+            key="issue-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[500px] p-6"
+            onClick={closeDialog}
+            className="fixed inset-0 z-[var(--z-modal-scrim)] bg-surface-modal-scrim backdrop-blur-md"
+            aria-hidden
+          />
+          <motion.div
+            key="issue-panel"
+            initial={{ scale: 0.96, opacity: 0, y: 12 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.97, opacity: 0, y: 8 }}
+            transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-3 sm:p-5 lg:p-8"
           >
-            <RequestFirstCardPanel isInitial={false} onClose={closeDialog} />
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-[1100px] scrollbar-thin"
+              style={{ maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', borderRadius: '1.65rem' }}
+            >
+              <RequestFirstCardPanel isInitial={false} onClose={closeDialog} />
+            </div>
           </motion.div>
-        </motion.div>
+        </>
       )}
+      </AnimatePresence>
       <LimitsModal
         card={focusedForDialog}
         open={dialog === 'limits'}

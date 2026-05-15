@@ -527,7 +527,7 @@ function Chip() {
  *   - fluid:        soft blob highlight (sunset)
  *   - none:         no-op
  */
-function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
+export function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
   if (motif === 'none') return null
 
   if (motif === 'pinstripe') {
@@ -597,7 +597,7 @@ function Motif({ motif, accent }: { motif: CardDesignMotif; accent: string }) {
   return null
 }
 
-function withAlpha(color: string | undefined | null, alpha: number): string {
+export function withAlpha(color: string | undefined | null, alpha: number): string {
   const value = String(color ?? '')
   const rgb = value.match(/^rgb\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*\)$/)
   if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`

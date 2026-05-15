@@ -44,6 +44,16 @@ function patchCardInBootstrap(
   }
 }
 
+function removeCardFromBootstrap(
+  snap: BootstrapSnapshot,
+  cardId: string,
+): BootstrapSnapshot {
+  return {
+    ...snap,
+    cards: snap.cards.filter((c) => c.card_id !== cardId),
+  }
+}
+
 /* ============================================================================
    useFreezeCard — toggle a card's status between 'active' and 'locked'.
    ============================================================================ */
@@ -129,6 +139,51 @@ export function useChangeCardPinMutation() {
     },
   })
 }
+
+export interface RevokeCardArgs extends Record<string, unknown> {
+  card_id: string
+  reason?: 'lost' | 'stolen' | 'damaged'
+}
+
+export interface RevokeCardResponse {
+  card_id: string
+  status: 'revoked'
+  revoked_ms: number
+}
+
+export function useRevokeCardMutation() {
+  const qc = useQueryClient()
+  return useMutation<RevokeCardResponse, BankError, RevokeCardArgs, MutationContext>({
+    mutationFn: async (args) => {
+      return bankMutation<RevokeCardArgs, RevokeCardResponse>(
+        'sonar:bank:card:revoke',
+        args,
+        { idempotency: createBankOperationIds },
+      )
+    },
+    onMutate: async ({ card_id }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.bootstrap() })
+      const previous = qc.getQueryData<BootstrapSnapshot>(queryKeys.bootstrap())
+      if (previous) {
+        qc.setQueryData<BootstrapSnapshot>(
+          queryKeys.bootstrap(),
+          removeCardFromBootstrap(previous, card_id),
+        )
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        qc.setQueryData(queryKeys.bootstrap(), context.previous)
+      }
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      void qc.invalidateQueries({ queryKey: queryKeys.cards.all() })
+    },
+  })
+}
+
 /* ============================================================================
    useUpdateCardLimits — patch daily and monthly limit ceilings.
    ============================================================================ */
@@ -259,6 +314,7 @@ export interface IssueCardResult {
   masked_number: string
   card_type: 'classic' | 'premium'
   design_id?: string
+  issue_fee_minor?: number
 }
 
 export function useIssueCard() {
@@ -270,6 +326,7 @@ export function useIssueCard() {
         void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
       },
     },
+    { idempotency: createBankOperationIds },
   )
 }
 

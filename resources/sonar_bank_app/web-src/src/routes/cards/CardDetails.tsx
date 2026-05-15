@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check, Loader2 } from 'lucide-react'
+import { Lock, Wallet, CalendarDays, User2, Sparkles, Snowflake, Settings2, Eye, RotateCw, Check, Loader2, ShieldX } from 'lucide-react'
 import type { BankCardMock } from '@/data/contracts'
 import { Button, Card, Input } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -12,10 +12,10 @@ import { maskIbanCompact, maskMoneyDisplay, revealIbanDisplay } from '@/lib/priv
 import { usePrivacyMode } from '@/stores/privacy'
 import { resolveCardDesign } from './cardDesigns'
 import { useCardsUi, useCardReveal } from '@/stores/cardsUi'
-import { useChangeCardPinMutation, useFreezeCard } from '@/data/mutations'
+import { useChangeCardPinMutation, useFreezeCard, useRevokeCardMutation } from '@/data/mutations'
 
 /**
- * BANK-FE.4.2 â€” CardDetails
+ * BANK-FE.4.2 — CardDetails
  *
  * Right column of the /tarjetas route. Shows the focused card's metadata
  * (holder, expiry, linked IBAN, design) plus a calm preview of the daily and
@@ -27,7 +27,7 @@ import { useChangeCardPinMutation, useFreezeCard } from '@/data/mutations'
  * final visual rhythm during Phase 4.2 sign-off.
  *
  * The Reveal + Flip controls are wired NOW because they have no contract
- * dependency â€” they manipulate UI state only.
+ * dependency — they manipulate UI state only.
  */
 export interface CardDetailsProps {
   card: BankCardMock | null
@@ -45,7 +45,9 @@ export function CardDetails({ card, className }: CardDetailsProps) {
   const { revealed, reveal, hide } = useCardReveal(cardId)
   const freezeMutation = useFreezeCard()
   const changePinMutation = useChangeCardPinMutation()
+  const revokeMutation = useRevokeCardMutation()
   const [pinDialogOpen, setPinDialogOpen] = useState(false)
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false)
   const [oldPin, setOldPin] = useState('')
   const [newPin, setNewPin] = useState('')
 
@@ -120,6 +122,16 @@ export function CardDetails({ card, className }: CardDetailsProps) {
     }
   }
 
+  const handleRevoke = async () => {
+    try {
+      await revokeMutation.mutateAsync({ card_id: card.card_id, reason: 'lost' })
+      setRevokeDialogOpen(false)
+      toast.success(t('cards.revokeSuccessTitle'), t('cards.revokeSuccessBody'))
+    } catch (err) {
+      handleBankError(err)
+    }
+  }
+
   const expiry = new Date(card.expiry_ms)
   const expiryStr = `${String(expiry.getMonth() + 1).padStart(2, '0')}/${expiry.getFullYear()}`
 
@@ -143,13 +155,13 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           background: `radial-gradient(circle at 82% 0%, ${withAlpha(design.accent, 0.2)}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%)`,
         }}
       />
-      <div className="relative flex h-full min-h-0 flex-col gap-3 p-4 2xl:gap-4 2xl:p-5">
+      <div className="relative flex h-full min-h-0 flex-col gap-2.5 p-3.5 2xl:gap-3 2xl:p-4">
         <motion.div
           key={card.card_id}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
-          className="rounded-[1.35rem] border p-3.5 2xl:p-4"
+          className="rounded-[1.2rem] border p-3 2xl:p-3.5"
           style={{
             background: 'rgba(255,255,255,0.04)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -172,11 +184,11 @@ export function CardDetails({ card, className }: CardDetailsProps) {
                 </span>
               </div>
               <div className="flex min-w-0 flex-col gap-1">
-                <span className="text-2xl 2xl:text-3xl font-light tracking-[-0.055em] text-text-primary truncate">
+                <span className="text-xl 2xl:text-2xl font-semibold tracking-[-0.045em] text-text-primary truncate">
                   {design.name}
                 </span>
                 <span className="text-[11px] text-text-tertiary truncate">
-                  {design.tagline} Â· Â·Â·Â·Â· {card.pan_last_four}
+                  {design.tagline} · •••• {card.pan_last_four}
                 </span>
               </div>
             </div>
@@ -184,7 +196,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           </div>
         </motion.div>
 
-      {/* Meta grid â€” holder Â· expiry Â· linked iban Â· type */}
+      {/* Meta grid — holder · expiry · linked iban · type */}
         <dl className="grid grid-cols-2 gap-2.5">
           <MetaItem icon={User2} label={t('cards.holder')} value={card.holder_name} accent={design.accent} />
           <MetaItem icon={CalendarDays} label={t('cards.expires')} value={expiryStr} accent={design.accent} mono />
@@ -197,7 +209,7 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           />
         </dl>
 
-      {/* Limits preview â€” soft meters; full controls land in 4.3 */}
+      {/* Limits preview — soft meters; full controls land in 4.3 */}
         <div
           className="rounded-[1.35rem] p-3.5 flex flex-col gap-3 2xl:p-4"
           style={{
@@ -233,50 +245,48 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           />
         </div>
 
-      {/* Benefits â€” tier-driven perks bring brand storytelling into the panel
+      {/* Benefits — tier-driven perks bring brand storytelling into the panel
           and naturally absorb any leftover vertical real-estate. */}
         <BenefitsPanel tier={design.tier} accent={design.accent} />
 
-      {/* Action row â€” Phase 4.3: all four actions are now LIVE.
+      {/* Action row — Phase 4.3: all four actions are now LIVE.
           Reveal toggles a 30s window with countdown surfaced inline.
           Freeze/Unfreeze fires the optimistic mutation + toast feedback.
-          LÃ­mites + DiseÃ±o open dialogs (LimitsModal / DesignPickerDialog). */}
-        <div className="mt-auto flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-2">
-            <ActionButton
-              icon={Eye}
-              label={
-                effectiveRevealed
-                  ? t('cards.activateStreamer')
-                  : streamerMode ? t('cards.pauseStreamer') : t('cards.hideNumber')
-              }
-              onClick={handleToggleReveal}
-              active={effectiveRevealed}
-            />
-            <ActionButton
-              icon={RotateCw}
-              label={flipped ? t('cards.showFront') : t('cards.showBack')}
-              onClick={() => toggleFlip(card.card_id)}
-              active={flipped}
-            />
-            <ActionButton
-              icon={freezePending ? Loader2 : Snowflake}
-              iconClassName={freezePending ? 'animate-spin' : undefined}
-              label={isLocked ? t('cards.unfreeze') : t('cards.freeze')}
-              onClick={handleToggleFreeze}
-              disabled={isExpired || freezePending}
-              active={isLocked}
-            />
-            <ActionButton
-              icon={Settings2}
-              label={t('cards.limits')}
-              onClick={() => {
-                sfx.panel_open()
-                openDialog('limits', card.card_id)
-              }}
-              disabled={isExpired}
-            />
-          </div>
+          Límites + Diseño open dialogs (LimitsModal / DesignPickerDialog). */}
+        <div className="mt-auto grid grid-cols-2 gap-1.5">
+          <ActionButton
+            icon={Eye}
+            label={
+              effectiveRevealed
+                ? t('cards.activateStreamer')
+                : streamerMode ? t('cards.pauseStreamer') : t('cards.hideNumber')
+            }
+            onClick={handleToggleReveal}
+            active={effectiveRevealed}
+          />
+          <ActionButton
+            icon={RotateCw}
+            label={flipped ? t('cards.showFront') : t('cards.showBack')}
+            onClick={() => toggleFlip(card.card_id)}
+            active={flipped}
+          />
+          <ActionButton
+            icon={freezePending ? Loader2 : Snowflake}
+            iconClassName={freezePending ? 'animate-spin' : undefined}
+            label={isLocked ? t('cards.unfreeze') : t('cards.freeze')}
+            onClick={handleToggleFreeze}
+            disabled={isExpired || freezePending}
+            active={isLocked}
+          />
+          <ActionButton
+            icon={Settings2}
+            label={t('cards.limits')}
+            onClick={() => {
+              sfx.panel_open()
+              openDialog('limits', card.card_id)
+            }}
+            disabled={isExpired}
+          />
           <ActionButton
             icon={Lock}
             label={t('cards.changePin')}
@@ -285,7 +295,17 @@ export function CardDetails({ card, className }: CardDetailsProps) {
               setPinDialogOpen(true)
             }}
             disabled={isExpired || changePinMutation.isPending}
-            fullWidth
+          />
+          <ActionButton
+            icon={revokeMutation.isPending ? Loader2 : ShieldX}
+            iconClassName={revokeMutation.isPending ? 'animate-spin' : undefined}
+            label={t('cards.reportLost')}
+            onClick={() => {
+              sfx.panel_open()
+              setRevokeDialogOpen(true)
+            }}
+            disabled={isExpired || revokeMutation.isPending}
+            danger
           />
         </div>
       </div>
@@ -300,7 +320,36 @@ export function CardDetails({ card, className }: CardDetailsProps) {
           onClose={() => setPinDialogOpen(false)}
         />
       ) : null}
+      {revokeDialogOpen ? (
+        <RevokeCardDialog
+          loading={revokeMutation.isPending}
+          lastFour={card.pan_last_four}
+          onSubmit={handleRevoke}
+          onClose={() => setRevokeDialogOpen(false)}
+        />
+      ) : null}
     </Card>
+  )
+}
+
+function RevokeCardDialog({ loading, lastFour, onSubmit, onClose }: { loading: boolean; lastFour: string; onSubmit: () => void; onClose: () => void }) {
+  const { t } = useI18n()
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/72 px-4 backdrop-blur-md">
+      <div className="w-full max-w-sm rounded-[1.5rem] border border-white/10 bg-surface-panel p-4 shadow-2xl">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-text-primary">{t('cards.reportLostTitle')}</h2>
+          <Button size="sm" variant="ghost" onClick={onClose}>{t('cards.close')}</Button>
+        </div>
+        <p className="mb-4 text-xs leading-relaxed text-text-tertiary">
+          {t('cards.reportLostBody').replace('{lastFour}', lastFour)}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button loading={loading} onClick={onSubmit}>{t('cards.reportLostConfirm')}</Button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -323,10 +372,10 @@ function ChangePinDialog({ oldPin, newPin, loading, onChangeOldPin, onChangeNewP
   )
 }
 /* --------------------------------------------------------------------------
-   BenefitsPanel â€” tier-aware perk list driven by design.tier.
-   - default   â†’ 3 baseline perks
-   - premium   â†’ +1 cashback / +1 priority support
-   - signature â†’ premium set + concierge / early access
+   BenefitsPanel — tier-aware perk list driven by design.tier.
+   - default   → 3 baseline perks
+   - premium   → +1 cashback / +1 priority support
+   - signature → premium set + concierge / early access
    The accent colour ties the check marks to the focused card's chromatic
    identity so the panel reads as part of the same visual story.
    -------------------------------------------------------------------------- */
@@ -369,7 +418,7 @@ function BenefitsPanel({
   return (
     <div
       className={cn(
-        'rounded-[1.35rem] p-3.5 flex flex-col gap-3 overflow-hidden 2xl:p-4',
+        'rounded-[1.2rem] p-3 flex flex-col gap-2.5 min-h-0 flex-1 2xl:p-3.5',
         className,
       )}
       style={{
@@ -384,11 +433,11 @@ function BenefitsPanel({
         </span>
         <TierBadge tier={tier} />
       </div>
-      <ul className="grid gap-1.5 min-h-0 overflow-y-auto" role="list">
+      <ul className="grid gap-1.5 min-h-0 flex-1 overflow-y-auto scrollbar-thin pr-0.5" role="list">
         {items.map((label) => (
           <li
             key={label}
-            className="flex items-start gap-2 rounded-xl border border-white/[0.055] bg-white/[0.025] px-2.5 py-2 text-[11px] leading-snug text-text-secondary"
+            className="flex items-start gap-2 rounded-[0.7rem] border border-white/[0.055] bg-white/[0.025] px-2.5 py-1.5 text-[11px] leading-snug text-text-secondary"
           >
             <Check
               size={11}
@@ -396,7 +445,7 @@ function BenefitsPanel({
               className="shrink-0 mt-0.5"
               style={{ color: accent, opacity: 0.85 }}
             />
-            <span className="truncate">{label}</span>
+            <span className="min-w-0 break-words">{label}</span>
           </li>
         ))}
       </ul>
@@ -449,6 +498,7 @@ function useStatusConfig(t: (key: TranslationKey) => string): Record<BankCardMoc
     locked: { label: t('cards.statusFrozen'), color: 'rgb(110, 195, 235)', borderColor: 'rgba(110,195,235,0.25)', icon: Lock },
     expired: { label: t('cards.statusExpired'), color: 'rgb(141, 143, 149)', borderColor: 'rgba(141,143,149,0.2)', icon: null },
     pending: { label: t('cards.statusPending'), color: 'rgb(225, 172, 110)', borderColor: 'rgba(225,172,110,0.25)', icon: null },
+    revoked: { label: t('cards.statusRevoked'), color: 'rgb(180, 183, 191)', borderColor: 'rgba(180,183,191,0.18)', icon: ShieldX },
   }
 }
 
@@ -555,6 +605,7 @@ function ActionButton({
   disabled = false,
   active = false,
   fullWidth = false,
+  danger = false,
 }: {
   icon: typeof Eye
   iconClassName?: string
@@ -563,8 +614,14 @@ function ActionButton({
   disabled?: boolean
   active?: boolean
   fullWidth?: boolean
+  danger?: boolean
 }) {
   const { t } = useI18n()
+  const surface = danger
+    ? { bg: 'rgba(234,60,63,0.08)', border: 'rgba(234,60,63,0.28)', color: 'rgb(234,120,123)' }
+    : active
+      ? { bg: 'rgba(255,255,255,0.08)', border: 'rgba(255,255,255,0.16)', color: 'rgb(242, 242, 242)' }
+      : { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.07)', color: 'rgb(180, 183, 191)' }
   return (
     <button
       type="button"
@@ -576,13 +633,15 @@ function ActionButton({
         fullWidth ? 'w-full justify-center' : '',
         disabled
           ? 'cursor-not-allowed opacity-40'
-          : 'hover:bg-surface-card-elevated active:scale-[0.98]',
-        active && !disabled && 'tactile-wght-breathing',
+          : danger
+            ? 'hover:bg-[rgba(234,60,63,0.14)] active:scale-[0.98]'
+            : 'hover:bg-surface-card-elevated active:scale-[0.98]',
+        active && !disabled && !danger && 'tactile-wght-breathing',
       )}
       style={{
-        background: active ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${active ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.07)'}`,
-        color: active ? 'rgb(242, 242, 242)' : 'rgb(180, 183, 191)',
+        background: surface.bg,
+        border: `1px solid ${surface.border}`,
+        color: surface.color,
       }}
       title={disabled && !onClick ? t('cards.comingSoon') : undefined}
     >

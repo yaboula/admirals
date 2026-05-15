@@ -76,7 +76,7 @@
 | **F38** | Govt tax brackets save + force collection | 🟡 | ⚫ | 🟢 | 🟢 | 🟢 | 🟢 | ⚫ | ⚫ | 🔴 | BE listo; **TaxEngine UI mock-only** según memoria bc9395e9 |
 | **F39** | Compliance flags admin | 🟢 | ➖ | 🟢 | 🟢 | ➖ | ➖ | ➖ | 🟢 | 🟢 | Phase 1.6 cerrado |
 | **F40** | Audit Explorer | 🟢 | ➖ | 🟢 | 🟢 | ➖ | ➖ | ➖ | 🟢 | 🟢 | |
-| **F41** | Notifications center | 🔴 | ⚫ | ⚫ | ⚫ | ⚫ | 🟡 | 🟡 | ⚫ | 🔴 | NetEvent listener existe; **no hay centro/queue persistente** ni bell con badge real |
+| **F41** | Notifications center | � | ➖ | ➖ | ➖ | ➖ | � | � | 🟡 | � | Zustand store + drawer + NetEvent ingestion implementados 2026-05-15. Pending live runtime evidence |
 | **F42** | Error handling canonical (BankError) | 🟢 | ➖ | ➖ | ➖ | ➖ | ➖ | 🟢 | 🟢 | 🟢 | 20 códigos + locale messages |
 | **F43** | ACE gating P01-P12 UI | 🟢 | ➖ | ➖ | ➖ | ➖ | ➖ | 🟢 | 🟢 | 🟢 | AceGate + dev unlock |
 | **F44** | Watchdog 30s fallback (bootstrap stale) | 🟢 | ➖ | ➖ | ➖ | ➖ | 🟢 | 🟡 | 🟡 | 🟡 | Live runtime no validado |
@@ -90,9 +90,9 @@
 
 | Bucket | Count |
 |---|---|
-| 🟢 Complete | 17 |
-| 🟡 Partial (mostly missing live evidence) | 20 |
-| 🔴 Broken / contradicción | 7 |
+| 🟢 Complete | 18 |
+| 🟡 Partial (mostly missing live evidence) | 19 |
+| 🔴 Broken / contradicción | 6 |
 | ⚫ Not started / Phase B | 3 |
 | **Total flows** | **47** |
 
@@ -140,5 +140,6 @@ Ordenados por impacto producto × esfuerzo bajo:
 | 2026-05-15 | F11 Card setLimits | feat(bank): F11 implement card setLimits flow (C035) | ✅ Live validated — Founder confirmed save persists in DB + bootstrap refresh |
 | 2026-05-15 | F16 Joint Owners | (pending) | Pending — requires live txAdmin restart with migration 039 + UI add/remove test |
 | 2026-05-15 | F12 Card tier + issuance design lock | (pending) | Pending — requires live txAdmin restart + issue Classic/Premium cards, verify tier design whitelist, DB `card_kind/design_id/limits`, bootstrap persistence, and C036 `DESIGN_LOCKED` |
+| 2026-05-15 | F41 Notifications center | feat(bank): F41 implement notifications center with Zustand store + drawer + NetEvent ingestion | Pending — requires live txAdmin restart + test `sonar:bank:notification:push` NetEvent from backend |
 
 *Append-only. Nunca borrar entries.*

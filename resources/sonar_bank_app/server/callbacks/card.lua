@@ -47,6 +47,7 @@ Wrap.Register('sonar:bank:card:issue', {
     card_type          = payload.card_type,
     design_id          = payload.design_id,
     spend_limit_minor  = payload.spend_limit_minor,
+    idempotency_key    = payload.idempotency_key,
   })
 end)
 
@@ -108,6 +109,17 @@ Wrap.Register('sonar:bank:card:applyDesign', {
     citizen_id = citizen_id,
     card_id    = payload.card_id,
     design_id  = payload.design_id,
+  })
+end)
+
+Wrap.Register('sonar:bank:card:revoke', {
+  tier  = Enums.TIER.TIER_2_WRITE,
+  cb_id = 'C040b',
+}, function(src, citizen_id, payload)
+  return CardService.Revoke({
+    src      = src,
+    card_id  = payload.card_id,
+    reason   = payload.reason,
   })
 end)
 

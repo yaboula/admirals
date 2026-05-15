@@ -19,8 +19,13 @@ local Audit      = BankApp.lib.audit
 local Auth       = BankApp.lib.auth
 local Enums      = BankApp.lib.enums
 local HMAC       = BankApp.lib.hmac
+local Idempotency = BankApp.lib.idempotency
 
 local CardsRepo = BankApp.repos.cards
+local AccountsRepo = BankApp.repos.accounts
+local TransactionsRepo = BankApp.repos.transactions
+local DB = BankApp.lib.db
+local UUID = BankApp.lib.uuid
 
 local CARD_PRODUCTS = {
   classic = {
@@ -28,6 +33,7 @@ local CARD_PRODUCTS = {
     default_design_id = 'noir',
     daily_limit_minor = 200000,
     monthly_limit_minor = 2500000,
+    issue_fee_minor = 2500,
     designs = { noir = true, sonar_signature = true },
   },
   premium = {
@@ -35,6 +41,7 @@ local CARD_PRODUCTS = {
     default_design_id = 'sonar_signature',
     daily_limit_minor = 1000000,
     monthly_limit_minor = 10000000,
+    issue_fee_minor = 15000,
     designs = {
       noir = true,
       sonar_signature = true,
@@ -98,15 +105,9 @@ function S.Issue(ctx)
   local owner_cid, _, own_err = Auth.RequireOwnership(ctx.src, norm_iban, { allow_joint = false })
   if own_err then return { ok = false, error = own_err } end
 
-  -- Max 3 cards per citizen
-  local existing_cards, list_err = CardsRepo.ListByCitizen(owner_cid, 3)
-  if list_err then return { ok = false, error = list_err } end
-  if #existing_cards >= 3 then
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'cards', reason = 'max 3 cards per citizen' }) }
-  end
-
   local product_key = normalize_card_product(ctx.card_type)
   local product = CARD_PRODUCTS[product_key]
+
   local design_id = ctx.design_id or product.default_design_id
   if not product.designs[design_id] then
     return { ok = false, error = Errors.New('INVALID_DESIGN', { design_id = design_id, card_type = product_key }) }
@@ -117,22 +118,87 @@ function S.Issue(ctx)
     return { ok = false, error = Errors.New('INVALID_LIMITS', { field = 'spend_limit_minor', card_type = product_key }) }
   end
 
+  local idem_acquired = false
+  if ctx.idempotency_key then
+    local idem_status, cached, idem_err = Idempotency.Acquire(
+      ctx.idempotency_key,
+      {
+        account_iban = norm_iban,
+        card_type = product_key,
+        design_id = design_id,
+        spend_limit_minor = daily_limit_minor,
+        issue_fee_minor = product.issue_fee_minor,
+      },
+      {
+        actor_citizen_id = owner_cid,
+        callback_id = 'C032',
+        ttl_seconds = BankApp.Config.Idempotency.DEFAULT_TTL_SECONDS,
+      }
+    )
+    if idem_status == 'replay' then
+      return { ok = true, data = cached, replayed = true }
+    elseif idem_status == 'collision' or idem_status == 'in_flight' then
+      return { ok = false, error = idem_err }
+    elseif idem_status ~= 'acquired' then
+      return { ok = false, error = idem_err or Errors.New('INTERNAL_ERROR', { reason = 'idempotency unknown status' }) }
+    end
+    idem_acquired = true
+  end
+
+  -- Max 3 cards per citizen
+  local existing_cards, list_err = CardsRepo.ListByCitizen(owner_cid, 3)
+  if list_err then
+    if idem_acquired then Idempotency.Orphan(ctx.idempotency_key) end
+    return { ok = false, error = list_err }
+  end
+  if #existing_cards >= 3 then
+    if idem_acquired then Idempotency.Orphan(ctx.idempotency_key) end
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'cards', reason = 'max 3 cards per citizen' }) }
+  end
+
+  local account = AccountsRepo.GetByIban(norm_iban)
+  if not account then
+    if idem_acquired then Idempotency.Orphan(ctx.idempotency_key) end
+    return { ok = false, error = Errors.New('ACCOUNT_NOT_FOUND') }
+  end
+  local available_minor = tonumber(account.balance_minor) or 0
+  if available_minor < product.issue_fee_minor then
+    if idem_acquired then Idempotency.Orphan(ctx.idempotency_key) end
+    return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { requested = product.issue_fee_minor, available = available_minor }) }
+  end
+
   local masked = generate_masked_number()
-  local card_id, ins_err = CardsRepo.Insert({
+  local planned_card_id = UUID.V4()
+  local insert_query, card_id = CardsRepo.BuildInsertQuery({
+    card_id           = planned_card_id,
     owner_citizen_id  = owner_cid,
     account_iban      = norm_iban,
     masked_number     = masked,
-    pin_hash          = hash_pin(ctx.pin, owner_cid, 0),
+    pin_hash          = hash_pin(ctx.pin, owner_cid, planned_card_id),
     spend_limit_minor = daily_limit_minor,
     monthly_limit_minor = product.monthly_limit_minor,
     card_kind         = product.card_kind,
     design_id         = design_id,
   })
-  if ins_err then return { ok = false, error = ins_err } end
-
-  -- Re-hash with card_id as salt + persist
-  local final_hash = hash_pin(ctx.pin, owner_cid, card_id)
-  CardsRepo.SetPinHash(card_id, owner_cid, final_hash)
+  local ts = os.time() * 1000
+  local txn_id = UUID.V4()
+  local ok, tx_err = DB.Transaction({
+    AccountsRepo.BuildDebitBalanceQuery(norm_iban, product.issue_fee_minor),
+    insert_query,
+    TransactionsRepo.BuildSingleDebitQuery({
+      iban = norm_iban,
+      amount_minor = product.issue_fee_minor,
+      category = 'expense',
+      reason = ('SONAR %s card issue fee'):format(product_key),
+      txn_id = txn_id,
+      timestamp_ms = ts,
+      idempotency_key = ctx.idempotency_key or txn_id,
+    }),
+  })
+  if not ok then
+    if idem_acquired then Idempotency.Orphan(ctx.idempotency_key) end
+    return { ok = false, error = tx_err }
+  end
 
   Audit.Write({
     event_type       = Enums.AUDIT_EVENT_TYPE.CARD_ISSUE,
@@ -145,12 +211,16 @@ function S.Issue(ctx)
       masked_number     = masked,
       card_type         = product_key,
       design_id         = design_id,
+      issue_fee_minor   = product.issue_fee_minor,
       spend_limit_minor = daily_limit_minor,
       monthly_limit_minor = product.monthly_limit_minor,
+      fee_txn_id        = txn_id,
     },
   })
+  local result = { card_id = card_id, masked_number = masked, card_type = product_key, design_id = design_id, issue_fee_minor = product.issue_fee_minor }
+  if idem_acquired then Idempotency.Commit(ctx.idempotency_key, result) end
   invalidate_bootstrap(owner_cid)
-  return { ok = true, data = { card_id = card_id, masked_number = masked, card_type = product_key, design_id = design_id } }
+  return { ok = true, data = result }
 end
 
 local function set_status_helper(ctx, new_status, event_type)
@@ -181,6 +251,30 @@ end
 
 function S.Freeze(ctx)   return set_status_helper(ctx, 'frozen', Enums.AUDIT_EVENT_TYPE.CARD_FREEZE) end
 function S.Unfreeze(ctx) return set_status_helper(ctx, 'active', Enums.AUDIT_EVENT_TYPE.CARD_UNFREEZE) end
+function S.Revoke(ctx)
+  local card = CardsRepo.GetById(ctx.card_id)
+  if not card then return { ok = false, error = Errors.New('CARD_NOT_FOUND') } end
+
+  local actor_cid, auth_err = Auth.RequireCitizen(ctx.src)
+  if auth_err then return { ok = false, error = auth_err } end
+  if card.owner_citizen_id ~= actor_cid then
+    return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH') }
+  end
+
+  local _, err = CardsRepo.SetStatus(ctx.card_id, actor_cid, 'revoked')
+  if err then return { ok = false, error = err } end
+
+  Audit.Write({
+    event_type       = Enums.AUDIT_EVENT_TYPE.CARD_REVOKE,
+    actor_citizen_id = actor_cid,
+    actor_src        = ctx.src,
+    target_citizen_id= actor_cid,
+    target_iban      = card.account_iban,
+    event_data       = { card_id = ctx.card_id, reason = ctx.reason or 'lost' },
+  })
+  invalidate_bootstrap(actor_cid)
+  return { ok = true, data = { card_id = ctx.card_id, status = 'revoked', revoked_ms = os.time() * 1000 } }
+end
 
 -- C035 — SetLimits
 -- Updates the daily and monthly spending ceilings on a card the caller owns.

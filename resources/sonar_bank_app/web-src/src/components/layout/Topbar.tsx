@@ -7,8 +7,10 @@ import { sfx } from '@/lib/sfx'
 import { cn } from '@/lib/utils'
 import { useTransactionsFilter } from '@/stores/transactionsFilter'
 import { toast } from '@/stores/toast'
+import { useNotifications } from '@/stores/notifications'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import { StreamerModeToggle } from '@/components/security'
+import { NotificationDrawer } from './NotificationDrawer'
 import { useBankSession, type BankLocale } from '@/stores/session'
 
 export interface TopbarProps {
@@ -33,10 +35,12 @@ export function Topbar({
 }: TopbarProps) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false)
   const navigate = useNavigate()
   const setTransactionQuery = useTransactionsFilter((s) => s.setQuery)
   const locale = useBankSession((s) => s.locale)
   const setLocale = useBankSession((s) => s.setLocale)
+  const unreadCount = useNotifications((s) => s.unreadCount())
 
   const submitSearch = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -54,69 +58,88 @@ export function Topbar({
   }
 
   return (
-    <div className="relative h-16 px-4 lg:px-6 flex items-center">
-      <div
-        aria-hidden
-        className="absolute inset-x-4 top-0 h-16 rounded-b-[1.75rem] pointer-events-none"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(7,2,1,0.56), rgba(1,0,0,0.18))',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(18px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(18px) saturate(150%)',
-        }}
-      />
-
-      <form onSubmit={submitSearch} className="relative z-10 w-[320px]">
+    <>
+      <div className="relative h-16 px-4 lg:px-6 flex items-center">
         <div
-          className="h-10 rounded-full flex items-center gap-2.5 px-3.5"
+          aria-hidden
+          className="absolute inset-x-4 top-0 h-16 rounded-b-[1.75rem] pointer-events-none"
           style={{
-            background: 'rgba(0,0,0,0.34)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background:
+              'linear-gradient(180deg, rgba(7,2,1,0.56), rgba(1,0,0,0.18))',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(18px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(150%)',
           }}
-        >
-          <Search size={15} strokeWidth={2} className="text-text-tertiary shrink-0" />
-          <input
-            type="search"
-            placeholder={t('common.search')}
-            aria-label={t('transactions.searchAriaLabel')}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
-          />
-        </div>
-      </form>
-
-      <div className="relative z-10 ml-3">
-        <StreamerModeToggle />
-      </div>
-
-      <div className="relative z-10 ml-auto flex items-center gap-2">
-        <div className="flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] p-1">
-          <IconButton
-            icon={<RotateCcw size={16} strokeWidth={1.9} />}
-            aria-label={t('topbar.refreshAriaLabel')}
-            variant="ghost"
-            size="sm"
-            onClick={() => toast.info(t('topbar.refreshToastTitle'), t('topbar.refreshToastBody'))}
-          />
-          <IconButton
-            icon={<Bell size={16} strokeWidth={1.9} />}
-            aria-label={t('topbar.notificationsAriaLabel')}
-            variant="ghost"
-            size="sm"
-            onClick={() => toast.info(t('topbar.notificationsToastTitle'), t('topbar.notificationsToastBody'))}
-          />
-        </div>
-        <TopbarLocaleSelector value={locale} onChange={changeLocale} label={t('settings.language')} />
-        <ProfileChip
-          initials={userInitials}
-          name={profileName ?? greeting ?? t('greeting.goodMorning')}
-          handle={profileHandle ?? subtitle}
-          ariaLabel={t('topbar.profileAriaLabel')}
         />
+
+        <form onSubmit={submitSearch} className="relative z-10 w-[320px]">
+          <div
+            className="h-10 rounded-full flex items-center gap-2.5 px-3.5"
+            style={{
+              background: 'rgba(0,0,0,0.34)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <Search size={15} strokeWidth={2} className="text-text-tertiary shrink-0" />
+            <input
+              type="search"
+              placeholder={t('common.search')}
+              aria-label={t('transactions.searchAriaLabel')}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
+            />
+          </div>
+        </form>
+
+        <div className="relative z-10 ml-3">
+          <StreamerModeToggle />
+        </div>
+
+        <div className="relative z-10 ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] p-1">
+            <IconButton
+              icon={<RotateCcw size={16} strokeWidth={1.9} />}
+              aria-label={t('topbar.refreshAriaLabel')}
+              variant="ghost"
+              size="sm"
+              onClick={() => toast.info(t('topbar.refreshToastTitle'), t('topbar.refreshToastBody'))}
+            />
+            <div className="relative">
+              <IconButton
+                icon={<Bell size={16} strokeWidth={1.9} />}
+                aria-label={t('topbar.notificationsAriaLabel')}
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setNotificationDrawerOpen(true)
+                  sfx.console_tap()
+                }}
+              />
+              {unreadCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                  style={{
+                    background: 'var(--gradient-primary)',
+                    boxShadow: '0 2px 8px -2px rgba(255, 100, 19, 0.6)',
+                  }}
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
+          </div>
+          <TopbarLocaleSelector value={locale} onChange={changeLocale} label={t('settings.language')} />
+          <ProfileChip
+            initials={userInitials}
+            name={profileName ?? greeting ?? t('greeting.goodMorning')}
+            handle={profileHandle ?? subtitle}
+            ariaLabel={t('topbar.profileAriaLabel')}
+          />
+        </div>
       </div>
-    </div>
+      <NotificationDrawer open={notificationDrawerOpen} onClose={() => setNotificationDrawerOpen(false)} />
+    </>
   )
 }
 

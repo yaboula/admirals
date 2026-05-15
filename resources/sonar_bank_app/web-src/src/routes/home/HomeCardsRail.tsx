@@ -60,14 +60,37 @@ export function HomeCardsRail({ account, cards, transactions }: HomeCardsRailPro
           </button>
         </div>
 
-        <div className="relative mt-3 h-[224px] shrink-0 overflow-visible" style={{ perspective: '1000px' }}>
+        {/* Cards stack — symmetric 3D depth ladder.
+            All three cards share inset-x-0 + bottom-0 so they are perfectly
+            centered horizontally. Back cards recede only via uniform scale,
+            an upward translateY (so they peek above the front) and a small
+            rotateX (perspective tilt). No off-axis Z rotation, no horizontal
+            offset → the stack reads as one card seen from above in 3D. */}
+        <div
+          className="relative mt-4 h-[244px] shrink-0 overflow-visible"
+          style={{ perspective: '1400px', perspectiveOrigin: '50% 25%' }}
+        >
           {cards[2] && (
-            <div className="absolute left-[8%] right-[-3%] top-0 z-0 opacity-70" style={{ transform: 'translateY(-10px) rotateZ(0.35deg) scale(0.92)', transformOrigin: 'center top' }}>
+            <div
+              className="absolute inset-x-0 bottom-0 z-0"
+              style={{
+                transform: 'translateY(-50px) scale(0.88) rotateX(10deg)',
+                transformOrigin: 'center top',
+                filter: 'drop-shadow(0 18px 26px rgba(0,0,0,0.55)) brightness(0.78)',
+              }}
+            >
               <CardVisual card={cards[2]} compact className="shadow-none" />
             </div>
           )}
           {cards[1] && (
-            <div className="absolute left-[4%] right-[-1%] top-[29px] z-10" style={{ opacity: 0.86, transform: 'rotateZ(-0.2deg) scale(0.96)', transformOrigin: 'center top' }}>
+            <div
+              className="absolute inset-x-0 bottom-0 z-10"
+              style={{
+                transform: 'translateY(-26px) scale(0.94) rotateX(5deg)',
+                transformOrigin: 'center top',
+                filter: 'drop-shadow(0 14px 20px rgba(0,0,0,0.5)) brightness(0.9)',
+              }}
+            >
               <CardVisual card={cards[1]} compact className="shadow-none" />
             </div>
           )}

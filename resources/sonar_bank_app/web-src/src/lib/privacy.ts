@@ -1,5 +1,7 @@
 export function normalizeSensitiveToken(value: string | null | undefined): string {
-  return String(value ?? '').replace(/\s+/g, '').toUpperCase()
+  // Strip whitespace AND any non-alphanumeric separator (dashes, dots, slashes)
+  // before formatting/masking so callers always work with the canonical token.
+  return String(value ?? '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
 }
 
 export function maskIbanDisplay(iban: string | null | undefined): string {

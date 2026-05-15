@@ -26,6 +26,7 @@ const STATUS_RANK: Record<BankCardMock['status'], number> = {
   pending: 1,
   locked: 2,
   expired: 3,
+  revoked: 4,
 }
 
 export function useCards(): UseCardsResult {
@@ -33,7 +34,7 @@ export function useCards(): UseCardsResult {
 
   const cards = useMemo<BankCardMock[]>(() => {
     if (!data) return []
-    const indexed = data.cards.map((c, i) => ({ c, i }))
+    const indexed = data.cards.filter((c) => c.status !== 'revoked').map((c, i) => ({ c, i }))
     indexed.sort((a, b) => {
       const ra = STATUS_RANK[a.c.status] ?? 9
       const rb = STATUS_RANK[b.c.status] ?? 9

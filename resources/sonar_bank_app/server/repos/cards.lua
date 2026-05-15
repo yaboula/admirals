@@ -101,15 +101,23 @@ function R.GetById(card_id)
 end
 
 function R.Insert(t)
-  local card_id = UUID.V4()
-  local card_token = token64()
-  local last4 = tostring(t.masked_number or ''):match('(%d%d%d%d)$') or card_token:sub(-4)
-  local _, err = DB.Execute(SQL_INSERT, {
-    card_id, t.account_iban, t.owner_citizen_id,
-    card_token, last4, t.card_kind or 'debit', t.design_id or 'noir', t.pin_hash, card_token:sub(1, 32), t.spend_limit_minor, t.monthly_limit_minor,
-  })
+  local query, card_id = R.BuildInsertQuery(t)
+  local _, err = DB.Execute(query.query, query.values)
   if err then return nil, err end
   return card_id, nil
+end
+
+function R.BuildInsertQuery(t)
+  local card_id = t.card_id or UUID.V4()
+  local card_token = token64()
+  local last4 = tostring(t.masked_number or ''):match('(%d%d%d%d)$') or card_token:sub(-4)
+  return {
+    query = SQL_INSERT,
+    values = {
+      card_id, t.account_iban, t.owner_citizen_id,
+      card_token, last4, t.card_kind or 'debit', t.design_id or 'noir', t.pin_hash, card_token:sub(1, 32), t.spend_limit_minor, t.monthly_limit_minor,
+    },
+  }, card_id
 end
 
 function R.SetStatus(card_id, owner_citizen_id, status)
