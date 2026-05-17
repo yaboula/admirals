@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import {
+  AlertTriangle,
   ArrowDownLeft,
   ArrowRight,
   ArrowUpRight,
@@ -18,32 +19,34 @@ import {
 import { Spinner } from '@/components/ui'
 import { BankAvatar } from '@/components/brand/BankAvatar'
 import type { BankCard, BankCardMock, Transaction } from '@/data/contracts'
-import { useAtmSessionQuery, useBootstrap } from '@/data/queries'
+import {
+  useAtmSessionQuery,
+  useAtmVerifyPinMutation,
+  useAtmNuiWithdrawMutation,
+  useBootstrap,
+} from '@/data/queries'
 import { getMockDisplayName } from '@/data/mock/seed'
 import { useI18n } from '@/lib/i18n'
 import { maskMoneyDisplay } from '@/lib/privacy'
 import { cn } from '@/lib/utils'
 import { usePrivacyMode } from '@/stores/privacy'
 import { CardVisual } from './cards/CardVisual'
-import type { CardDesign } from './cards/cardDesigns'
+import { resolveCardDesign } from './cards/cardDesigns'
+import { useSavingsTransferMutation } from '@/data/mutations'
+import { useAtmNuiDepositMutation } from '@/data/queries/atm'
 
 type OperationId = 'withdraw' | 'deposit' | 'transfer'
-type AtmStep = 'pin' | 'card' | 'cash'
+// F06 — corrected step order. Card selection MUST come before PIN entry,
+// because each card has its own independent PIN hash in the BD. The previous
+// order ('pin' → 'card' → 'cash') was a UX bug that allowed entering a PIN
+// before knowing which card was being authenticated.
+type AtmStep = 'card' | 'pin' | 'cash'
+
+const PIN_FAIL_FREEZE_THRESHOLD = 3
 
 const QUICK_AMOUNTS = [50, 100, 200, 500]
 const PIN_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete']
 
-const ATM_CARD_DESIGN: CardDesign = {
-  id: 'atm_cash_mode',
-  name: 'ATM Cash Mode',
-  tagline: 'Terminal authenticated',
-  tier: 'signature',
-  surface: 'linear-gradient(135deg, rgb(2, 4, 6) 0%, rgb(1, 1, 2) 58%, rgb(0, 1, 2) 100%)',
-  accent: 'rgb(246, 75, 0)',
-  textPrimary: 'rgb(246, 249, 251)',
-  textTertiary: 'rgba(141,147,153,0.78)',
-  motif: 'pinstripe',
-}
 
 export function Atm() {
   const { t, money } = useI18n()
@@ -51,31 +54,158 @@ export function Atm() {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const sessionQuery = useAtmSessionQuery()
   const bootstrapQuery = useBootstrap()
+  const verifyPin = useAtmVerifyPinMutation()
+  const nuiWithdraw = useAtmNuiWithdrawMutation()
+  const nuiDeposit = useAtmNuiDepositMutation()
+  const savingsTransfer = useSavingsTransferMutation()
   const session = sessionQuery.data
   const bootstrap = bootstrapQuery.data
   const cards = bootstrap?.cards ?? []
   const account = bootstrap?.accounts[0]
   const primaryCard = cards[0]
   const transactions = useMemo(() => bootstrap?.recent_transactions.slice(0, 3) ?? [], [bootstrap?.recent_transactions])
-  const [step, setStep] = useState<AtmStep>('pin')
+
+  // F06 — Card chosen first, then PIN bound to that card, then cash.
+  const initialActiveCardId = cards.find((card) => card.status === 'active')?.card_id ?? primaryCard?.card_id ?? null
+  const [step, setStep] = useState<AtmStep>('card')
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(initialActiveCardId)
   const [pin, setPin] = useState('')
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
-  const selectedCard = cards.find((card) => card.card_id === (selectedCardIdFallback(selectedCardId, primaryCard))) ?? primaryCard
+  const [pinError, setPinError] = useState<string | null>(null)
+  const [pinAttempts, setPinAttempts] = useState(0)
+  const [grantTokenId, setGrantTokenId] = useState<string | null>(null)
+  const [grantExpiresMs, setGrantExpiresMs] = useState<number>(0)
   const [operation, setOperation] = useState<OperationId>('withdraw')
   const [amount, setAmount] = useState('')
+  const [withdrawError, setWithdrawError] = useState<string | null>(null)
+  const [withdrawSuccess, setWithdrawSuccess] = useState<string | null>(null)
+  const [operationDone, setOperationDone] = useState(false)
+
+  const selectedCard = cards.find((card) => card.card_id === selectedCardId) ?? primaryCard
 
   const cashBalance = account?.balance_minor ?? session?.account.balance_minor ?? 0
   const totalBalance = cashBalance + (account?.savings_minor ?? session?.account.savings_minor ?? 0)
-  const dailyLimit = session?.daily_limit_minor ?? cashBalance
-  const remainingLimit = session?.remaining_limit_minor ?? cashBalance
-  const terminalCash = session?.cash_available_minor ?? cashBalance
-  const availableNow = Math.max(0, Math.min(cashBalance, remainingLimit, terminalCash))
-  const limitRatio = dailyLimit > 0 ? Math.max(0, Math.min(1, remainingLimit / dailyLimit)) : 0
+  // F06 — daily limit is a per-CARD attribute (cards.daily_limit_minor), not a
+  // session/bank-level cap. The session's `daily_limit_minor` is a fallback for
+  // the pre-selection screen; once the user picks a card we trust the card row.
+  const cardDailyLimit  = selectedCard?.daily_limit_minor ?? session?.daily_limit_minor ?? cashBalance
+  const cardDailySpent  = selectedCard?.daily_spent_minor ?? 0
+  const dailyLimit      = cardDailyLimit
+  const remainingLimit  = Math.max(0, cardDailyLimit - cardDailySpent)
+  const terminalCash    = session?.cash_available_minor ?? cashBalance
+  const availableNow    = Math.max(0, Math.min(cashBalance, remainingLimit, terminalCash))
+  const limitRatio      = dailyLimit > 0 ? Math.max(0, Math.min(1, remainingLimit / dailyLimit)) : 0
   const amountMinor = Math.round((Number.parseFloat(amount) || 0) * 100)
   const amountReady = amountMinor > 0 && amountMinor <= availableNow
   const displayName = streamerMode ? t('atm.clientFallback') : getMockDisplayName()
   const terminalId = session?.terminal_id ?? t('atm.terminalFallback')
   const online = session?.online ?? true
+
+  const handlePinSubmit = async () => {
+    if (!selectedCard || pin.length !== 4) return
+    setPinError(null)
+    try {
+      const result = await verifyPin.mutateAsync({
+        card_id: selectedCard.card_id,
+        pin,
+        terminal_id: session?.terminal_id,
+      })
+      // Successful verify → grant a 5-min ATM authorization for downstream
+      // withdraw/deposit/transfer ops without re-asking PIN every time.
+      setGrantTokenId(result.grant_id)
+      setGrantExpiresMs(result.expires_at_ms ?? Date.now() + 5 * 60 * 1000)
+      setPin('')
+      setPinAttempts(0)
+      setStep('cash')
+    } catch (err) {
+      const nextAttempts = pinAttempts + 1
+      setPinAttempts(nextAttempts)
+      setPin('')
+      const remaining = Math.max(0, PIN_FAIL_FREEZE_THRESHOLD - nextAttempts)
+      // The server is the source of truth for freezing — but display a hint.
+      setPinError(
+        nextAttempts >= PIN_FAIL_FREEZE_THRESHOLD
+          ? t('atm.pinFrozen')
+          : t('atm.pinWrong').replace('{remaining}', String(remaining)),
+      )
+      // Keep using the err so the linter doesn't flag it; the server message is
+      // also surfaced if the BankError carries a friendly text.
+      void err
+    }
+  }
+
+  const handleWithdraw = async () => {
+    if (!selectedCard || !grantTokenId || !amountReady) return
+    setWithdrawError(null)
+    setWithdrawSuccess(null)
+    try {
+      const result = await nuiWithdraw.mutateAsync({
+        card_id: selectedCard.card_id,
+        grant_id: grantTokenId,
+        amount_minor: amountMinor,
+        terminal_id: session?.terminal_id,
+      })
+      setWithdrawSuccess(
+        t('atm.withdrawSuccess').replace(
+          '{amount}',
+          money((result.amount_minor ?? amountMinor) / 100),
+        ),
+      )
+      setAmount('')
+      setOperationDone(true)
+    } catch (err) {
+      setWithdrawError((err as Error)?.message ?? t('atm.withdrawError'))
+    }
+  }
+
+  // F06 — Deposit: cash in pocket → bank balance via atm_service.NuiDeposit.
+  const handleDeposit = async () => {
+    if (!selectedCard || !grantTokenId || amountMinor <= 0) return
+    setWithdrawError(null); setWithdrawSuccess(null)
+    try {
+      const result = await nuiDeposit.mutateAsync({
+        card_id: selectedCard.card_id,
+        grant_id: grantTokenId,
+        amount_minor: amountMinor,
+        terminal_id: session?.terminal_id,
+      })
+      setWithdrawSuccess(t('atm.depositSuccess').replace('{amount}',
+        money((result.amount_minor ?? amountMinor) / 100)))
+      setAmount('')
+      setOperationDone(true)
+    } catch (err) {
+      setWithdrawError((err as Error)?.message ?? t('atm.depositError'))
+    }
+  }
+
+  // F06 — Transfer at ATM === move from checking to savings (the realistic
+  // ATM transfer that doesn't need a recipient picker). Reuses the existing
+  // C007 savings rail with no new BE code.
+  const checkingAccount = bootstrap?.accounts.find(
+    (acc, idx) => acc.account_class === 'checking' || (!acc.account_class && idx === 0),
+  )
+  const savingsAccount = bootstrap?.accounts.find((acc) => acc.account_class === 'savings')
+  const handleTransfer = async () => {
+    if (!checkingAccount || !savingsAccount || amountMinor <= 0) {
+      setWithdrawError(t('atm.transferError'))
+      return
+    }
+    setWithdrawError(null); setWithdrawSuccess(null)
+    try {
+      await savingsTransfer.mutateAsync({
+        iban: checkingAccount.iban,
+        savings_iban: savingsAccount.iban,
+        amount_minor: amountMinor,
+        direction: 'to_savings',
+        idempotency_key: crypto.randomUUID(),
+        correlation_id: crypto.randomUUID(),
+      })
+      setWithdrawSuccess(t('atm.transferSuccess').replace('{amount}', money(amountMinor / 100)))
+      setAmount('')
+      setOperationDone(true)
+    } catch (err) {
+      setWithdrawError((err as Error)?.message ?? t('atm.transferError'))
+    }
+  }
 
   if (sessionQuery.isLoading || bootstrapQuery.isLoading) {
     return (
@@ -97,20 +227,6 @@ export function Atm() {
         transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
         className="relative mx-auto h-full max-w-[1216px] p-4"
       >
-        {step === 'pin' && (
-          <PinGate
-            name={displayName}
-            location={session?.location_label}
-            pin={pin}
-            onPinChange={setPin}
-            onExit={() => navigate('/')}
-            onNext={() => {
-              setSelectedCardId(cards.find((card) => card.status === 'active')?.card_id ?? primaryCard?.card_id ?? null)
-              setStep('card')
-            }}
-          />
-        )}
-
         {step === 'card' && (
           <CardChooser
             name={displayName}
@@ -118,9 +234,29 @@ export function Atm() {
             cards={cards}
             selectedCardId={selectedCard?.card_id ?? null}
             onSelect={setSelectedCardId}
-            onBack={() => setStep('pin')}
+            onBack={() => navigate('/')}
             onExit={() => navigate('/')}
-            onNext={() => setStep('cash')}
+            onNext={() => {
+              setPin('')
+              setPinError(null)
+              setStep('pin')
+            }}
+          />
+        )}
+
+        {step === 'pin' && (
+          <PinGate
+            name={displayName}
+            location={session?.location_label}
+            pin={pin}
+            onPinChange={setPin}
+            onExit={() => navigate('/')}
+            onBack={() => setStep('card')}
+            onNext={handlePinSubmit}
+            cardLast4={selectedCard?.pan_last_four ?? '----'}
+            pinError={pinError}
+            isVerifying={verifyPin.isPending}
+            frozen={pinAttempts >= PIN_FAIL_FREEZE_THRESHOLD}
           />
         )}
 
@@ -140,19 +276,27 @@ export function Atm() {
             operation={operation}
             amount={amount}
             amountReady={amountReady}
-            onOperationChange={setOperation}
-            onAmountChange={setAmount}
+            isWithdrawing={nuiWithdraw.isPending}
+            grantValid={Boolean(grantTokenId) && grantExpiresMs > Date.now()}
+            withdrawError={withdrawError}
+            withdrawSuccess={withdrawSuccess}
+            onOperationChange={(op) => { setOperation(op); setOperationDone(false); setWithdrawError(null); setWithdrawSuccess(null) }}
+            onAmountChange={(v) => { setAmount(v); setOperationDone(false); setWithdrawError(null); setWithdrawSuccess(null) }}
             onBack={() => setStep('card')}
             onExit={() => navigate('/')}
+            onSubmit={() => {
+              if (operation === 'withdraw') void handleWithdraw()
+              else if (operation === 'deposit') void handleDeposit()
+              else if (operation === 'transfer') void handleTransfer()
+            }}
+            isDepositing={nuiDeposit.isPending}
+            isTransferring={savingsTransfer.isPending}
+            operationDone={operationDone}
           />
         )}
       </motion.section>
     </AtmSurface>
   )
-}
-
-function selectedCardIdFallback(selectedCardId: string | null, primaryCard?: BankCardMock) {
-  return selectedCardId ?? primaryCard?.card_id
 }
 
 function AtmSurface({ children }: { children: ReactNode }) {
@@ -174,18 +318,29 @@ function PinGate({
   pin,
   onPinChange,
   onExit,
+  onBack,
   onNext,
+  cardLast4,
+  pinError,
+  isVerifying,
+  frozen,
 }: {
   name: string
   location?: string
   pin: string
   onPinChange: (pin: string) => void
   onExit: () => void
+  onBack: () => void
   onNext: () => void
+  cardLast4: string
+  pinError: string | null
+  isVerifying: boolean
+  frozen: boolean
 }) {
   const { t } = useI18n()
-  const ready = pin.length === 4
+  const ready = pin.length === 4 && !isVerifying && !frozen
   const handleKey = (key: string) => {
+    if (frozen || isVerifying) return
     if (key === 'clear') onPinChange('')
     else if (key === 'delete') onPinChange(pin.slice(0, -1))
     else if (pin.length < 4) onPinChange(`${pin}${key}`)
@@ -216,8 +371,8 @@ function PinGate({
           </div>
 
           <div className="grid grid-cols-3 gap-3 rounded-[1.35rem] border border-white/10 bg-black/16 p-3">
-            <StageBadge index="01" label={t('atm.pinStep')} active />
-            <StageBadge index="02" label={t('atm.cardStep')} />
+            <StageBadge index="01" label={t('atm.cardStep')} />
+            <StageBadge index="02" label={t('atm.pinStep')} active />
             <StageBadge index="03" label={t('atm.cashStep')} />
           </div>
         </div>
@@ -228,23 +383,49 @@ function PinGate({
           <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.045] text-[rgb(246, 75, 0)]">
             <KeyRound size={22} strokeWidth={2.2} />
           </div>
-          <button type="button" onClick={onExit} className="flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.13em] text-text-secondary transition hover:bg-white/[0.075] hover:text-text-primary">
-            <LogOut size={14} />
-            {t('atm.exit')}
-          </button>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onBack} className="flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.13em] text-text-secondary transition hover:bg-white/[0.075] hover:text-text-primary">
+              {t('atm.back')}
+            </button>
+            <button type="button" onClick={onExit} className="flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-black uppercase tracking-[0.13em] text-text-secondary transition hover:bg-white/[0.075] hover:text-text-primary">
+              <LogOut size={14} />
+              {t('atm.exit')}
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col justify-center">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-text-tertiary">{t('atm.enterPin')}</p>
+          <p className="mt-1 text-xs font-semibold text-text-secondary">
+            {t('atm.pinForCard').replace('{last4}', cardLast4)}
+          </p>
           <div className="mt-5 flex justify-center gap-3">
             {Array.from({ length: 4 }, (_, index) => (
               <span key={index} className={cn('h-4 w-4 rounded-full border transition', index < pin.length ? 'border-[rgb(246, 75, 0)] bg-[rgb(246, 75, 0)] shadow-[0_0_18px_rgba(246,75,0,0.26)]' : 'border-white/16 bg-white/[0.035]')} />
             ))}
           </div>
 
-          <div className="mt-8 grid grid-cols-3 gap-3">
+          {pinError && (
+            <div className={cn(
+              'mt-4 flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold',
+              frozen
+                ? 'border-[rgba(220,38,38,0.4)] bg-[rgba(220,38,38,0.08)] text-[rgb(252,165,165)]'
+                : 'border-[rgba(246,75,0,0.34)] bg-[rgba(246,75,0,0.08)] text-[rgb(252,210,170)]',
+            )}>
+              <AlertTriangle size={14} />
+              <span>{pinError}</span>
+            </div>
+          )}
+
+          <div className="mt-6 grid grid-cols-3 gap-3">
             {PIN_KEYS.map((key) => (
-              <button key={key} type="button" onClick={() => handleKey(key)} className="grid h-14 place-items-center rounded-2xl border border-white/10 bg-black/18 text-lg font-black text-text-primary transition hover:bg-white/[0.07]">
+              <button
+                key={key}
+                type="button"
+                disabled={frozen || isVerifying}
+                onClick={() => handleKey(key)}
+                className="grid h-14 place-items-center rounded-2xl border border-white/10 bg-black/18 text-lg font-black text-text-primary transition hover:bg-white/[0.07] disabled:opacity-30"
+              >
                 {key === 'delete' ? <Delete size={18} /> : key === 'clear' ? <span className="text-xs uppercase tracking-[0.12em]">{t('atm.clearPin')}</span> : key}
               </button>
             ))}
@@ -252,8 +433,8 @@ function PinGate({
         </div>
 
         <button type="button" disabled={!ready} onClick={onNext} className={cn('flex h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition', ready ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246,75,0,0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
-          {t('atm.confirmPin')}
-          <ChevronRight size={16} />
+          {isVerifying ? <Spinner size="sm" /> : t('atm.confirmPin')}
+          {!isVerifying && <ChevronRight size={16} />}
         </button>
       </aside>
     </div>
@@ -328,7 +509,7 @@ function CardChooser({
                   transition={{ type: 'spring', stiffness: 220, damping: 26, mass: 1.05 }}
                   style={{ zIndex: 20 - distance, transformStyle: 'preserve-3d' }}
                 >
-                  <CardVisual card={card} design={ATM_CARD_DESIGN} className="rounded-[1.55rem]" />
+                  <CardVisual card={card} design={resolveCardDesign(card.design_id)} className="rounded-[1.55rem]" />
                   {!selected && <button type="button" className="absolute inset-0" onClick={() => onSelect(card.card_id)} aria-label={t('atm.selectCard')} />}
                 </motion.div>
               )
@@ -394,6 +575,9 @@ function CashScreen({
   selectedCard,
   terminalId,
   online,
+  isDepositing,
+  isTransferring,
+  operationDone,
   totalBalance,
   cashBalance,
   availableNow,
@@ -403,10 +587,15 @@ function CashScreen({
   operation,
   amount,
   amountReady,
+  isWithdrawing,
+  grantValid,
+  withdrawError,
+  withdrawSuccess,
   onOperationChange,
   onAmountChange,
   onBack,
   onExit,
+  onSubmit,
 }: {
   name: string
   location?: string
@@ -422,10 +611,18 @@ function CashScreen({
   operation: OperationId
   amount: string
   amountReady: boolean
+  isWithdrawing: boolean
+  isDepositing?: boolean
+  isTransferring?: boolean
+  operationDone?: boolean
+  grantValid: boolean
+  withdrawError: string | null
+  withdrawSuccess: string | null
   onOperationChange: (operation: OperationId) => void
   onAmountChange: (amount: string) => void
   onBack: () => void
   onExit: () => void
+  onSubmit: () => void
 }) {
   return (
     <div className="grid h-full grid-cols-[minmax(0,1fr)_336px] gap-4 rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_88%_14%,rgba(246,75,0,0.18),transparent_30%),linear-gradient(135deg,rgba(8,2,2,0.92)_0%,rgba(5,7,10,0.88)_52%,rgba(2,2,3,0.96)_100%)] p-4 shadow-[0_34px_100px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
@@ -437,7 +634,20 @@ function CashScreen({
 
       <aside className="grid min-h-0 grid-rows-[224px_minmax(0,1fr)] gap-3">
         <OperationDock active={operation} onChange={onOperationChange} />
-        <AmountComposer operation={operation} amount={amount} onAmountChange={onAmountChange} amountReady={amountReady} />
+        <AmountComposer
+          operation={operation}
+          amount={amount}
+          onAmountChange={onAmountChange}
+          amountReady={amountReady}
+          isWithdrawing={isWithdrawing}
+          isDepositing={isDepositing}
+          isTransferring={isTransferring}
+          operationDone={operationDone}
+          grantValid={grantValid}
+          withdrawError={withdrawError}
+          withdrawSuccess={withdrawSuccess}
+          onSubmit={onSubmit}
+        />
       </aside>
     </div>
   )
@@ -537,7 +747,7 @@ function CashGateway({
             <div className="mt-4 grid gap-3">
               <MiniLine label={t('atm.totalBalance')} value={totalBalance} />
               <MiniLine label={t('atm.cashBalance')} value={cashBalance} />
-              <MiniLine label={t('atm.terminalStock')} value={online ? t('atm.online') : t('atm.pending')} />
+              <MiniLine label={t('atm.terminalStatus')} value={online ? t('atm.online') : t('atm.pending')} />
             </div>
           </div>
         </div>
@@ -546,7 +756,7 @@ function CashGateway({
           <div className="mx-auto w-full max-w-[500px]" style={{ perspective: '1400px' }}>
             {card ? (
               <motion.div className="group relative rounded-[1.45rem]" animate={{ rotateX: 6, rotateY: -7, y: 0 }} whileHover={{ y: -5, rotateX: 4, rotateY: -5, scale: 1.01 }} transition={{ type: 'spring', stiffness: 160, damping: 18 }} style={{ transformStyle: 'preserve-3d' }}>
-                <CardVisual card={card} design={ATM_CARD_DESIGN} className="rounded-[1.45rem] shadow-[0_38px_80px_rgba(0,0,0,0.62)]" />
+                <CardVisual card={card} design={resolveCardDesign(card.design_id)} className="rounded-[1.45rem] shadow-[0_38px_80px_rgba(0,0,0,0.62)]" />
                 <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[1.45rem] border border-transparent transition duration-300 group-hover:border-[rgba(246,75,0,0.28)] group-hover:shadow-[0_0_34px_rgba(246,75,0,0.12)]" />
               </motion.div>
             ) : (
@@ -631,14 +841,33 @@ function AmountComposer({
   amount,
   onAmountChange,
   amountReady,
+  isWithdrawing,
+  isDepositing,
+  isTransferring,
+  operationDone,
+  grantValid,
+  withdrawError,
+  withdrawSuccess,
+  onSubmit,
 }: {
   operation: OperationId
   amount: string
   onAmountChange: (value: string) => void
   amountReady: boolean
+  isWithdrawing: boolean
+  isDepositing?: boolean
+  isTransferring?: boolean
+  operationDone?: boolean
+  grantValid: boolean
+  withdrawError: string | null
+  withdrawSuccess: string | null
+  onSubmit: () => void
 }) {
   const { t, money } = useI18n()
   const title = operation === 'withdraw' ? t('atm.withdrawAmount') : operation === 'deposit' ? t('atm.depositAmount') : t('atm.transferAmount')
+  const busy = isWithdrawing || isDepositing || isTransferring
+  const requiresGrant = operation === 'withdraw' || operation === 'deposit' || operation === 'transfer'
+  const submitDisabled = !amountReady || busy || (requiresGrant && !grantValid)
   return (
     <section className="relative min-h-0 overflow-hidden rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(246,75,0,0.09)_0%,rgba(255,255,255,0.035)_42%,rgba(0,0,0,0.34)_100%)] p-4 shadow-glass backdrop-blur-2xl">
       <div aria-hidden className="absolute -right-20 bottom-0 h-40 w-40 rounded-full bg-[rgba(246,75,0,0.12)] blur-3xl" />
@@ -674,9 +903,44 @@ function AmountComposer({
           <p className="mt-2 text-xs font-semibold leading-5 text-text-secondary">{amountReady ? t('atm.readyNote') : t('atm.waitingNote')}</p>
         </div>
 
-        <button type="button" disabled={!amountReady} className={cn('mt-3 flex h-11 w-full items-center justify-center gap-2 self-end rounded-full text-sm font-black transition', amountReady ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246,75,0,0.26)] hover:bg-[var(--gradient-primary-hover)]' : 'border border-white/10 bg-white/[0.035] text-text-tertiary')}>
-          {t('atm.reviewCash')}
-          <ChevronRight size={16} />
+        {(withdrawError || withdrawSuccess) && (
+          <div className={cn(
+            'mt-3 flex items-start gap-2 rounded-[1rem] border px-3 py-2 text-xs font-semibold',
+            withdrawError
+              ? 'border-[rgba(220,38,38,0.4)] bg-[rgba(220,38,38,0.08)] text-[rgb(252,165,165)]'
+              : 'border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.08)] text-[rgb(187,247,208)]',
+          )}>
+            {withdrawError ? <AlertTriangle size={14} className="mt-0.5 shrink-0" /> : <CheckCircle2 size={14} className="mt-0.5 shrink-0" />}
+            <span className="leading-5">{withdrawError ?? withdrawSuccess}</span>
+          </div>
+        )}
+
+        <button
+          type="button"
+          disabled={submitDisabled}
+          onClick={onSubmit}
+          className={cn(
+            'mt-3 flex h-11 w-full items-center justify-center gap-2 self-end rounded-full text-sm font-black transition',
+            !submitDisabled
+              ? 'bg-[var(--gradient-primary)] text-text-primary shadow-[0_16px_38px_rgba(246,75,0,0.26)] hover:bg-[var(--gradient-primary-hover)]'
+              : 'border border-white/10 bg-white/[0.035] text-text-tertiary',
+          )}
+        >
+          {busy ? <Spinner size="sm" /> : operationDone ? (
+            <>
+              <CheckCircle2 size={16} />
+              {t('atm.done')}
+            </>
+          ) : (
+            <>
+              {operation === 'withdraw'
+                ? t('atm.confirmWithdraw')
+                : operation === 'deposit'
+                  ? t('atm.confirmDeposit')
+                  : t('atm.confirmTransfer')}
+              <ChevronRight size={16} />
+            </>
+          )}
         </button>
       </div>
     </section>

@@ -52,6 +52,11 @@ local Portfolio    = BankApp.repos.portfolio
 local Cards        = BankApp.repos.cards
 local AuditQuery   = BankApp.repos.audit_query
 
+-- Soft deps — resolved lazily inside BuildAppMeta so this service can boot
+-- even if either lib is missing (defensive — banker panel is optional).
+local function _features() return BankApp.lib and BankApp.lib.features end
+local function _economy()  return BankApp.lib and BankApp.lib.economy  end
+
 -- -----------------------------------------------------------------------------
 -- §1. Per-citizen LRU cache (small + short TTL — staleness budget tight)
 -- -----------------------------------------------------------------------------
@@ -92,6 +97,87 @@ function S.InvalidateAll()
 end
 
 -- -----------------------------------------------------------------------------
+-- §1b. App meta (branding + features + economy + limits)
+--
+--   Built fresh per snapshot call but with a 30s memo (NOT per-citizen — meta
+--   is global). The memo avoids hammering sonar_bank_config_overrides on every
+--   bootstrap; banker writes go via UpsertConfigOverride which can call
+--   S.InvalidateAppMeta() to drop the memo immediately if desired.
+--   Economy.GetEffective already has its own 5s cache.
+-- -----------------------------------------------------------------------------
+
+local APPMETA_TTL_MS = 30 * 1000
+local _appmeta_cache = { value = nil, expires_at = 0 }
+
+function S.InvalidateAppMeta()
+  _appmeta_cache.value = nil
+  _appmeta_cache.expires_at = 0
+end
+
+local function _branding_with_overrides()
+  local cfg = (Config.CustomerApp and Config.CustomerApp.Branding) or {}
+  local out = {}
+  for k, v in pairs(cfg) do out[k] = v end
+
+  -- Optional banker overrides — same keys with `branding_` prefix in
+  -- sonar_bank_config_overrides. Defensive: do nothing if banker disabled
+  -- or repo not loaded.
+  local banker_enabled = (Config.Banker and Config.Banker.Enabled) ~= false
+  local BankerRepo = banker_enabled and BankApp.repos and BankApp.repos.banker
+  if not BankerRepo or not BankerRepo.ListConfigOverrides then return out end
+
+  local rows = BankerRepo.ListConfigOverrides()
+  if not rows then return out end
+  for _, r in ipairs(rows) do
+    local key = r.config_key
+    if type(key) == 'string' and key:sub(1, 9) == 'branding_' then
+      local field = key:sub(10)
+      if out[field] ~= nil and type(r.value_json) == 'string' and r.value_json ~= '' then
+        local ok, decoded = pcall(json.decode, r.value_json)
+        if ok and type(decoded) == 'table' and decoded.value ~= nil then
+          out[field] = decoded.value
+        end
+      end
+    end
+  end
+  return out
+end
+
+local function _economy_snapshot()
+  local E = _economy()
+  if not E then return {} end
+  -- Best-effort: missing band keys return nil and the FE handles that.
+  return {
+    transfer_fee_bps           = E.GetEffective('transfer_fee_bps'),
+    daily_transfer_limit_minor = E.GetEffective('daily_transfer_limit_minor'),
+    atm_fee_minor_flat         = E.GetEffective('atm_fee_minor_flat'),
+    card_issue_fee_minor       = E.GetEffective('card_issue_fee_minor'),
+    savings_interest_rate_bps  = E.GetEffective('savings_interest_rate_bps'),
+    loan_rate_spread_bps       = E.GetEffective('loan_rate_spread_bps'),
+    shared_account_min_minor   = E.GetEffective('shared_account_min_minor'),
+  }
+end
+
+--- BuildAppMeta — branding + feature flags + effective economy + hard limits.
+function S.BuildAppMeta()
+  local now_ms_local = now_ms()
+  if _appmeta_cache.value and _appmeta_cache.expires_at > now_ms_local then
+    return _appmeta_cache.value
+  end
+  local F = _features()
+  local meta = {
+    branding = _branding_with_overrides(),
+    features = (F and F.Snapshot()) or {},
+    economy  = _economy_snapshot(),
+    limits   = (Config.CustomerApp and Config.CustomerApp.Limits) or {},
+    resource_version = Config.RESOURCE_VERSION,
+  }
+  _appmeta_cache.value      = meta
+  _appmeta_cache.expires_at = now_ms_local + APPMETA_TTL_MS
+  return meta
+end
+
+-- -----------------------------------------------------------------------------
 -- §2. Build snapshot — parallel reads
 -- -----------------------------------------------------------------------------
 
@@ -110,9 +196,11 @@ local QUERY_INDEX = {
 
 --- BuildSnapshot — REQ-FE-001 main entry point.
 ---@param citizen_id string
+---@param src? integer      player source (optional — when provided, card holder_name
+---                          is resolved from GetPlayerName(src) instead of the DB fallback)
 ---@return table|nil snapshot
 ---@return table|nil err
-function S.BuildSnapshot(citizen_id)
+function S.BuildSnapshot(citizen_id, src)
   if not Validators.IsValidCitizenId(citizen_id) then
     return nil, Errors.New('INVALID_CITIZEN_ID', { citizen_id = tostring(citizen_id) })
   end
@@ -133,6 +221,7 @@ function S.BuildSnapshot(citizen_id)
       cards               = cached.cards,
       outstanding_notices = cached.outstanding_notices,
       pending_tx_count    = cached.pending_tx_count,
+      app                 = S.BuildAppMeta(),  -- always fresh (global meta)
       server_now_ms       = now_ms(),
       bootstrap_id        = UUID.V4(),
       cached              = true,
@@ -203,6 +292,19 @@ function S.BuildSnapshot(citizen_id)
   end
 
   -- Compose payload
+  -- Resolve card holder_name from the live player name when available.
+  -- The DB fallback is 'SONAR Cardholder' (cards.lua:35); we replace it here
+  -- so every card visual shows the actual character name.
+  local cards = results[QUERY_INDEX.CARDS] or {}
+  if src and type(src) == 'number' and src > 0 then
+    local player_name = GetPlayerName(src)
+    if player_name and player_name ~= '' then
+      for _, c in ipairs(cards) do
+        c.holder_name = player_name
+      end
+    end
+  end
+
   local payload = {
     citizen_id          = citizen_id,
     accounts            = raw_accounts,
@@ -212,7 +314,7 @@ function S.BuildSnapshot(citizen_id)
     loans               = results[QUERY_INDEX.LOANS] or {},
     recurring           = results[QUERY_INDEX.RECURRING] or {},
     portfolio           = results[QUERY_INDEX.PORTFOLIO] or {},
-    cards               = results[QUERY_INDEX.CARDS] or {},
+    cards               = cards,
     outstanding_notices = results[QUERY_INDEX.OUTSTANDING_NOTICES] or {},
     pending_tx_count    = tonumber(results[QUERY_INDEX.PENDING_TX_COUNT]) or 0,
   }
@@ -222,6 +324,7 @@ function S.BuildSnapshot(citizen_id)
 
   -- Stamp per-call fields
   local elapsed_ms = Perf.EndTimer(timer, 'C001', { tier = Enums.TIER.TIER_1_READ })
+  payload.app           = S.BuildAppMeta()
   payload.server_now_ms = now_ms()
   payload.bootstrap_id  = UUID.V4()
   payload.cached        = false

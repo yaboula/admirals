@@ -42,6 +42,9 @@ M.AUDIT_EVENT_TYPE = {
   BALANCE_ADJUST_ADMIN  = 'balance_adjust_admin',
   BALANCE_RECONCILE     = 'balance_reconcile',
 
+  -- Background accrual (savings interest cron, future: dividends, fees)
+  INTEREST_ACCRUED      = 'interest_accrued',
+
   -- Compliance flags (H006 — previous_flag_snapshot MANDATORY for these events)
   FLAG_SET              = 'flag_set',
   FLAG_UNSET            = 'flag_unset',
@@ -82,6 +85,12 @@ M.AUDIT_EVENT_TYPE = {
   -- ATM (M006 HMAC required for callsite)
   ATM_WITHDRAW          = 'atm_withdraw',
   ATM_FAILED            = 'atm_failed',
+  -- F06 NUI ATM flow (PIN-authorized, no HMAC)
+  ATM_PIN_VERIFY_OK     = 'atm_pin_verify_ok',
+  ATM_PIN_VERIFY_FAIL   = 'atm_pin_verify_fail',
+  ATM_CARD_AUTOFREEZE   = 'atm_card_autofreeze',
+  ATM_NUI_WITHDRAW      = 'atm_nui_withdraw',
+  ATM_NUI_DEPOSIT       = 'atm_nui_deposit',
 
   -- Government / admin
   GOVT_AUDIT_REQUEST    = 'govt_audit_request',
@@ -112,6 +121,20 @@ M.AUDIT_EVENT_TYPE = {
   -- Auth denials (H001 + H002)
   AUTH_DENIED               = 'auth_denied',
   AUTH_BRIDGE_DENIED        = 'auth_bridge_denied',  -- H002 BankStatus.Transition unauthorized
+
+  -- Banker (Bank Owner Panel) — RP staff operations (F1+ Bank Owner Panel)
+  BANKER_EMPLOYEE_HIRE       = 'banker_employee_hire',
+  BANKER_EMPLOYEE_FIRE       = 'banker_employee_fire',
+  BANKER_EMPLOYEE_SET_ROLE   = 'banker_employee_set_role',
+  BANKER_CONFIG_CHANGE       = 'banker_config_change',
+  BANKER_BRANDING_CHANGE     = 'banker_branding_change',
+  BANKER_MISSION_DISPATCH    = 'banker_mission_dispatch',
+  BANKER_MISSION_COMPLETE    = 'banker_mission_complete',
+  BANKER_MARKETING_CAMPAIGN  = 'banker_marketing_campaign',
+
+  -- Account / professional approvals (also used by Banker advisor flow)
+  ACCOUNT_PROFESSIONAL_REQUEST  = 'account_professional_request',
+  ACCOUNT_PROFESSIONAL_DECISION = 'account_professional_decision',
 }
 
 -- -----------------------------------------------------------------------------

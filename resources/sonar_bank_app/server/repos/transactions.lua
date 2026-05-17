@@ -96,6 +96,36 @@ function R.BuildSingleDebitQuery(t)
   }
 end
 
+-- -----------------------------------------------------------------------------
+-- §1.c SINGLE CREDIT — one-sided credit (ATM deposit, admin credit, etc.)
+-- -----------------------------------------------------------------------------
+local SQL_INSERT_SINGLE_CREDIT = [[
+INSERT INTO sonar_bank_movements
+  (bank_account_id, occurred_at, amount, balance_after, category, concept,
+   related_doc_id, request_nonce, initiated_by_account_id, source_resource)
+SELECT ba.id, FLOOR(? / 1000), (? / 100.0), ba.balance, ?, ?, ?, ?, ba.id, 'sonar_bank_app'
+FROM sonar_bank_accounts ba
+WHERE ba.iban = ?
+LIMIT 1
+]]
+
+--- BuildSingleCreditQuery — single-sided credit (deposits / admin top-ups).
+--- @param t table { iban, amount_minor, category, reason, txn_id, timestamp_ms, idempotency_key }
+function R.BuildSingleCreditQuery(t)
+  return {
+    query  = SQL_INSERT_SINGLE_CREDIT,
+    values = {
+      t.timestamp_ms,
+      t.amount_minor,
+      t.category or 'income',
+      t.reason,
+      t.txn_id,
+      t.idempotency_key or t.txn_id,
+      t.iban,
+    },
+  }
+end
+
 local SQL_UPDATE_STATUS = [[
 DO 0
 ]]
@@ -156,6 +186,35 @@ end
 --- ListByIban — paginated history.
 function R.ListByIban(iban, limit, offset)
   return DB.Query(SQL_LIST_BY_IBAN, { iban, limit or 50, offset or 0 })
+end
+
+-- -----------------------------------------------------------------------------
+-- §1.c DAILY OUTGOING — sum of today's outgoing transfers (minor units)
+-- -----------------------------------------------------------------------------
+-- Used by transfer_service to enforce the daily transfer cap (banker
+-- override `daily_transfer_limit_minor`).
+--
+-- We aggregate against `sonar_bank_movements` because that's the canonical
+-- ledger driven by BuildInsertQuery. Outgoing rows have `amount < 0`.
+-- Fees and other non-transfer expenses are excluded by `category = 'transfer'`.
+local SQL_DAILY_OUTGOING_MINOR = [[
+SELECT COALESCE(CAST(SUM(-m.amount * 100) AS SIGNED), 0) AS sum_minor
+FROM sonar_bank_movements m
+JOIN sonar_bank_accounts a ON a.id = m.bank_account_id
+WHERE a.iban = ?
+  AND m.amount < 0
+  AND m.category = 'transfer'
+  AND m.occurred_at >= ?
+]]
+
+--- GetDailyOutgoingMinor — total outgoing transfer volume for IBAN since unix-seconds cutoff.
+---@param iban string
+---@param since_unix_seconds integer  start of the day (00:00 local)
+---@return integer minor_units
+function R.GetDailyOutgoingMinor(iban, since_unix_seconds)
+  local row = DB.QuerySingle(SQL_DAILY_OUTGOING_MINOR, { iban, since_unix_seconds })
+  if not row then return 0 end
+  return tonumber(row.sum_minor) or 0
 end
 
 -- -----------------------------------------------------------------------------

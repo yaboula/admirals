@@ -1,6 +1,6 @@
-/* ============================================================================
-   C-FE-03 §2 — TypeScript contracts mirroring Backend C-BE-01/02 LOCKED v1.0.1 R1
-   Amounts are MINOR units (cents) — atomic decimal Backend-canonical.
+﻿/* ============================================================================
+   C-FE-03 Â§2 â€” TypeScript contracts mirroring Backend C-BE-01/02 LOCKED v1.0.1 R1
+   Amounts are MINOR units (cents) â€” atomic decimal Backend-canonical.
    Use formatAmount(minor) to display.
    ============================================================================ */
 
@@ -11,6 +11,8 @@ export type AccountStatus = 'active' | 'frozen' | 'closed' | 'pending'
 export interface Account {
   account_id: string
   iban: Iban
+  owner_type?: 'personal' | 'company' | 'cooperative' | 'government' | 'escrow_managed'
+  account_class?: 'checking' | 'savings' | 'business_treasury' | 'shared' | 'govt_treasury' | 'escrow' | 'crypto_wallet'
   owner_citizen_id: string
   joint_owners: string[] | null
   balance_minor: number
@@ -85,6 +87,47 @@ export interface AtmSessionEvent {
   severity: 'info' | 'warning' | 'success'
 }
 
+// F06 — NUI ATM PIN verify + withdraw payloads/responses.
+export interface AtmVerifyPinPayload {
+  card_id: string
+  pin: string
+  terminal_id?: string
+}
+
+export interface AtmVerifyPinResponse {
+  grant_id: string
+  expires_at_ms: number
+  card_id: string
+}
+
+export interface AtmNuiWithdrawPayload {
+  card_id: string
+  grant_id: string
+  amount_minor: number
+  terminal_id?: string
+}
+
+export interface AtmNuiWithdrawResponse {
+  iban: string
+  amount_minor: number
+  new_balance: number | null
+  terminal_id: string
+}
+
+export interface AtmNuiDepositPayload {
+  card_id: string
+  grant_id: string
+  amount_minor: number
+  terminal_id?: string
+}
+
+export interface AtmNuiDepositResponse {
+  iban: string
+  amount_minor: number
+  new_balance: number | null
+  terminal_id: string
+}
+
 export interface AtmSessionResponse {
   terminal_id: string
   location_label: string
@@ -104,9 +147,27 @@ export interface AtmSessionResponse {
 
 export type LoanStatus = 'active' | 'paid' | 'defaulted' | 'pending'
 
+export interface LoanProduct {
+  id: string
+  name: string
+  min_principal: number
+  max_principal: number
+  base_rate_bps: number
+  max_rate_bps: number
+  max_term_days: number
+  collateral_required: boolean
+}
+
+export interface LoanProductsResponse {
+  items: LoanProduct[]
+  fetched_at_ms: number
+}
+
 export interface Loan {
   loan_id: string
   borrower_citizen_id: string
+  deposit_iban?: string
+  product_id: string
   product_name: string
   purpose: string
   principal_minor: number
@@ -222,7 +283,7 @@ export type CardStatus = 'active' | 'locked' | 'expired' | 'pending' | 'revoked'
 export type CardType = 'debit' | 'virtual' | 'credit' | 'classic' | 'premium'
 
 /**
- * REQ-FE-014 — BankCard contract.
+ * REQ-FE-014 â€” BankCard contract.
  *
  * Canonical minimum kept for BE compatibility (Phase A / H3):
  *   card_id, owner_citizen_id, iban, status, pan_last_four, expiry_ms, created_ms.
@@ -257,7 +318,7 @@ export interface BankCard {
 
 /**
  * Mock-only card with full PAN and CVV for local dev. Gated to isMockMode().
- * Never sent by a real BE — the production flow would return `pan_last_four`
+ * Never sent by a real BE â€” the production flow would return `pan_last_four`
  * only and require a dedicated, authenticated "reveal" endpoint for CVV/PAN.
  */
 export interface BankCardMock extends BankCard {
@@ -469,8 +530,87 @@ export interface BusinessApprovalDecideResponse {
 }
 
 /* ============================================================================
-   REQ-FE-001 — sonar:bank:bootstrap:snapshot response (C001)
+   REQ-FE-001 â€” sonar:bank:bootstrap:snapshot response (C001)
    ============================================================================ */
+
+/**
+ * Customer-facing branding, exposed to the FE via bootstrap.app.branding.
+ * Defaults come from `Config.CustomerApp.Branding`; banker overrides
+ * (`branding_*` keys in `sonar_bank_config_overrides`) replace per-field
+ * values at read time.
+ */
+export interface BankAppBranding {
+  bank_name: string
+  short_name: string
+  primary_color: string
+  accent_color: string
+  welcome_message: string
+  logo_url: string
+  support_email: string
+  support_url: string
+}
+
+/**
+ * Customer-facing feature flags. Each key gates a high-level capability
+ * on both UI and backend (services return FEATURE_DISABLED if hit).
+ * Server admins control these via `Config.CustomerApp.Features`.
+ */
+export interface BankAppFeatures {
+  accounts_open: boolean
+  accounts_close: boolean
+  accounts_freeze_self: boolean
+  accounts_joint_owners: boolean
+  savings: boolean
+  cards_issue: boolean
+  cards_freeze: boolean
+  cards_set_limits: boolean
+  cards_change_pin: boolean
+  transfers_p2p: boolean
+  transfers_express: boolean
+  recurring: boolean
+  loans: boolean
+  investments: boolean
+  kyc: boolean
+  business_treasury: boolean
+  notifications: boolean
+  onboarding_first_run: boolean
+}
+
+/**
+ * Effective economic parameters (after banker overrides + clamping).
+ * Null indicates the parameter has no configured band (FE should treat
+ * as disabled / no-op).
+ */
+export interface BankAppEconomy {
+  transfer_fee_bps: number | null
+  daily_transfer_limit_minor: number | null
+  atm_fee_minor_flat: number | null
+  card_issue_fee_minor: number | null
+  savings_interest_rate_bps: number | null
+  loan_rate_spread_bps: number | null
+  shared_account_min_minor: number | null
+}
+
+/**
+ * Hard customer-side guardrails (constants, never overridable).
+ */
+export interface BankAppLimits {
+  transfer_min_minor: number
+  transfer_max_minor: number
+  max_recipients_saved: number
+  max_recurring_per_account: number
+  pin_attempts_max: number
+  pin_attempts_window_sec: number
+}
+
+/** Bootstrap.app — global app-level metadata (branding + features + economy). */
+export interface BankAppMeta {
+  branding: BankAppBranding
+  features: BankAppFeatures
+  economy: BankAppEconomy
+  limits: BankAppLimits
+  resource_version: string
+}
 
 export interface BootstrapSnapshot {
   citizen_id: string
@@ -484,6 +624,8 @@ export interface BootstrapSnapshot {
   cards: BankCardMock[]
   outstanding_notices: OutstandingNotice[]
   pending_tx_count: number
+  /** App-level meta (branding, feature flags, effective economy) — always fresh. */
+  app?: BankAppMeta
   server_now_ms: number
   bootstrap_id: string
   cached: boolean
@@ -491,7 +633,7 @@ export interface BootstrapSnapshot {
 }
 
 /* ============================================================================
-   REQ-FE-001 — sonar:bank:bootstrap:balance fallback (C001b)
+   REQ-FE-001 â€” sonar:bank:bootstrap:balance fallback (C001b)
    ============================================================================ */
 
 export interface BalanceSnapshot {
@@ -503,7 +645,7 @@ export interface BalanceSnapshot {
 }
 
 /* ============================================================================
-   REQ-FE-002 — sonar:bank:transfer:recentRecipients response (C009)
+   REQ-FE-002 â€” sonar:bank:transfer:recentRecipients response (C009)
    ============================================================================ */
 
 export interface RecentRecipientsResponse {
@@ -544,7 +686,7 @@ export interface ClientConfigSnapshot {
 }
 
 /* ============================================================================
-   Canonical wrap envelope (server _wrap.lua §2)
+   Canonical wrap envelope (server _wrap.lua Â§2)
    ============================================================================ */
 
 export interface BankErrorPayload {
@@ -591,3 +733,47 @@ export interface NuiSystemMessage {
 }
 
 export type NuiInboundMessage = NuiNetEventMessage | NuiSystemMessage
+export interface ProfessionalAccountApproval {
+  approval_id: string
+  citizen_id: string
+  account_class: 'business_treasury'
+  state: 'pending' | 'approved' | 'rejected'
+  note?: string | null
+  decision_note?: string | null
+  decided_by_citizen_id?: string | null
+  created_account_id?: string | null
+  created_iban?: string | null
+  requested_ms: number
+  decided_ms?: number | null
+}
+
+export interface ProfessionalAccountApprovalsResponse {
+  items: ProfessionalAccountApproval[]
+  fetched_at_ms: number
+}
+
+export interface ProfessionalAccountRequestArgs {
+  note?: string
+}
+
+export interface ProfessionalAccountRequestResponse {
+  approval_id?: string
+  status: 'pending' | 'approved'
+  requested_ms?: number
+  committed_at_ms?: number
+  replayed?: boolean
+  account?: Account
+}
+
+export interface ProfessionalAccountDecisionRequest {
+  approval_id: string
+  decision: 'approve' | 'reject'
+  note?: string
+}
+
+export interface ProfessionalAccountDecisionResponse {
+  approval_id: string
+  status: 'approved' | 'rejected'
+  account?: Account
+  committed_at_ms: number
+}

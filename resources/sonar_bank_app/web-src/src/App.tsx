@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
@@ -6,6 +6,7 @@ import { isDev, isInsideFiveMNui, isMockMode } from '@/lib/env'
 import { nuiControl, onNuiMessage } from '@/lib/nui'
 import { BankDeviceFrame } from '@/components/layout/BankDeviceFrame'
 import { useBankNetEvent } from './lib/bankEvents'
+import { useAtmTerminal, type AtmTerminalInfo } from '@/stores/atmTerminal'
 import { useBankStatus } from './stores/status'
 import { toast } from './stores/toast'
 import { useNotifications } from './stores/notifications'
@@ -106,6 +107,10 @@ function RouteErrorFallback() {
 }
 
 function NuiControlBridge({ onVisibilityChange }: { onVisibilityChange: (visible: boolean) => void }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const setTerminal = useAtmTerminal((s) => s.setTerminal)
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
@@ -119,14 +124,30 @@ function NuiControlBridge({ onVisibilityChange }: { onVisibilityChange: (visible
   useEffect(() => {
     return onNuiMessage((data: unknown) => {
       if (!data || typeof data !== 'object' || !('type' in data)) return
-      const msg = data as { type: string }
+      const msg = data as { type: string; route?: string; terminal?: AtmTerminalInfo }
+      console.log('[NuiControlBridge] Received message:', msg, 'Current location:', location.pathname)
       if (msg.type === 'BANK_OPEN') {
+        // Store terminal context so the ATM session query can resolve the
+        // real terminal_id instead of showing "ATM:UNKNOWN".
+        if (msg.terminal) {
+          setTerminal(msg.terminal)
+        }
+        // Navigate FIRST so the target screen is mounted in the same render
+        // batch as the visibility flip; otherwise the user sees a flash of
+        // the previous route (e.g. Home) before /atm renders, which made the
+        // "first ATM open always shows Bank" bug.
+        if (msg.route) {
+          console.log('[NuiControlBridge] Navigating to route:', msg.route)
+          navigate(msg.route, { replace: true })
+        } else {
+          console.log('[NuiControlBridge] No route specified, staying on current route')
+        }
         onVisibilityChange(true)
       } else if (msg.type === 'BANK_CLOSE') {
         onVisibilityChange(false)
       }
     })
-  }, [onVisibilityChange])
+  }, [onVisibilityChange, navigate, location, setTerminal])
 
   return null
 }

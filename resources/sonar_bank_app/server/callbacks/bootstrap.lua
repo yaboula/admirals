@@ -26,7 +26,7 @@ Wrap.Register('sonar:bank:bootstrap:snapshot', {
 }, function(src, citizen_id, payload)
   print(('[%s][C001] INVOKED src=%s citizen_id=%s'):format(
     BankApp.Config.Logging.PREFIX, tostring(src), tostring(citizen_id)))
-  local snapshot, err = BootstrapService.BuildSnapshot(citizen_id)
+  local snapshot, err = BootstrapService.BuildSnapshot(citizen_id, src)
   if err then
     print(('[%s][C001] ERROR code=%s message=%s'):format(
       BankApp.Config.Logging.PREFIX, tostring(err.code), tostring(err.message)))
