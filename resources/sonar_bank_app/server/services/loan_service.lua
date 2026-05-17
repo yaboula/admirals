@@ -27,8 +27,47 @@ local Perf       = BankApp.lib.perf
 
 local LoansRepo    = BankApp.repos.loans
 local AccountsRepo = BankApp.repos.accounts
+local Config       = BankApp.Config
 
 local function now_ms() return os.time() * 1000 end
+
+-- ---------------------------------------------------------------------------
+-- Risk Engine — computes grade from existing loans + payment history
+-- ---------------------------------------------------------------------------
+local function compute_risk_grade(citizen_id)
+  local existing, _ = LoansRepo.ListByCitizen(citizen_id, 100)
+  local active_count = 0
+  local has_defaulted = false
+  for _, row in ipairs(existing or {}) do
+    local s = row.state or row.status or ''
+    if s == 'active' then active_count = active_count + 1 end
+    if s == 'defaulted' then has_defaulted = true end
+  end
+  if has_defaulted then return 'D' end
+  if active_count >= 3 then return 'C' end
+  if active_count == 0 then return 'A' end
+  return 'B'
+end
+
+local function resolve_product(product_id)
+  for _, p in ipairs(Config.LoanProducts or {}) do
+    if p.id == product_id then return p end
+  end
+  return nil
+end
+
+local function compute_interest_rate(product_id, grade)
+  local product = resolve_product(product_id)
+  if not product then return nil, nil end
+  local mod_key = 'grade_' .. string.lower(grade or 'b')
+  local modifier = (Config.LoanRiskModifiers or {})[mod_key] or 0
+  local raw = product.base_rate_bps + modifier
+  local rate = math.max(
+    (Config.LoanLimits or {}).MIN_RATE_BPS or 100,
+    math.min((Config.LoanLimits or {}).MAX_RATE_BPS or 1500, raw)
+  )
+  return rate, product
+end
 
 local function normalize_status(status)
   if status == 'requested' or status == 'approved' then return 'pending' end
@@ -42,15 +81,16 @@ local function decorate_loan(row)
   local total_installments = math.max(1, math.ceil(term_days / 30))
   local outstanding_minor = tonumber(row.outstanding_minor) or 0
   local principal_minor = tonumber(row.principal_minor) or 0
-  row.product_name = row.product_name or 'Personal Credit Line'
+  local product = resolve_product(row.product_id)
+  row.product_name = product and product.name or 'Personal Credit Line'
   row.purpose = row.purpose or 'Personal financing'
   row.status = normalize_status(row.status)
   row.next_payment_minor = row.next_payment_minor or (outstanding_minor > 0 and math.max(1, math.ceil(outstanding_minor / total_installments)) or 0)
   row.next_payment_due_ms = row.due_ms
   row.total_installments = total_installments
   row.paid_installments = row.paid_installments or math.max(0, math.min(total_installments, total_installments - math.ceil(outstanding_minor / math.max(1, math.ceil(principal_minor / total_installments)))))
-  row.risk_grade = row.risk_grade or 'B'
-  row.collateral_label = row.collateral_label or nil
+  row.risk_grade = row.risk_grade or compute_risk_grade(row.borrower_citizen_id)
+  row.collateral_label = row.collateral_label or (product and product.collateral_required and 'Collateral required' or nil)
   return row
 end
 
@@ -118,33 +158,81 @@ function S.GetInstallments(ctx)
   return { ok = true, data = { loan_id = ctx.loan_id, items = items, fetched_at_ms = current_ms } }
 end
 
--- §2. Request
+-- §2. Request — product-driven, server-computed rate
 function S.Request(ctx)
   local timer = Perf.StartTimer()
+  -- Feature gate: loans module toggleable at server level.
+  local Features = BankApp.lib.features
+  if Features and Features.Require then
+    local feat_err = Features.Require('loans')
+    if feat_err then
+      Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+      return { ok = false, error = feat_err }
+    end
+  end
   if not Validators.IsValidCitizenId(ctx.citizen_id) then
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('INVALID_CITIZEN_ID') }
   end
+  if not ctx.product_id or type(ctx.product_id) ~= 'string' or #ctx.product_id == 0 then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'product_id', reason = 'missing' }) }
+  end
+
+  local product = resolve_product(ctx.product_id)
+  if not product then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'product_id', reason = 'unknown product' }) }
+  end
+
   if not Validators.IsValidAmountMinor(ctx.principal_minor) then
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('INVALID_AMOUNT') }
   end
-  if not Validators.IsInRange(ctx.interest_bps, 0, 50000) then
+  if ctx.principal_minor < product.min_principal then
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'interest_bps' }) }
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'principal_minor', reason = 'below product minimum', min = product.min_principal }) }
   end
-  if not Validators.IsInRange(ctx.term_days, 1, 3650) then
+  if ctx.principal_minor > product.max_principal then
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
-    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'term_days' }) }
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'principal_minor', reason = 'above product maximum', max = product.max_principal }) }
+  end
+  if not Validators.IsInRange(ctx.term_days, 1, product.max_term_days) then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'term_days', reason = 'outside product range', max = product.max_term_days }) }
   end
   if not Validators.IsValidUUID(ctx.idempotency_key) then
     Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'idempotency_key' }) }
   end
 
+  local norm_deposit_iban = Validators.NormalizeIBAN(ctx.deposit_iban)
+  if not norm_deposit_iban then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('INVALID_IBAN', { field = 'deposit_iban' }) }
+  end
+  local deposit_account, deposit_err = AccountsRepo.GetByIban(norm_deposit_iban)
+  if deposit_err then return { ok = false, error = deposit_err } end
+  if not deposit_account or deposit_account.owner_citizen_id ~= ctx.citizen_id then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH', { reason = 'deposit iban not owned by borrower' }) }
+  end
+  if deposit_account.account_class ~= 'checking' and deposit_account.account_class ~= 'business_treasury' then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('INVALID_ACCOUNT_CLASS', { reason = 'loan deposit account must be personal or professional', account_class = deposit_account.account_class }) }
+  end
+
+  -- Compute rate server-side (player never chooses their own rate)
+  local grade = compute_risk_grade(ctx.citizen_id)
+  local rate_bps, _ = compute_interest_rate(ctx.product_id, grade)
+  if not rate_bps then
+    Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('INTERNAL_ERROR', { reason = 'rate computation failed' }) }
+  end
+
   local idem_status, cached, idem_err = Idempotency.Acquire(
     ctx.idempotency_key,
-    { principal_minor = ctx.principal_minor, interest_bps = ctx.interest_bps, term_days = ctx.term_days },
+    { principal_minor = ctx.principal_minor, product_id = ctx.product_id, term_days = ctx.term_days, deposit_iban = norm_deposit_iban },
     { actor_citizen_id = ctx.citizen_id, callback_id = 'C022' }
   )
   if idem_status == 'replay' then
@@ -157,9 +245,11 @@ function S.Request(ctx)
 
   local loan_id, err = LoansRepo.Insert({
     borrower_citizen_id = ctx.citizen_id,
+    product_id          = ctx.product_id,
     principal_minor     = ctx.principal_minor,
-    interest_bps        = ctx.interest_bps,
+    interest_bps        = rate_bps,
     term_days           = ctx.term_days,
+    deposit_iban        = norm_deposit_iban,
   })
   if err then
     Idempotency.Orphan(ctx.idempotency_key)
@@ -174,14 +264,17 @@ function S.Request(ctx)
     target_citizen_id= ctx.citizen_id,
     event_data       = {
       loan_id          = loan_id,
+      product_id       = ctx.product_id,
       principal_minor  = ctx.principal_minor,
-      interest_bps     = ctx.interest_bps,
+      interest_bps     = rate_bps,
       term_days        = ctx.term_days,
+      risk_grade       = grade,
+      deposit_iban      = norm_deposit_iban,
     },
   })
 
   invalidate_bootstrap(ctx.citizen_id)
-  local result = { loan_id = loan_id, status = 'requested' }
+  local result = { loan_id = loan_id, status = 'requested', rate_bps = rate_bps, grade = grade, deposit_iban = norm_deposit_iban }
   Idempotency.Commit(ctx.idempotency_key, result)
   Perf.EndTimer(timer, 'C022', { tier = Enums.TIER.TIER_2_WRITE })
   return { ok = true, data = result }
@@ -196,7 +289,7 @@ function S.Approve(ctx)
     return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'loan not in requested state', got = loan.status }) }
   end
 
-  local norm_iban = Validators.NormalizeIBAN(ctx.deposit_iban)
+  local norm_iban = Validators.NormalizeIBAN(ctx.deposit_iban or loan.deposit_iban)
   if not norm_iban then return { ok = false, error = Errors.New('INVALID_IBAN') } end
 
   local deposit_account, deposit_err = AccountsRepo.GetByIban(norm_iban)
@@ -204,15 +297,19 @@ function S.Approve(ctx)
   if not deposit_account or deposit_account.owner_citizen_id ~= loan.borrower_citizen_id then
     return { ok = false, error = Errors.New('AUTH_OWNER_MISMATCH', { reason = 'deposit iban not owned by borrower' }) }
   end
+  if deposit_account.account_class ~= 'checking' and deposit_account.account_class ~= 'business_treasury' then
+    return { ok = false, error = Errors.New('INVALID_ACCOUNT_CLASS', { reason = 'loan deposit account must be personal or professional', account_class = deposit_account.account_class }) }
+  end
 
   local issued_ms = now_ms()
   local due_ms    = issued_ms + (tonumber(loan.term_days) or 0) * 86400 * 1000
 
-  local tx_queries = {
-    AccountsRepo.BuildCreditBalanceQuery(norm_iban, tonumber(loan.principal_minor) or 0),
-    LoansRepo.BuildActivateQuery(ctx.loan_id, norm_iban, issued_ms, due_ms),
-    LoansRepo.BuildInsertDisbursementQuery(ctx.loan_id, norm_iban, tonumber(loan.principal_minor) or 0, issued_ms),
-  }
+  local tx_queries = {}
+
+  tx_queries[#tx_queries + 1] = AccountsRepo.BuildCreditBalanceQuery(norm_iban, tonumber(loan.principal_minor) or 0)
+  tx_queries[#tx_queries + 1] = LoansRepo.BuildActivateQuery(ctx.loan_id, norm_iban, issued_ms, due_ms)
+  tx_queries[#tx_queries + 1] = LoansRepo.BuildInsertDisbursementQuery(ctx.loan_id, norm_iban, tonumber(loan.principal_minor) or 0, issued_ms)
+
   local ok, tx_err = DB.Transaction(tx_queries)
   if not ok then return { ok = false, error = tx_err } end
 

@@ -28,3 +28,6 @@ export type { BadgeProps, BadgeSize, BadgeTone, BadgeVariant } from './Badge'
 
 export { Spinner } from './Spinner'
 export type { SpinnerProps } from './Spinner'
+
+export { Select, NativeSelect } from './Select'
+export type { SelectProps, SelectSize, SelectOption } from './Select'

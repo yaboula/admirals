@@ -343,12 +343,15 @@ function M.Parallel(queries, opts)
   -- Check for individual query errors
   for i = 1, n do
     if errs[i] then
+      -- Flatten newlines so the full MySQL error (which oxmysql multi-lines as
+      -- "header\nQuery: ...\n<actual error>") survives a single log line.
+      local raw_str = tostring(errs[i]):gsub('[\r\n]+', ' | ')
       print(('[sonar_bank_app][DB][ERROR] parallel query %d/%d failed kind=%s sql=%s raw=%s'):format(
         i,
         n,
         tostring((queries[i] and queries[i].kind) or 'query'),
         tostring((queries[i] and queries[i].sql) or ''):gsub('%s+', ' '):sub(1, 180),
-        tostring(errs[i]):sub(1, 300)
+        raw_str:sub(1, 800)
       ))
       if allow_partial then
         results._errors = results._errors or {}

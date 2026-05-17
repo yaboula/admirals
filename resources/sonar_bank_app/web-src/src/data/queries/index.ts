@@ -30,8 +30,15 @@ export type { BusinessTreasuryQueryOptions, PayrollPreviewQueryOptions } from '.
 export { useStockListQuery, useStockPortfolioQuery } from './stocks'
 export type { StockListQueryOptions, StockPortfolioQueryOptions } from './stocks'
 
-export { useLoanInstallmentsQuery, useLoanListQuery } from './loans'
-export type { LoanInstallmentsQueryOptions, LoanListQueryOptions } from './loans'
+export { useLoanInstallmentsQuery, useLoanListQuery, useLoanProductsQuery } from './loans'
+export type { LoanInstallmentsQueryOptions, LoanListQueryOptions, LoanProductsQueryOptions } from './loans'
 
-export { useAtmSessionQuery } from './atm'
+export {
+  useAtmSessionQuery,
+  useAtmVerifyPinMutation,
+  useAtmNuiWithdrawMutation,
+} from './atm'
 export type { AtmSessionQueryOptions } from './atm'
+
+export { useProfessionalAccountApprovalsQuery } from './accountApprovals'
+export type { ProfessionalAccountApprovalsQueryOptions } from './accountApprovals'

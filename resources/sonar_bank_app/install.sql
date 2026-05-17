@@ -1781,7 +1781,7 @@ BEGIN
     -- ------------------------------------------------------------------------
     ALTER TABLE sonar_bank_accounts
       ADD COLUMN owner_type    ENUM('personal','company','cooperative','government','escrow_managed') NULL AFTER iban,
-      ADD COLUMN account_class ENUM('checking','savings','business_treasury','govt_treasury','escrow','crypto_wallet') NULL AFTER owner_type,
+      ADD COLUMN account_class ENUM('checking','savings','business_treasury','shared','govt_treasury','escrow','crypto_wallet') NULL AFTER owner_type,
       ADD COLUMN last_reconciled_at INT UNSIGNED NULL COMMENT 'CP3 trust window â€” Backend Lead reconciliation pipeline' AFTER closed_at;
 
     -- ------------------------------------------------------------------------
@@ -1821,7 +1821,7 @@ BEGIN
     -- ------------------------------------------------------------------------
     ALTER TABLE sonar_bank_accounts
       MODIFY COLUMN owner_type    ENUM('personal','company','cooperative','government','escrow_managed') NOT NULL,
-      MODIFY COLUMN account_class ENUM('checking','savings','business_treasury','govt_treasury','escrow','crypto_wallet') NOT NULL;
+      MODIFY COLUMN account_class ENUM('checking','savings','business_treasury','shared','govt_treasury','escrow','crypto_wallet') NOT NULL;
 
     -- ------------------------------------------------------------------------
     -- 6. DROP index obsoleto + ADD index nuevo coverage

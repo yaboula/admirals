@@ -53,6 +53,7 @@ export const queryKeys = {
   account: {
     all: () => [...queryKeys.all, 'accounts'] as const,
     balance: (iban: string) => [...queryKeys.account.all(), 'balance', iban] as const,
+    professionalApprovals: (limit?: number) => [...queryKeys.account.all(), 'professionalApprovals', { limit }] as const,
   },
 
   cards: {

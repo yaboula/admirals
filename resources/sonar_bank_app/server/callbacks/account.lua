@@ -34,6 +34,44 @@ Wrap.Register('sonar:bank:account:open', {
     citizen_id       = citizen_id,
     initial_balance  = payload.initial_balance,
     initial_savings  = payload.initial_savings,
+    owner_type        = payload.owner_type,
+    account_class     = payload.account_class,
+  })
+end)
+Wrap.Register('sonar:bank:account:professional:request', {
+  tier  = Enums.TIER.TIER_2_WRITE,
+  cb_id = 'C002P',
+}, function(src, citizen_id, payload)
+  return AccountService.RequestProfessionalAccount({
+    src        = src,
+    citizen_id = citizen_id,
+    note       = payload.note,
+  })
+end)
+
+Wrap.Register('sonar:bank:account:professional:listApprovals', {
+  tier          = Enums.TIER.TIER_3_ADMIN,
+  require_admin = true,
+  cb_id         = 'C002P_LIST',
+}, function(src, citizen_id, payload)
+  return AccountService.ListProfessionalApprovals({
+    src = src,
+    actor_citizen_id = citizen_id,
+    limit = payload.limit,
+  })
+end)
+
+Wrap.Register('sonar:bank:account:professional:decide', {
+  tier          = Enums.TIER.TIER_3_ADMIN,
+  require_admin = true,
+  cb_id         = 'C002P_DECIDE',
+}, function(src, citizen_id, payload)
+  return AccountService.DecideProfessionalApproval({
+    src = src,
+    actor_citizen_id = citizen_id,
+    approval_id = payload.approval_id,
+    decision = payload.decision,
+    note = payload.note,
   })
 end)
 

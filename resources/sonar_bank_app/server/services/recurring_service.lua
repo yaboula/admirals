@@ -40,6 +40,12 @@ function S.ListSelf(citizen_id)
 end
 
 function S.Subscribe(ctx)
+  -- Feature gate: recurring payments can be disabled at server level.
+  local Features = BankApp.lib.features
+  if Features and Features.Require then
+    local feat_err = Features.Require('recurring')
+    if feat_err then return { ok = false, error = feat_err } end
+  end
   local from_iban = Validators.NormalizeIBAN(ctx.from_iban)
   local to_iban   = Validators.NormalizeIBAN(ctx.to_iban)
   if not from_iban or not to_iban then

@@ -27,11 +27,36 @@ Wrap.Register('sonar:bank:loan:request', {
   return LoanService.Request({
     src             = src,
     citizen_id      = citizen_id,
+    product_id      = payload.product_id,
     principal_minor = payload.principal_minor,
-    interest_bps    = payload.interest_bps,
     term_days       = payload.term_days,
+    deposit_iban    = payload.deposit_iban,
     idempotency_key = payload.idempotency_key,
   })
+end)
+
+-- ---------------------------------------------------------------------------
+-- C022b — products (read-only config)
+-- ---------------------------------------------------------------------------
+
+Wrap.Register('sonar:bank:loan:products', {
+  tier  = Enums.TIER.TIER_1_READ,
+  cb_id = 'REQ-LOAN-PRODUCTS',
+}, function(src, citizen_id, payload)
+  local products = {}
+  for _, p in ipairs(BankApp.Config.LoanProducts or {}) do
+    products[#products + 1] = {
+      id = p.id,
+      name = p.name,
+      min_principal = p.min_principal,
+      max_principal = p.max_principal,
+      base_rate_bps = p.base_rate_bps,
+      max_rate_bps = p.max_rate_bps,
+      max_term_days = p.max_term_days,
+      collateral_required = p.collateral_required,
+    }
+  end
+  return { ok = true, data = { items = products, fetched_at_ms = os.time() * 1000 } }
 end)
 
 -- -----------------------------------------------------------------------------
@@ -93,10 +118,10 @@ Wrap.Register('sonar:bank:loan:approve', {
   cb_id         = 'C025',
 }, function(src, citizen_id, payload)
   return LoanService.Approve({
-    src               = src,
-    actor_citizen_id  = citizen_id,
-    loan_id           = payload.loan_id,
-    deposit_iban      = payload.deposit_iban,
+    src                  = src,
+    actor_citizen_id     = citizen_id,
+    loan_id              = payload.loan_id,
+    deposit_iban         = payload.deposit_iban,
   })
 end)
 

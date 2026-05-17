@@ -60,6 +60,19 @@ M.REGISTRY = {
     message  = 'Bridge transition not authorized.',
     audit_event_type = E.AUTH_BRIDGE_DENIED,
   },
+  AUTH_BANKER_DENIED = {
+    category = 'AUTH', code = 'AUTH_BANKER_DENIED', retryable = false,
+    message  = 'Bank Owner Panel access denied (no active employee or insufficient role).',
+    audit_event_type = E.AUTH_DENIED,
+  },
+  FEATURE_DISABLED = {
+    category = 'SYSTEM', code = 'FEATURE_DISABLED', retryable = false,
+    message  = 'Requested feature is disabled by server configuration.',
+  },
+  RESOURCE_NOT_FOUND = {
+    category = 'BUSINESS', code = 'RESOURCE_NOT_FOUND', retryable = false,
+    message  = 'Requested resource not found.',
+  },
 
   -- VALIDATION
   VALIDATION_FAILED = {
@@ -123,6 +136,23 @@ M.REGISTRY = {
   CARD_NOT_FOUND = {
     category = 'BUSINESS', code = 'CARD_NOT_FOUND', retryable = false,
     message  = 'Card not found.',
+  },
+  -- F06 ATM NUI PIN flow
+  ATM_PIN_INVALID = {
+    category = 'AUTH', code = 'ATM_PIN_INVALID', retryable = true,
+    message  = 'Wrong PIN. Please try again.',
+  },
+  ATM_PIN_LOCKED = {
+    category = 'AUTH', code = 'ATM_PIN_LOCKED', retryable = false,
+    message  = 'Card frozen after too many failed PIN attempts. Contact your bank.',
+  },
+  ATM_GRANT_INVALID = {
+    category = 'AUTH', code = 'ATM_GRANT_INVALID', retryable = false,
+    message  = 'ATM authorization expired or invalid. Please re-enter your PIN.',
+  },
+  ATM_TERMINAL_OFFLINE = {
+    category = 'SYSTEM', code = 'ATM_TERMINAL_OFFLINE', retryable = true,
+    message  = 'ATM terminal is offline. Try another terminal.',
   },
   INVALID_LIMITS = {
     category = 'VALIDATION', code = 'INVALID_LIMITS', retryable = false,

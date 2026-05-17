@@ -230,3 +230,35 @@ select {
   .backdrop-blur-3xl { backdrop-filter: blur(64px) saturate(150%) !important; -webkit-backdrop-filter: blur(64px) saturate(150%) !important; }
 }
 
+
+
+/* Banker — premium range slider (used by /banker/rates) */
+.banker-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  cursor: pointer;
+  outline: none;
+}
+.banker-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--banker-primary, #FF6413);
+  border: 2px solid rgba(0, 0, 0, 0.65);
+  box-shadow: 0 0 0 4px rgba(255, 100, 19, 0.18);
+  transition: transform 0.12s ease;
+}
+.banker-slider::-webkit-slider-thumb:hover { transform: scale(1.1); }
+.banker-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--banker-primary, #FF6413);
+  border: 2px solid rgba(0, 0, 0, 0.65);
+  box-shadow: 0 0 0 4px rgba(255, 100, 19, 0.18);
+}

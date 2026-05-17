@@ -23,6 +23,7 @@ local Audit      = BankApp.lib.audit
 local Auth       = BankApp.lib.auth
 local Enums      = BankApp.lib.enums
 local Perf       = BankApp.lib.perf
+local Config     = BankApp.Config
 
 local AccountsRepo = BankApp.repos.accounts
 
@@ -69,9 +70,18 @@ local function generate_iban_via_bridge()
 end
 
 --- OpenAccount.
----@param ctx { src, citizen_id, initial_balance, initial_savings }
+---@param ctx { src, citizen_id, initial_balance, initial_savings, owner_type, account_class }
 function S.OpenAccount(ctx)
   local timer = Perf.StartTimer()
+  -- Feature gate: server admin can disable new account opening.
+  local Features = BankApp.lib.features
+  if Features and Features.Require then
+    local feat_err = Features.Require('accounts_open')
+    if feat_err then
+      Perf.EndTimer(timer, 'C002', { tier = Enums.TIER.TIER_2_WRITE })
+      return { ok = false, error = feat_err }
+    end
+  end
   local cid = ctx.citizen_id
   if not Validators.IsValidCitizenId(cid) then
     Perf.EndTimer(timer, 'C002', { tier = Enums.TIER.TIER_2_WRITE })
@@ -81,9 +91,26 @@ function S.OpenAccount(ctx)
   -- Defensive: cap initial balances
   local initial_balance = math.max(0, math.min(ctx.initial_balance or 0, 1000000))
   local initial_savings = math.max(0, math.min(ctx.initial_savings or 0, 1000000))
+  local owner_type = ctx.owner_type or 'personal'
+  local account_class = ctx.account_class or 'checking'
+  local allowed_classes = { checking = true, savings = true, business_treasury = true, shared = true }
+  if owner_type ~= 'personal' or not allowed_classes[account_class] then
+    Perf.EndTimer(timer, 'C002', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('INVALID_ACCOUNT_CLASS', { owner_type = owner_type, account_class = tostring(account_class) }) }
+  end
+  local professional_policy = ((Config.Accounts or {}).Professional or {})
+  if account_class == 'business_treasury'
+     and professional_policy.RequireApproval ~= false
+     and professional_policy.AutoApprove ~= true
+     and ctx.approved_professional ~= true then
+    Perf.EndTimer(timer, 'C002', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('APPROVAL_REQUIRED', { account_class = account_class }) }
+  end
 
   local iban = generate_iban_via_bridge()
   local account_id, err = AccountsRepo.Insert(iban, cid, {
+    owner_type = owner_type,
+    account_class = account_class,
     initial_balance = initial_balance,
     initial_savings = initial_savings,
   })
@@ -101,12 +128,123 @@ function S.OpenAccount(ctx)
     event_data       = {
       initial_balance = initial_balance,
       initial_savings = initial_savings,
+      owner_type = owner_type,
+      account_class = account_class,
     },
   })
 
   invalidate_bootstrap(cid)
   Perf.EndTimer(timer, 'C002', { tier = Enums.TIER.TIER_2_WRITE })
-  return { ok = true, data = { account_id = account_id, iban = iban, citizen_id = cid } }
+  return { ok = true, data = { account_id = account_id, iban = iban, citizen_id = cid, owner_type = owner_type, account_class = account_class } }
+end
+
+function S.RequestProfessionalAccount(ctx)
+  local cid = ctx.citizen_id
+  if not Validators.IsValidCitizenId(cid) then
+    return { ok = false, error = Errors.New('INVALID_CITIZEN_ID') }
+  end
+
+  local existing, existing_err = AccountsRepo.GetActiveByClass(cid, 'personal', 'business_treasury')
+  if existing_err then return { ok = false, error = existing_err } end
+  if existing and existing.id then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'professional account already exists', iban = existing.iban }) }
+  end
+
+  local policy = ((Config.Accounts or {}).Professional or {})
+  if policy.RequireApproval == false or policy.AutoApprove == true then
+    local opened = S.OpenAccount({
+      src = ctx.src,
+      citizen_id = cid,
+      initial_balance = 0,
+      initial_savings = 0,
+      owner_type = 'personal',
+      account_class = 'business_treasury',
+      approved_professional = true,
+    })
+    if not opened.ok then return opened end
+    return { ok = true, data = { status = 'approved', account = opened.data, committed_at_ms = now_ms() } }
+  end
+
+  local pending, pending_err = AccountsRepo.GetPendingProfessionalApproval(cid)
+  if pending_err then return { ok = false, error = pending_err } end
+  if pending and pending.approval_id then
+    return { ok = true, data = { approval_id = pending.approval_id, status = 'pending', requested_ms = pending.requested_ms, replayed = true } }
+  end
+
+  local note = Validators.SanitizeReason(ctx.note)
+  local approval_id, create_err = AccountsRepo.CreateProfessionalApproval(cid, note)
+  if create_err then return { ok = false, error = create_err } end
+
+  Audit.Write({
+    event_type = 'account_professional_request',
+    actor_citizen_id = cid,
+    actor_src = ctx.src,
+    target_citizen_id = cid,
+    event_data = { approval_id = approval_id, account_class = 'business_treasury', note = note },
+  })
+
+  return { ok = true, data = { approval_id = approval_id, status = 'pending', requested_ms = now_ms() } }
+end
+
+function S.ListProfessionalApprovals(ctx)
+  local rows, err = AccountsRepo.ListProfessionalApprovals(ctx.limit or 50)
+  if err then return { ok = false, error = err } end
+  return { ok = true, data = { items = rows or {}, fetched_at_ms = now_ms() } }
+end
+
+function S.DecideProfessionalApproval(ctx)
+  if type(ctx.approval_id) ~= 'string' or ctx.approval_id == '' then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'approval_id' }) }
+  end
+  if ctx.decision ~= 'approve' and ctx.decision ~= 'reject' then
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { field = 'decision' }) }
+  end
+
+  local approval, approval_err = AccountsRepo.GetProfessionalApproval(ctx.approval_id)
+  if approval_err then return { ok = false, error = approval_err } end
+  if not approval or approval.state ~= 'pending' then
+    return { ok = false, error = Errors.New('RESOURCE_NOT_FOUND', { field = 'approval_id' }) }
+  end
+
+  local account_data = nil
+  if ctx.decision == 'approve' then
+    local opened = S.OpenAccount({
+      src = ctx.src,
+      citizen_id = approval.citizen_id,
+      initial_balance = 0,
+      initial_savings = 0,
+      owner_type = 'personal',
+      account_class = 'business_treasury',
+      approved_professional = true,
+    })
+    if not opened.ok then return opened end
+    account_data = opened.data
+  end
+
+  local decision_note = Validators.SanitizeReason(ctx.note)
+  local state = ctx.decision == 'approve' and 'approved' or 'rejected'
+  local _, decide_err = AccountsRepo.DecideProfessionalApproval({
+    approval_id = ctx.approval_id,
+    state = state,
+    decision_note = decision_note,
+    decided_by_citizen_id = ctx.actor_citizen_id,
+    created_account_id = account_data and account_data.account_id or nil,
+    created_iban = account_data and account_data.iban or nil,
+  })
+  if decide_err then return { ok = false, error = decide_err } end
+
+  Audit.Write({
+    event_type = 'account_professional_decision',
+    actor_citizen_id = ctx.actor_citizen_id,
+    actor_src = ctx.src,
+    target_citizen_id = approval.citizen_id,
+    target_account_id = account_data and account_data.account_id or nil,
+    target_iban = account_data and account_data.iban or nil,
+    event_data = { approval_id = ctx.approval_id, decision = ctx.decision, note = decision_note },
+  })
+
+  invalidate_bootstrap(approval.citizen_id)
+  return { ok = true, data = { approval_id = ctx.approval_id, status = state, account = account_data, committed_at_ms = now_ms() } }
 end
 
 -- -----------------------------------------------------------------------------
@@ -180,6 +318,16 @@ end
 
 function S.CloseAccount(ctx)
   local timer = Perf.StartTimer()
+  -- Feature gate: server admin can disable account closure (defensive freeze
+  -- on the customer self-service flow).
+  local Features = BankApp.lib.features
+  if Features and Features.Require then
+    local feat_err = Features.Require('accounts_close')
+    if feat_err then
+      Perf.EndTimer(timer, 'C019', { tier = Enums.TIER.TIER_2_WRITE })
+      return { ok = false, error = feat_err }
+    end
+  end
   local norm_iban = Validators.NormalizeIBAN(ctx.iban)
   if not norm_iban then
     Perf.EndTimer(timer, 'C019', { tier = Enums.TIER.TIER_2_WRITE })
@@ -231,6 +379,12 @@ end
 local JOINTS_MAX_PER_ACCOUNT = 3
 
 function S.AddJointOwner(ctx)
+  -- Feature gate: joint owners can be disabled at server level.
+  local Features = BankApp.lib.features
+  if Features and Features.Require then
+    local feat_err = Features.Require('accounts_joint_owners')
+    if feat_err then return { ok = false, error = feat_err } end
+  end
   local norm_iban = Validators.NormalizeIBAN(ctx.iban)
   if not norm_iban then return { ok = false, error = Errors.New('INVALID_IBAN') } end
   if not Validators.IsValidCitizenId(ctx.joint_citizen_id) then

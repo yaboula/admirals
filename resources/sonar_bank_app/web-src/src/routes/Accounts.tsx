@@ -13,12 +13,13 @@ import {
   Send,
   Settings2,
   ShieldCheck,
+  Trash2,
   Users,
   Wallet,
   X,
 } from 'lucide-react'
 import { Button, Card, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
-import { accountMutationPayload, kycSubmitPayload, useFreezeAccountMutation, useOpenAccountMutation, useRequestProfessionalAccountMutation, useSavingsTransferMutation, useSubmitKycMutation, useUnfreezeAccountMutation } from '@/data/mutations'
+import { accountMutationPayload, useCloseAccountMutation, useFreezeAccountMutation, useOpenAccountMutation, useRequestProfessionalAccountMutation, useSavingsTransferMutation, useUnfreezeAccountMutation } from '@/data/mutations'
 import { JointOwnersPanel } from './accounts/JointOwnersPanel'
 import { useBootstrap } from '@/data/queries'
 import type { Account } from '@/data/contracts'
@@ -44,7 +45,7 @@ export function Accounts() {
   const requestProfessionalAccount = useRequestProfessionalAccountMutation()
   const freezeAccount = useFreezeAccountMutation()
   const unfreezeAccount = useUnfreezeAccountMutation()
-  const submitKyc = useSubmitKycMutation()
+  const closeAccount = useCloseAccountMutation()
 
   useEffect(() => {
     if (isError && error) handleBankError(error)
@@ -81,10 +82,13 @@ export function Accounts() {
     }
   }
 
-  const handleSubmitKyc = async (): Promise<void> => {
+  const handleDeleteAccount = async (): Promise<void> => {
+    if (!selected) return
     try {
-      await submitKyc.mutateAsync(kycSubmitPayload({ doc_count: 1 }))
-      toast.success(t('accounts.kycSubmittedTitle'), t('accounts.kycSubmittedBody'))
+      const payload = accountMutationPayload({ iban: selected.iban, reason: 'self_service_close' })
+      await closeAccount.mutateAsync(payload)
+      toast.success(t('accounts.accountClosedTitle'), streamerMode ? maskIbanCompact(selected.iban) : revealIbanDisplay(selected.iban))
+      setSelectedId(null)
     } catch (err) {
       handleBankError(err)
     }
@@ -159,12 +163,12 @@ export function Accounts() {
           <QuickActionsPanel
             accounts={accounts}
             selected={selected}
-            busy={openAccount.isPending || requestProfessionalAccount.isPending || freezeAccount.isPending || unfreezeAccount.isPending || submitKyc.isPending}
+            busy={openAccount.isPending || requestProfessionalAccount.isPending || freezeAccount.isPending || unfreezeAccount.isPending || closeAccount.isPending}
             onTransfer={() => navigate('/transferir')}
             onCards={() => navigate('/tarjetas')}
             onCreateAccount={() => setAccountDialogOpen(true)}
             onToggleFreeze={handleToggleFreeze}
-            onSubmitKyc={handleSubmitKyc}
+            onDeleteAccount={handleDeleteAccount}
           />
           <JointOwnersPanel
             account={selected}
@@ -286,14 +290,9 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
   const name = accountName(account, index, t)
   const accountKind = getAccountKind(account, index, t)
   const ibanLabel = maskedIbanTail(account.iban)
-  const amountLabel = streamerMode ? maskMoneyDisplay() : money((account.balance_minor + account.savings_minor) / 100)
+  const amountLabel = streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100)
   const availableLabel = streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100)
-  const savingsLabel = streamerMode ? maskMoneyDisplay() : money(account.savings_minor / 100)
-  const totalMinor = account.balance_minor + account.savings_minor
-  const savingsRatio = totalMinor > 0 ? account.savings_minor / totalMinor : 0
-  const reservePercent = streamerMode ? 56 : Math.round(savingsRatio * 100)
   const Icon = accountKind.icon
-  const barWidth = reservePercent
 
   return (
     <button
@@ -351,29 +350,9 @@ function AccountButton({ account, index, active, streamerMode, onClick }: { acco
           </span>
         </span>
         </span>
-        <span className="grid grid-cols-2 gap-2 text-xs text-text-secondary/80">
-          <span className="min-w-0 rounded-xl border border-white/[0.06] bg-black/[0.12] px-2 py-1.5">
-            <span className="block uppercase tracking-[0.12em]">{t('accounts.availableShort')}</span>
-            <b className="block font-semibold text-text-secondary tactile-tabular-nums whitespace-nowrap">{availableLabel}</b>
-          </span>
-          <span className="min-w-0 rounded-xl border border-white/[0.06] bg-black/[0.12] px-2 py-1.5 text-right">
-            <span className="block uppercase tracking-[0.12em]">{t('accounts.reserveShort')}</span>
-            <b className="block font-semibold text-text-secondary tactile-tabular-nums whitespace-nowrap">{savingsLabel}</b>
-          </span>
-        </span>
-        <span className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary/70">
-          <span>{t('accounts.reserveRatio')}</span>
-          <span className="tactile-tabular-nums">{streamerMode ? '••%' : `${reservePercent}%`}</span>
-        </span>
-        <span className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-          <span
-            className="block h-full rounded-full"
-            style={{
-              width: `${barWidth}%`,
-              background: accountKind.accent,
-              opacity: 0.72,
-            }}
-          />
+        <span className="min-w-0 rounded-xl border border-white/[0.06] bg-black/[0.12] px-2 py-1.5 text-xs text-text-secondary/80">
+          <span className="block uppercase tracking-[0.12em]">{t('accounts.availableShort')}</span>
+          <b className="block font-semibold text-text-secondary tactile-tabular-nums whitespace-nowrap">{availableLabel}</b>
         </span>
       </div>
     </button>
@@ -404,11 +383,6 @@ function AccountDetail({
     )
   }
 
-  const totalMinor = account.balance_minor + account.savings_minor
-  const availableRatio = totalMinor > 0 ? account.balance_minor / totalMinor : 0
-  const reserveRatio = totalMinor > 0 ? account.savings_minor / totalMinor : 0
-  const displayAvailableRatio = streamerMode ? 0.44 : availableRatio
-  const displayReserveRatio = streamerMode ? 0.56 : reserveRatio
   const displayIban = maskedIbanTail(account.iban)
   const name = accountName(account, accountIndex, t)
 
@@ -452,7 +426,7 @@ function AccountDetail({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 rounded-[1.65rem] border border-white/10 bg-white/[0.04] p-4 flex flex-col justify-between"
+        <div className="min-h-0 flex-1 rounded-[1.65rem] border border-white/10 bg-white/[0.04] p-4 flex flex-col gap-3"
           style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.025) 100%)' }}
         >
           <div>
@@ -460,41 +434,12 @@ function AccountDetail({
             <span className="mt-1.5 block max-w-full overflow-visible whitespace-nowrap text-4xl 2xl:text-5xl font-extralight tracking-[-0.07em] text-text-primary tactile-tabular-nums leading-none">
               {streamerMode ? maskMoneyDisplay() : money(account.balance_minor / 100)}
             </span>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              <BalanceSignal label={t('accounts.totalInAccount')} value={streamerMode ? maskMoneyDisplay() : money(totalMinor / 100)} />
-              <BalanceSignal label={t('accounts.reserveShort')} value={streamerMode ? maskMoneyDisplay() : money(account.savings_minor / 100)} accent />
-              <BalanceSignal label={t('accounts.reserveRatio')} value={streamerMode ? 'â€¢â€¢%' : `${Math.round(reserveRatio * 100)}%`} />
-            </div>
-          </div>
-          <div>
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <span className="block text-[10px] uppercase tracking-[0.14em] text-text-tertiary">{t('accounts.reserveShort')}</span>
-                <span className="block text-base font-semibold text-emerald-300/90 tactile-tabular-nums">
-                  {streamerMode ? maskMoneyDisplay() : money(account.savings_minor / 100)}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="block text-[10px] uppercase tracking-[0.14em] text-text-tertiary">{t('accounts.accountComposition')}</span>
-                <span className="block text-base font-semibold text-text-primary tactile-tabular-nums">{streamerMode ? '••%' : `${Math.round(reserveRatio * 100)}%`}</span>
-              </div>
-            </div>
-            <div className="flex h-2.5 overflow-hidden rounded-full bg-black/20">
-              <span className="h-full bg-white/35 transition-all" style={{ width: `${Math.max(6, Math.round(displayAvailableRatio * 100))}%` }} />
-              <span className="h-full bg-[rgb(82,205,134)]/65 transition-all" style={{ width: `${Math.max(6, Math.round(displayReserveRatio * 100))}%` }} />
-            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 shrink-0">
-          <div className="rounded-[1.35rem] border border-white/10 bg-black/[0.18] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-            <span className="block text-[10px] uppercase tracking-[0.14em] text-text-tertiary">IBAN</span>
-            <span className="mt-1.5 block text-xs font-mono font-semibold tracking-wider text-text-primary tactile-tabular-nums break-all leading-relaxed">{displayIban}</span>
-          </div>
-          <div className="rounded-[1.35rem] border border-white/10 bg-black/[0.18] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-            <span className="block text-[10px] uppercase tracking-[0.14em] text-text-tertiary">{t('accounts.accountComposition')}</span>
-            <span className="mt-1.5 block text-lg font-semibold text-text-primary tactile-tabular-nums">{streamerMode ? '••%' : `${Math.round(reserveRatio * 100)}%`}</span>
-          </div>
+        <div className="shrink-0 rounded-[1.35rem] border border-white/10 bg-black/[0.18] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+          <span className="block text-[10px] uppercase tracking-[0.14em] text-text-tertiary">IBAN</span>
+          <span className="mt-1.5 block text-xs font-mono font-semibold tracking-wider text-text-primary tactile-tabular-nums break-all leading-relaxed">{displayIban}</span>
         </div>
 
         <div className="grid grid-cols-[1fr_0.72fr_0.72fr] gap-2 shrink-0">
@@ -520,14 +465,6 @@ function AccountDetail({
   )
 }
 
-function BalanceSignal({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className={cn('min-w-0 rounded-2xl border px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]', accent ? 'border-emerald-300/12 bg-emerald-300/[0.045]' : 'border-white/[0.08] bg-black/[0.14]')}>
-      <span className="block truncate text-[9px] uppercase tracking-[0.12em] text-text-tertiary">{label}</span>
-      <span className={cn('block truncate text-xs font-semibold tactile-tabular-nums', accent ? 'text-emerald-200' : 'text-text-secondary')}>{value}</span>
-    </div>
-  )
-}
 
 function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[]; totals: AccountTotals; streamerMode: boolean }) {
   const { money, t } = useI18n()
@@ -649,9 +586,26 @@ function PreviewMetric({ label, value }: { label: string; value: string }) {
   )
 }
 
-function QuickActionsPanel({ selected, busy, onTransfer, onCards, onCreateAccount, onToggleFreeze, onSubmitKyc }: { accounts: Account[]; selected: Account | undefined; busy: boolean; onTransfer: () => void; onCards: () => void; onCreateAccount: () => void; onToggleFreeze: () => void; onSubmitKyc: () => void }) {
+function QuickActionsPanel({ selected, busy, onTransfer, onCards, onCreateAccount, onToggleFreeze, onDeleteAccount }: { accounts: Account[]; selected: Account | undefined; busy: boolean; onTransfer: () => void; onCards: () => void; onCreateAccount: () => void; onToggleFreeze: () => void; onDeleteAccount: () => void }) {
   const { t } = useI18n()
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleteInput, setDeleteInput] = useState('')
   const frozen = selected?.status === 'frozen' || selected?.frozen_flag === true || selected?.frozen_flag === 1
+  const confirmWord = t('accounts.deleteConfirmWord')
+  const deleteReady = deleteInput.trim().toUpperCase() === confirmWord.toUpperCase()
+
+  const handleConfirmDelete = () => {
+    if (!deleteReady) return
+    setDeleteConfirm(false)
+    setDeleteInput('')
+    onDeleteAccount()
+  }
+
+  const handleCancelDelete = () => {
+    setDeleteConfirm(false)
+    setDeleteInput('')
+  }
+
   return (
     <Card variant="glass" padding="sm" className="border-white/10 shrink-0">
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -682,10 +636,46 @@ function QuickActionsPanel({ selected, busy, onTransfer, onCards, onCreateAccoun
             <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">{t('accounts.accountControls')}</span>
             <span className="rounded-full border border-white/[0.06] bg-white/[0.035] px-2 py-0.5 text-[9px] text-text-tertiary">{t('accounts.zeroBalanceRequired')}</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" size="sm" loading={busy} onClick={onSubmitKyc} className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-[11px]">{t('accounts.verifyIdentity')}</Button>
-            <Button variant="secondary" size="sm" loading={busy} disabled={!selected} onClick={onToggleFreeze} className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-[11px]">{frozen ? t('accounts.unfreezeAccount') : t('accounts.freezeAccount')}</Button>
-          </div>
+          {deleteConfirm ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] leading-tight text-red-400/90">{t('accounts.deleteConfirmWarning')}</p>
+              <Input
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                placeholder={t('accounts.deleteConfirmPlaceholder')}
+                inputSize="sm"
+                autoFocus
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="secondary" size="sm" onClick={handleCancelDelete} className="text-[11px]">{t('accounts.deleteCancel')}</Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  disabled={!deleteReady}
+                  onClick={handleConfirmDelete}
+                  className="text-[11px] border-red-500/40 text-red-400 hover:bg-red-500/10 disabled:opacity-40"
+                >
+                  {t('accounts.deleteConfirmBtn')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={busy}
+                disabled={!selected}
+                onClick={() => setDeleteConfirm(true)}
+                leftIcon={<Trash2 size={13} />}
+                className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-[11px] border-red-500/30 text-red-400/80 hover:bg-red-500/10 hover:text-red-300"
+              >
+                {t('accounts.deleteAccount')}
+              </Button>
+              <Button variant="secondary" size="sm" loading={busy} disabled={!selected} onClick={onToggleFreeze} className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] text-[11px]">{frozen ? t('accounts.unfreezeAccount') : t('accounts.freezeAccount')}</Button>
+            </div>
+          )}
         </div>
       </div>
     </Card>
@@ -730,8 +720,8 @@ function AccountCreationDialog({ accounts, busy, onClose, onSubmit }: { accounts
     },
   ]
   const selected = products.find((product) => product.id === selectedProduct) ?? products[0]
-  const exists = (accountClass: AccountProductClass) => accounts.some((account, index) => account.account_class === accountClass || (accountClass === 'checking' && !account.account_class && index === 0))
-  const selectedExists = exists(selectedProduct)
+  const existingFor = (accountClass: AccountProductClass) => accounts.find((account, index) => account.account_class === accountClass || (accountClass === 'checking' && !account.account_class && index === 0))
+  const selectedExists = !!existingFor(selectedProduct)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
       <motion.div
@@ -761,7 +751,8 @@ function AccountCreationDialog({ accounts, busy, onClose, onSubmit }: { accounts
             <div className="grid gap-2">
               {products.map((product) => {
                 const active = selectedProduct === product.id
-                const unavailable = exists(product.id)
+                const existing = existingFor(product.id)
+                const unavailable = !!existing
                 return (
                   <button
                     key={product.id}
@@ -777,7 +768,7 @@ function AccountCreationDialog({ accounts, busy, onClose, onSubmit }: { accounts
                     <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/[0.24] text-text-secondary">{product.icon}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-semibold text-text-primary">{product.title}</span>
-                      <span className="mt-0.5 block text-xs text-text-tertiary">{product.body}</span>
+                      <span className="mt-0.5 block text-xs text-text-tertiary">{existing ? maskedIbanTail(existing.iban) : product.body}</span>
                     </span>
                     <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.035] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-text-tertiary">{unavailable ? t('accounts.active') : product.eyebrow}</span>
                   </button>

@@ -14,7 +14,7 @@ import {
   buildMockStockPortfolio,
   simulateLatency,
 } from './seed'
-import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, LoanPaymentResponse, LoanRequestResponse, PayrollPreviewRequest, PayrollPreviewResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
+import type { AuditQueryRequest, AuditQueryResponse, AtmSessionResponse, BootstrapSnapshot, BusinessTreasuryQueryRequest, BusinessTreasurySnapshot, ClientConfigSnapshot, ComplianceFlagsQueryRequest, ComplianceFlagsQueryResponse, LoanInstallmentsRequest, LoanInstallmentsResponse, LoanListResponse, LoanPaymentResponse, LoanRequestResponse, PayrollPreviewRequest, PayrollPreviewResponse, ProfessionalAccountApprovalsResponse, ProfessionalAccountDecisionRequest, ProfessionalAccountDecisionResponse, ProfessionalAccountRequestResponse, RecentRecipientsResponse, StockListResponse, StockPortfolioResponse } from '@/data/contracts'
 import type { BusinessApprovalDecideRequest, BusinessApprovalDecideResponse, BusinessPayrollExecuteRequest, BusinessPayrollExecuteResponse, BusinessWithdrawalRequest, BusinessWithdrawalResponse } from '@/data/contracts'
 import type { IssueCardResult } from '@/data/mutations'
 import type { BankStateBagKey } from '@/lib/bankStateBags'
@@ -108,6 +108,38 @@ export function installMockHandlers(): void {
   registerMockHandler<{ account_id: string; iban: string; citizen_id: string }>('sonar:bank:account:open', async () => {
     await simulateLatency(130, 280)
     return { account_id: `mock-account-${Date.now()}`, iban: 'AD-MOCK-0000-0001', citizen_id: 'mock-citizen' }
+  })
+
+  registerMockHandler<ProfessionalAccountRequestResponse>('sonar:bank:account:professional:request', async () => {
+    await simulateLatency(130, 280)
+    return { approval_id: `mock-professional-${Date.now()}`, status: 'pending', requested_ms: Date.now() }
+  })
+
+  registerMockHandler<ProfessionalAccountApprovalsResponse>('sonar:bank:account:professional:listApprovals', async () => {
+    await simulateLatency(80, 180)
+    return {
+      items: [
+        {
+          approval_id: 'mock-professional-001',
+          citizen_id: 'mock-citizen',
+          account_class: 'business_treasury',
+          state: 'pending',
+          note: 'professional_account_request',
+          requested_ms: Date.now() - 180_000,
+        },
+      ],
+      fetched_at_ms: Date.now(),
+    }
+  })
+
+  registerMockHandler<ProfessionalAccountDecisionResponse>('sonar:bank:account:professional:decide', async (payload) => {
+    await simulateLatency(120, 260)
+    const request = payload as unknown as ProfessionalAccountDecisionRequest
+    return {
+      approval_id: request.approval_id,
+      status: request.decision === 'approve' ? 'approved' : 'rejected',
+      committed_at_ms: Date.now(),
+    }
   })
 
   registerMockHandler<{ iban: string; frozen: boolean }>('sonar:bank:account:freeze', async (payload) => {

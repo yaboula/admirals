@@ -159,6 +159,20 @@ local function phase3_hooks()
     BankApp.nui.bridge.Init()
     log('INFO', 'NUI bridge initialized (client config snapshot ready).')
   end
+
+  -- Banker (Bank Owner Panel) — bootstrap initial CEO if employees table empty
+  if BankApp.services
+     and BankApp.services.banker
+     and BankApp.services.banker.employees
+     and type(BankApp.services.banker.employees.EnsureInitialCEO) == 'function'
+     and Config.Banker and Config.Banker.Enabled then
+    local ok, msg = BankApp.services.banker.employees.EnsureInitialCEO()
+    if ok then
+      log('INFO', 'Banker: initial CEO bootstrapped from convar/config.')
+    else
+      log('INFO', ('Banker: initial CEO bootstrap skipped (%s).'):format(tostring(msg)))
+    end
+  end
 end
 
 -- -----------------------------------------------------------------------------

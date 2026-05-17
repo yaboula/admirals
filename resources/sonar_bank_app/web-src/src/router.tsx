@@ -18,6 +18,12 @@ const Business = lazy(() => import('./routes/Business').then(m => ({ default: m.
 const Investments = lazy(() => import('./routes/Investments').then(m => ({ default: m.Investments })))
 const Loans = lazy(() => import('./routes/Loans').then(m => ({ default: m.Loans })))
 const Atm = lazy(() => import('./routes/Atm').then(m => ({ default: m.Atm })))
+const AdminShell = lazy(() => import('./admin/layout/AdminShell').then(m => ({ default: m.AdminShell })))
+const LoanApprovals = lazy(() => import('./admin/modules/LoanApprovals').then(m => ({ default: m.LoanApprovals })))
+const ComplianceFlags = lazy(() => import('./admin/modules/ComplianceFlags').then(m => ({ default: m.ComplianceFlags })))
+const BusinessApprovals = lazy(() => import('./admin/modules/BusinessApprovals').then(m => ({ default: m.BusinessApprovals })))
+const AccountApprovals = lazy(() => import('./admin/modules/AccountApprovals').then(m => ({ default: m.AccountApprovals })))
+const AuditOversight = lazy(() => import('./admin/modules/AuditOversight').then(m => ({ default: m.AuditOversight })))
 const DevShowcase = lazy(() => import('./routes/dev/Showcase').then(m => ({ default: m.DevShowcase })))
 const NotFound = lazy(() => import('./routes/NotFound').then(m => ({ default: m.NotFound })))
 const GovtShell = lazy(() => import('./govt/layout/GovtShell').then(m => ({ default: m.GovtShell })))
@@ -29,6 +35,15 @@ const GovtBusiness = lazy(() => import('./govt/routes/GovtBusiness').then(m => (
 const GovtTreasury = lazy(() => import('./govt/routes/GovtTreasury').then(m => ({ default: m.GovtTreasury })))
 const GovtSubsidies = lazy(() => import('./govt/routes/GovtSubsidies').then(m => ({ default: m.GovtSubsidies })))
 const GovtReports = lazy(() => import('./govt/routes/GovtReports').then(m => ({ default: m.GovtReports })))
+const BankerShell = lazy(() => import('./banker/layout/BankerShell').then(m => ({ default: m.BankerShell })))
+const BankerDashboard = lazy(() => import('./banker/modules/Dashboard').then(m => ({ default: m.BankerDashboard })))
+const BankerEmployees = lazy(() => import('./banker/modules/Employees').then(m => ({ default: m.BankerEmployees })))
+const BankerOperations = lazy(() => import('./banker/modules/Operations').then(m => ({ default: m.BankerOperations })))
+const BankerCustomers = lazy(() => import('./banker/modules/Customers').then(m => ({ default: m.BankerCustomers })))
+const BankerRates = lazy(() => import('./banker/modules/Rates').then(m => ({ default: m.BankerRates })))
+const BankerBranding = lazy(() => import('./banker/modules/Branding').then(m => ({ default: m.BankerBranding })))
+const BankerCompliance = lazy(() => import('./banker/modules/Compliance').then(m => ({ default: m.BankerCompliance })))
+const BankerMissions = lazy(() => import('./banker/modules/Missions').then(m => ({ default: m.BankerMissions })))
 
 function RouteLoader() {
   return (
@@ -88,6 +103,32 @@ const routes = [
           { path: 'inversiones', element: <S><Investments /></S> },
           { path: 'creditos', element: <S><Loans /></S> },
           { path: 'dev/showcase', element: <S><DevShowcase /></S> },
+        ],
+      },
+      {
+        path: 'sonaradmin',
+        element: <ProtectedRoute><S><AdminShell /></S></ProtectedRoute>,
+        children: [
+          { index: true, element: <S><LoanApprovals /></S> },
+          { path: 'loans', element: <S><LoanApprovals /></S> },
+          { path: 'compliance', element: <S><ComplianceFlags /></S> },
+          { path: 'business', element: <S><BusinessApprovals /></S> },
+          { path: 'accounts', element: <S><AccountApprovals /></S> },
+          { path: 'audit', element: <S><AuditOversight /></S> },
+        ],
+      },
+      {
+        path: 'banker',
+        element: <ProtectedRoute><S><BankerShell /></S></ProtectedRoute>,
+        children: [
+          { index: true, element: <S><BankerDashboard /></S> },
+          { path: 'employees', element: <S><BankerEmployees /></S> },
+          { path: 'operations', element: <S><BankerOperations /></S> },
+          { path: 'customers', element: <S><BankerCustomers /></S> },
+          { path: 'rates', element: <S><BankerRates /></S> },
+          { path: 'branding', element: <S><BankerBranding /></S> },
+          { path: 'compliance', element: <S><BankerCompliance /></S> },
+          { path: 'missions', element: <S><BankerMissions /></S> },
         ],
       },
     ],

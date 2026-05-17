@@ -63,6 +63,9 @@ server_scripts {
   'server/lib/publish.lua',             -- 11. depends enums, validators — M004 CP1-B
   'server/lib/auth.lua',                -- 12. depends enums, errors, db — H001 + AP-AUTH-1
   'server/lib/perf.lua',                -- 13. depends enums — perf budget tracker
+  'server/lib/banker_auth.lua',         -- 13b. depends auth, errors, db, Config.Banker — Bank Owner Panel
+  'server/lib/economy.lua',             -- 13c. depends Config.Banker.Limits + lazy repos.banker — effective rates/fees/limits
+  'server/lib/features.lua',            -- 13d. depends Config.CustomerApp.Features + errors — customer feature flags
 
   -- 2. State primitive (no domain deps — generic LRU class).
   'server/state/cache.lua',             -- 14. generic LRU primitive
@@ -79,6 +82,8 @@ server_scripts {
   'server/repos/govt.lua',              -- 23.
   'server/repos/tax.lua',
   'server/repos/business.lua',          -- 24.
+  'server/repos/banker.lua',            -- 24b. Bank Owner Panel — employees + overrides
+  'server/repos/banker_aggregate.lua',  -- 24c. Bank Owner Panel — aggregate KPI / queues / search
 
   -- 4. State (statebags hook — depends on repos.accounts).
   'server/state/statebags.lua',         -- 24. M004 §2.2.2 playerJoining lazy publish hook
@@ -93,10 +98,21 @@ server_scripts {
   'server/services/portfolio_service.lua',   -- 31.
   'server/services/card_service.lua',        -- 32.
   'server/services/admin_service.lua',       -- 33.
+  'server/services/atm_service.lua',         -- 33b. F06 NUI ATM (session/verifyPin/nuiWithdraw)
   'server/services/risk_engine.lua',         -- 34. REQ-FE-006/009 MVP risk rules
   'server/services/govt_service.lua',        -- 35. REQ-FE-006..014 GOVT data layer
   'server/services/tax_service.lua',
   'server/services/business_service.lua',    -- 36. REQ-FE-011/015 Business data layer
+  'server/services/banker/bootstrap.lua',    -- 36b. Bank Owner Panel — bootstrap snapshot
+  'server/services/banker/employees.lua',    -- 36c. Bank Owner Panel — employees CRUD
+  'server/services/banker/dashboard.lua',    -- 36d. Bank Owner Panel — F2 dashboard KPIs/timeseries
+  'server/services/banker/operations.lua',   -- 36e. Bank Owner Panel — F2 approvals queues
+  'server/services/banker/customers.lua',    -- 36f. Bank Owner Panel — F2 search + detail + freeze
+  'server/services/banker/rates.lua',        -- 36g. Bank Owner Panel — F3 rates/fees editor
+  'server/services/banker/branding.lua',     -- 36h. Bank Owner Panel — F4 branding
+  'server/services/banker/compliance.lua',   -- 36i. Bank Owner Panel — F5 compliance flags
+  'server/services/banker/missions.lua',     -- 36j. Bank Owner Panel — F6 missions
+  'server/services/cron/savings_interest.lua', -- 36k. Cron — daily savings interest accrual
 
   -- 6. Events (NetEvent emitters + audit emit helpers — depends lib + Enums).
   'server/events/netevents.lua',        -- 37.
@@ -119,14 +135,18 @@ server_scripts {
   'server/callbacks/card.lua',          -- 48. C030, C032, C033, C034, C040  (5)
   'server/callbacks/admin.lua',         -- 49. C035, C036, C036b, C031, C041,
                                         --      C042, C043, C044, C045, C046  (10)
+  'server/callbacks/atm.lua',           -- 49b. F06 NUI ATM (session/verifyPin/nuiWithdraw)
   'server/callbacks/govt.lua',          -- 50. REQ-FE-006..014 GOVT callbacks
   'server/callbacks/tax.lua',
   'server/callbacks/business.lua',      -- 51. REQ-FE-011/015 Business callbacks
+  'server/callbacks/banker.lua',        -- 51b. Bank Owner Panel callbacks (B001..B006)
 
   -- 9. Boot orchestration (Step F).
   --    smoke + cron must load BEFORE init (init references them in phase 1/2).
   'server/boot/smoke.lua',              -- 52.
   'server/boot/cron.lua',               -- 53.
+  'server/boot/banker_commands.lua',    -- 53b. /setbankowner + /sonarbank_employees admin commands
+  'server/boot/cron_boot.lua',          -- 53c. starts savings_interest + future cron heartbeats
   'server/boot/init.lua',               -- 54. wires onResourceStart → Run()
 
   -- 10. Public cross-resource exports (loaded last — depends on repos).
@@ -150,6 +170,7 @@ server_scripts {
 client_scripts {
   '@ox_lib/init.lua',                  -- ox_lib client-side for callbacks
   'client/nui_bridge.lua',              -- BANK-FE.2 NUI ↔ server proxy + NetEvent forwarder
+  'client/atm_interaction.lua',         -- F06 physical ATM target/proximity layer
 }
 
 -- =============================================================================

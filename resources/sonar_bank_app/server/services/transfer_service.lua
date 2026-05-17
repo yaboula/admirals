@@ -42,6 +42,8 @@ local Enums       = BankApp.lib.enums
 
 local AccountsRepo     = BankApp.repos.accounts
 local TransactionsRepo = BankApp.repos.transactions
+local Economy          = BankApp.lib.economy
+local Features         = BankApp.lib.features
 
 -- -----------------------------------------------------------------------------
 -- §1. Internal helpers
@@ -49,6 +51,14 @@ local TransactionsRepo = BankApp.repos.transactions
 
 local function now_ms()
   return os.time() * 1000 + math.floor((os.clock() % 1) * 1000)
+end
+
+local function start_of_today_unix_seconds()
+  -- Local server time start-of-day (00:00:00). os.date('*t') returns the
+  -- decomposed table; we zero h/m/s and re-marshal via os.time.
+  local t = os.date('*t')
+  t.hour, t.min, t.sec = 0, 0, 0
+  return os.time(t)
 end
 
 local function resolve_src_for_citizen(citizen_id)
@@ -85,6 +95,13 @@ end
 ---@return table { ok=bool, data|error }
 function S.Execute(ctx)
   local timer = Perf.StartTimer()
+
+  -- §2.0 Feature gate (server admin can disable P2P transfers globally)
+  local feat_err = Features and Features.Require and Features.Require('transfers_p2p')
+  if feat_err then
+    Perf.EndTimer(timer, 'C006', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = feat_err }
+  end
 
   -- §2.1 Validation
   local schema_ok, schema_err = Validators.ValidateSchema(ctx, {
@@ -152,21 +169,49 @@ function S.Execute(ctx)
     return { ok = false, error = Errors.New('ACCOUNT_FROZEN', { iban = ctx.to_iban, role = 'recipient' }) }
   end
 
-  -- §2.5 Pre-check funds
+  -- §2.5a Compute fee (config-driven, banker-overridable, defensively clamped)
+  local fee_minor, fee_bps = Economy.FeeForTransfer(ctx.amount_minor)
+
+  -- §2.5b Daily transfer cap (skip if cap is 0 / not configured)
+  local daily_cap = Economy.DailyTransferCap()
+  if daily_cap and daily_cap > 0 then
+    local already_today = TransactionsRepo.GetDailyOutgoingMinor(
+      ctx.from_iban, start_of_today_unix_seconds()) or 0
+    if (already_today + ctx.amount_minor) > daily_cap then
+      Idempotency.Orphan(ctx.idempotency_key)
+      Perf.EndTimer(timer, 'C006', { tier = Enums.TIER.TIER_2_WRITE })
+      return { ok = false, error = Errors.New('AMOUNT_OUT_OF_RANGE', {
+        reason         = 'daily_transfer_cap_exceeded',
+        amount_minor   = ctx.amount_minor,
+        already_today  = already_today,
+        daily_cap      = daily_cap,
+      }) }
+    end
+  end
+
+  -- §2.5c Pre-check funds (sender must cover amount + fee)
   local from_balance = tonumber(from_account.balance_minor) or 0
-  if from_balance < ctx.amount_minor then
+  local total_debit_minor = ctx.amount_minor + (fee_minor or 0)
+  if from_balance < total_debit_minor then
     Idempotency.Orphan(ctx.idempotency_key)
     Perf.EndTimer(timer, 'C006', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', {
-      requested = ctx.amount_minor, available = from_balance,
+      requested    = ctx.amount_minor,
+      fee_minor    = fee_minor,
+      total_needed = total_debit_minor,
+      available    = from_balance,
     }) }
   end
 
   -- §2.6 Compose TX batch
+  --   - debit sender by (amount + fee)
+  --   - credit recipient by amount (fee never leaves the bank)
+  --   - transfer movement row (amount)
+  --   - if fee > 0 → separate fee row on sender side ('fee' category)
   local txn_id = UUID.V4()
   local ts = now_ms()
   local tx_queries = {
-    AccountsRepo.BuildDebitBalanceQuery(ctx.from_iban, ctx.amount_minor),
+    AccountsRepo.BuildDebitBalanceQuery(ctx.from_iban, total_debit_minor),
     AccountsRepo.BuildCreditBalanceQuery(ctx.to_iban, ctx.amount_minor),
     TransactionsRepo.BuildInsertQuery({
       txn_id          = txn_id,
@@ -182,6 +227,17 @@ function S.Execute(ctx)
     }),
     TransactionsRepo.BuildUpdateStatusQuery(txn_id, 'committed', ts),
   }
+  if fee_minor and fee_minor > 0 then
+    tx_queries[#tx_queries + 1] = TransactionsRepo.BuildSingleDebitQuery({
+      iban            = ctx.from_iban,
+      amount_minor    = fee_minor,
+      category        = 'fee',
+      reason          = ('Transfer fee (%d bps)'):format(fee_bps or 0),
+      txn_id          = UUID.V4(),
+      timestamp_ms    = ts,
+      idempotency_key = ctx.idempotency_key,
+    })
+  end
 
   -- §2.7 Execute atomic batch
   local ok, tx_err = DB.Transaction(tx_queries)
@@ -217,6 +273,8 @@ function S.Execute(ctx)
       from_iban     = ctx.from_iban,
       to_iban       = ctx.to_iban,
       amount_minor  = ctx.amount_minor,
+      fee_minor     = fee_minor,
+      fee_bps       = fee_bps,
       txn_id        = txn_id,
       reason        = Validators.SanitizeReason(ctx.reason),
       committed_ms  = ts,
@@ -230,13 +288,16 @@ function S.Execute(ctx)
     from_iban           = ctx.from_iban,
     to_iban             = ctx.to_iban,
     amount_minor        = ctx.amount_minor,
+    fee_minor           = fee_minor,
+    fee_bps             = fee_bps,
+    total_debited_minor = total_debit_minor,
     committed_ms        = ts,
     cross_ref_audit_id  = audit_id,
   }
   Idempotency.Commit(ctx.idempotency_key, result)
 
   -- §2.10 Publish balance updates (M004 CP1-B)
-  local sender_new_balance = from_balance - ctx.amount_minor
+  local sender_new_balance = from_balance - total_debit_minor
   Publish.PublishBalanceUpdate(
     ctx.src, owner_cid, sender_new_balance,
     tonumber(from_account.savings_minor) or 0,
@@ -266,6 +327,13 @@ end
 
 local function execute_internal_move(ctx, direction)
   local timer = Perf.StartTimer()
+
+  -- Feature gate: savings module is globally toggleable.
+  local feat_err = Features and Features.Require and Features.Require('savings')
+  if feat_err then
+    Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = feat_err }
+  end
 
   local schema_ok, schema_err = Validators.ValidateSchema(ctx, {
     citizen_id      = 'citizen_id',

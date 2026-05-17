@@ -552,6 +552,7 @@ export function buildMockLoans(): Loan[] {
     {
       loan_id: 'loan-personal-velocity',
       borrower_citizen_id: MOCK_CITIZEN_ID,
+      product_id: 'personal',
       product_name: 'Velocity Personal Credit',
       purpose: 'Personal liquidity reserve',
       principal_minor: 12_000_00,
@@ -572,6 +573,7 @@ export function buildMockLoans(): Loan[] {
     {
       loan_id: '9284c9c0-4f90-4310-93ee-6b496c24c002',
       borrower_citizen_id: MOCK_CITIZEN_ID,
+      product_id: 'prime',
       product_name: 'Vehicle Prime Financing',
       purpose: 'Vehicle purchase',
       principal_minor: 28_500_00,
@@ -592,6 +594,7 @@ export function buildMockLoans(): Loan[] {
     {
       loan_id: '43bc3b3a-7e3d-4c8c-9c17-8d6c5b1d3003',
       borrower_citizen_id: MOCK_CITIZEN_ID,
+      product_id: 'micro',
       product_name: 'Starter Bridge Credit',
       purpose: 'Account opening bridge',
       principal_minor: 3_500_00,

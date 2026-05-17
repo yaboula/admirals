@@ -10,6 +10,8 @@ import { normalizeIban } from './transfers'
 const accountOpenSchema = z.object({
   initial_balance: z.number().int().nonnegative().default(0),
   initial_savings: z.number().int().nonnegative().default(0),
+  owner_type: z.enum(['personal']).default('personal'),
+  account_class: z.enum(['checking', 'savings', 'business_treasury', 'shared']).default('checking'),
 })
 
 const accountIbanMutationSchema = z.object({
@@ -30,6 +32,8 @@ export interface AccountOpenResponse {
   account_id: string
   iban: string
   citizen_id: string
+  owner_type?: Account['owner_type']
+  account_class?: Account['account_class']
 }
 
 export interface AccountStatusResponse {

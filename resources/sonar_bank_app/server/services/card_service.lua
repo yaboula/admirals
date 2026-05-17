@@ -26,33 +26,46 @@ local AccountsRepo = BankApp.repos.accounts
 local TransactionsRepo = BankApp.repos.transactions
 local DB = BankApp.lib.db
 local UUID = BankApp.lib.uuid
+local Config = BankApp.Config
+local Economy = BankApp.lib.economy
 
-local CARD_PRODUCTS = {
-  classic = {
-    card_kind = 'debit',
-    default_design_id = 'noir',
-    daily_limit_minor = 200000,
-    monthly_limit_minor = 2500000,
-    issue_fee_minor = 2500,
-    designs = { noir = true, sonar_signature = true },
-  },
-  premium = {
-    card_kind = 'credit',
-    default_design_id = 'sonar_signature',
-    daily_limit_minor = 1000000,
-    monthly_limit_minor = 10000000,
-    issue_fee_minor = 15000,
-    designs = {
-      noir = true,
-      sonar_signature = true,
-      aurora = true,
-      sunset = true,
-      titanium = true,
-      deep_space = true,
-      emerald_vault = true,
-    },
-  },
-}
+-- Build the products catalog from config.lua, normalizing the `designs` array
+-- to a set for O(1) whitelist checks (designs may be declared as either an
+-- array of strings or a set { id = true } depending on edit style).
+local CARD_PRODUCTS = {}
+do
+  local cfg = (Config.Cards and Config.Cards.Products) or {}
+  for product_id, spec in pairs(cfg) do
+    local designs_set = {}
+    if type(spec.designs) == 'table' then
+      for k, v in pairs(spec.designs) do
+        if type(k) == 'number' and type(v) == 'string' then
+          designs_set[v] = true                       -- array form
+        elseif type(k) == 'string' and v then
+          designs_set[k] = true                       -- set form
+        end
+      end
+    end
+    CARD_PRODUCTS[product_id] = {
+      card_kind           = spec.card_kind,
+      default_design_id   = spec.default_design_id,
+      daily_limit_minor   = tonumber(spec.daily_limit_minor)   or 0,
+      monthly_limit_minor = tonumber(spec.monthly_limit_minor) or 0,
+      issue_fee_minor     = tonumber(spec.issue_fee_minor)     or 0,
+      designs             = designs_set,
+      label               = spec.label,
+      description         = spec.description,
+    }
+  end
+  -- Defensive fallback if config block is missing entirely
+  if not CARD_PRODUCTS.classic then
+    CARD_PRODUCTS.classic = {
+      card_kind = 'debit', default_design_id = 'noir',
+      daily_limit_minor = 200000, monthly_limit_minor = 2500000,
+      issue_fee_minor = 2500, designs = { noir = true, sonar_signature = true },
+    }
+  end
+end
 
 local function normalize_card_product(card_type)
   if card_type == 'premium' or card_type == 'credit' then return 'premium' end
@@ -88,6 +101,12 @@ local function hash_pin(pin_plain, citizen_id, card_id_or_zero)
   return HMAC.SHA256(payload)
 end
 
+--- HashPin — exposed for the F06 ATM PIN verification flow (`atm_service.lua`).
+--- Uses the same HMAC algorithm as issuance + ChangePin so hashes match.
+function S.HashPin(pin_plain, citizen_id, card_id_or_zero)
+  return hash_pin(pin_plain, citizen_id, card_id_or_zero)
+end
+
 function S.ListSelf(citizen_id)
   if not Validators.IsValidCitizenId(citizen_id) then
     return nil, Errors.New('INVALID_CITIZEN_ID')
@@ -96,6 +115,13 @@ function S.ListSelf(citizen_id)
 end
 
 function S.Issue(ctx)
+  -- Feature gate: server can disable card issuance globally.
+  local Features = BankApp.lib.features
+  if Features and Features.Require then
+    local feat_err = Features.Require('cards_issue')
+    if feat_err then return { ok = false, error = feat_err } end
+  end
+
   local norm_iban = Validators.NormalizeIBAN(ctx.account_iban)
   if not norm_iban then return { ok = false, error = Errors.New('INVALID_IBAN') } end
   if type(ctx.pin) ~= 'string' or #ctx.pin < 4 or #ctx.pin > 8 or not ctx.pin:match('^[0-9]+$') then
@@ -162,9 +188,12 @@ function S.Issue(ctx)
     return { ok = false, error = Errors.New('ACCOUNT_NOT_FOUND') }
   end
   local available_minor = tonumber(account.balance_minor) or 0
-  if available_minor < product.issue_fee_minor then
+  -- Total issue fee = product baseline + global Economy override (banker-tunable).
+  local extra_fee = Economy.CardIssueExtraFee() or 0
+  local total_fee_minor = (product.issue_fee_minor or 0) + extra_fee
+  if available_minor < total_fee_minor then
     if idem_acquired then Idempotency.Orphan(ctx.idempotency_key) end
-    return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { requested = product.issue_fee_minor, available = available_minor }) }
+    return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { requested = total_fee_minor, available = available_minor }) }
   end
 
   local masked = generate_masked_number()
@@ -182,14 +211,17 @@ function S.Issue(ctx)
   })
   local ts = os.time() * 1000
   local txn_id = UUID.V4()
+  local fee_reason = extra_fee > 0
+    and ('SONAR %s card issue fee (+%d minor)'):format(product_key, extra_fee)
+    or  ('SONAR %s card issue fee'):format(product_key)
   local ok, tx_err = DB.Transaction({
-    AccountsRepo.BuildDebitBalanceQuery(norm_iban, product.issue_fee_minor),
+    AccountsRepo.BuildDebitBalanceQuery(norm_iban, total_fee_minor),
     insert_query,
     TransactionsRepo.BuildSingleDebitQuery({
       iban = norm_iban,
-      amount_minor = product.issue_fee_minor,
+      amount_minor = total_fee_minor,
       category = 'expense',
-      reason = ('SONAR %s card issue fee'):format(product_key),
+      reason = fee_reason,
       txn_id = txn_id,
       timestamp_ms = ts,
       idempotency_key = ctx.idempotency_key or txn_id,
@@ -211,13 +243,22 @@ function S.Issue(ctx)
       masked_number     = masked,
       card_type         = product_key,
       design_id         = design_id,
-      issue_fee_minor   = product.issue_fee_minor,
+      issue_fee_minor   = total_fee_minor,
+      base_fee_minor    = product.issue_fee_minor,
+      extra_fee_minor   = extra_fee,
       spend_limit_minor = daily_limit_minor,
       monthly_limit_minor = product.monthly_limit_minor,
       fee_txn_id        = txn_id,
     },
   })
-  local result = { card_id = card_id, masked_number = masked, card_type = product_key, design_id = design_id, issue_fee_minor = product.issue_fee_minor }
+  local result = {
+    card_id = card_id,
+    masked_number = masked,
+    card_type = product_key,
+    design_id = design_id,
+    issue_fee_minor = total_fee_minor,
+    extra_fee_minor = extra_fee,
+  }
   if idem_acquired then Idempotency.Commit(ctx.idempotency_key, result) end
   invalidate_bootstrap(owner_cid)
   return { ok = true, data = result }

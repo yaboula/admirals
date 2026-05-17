@@ -29,10 +29,11 @@ local DB = BankApp.lib.db
 local UUID = BankApp.lib.uuid
 
 local SQL_LIST_BY_CITIZEN = [[
-SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id,
+SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id, loan_ba.iban AS deposit_iban,
        CAST(ROUND(l.amount_principal * 100) AS SIGNED) AS principal_minor,
        CAST(ROUND(l.interest_rate_pct * 100) AS SIGNED) AS interest_bps,
        l.term_months * 30 AS term_days,
+       l.loan_kind AS product_id,
        CASE
          WHEN l.state = 'defaulted' AND l.reason_note = 'rejected' THEN 'rejected'
          ELSE l.state
@@ -43,6 +44,7 @@ SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id,
        l.created_at * 1000 AS created_ms
 FROM sonar_bank_loans l
 INNER JOIN sonar_accounts sa ON sa.id = l.borrower_account_id
+LEFT JOIN sonar_bank_accounts loan_ba ON loan_ba.id = l.bank_account_id
 WHERE sa.char_id = ?
   AND l.state IN ('requested','approved','active')
 ORDER BY l.created_at DESC
@@ -50,10 +52,11 @@ LIMIT ?
 ]]
 
 local SQL_GET = [[
-SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id,
+SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id, loan_ba.iban AS deposit_iban,
        CAST(ROUND(l.amount_principal * 100) AS SIGNED) AS principal_minor,
        CAST(ROUND(l.interest_rate_pct * 100) AS SIGNED) AS interest_bps,
        l.term_months * 30 AS term_days,
+       l.loan_kind AS product_id,
        CASE
          WHEN l.state = 'defaulted' AND l.reason_note = 'rejected' THEN 'rejected'
          ELSE l.state
@@ -64,6 +67,7 @@ SELECT l.id AS loan_id, sa.char_id AS borrower_citizen_id,
        l.created_at * 1000 AS created_ms
 FROM sonar_bank_loans l
 INNER JOIN sonar_accounts sa ON sa.id = l.borrower_account_id
+LEFT JOIN sonar_bank_accounts loan_ba ON loan_ba.id = l.bank_account_id
 WHERE l.id = ?
 LIMIT 1
 ]]
@@ -78,10 +82,10 @@ VALUES (
   (SELECT ba.id
    FROM sonar_bank_accounts ba
    INNER JOIN sonar_accounts sa ON sa.id = ba.owner_account_id
-   WHERE sa.char_id = ? AND ba.closed_at IS NULL
+   WHERE sa.char_id = ? AND ba.iban = ? AND ba.closed_at IS NULL
    ORDER BY ba.created_at ASC
    LIMIT 1),
-  'requested', 'personal', (? / 100.0), (? / 100.0), (? / 100.0),
+  'requested', ?, (? / 100.0), (? / 100.0), (? / 100.0),
   GREATEST(1, CEIL(? / 30))
 )
 ]]
@@ -152,6 +156,13 @@ WHERE ba.iban = ?
 LIMIT 1
 ]]
 
+local SQL_UPDATE_RATE = [[
+UPDATE sonar_bank_loans
+SET interest_rate_pct = (? / 100.0),
+    updated_at = UNIX_TIMESTAMP()
+WHERE id = ? AND state = 'requested'
+]]
+
 function R.ListByCitizen(citizen_id, limit)
   return DB.Query(SQL_LIST_BY_CITIZEN, { citizen_id, limit or 16 })
 end
@@ -163,7 +174,8 @@ end
 function R.Insert(t)
   local loan_id = UUID.V4()
   local _, err = DB.Execute(SQL_INSERT, {
-    loan_id, t.borrower_citizen_id, t.borrower_citizen_id,
+    loan_id, t.borrower_citizen_id, t.borrower_citizen_id, t.deposit_iban,
+    t.product_id or 'personal',
     t.principal_minor, t.principal_minor, t.interest_bps, t.term_days,
   })
   if err then return nil, err end
@@ -201,6 +213,13 @@ function R.BuildInsertDisbursementQuery(loan_id, deposit_iban, amount_minor, tim
   return {
     query  = SQL_INSERT_DISBURSEMENT,
     values = { timestamp_ms, amount_minor, loan_id, deposit_iban },
+  }
+end
+
+function R.BuildUpdateRateQuery(loan_id, interest_bps)
+  return {
+    query  = SQL_UPDATE_RATE,
+    values = { interest_bps, loan_id },
   }
 end
 

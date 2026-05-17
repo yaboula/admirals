@@ -148,6 +148,61 @@ function R.SetDesign(card_id, owner_citizen_id, design_id)
   return DB.Execute(SQL_SET_DESIGN, { design_id, card_id, owner_citizen_id })
 end
 
+-- ---------------------------------------------------------------------------
+-- F06 ATM — PIN attempt counters + auth-time row fetch.
+-- ---------------------------------------------------------------------------
+
+local SQL_GET_FOR_AUTH = [[
+SELECT c.id AS card_id, sa.char_id AS owner_citizen_id,
+       ba.iban AS account_iban,
+       c.pin_hash, c.state,
+       c.pin_attempts_failed,
+       c.daily_limit, c.daily_used_today, c.daily_reset_at,
+       c.monthly_limit, c.monthly_used, c.monthly_reset_at
+FROM sonar_bank_physical_cards c
+INNER JOIN sonar_accounts sa      ON sa.id = c.holder_account_id
+INNER JOIN sonar_bank_accounts ba ON ba.id = c.bank_account_id
+WHERE c.id = ?
+LIMIT 1
+]]
+
+local SQL_INC_PIN_FAILS = [[
+UPDATE sonar_bank_physical_cards
+SET pin_attempts_failed = LEAST(255, pin_attempts_failed + 1)
+WHERE id = ?
+]]
+
+local SQL_RESET_PIN_FAILS = [[
+UPDATE sonar_bank_physical_cards
+SET pin_attempts_failed = 0
+WHERE id = ?
+]]
+
+local SQL_FREEZE_BY_ID = [[
+UPDATE sonar_bank_physical_cards
+SET state = 'frozen', frozen_at = UNIX_TIMESTAMP(), frozen_reason = ?
+WHERE id = ?
+]]
+
+--- GetForAuth — returns the row plus PIN/limits state needed by ATM auth.
+function R.GetForAuth(card_id)
+  return DB.QuerySingle(SQL_GET_FOR_AUTH, { card_id })
+end
+
+function R.IncrementPinFailCount(card_id)
+  return DB.Execute(SQL_INC_PIN_FAILS, { card_id })
+end
+
+function R.ResetPinFailCount(card_id)
+  return DB.Execute(SQL_RESET_PIN_FAILS, { card_id })
+end
+
+--- FreezeWithReason — internal-only freeze (no owner check); used when the
+--- ATM auth flow auto-freezes after N failed PIN attempts.
+function R.FreezeWithReason(card_id, reason)
+  return DB.Execute(SQL_FREEZE_BY_ID, { reason, card_id })
+end
+
 --- BuildSnapshotQuery — REQ-FE-001 bootstrap parallel.
 function R.BuildSnapshotQuery(citizen_id, limit)
   return {

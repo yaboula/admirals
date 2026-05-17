@@ -149,7 +149,8 @@ end
 local function open_bank_ui()
   if nui_focused then return end
   if not refresh_player_loaded() then return end
-  SendNUIMessage({ type = 'BANK_OPEN' })
+  print(('[%s] Opening bank UI, sending route=/'):format(PREFIX))
+  SendNUIMessage({ type = 'BANK_OPEN', route = '/' })
   SetNuiFocus(true, true)
   SetNuiFocusKeepInput(false)
   nui_focused = true
@@ -170,6 +171,48 @@ local function toggle_bank_ui()
   end
 end
 
+local function open_admin_ui()
+  if nui_focused then return end
+  if not refresh_player_loaded() then return end
+  print(('[%s] Opening admin UI, sending route=/sonaradmin'):format(PREFIX))
+  SendNUIMessage({ type = 'BANK_OPEN', route = '/sonaradmin' })
+  SetNuiFocus(true, true)
+  SetNuiFocusKeepInput(false)
+  nui_focused = true
+end
+
+local function open_banker_ui()
+  if nui_focused then return end
+  if not refresh_player_loaded() then return end
+  print(('[%s] Opening banker UI, sending route=/banker'):format(PREFIX))
+  SendNUIMessage({ type = 'BANK_OPEN', route = '/banker' })
+  SetNuiFocus(true, true)
+  SetNuiFocusKeepInput(false)
+  nui_focused = true
+end
+
+-- F06 — Physical ATM entry point. Triggered by `client/atm_interaction.lua`
+-- when the player chose "Use ATM" on a world prop (any target system or the
+-- proximity fallback). The optional payload carries terminal context so the
+-- BE atm:session callback can pin a terminal_id.
+local function open_atm_ui(payload)
+  if nui_focused then return end
+  if not refresh_player_loaded() then return end
+  local terminal = nil
+  if type(payload) == 'table' then
+    terminal = {
+      entity_net_id = payload.entity and NetworkGetNetworkIdFromEntity(payload.entity) or nil,
+      model_hash    = payload.model_hash,
+      coords        = payload.coords,
+    }
+  end
+  print(('[%s] Opening ATM UI, sending route=/atm'):format(PREFIX))
+  SendNUIMessage({ type = 'BANK_OPEN', route = '/atm', terminal = terminal })
+  SetNuiFocus(true, true)
+  SetNuiFocusKeepInput(false)
+  nui_focused = true
+end
+
 RegisterNUICallback('open', function(_, cb)
   open_bank_ui()
   cb({ ok = true, data = { focused = true } })
@@ -187,6 +230,10 @@ end)
 RegisterNetEvent(Config.ClientEvents.OPEN_UI, open_bank_ui)
 RegisterNetEvent(Config.ClientEvents.CLOSE_UI, close_bank_ui)
 RegisterNetEvent(Config.ClientEvents.TOGGLE_UI, toggle_bank_ui)
+RegisterNetEvent('sonar:bank:client:open_admin', open_admin_ui)
+RegisterNetEvent('sonar:bank:client:open_banker', open_banker_ui)
+-- F06 — physical ATM (ox_target / qb-target / qtarget / fallback) handoff.
+RegisterNetEvent(Config.ClientEvents.OPEN_ATM or 'sonar:bank:client:open_atm', open_atm_ui)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
   player_loaded = true
@@ -204,6 +251,24 @@ RegisterKeyMapping(
   Config.Commands.OPEN_BANK.key_mapping.mapper,
   Config.Commands.OPEN_BANK.key_mapping.default_key
 )
+
+RegisterCommand(Config.Commands.OPEN_ADMIN.name, open_admin_ui, false)
+RegisterKeyMapping(
+  Config.Commands.OPEN_ADMIN.name,
+  Config.Commands.OPEN_ADMIN.description,
+  Config.Commands.OPEN_ADMIN.key_mapping.mapper,
+  Config.Commands.OPEN_ADMIN.key_mapping.default_key
+)
+
+if Config.Commands.OPEN_BANKER then
+  RegisterCommand(Config.Commands.OPEN_BANKER.name, open_banker_ui, false)
+  RegisterKeyMapping(
+    Config.Commands.OPEN_BANKER.name,
+    Config.Commands.OPEN_BANKER.description,
+    Config.Commands.OPEN_BANKER.key_mapping.mapper,
+    Config.Commands.OPEN_BANKER.key_mapping.default_key
+  )
+end
 
 -- -----------------------------------------------------------------------------
 -- §5. Server-broadcast NetEvents → forward to NUI as messages.

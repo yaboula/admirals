@@ -1,10 +1,10 @@
-import { useMemo, useState, type ReactNode } from 'react'
+﻿import { useMemo, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
-import { AlertTriangle, CalendarClock, CircleDollarSign, Fingerprint, Gauge, LockKeyhole, Orbit, ShieldCheck, X, type LucideIcon } from 'lucide-react'
-import { useBootstrap, useLoanInstallmentsQuery, useLoanListQuery } from '@/data/queries'
-import type { Loan, LoanInstallment } from '@/data/contracts'
-import { Badge, Button, Input, Spinner } from '@/components/ui'
+import { AlertTriangle, ArrowRight, CalendarClock, CircleDollarSign, Fingerprint, Gauge, LockKeyhole, Orbit, ShieldCheck, Sparkles, X, type LucideIcon } from 'lucide-react'
+import { useBootstrap, useLoanInstallmentsQuery, useLoanListQuery, useLoanProductsQuery } from '@/data/queries'
+import type { Loan, LoanInstallment, LoanProduct } from '@/data/contracts'
+import { Badge, Button, Input, Select, Spinner } from '@/components/ui'
 import { useI18n } from '@/lib/i18n'
 import { maskMoneyDisplay } from '@/lib/privacy'
 import { cn } from '@/lib/utils'
@@ -17,12 +17,14 @@ export function Loans() {
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const loansQuery = useLoanListQuery()
   const bootstrapQuery = useBootstrap()
+  const productsQuery = useLoanProductsQuery()
   const loans: Loan[] = loansQuery.data?.items ?? []
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null)
   const [requestOpen, setRequestOpen] = useState(false)
   const [requestPrincipal, setRequestPrincipal] = useState('5000')
-  const [requestRate, setRequestRate] = useState('650')
+  const [requestProductId, setRequestProductId] = useState('personal')
   const [requestTermDays, setRequestTermDays] = useState('180')
+  const [requestAccountIban, setRequestAccountIban] = useState('')
   const [paymentLoanId, setPaymentLoanId] = useState<string | null>(null)
   const [paymentAmount, setPaymentAmount] = useState('')
   const requestLoanMutation = useRequestLoanMutation()
@@ -43,14 +45,16 @@ export function Loans() {
 
   const submitLoanRequest = async () => {
     const principal_minor = Math.round(Number(requestPrincipal) * 100)
-    const interest_bps = Math.round(Number(requestRate))
     const term_days = Math.round(Number(requestTermDays))
+    const fallbackLoanAccount = bootstrapQuery.data?.accounts.find((account, index) => account.status === 'active' && (account.account_class === 'checking' || account.account_class === 'business_treasury' || (!account.account_class && index === 0)))
+    const deposit_iban = requestAccountIban || fallbackLoanAccount?.iban || ''
     try {
-      await requestLoanMutation.mutateAsync({ principal_minor, interest_bps, term_days })
+      await requestLoanMutation.mutateAsync({ product_id: requestProductId, principal_minor, term_days, deposit_iban })
       setRequestOpen(false)
+      setRequestAccountIban('')
       toast.success('Loan requested', 'Your credit request was submitted for review.')
     } catch {
-      toast.warning('Loan request failed', 'Check the amount, rate and term before retrying.')
+      toast.warning('Loan request failed', 'Check the amount, product, term and account before retrying.')
     }
   }
 
@@ -96,7 +100,7 @@ export function Loans() {
               <div className="grid gap-2 sm:grid-cols-3">
                 <SignalPill icon={LockKeyhole} label={t('loans.mode')} value={t('loans.readOnly')} />
                 <SignalPill icon={Gauge} label={t('loans.weightedRate')} value={`${number(weightedRate, { maximumFractionDigits: 2 })}%`} />
-                <SignalPill icon={CalendarClock} label={t('loans.nextDue')} value={selectedLoan?.next_payment_due_ms ? dateTime(selectedLoan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : 'â€”'} />
+                <SignalPill icon={CalendarClock} label={t('loans.nextDue')} value={selectedLoan?.next_payment_due_ms ? dateTime(selectedLoan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : '—'} />
               </div>
             </div>
 
@@ -176,12 +180,20 @@ export function Loans() {
         )}
       </div>
       {requestOpen ? (
-        <LoanActionDialog title="Solicitar prestamo" onClose={() => setRequestOpen(false)}>
-          <Input label="Principal" type="number" value={requestPrincipal} onChange={(e) => setRequestPrincipal(e.currentTarget.value)} leftAdornment="$" />
-          <Input label="Interes bps" type="number" value={requestRate} onChange={(e) => setRequestRate(e.currentTarget.value)} />
-          <Input label="Plazo dias" type="number" value={requestTermDays} onChange={(e) => setRequestTermDays(e.currentTarget.value)} />
-          <Button loading={requestLoanMutation.isPending} onClick={submitLoanRequest}>Enviar solicitud</Button>
-        </LoanActionDialog>
+        <LoanRequestDialog
+          onClose={() => setRequestOpen(false)}
+          products={productsQuery.data?.items ?? []}
+          requestPrincipal={requestPrincipal}
+          setRequestPrincipal={setRequestPrincipal}
+          requestProductId={requestProductId}
+          setRequestProductId={setRequestProductId}
+          requestTermDays={requestTermDays}
+          setRequestTermDays={setRequestTermDays}
+          requestAccountIban={requestAccountIban}
+          setRequestAccountIban={setRequestAccountIban}
+          onSubmit={submitLoanRequest}
+          loading={requestLoanMutation.isPending}
+        />
       ) : null}
       {paymentLoanId ? (
         <LoanActionDialog title="Abonar cuota" onClose={() => setPaymentLoanId(null)}>
@@ -223,7 +235,7 @@ function CreditLens({ loan, streamerMode }: { loan: Loan | null; streamerMode: b
         <Orbit className="text-semantic-info-deep" size={28} strokeWidth={1.8} />
         <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">{t('loans.creditLens')}</p>
         <p className="mt-1 text-2xl font-semibold text-text-primary tactile-tabular-nums">{number(progress * 100, { maximumFractionDigits: 0 })}%</p>
-        <p className="mt-1 max-w-[15ch] truncate text-xs text-text-tertiary">{loan ? streamerMode ? maskMoneyDisplay() : money(loan.outstanding_minor / 100) : 'â€”'}</p>
+        <p className="mt-1 max-w-[15ch] truncate text-xs text-text-tertiary">{loan ? streamerMode ? maskMoneyDisplay() : money(loan.outstanding_minor / 100) : '—'}</p>
       </div>
     </div>
   )
@@ -240,7 +252,7 @@ function LoanRow({ loan, selected, onSelect, onPay, paymentPending }: { loan: Lo
           <p className="truncate text-sm font-semibold text-text-primary">{loan.product_name}</p>
           <Badge tone={loan.status === 'active' ? 'success' : loan.status === 'paid' ? 'neutral' : loan.status === 'defaulted' ? 'danger' : 'warning'} variant="soft" size="xs">{t(`loans.status.${loan.status}`)}</Badge>
         </div>
-        <p className="mt-1 truncate text-xs text-text-tertiary">{loan.purpose} Â· {loan.collateral_label ?? t('loans.unsecured')}</p>
+        <p className="mt-1 truncate text-xs text-text-tertiary">{loan.purpose} · {loan.collateral_label ?? t('loans.unsecured')}</p>
       </div>
       <div className="max-lg:hidden">
         <p className="text-right text-sm font-semibold text-text-primary tactile-tabular-nums">{streamerMode ? maskMoneyDisplay() : money(loan.outstanding_minor / 100)}</p>
@@ -252,7 +264,7 @@ function LoanRow({ loan, selected, onSelect, onPay, paymentPending }: { loan: Lo
       </div>
       <div className="text-right">
         <p className="text-sm font-semibold text-text-primary">{number(loan.interest_bps / 100, { maximumFractionDigits: 2 })}%</p>
-        <p className="mt-1 text-xs text-text-tertiary">{loan.next_payment_due_ms ? dateTime(loan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : 'â€”'}</p>
+        <p className="mt-1 text-xs text-text-tertiary">{loan.next_payment_due_ms ? dateTime(loan.next_payment_due_ms, { month: 'short', day: 'numeric' }) : '—'}</p>
       </div>
       <Button size="sm" variant="secondary" loading={paymentPending} disabled={loan.status !== 'active'} onClick={(event) => { event.stopPropagation(); onPay() }}>Abonar</Button>
     </div>
@@ -329,4 +341,428 @@ function buildRepaymentCurve(loan: Loan | null) {
     const outstanding = loan.principal_minor * Math.pow(1 - progress, 1.08)
     return { index, outstanding }
   })
+}
+
+function LoanRequestDialog({
+  onClose,
+  products,
+  requestPrincipal,
+  setRequestPrincipal,
+  requestProductId,
+  setRequestProductId,
+  requestTermDays,
+  setRequestTermDays,
+  requestAccountIban,
+  setRequestAccountIban,
+  onSubmit,
+  loading,
+}: {
+  onClose: () => void
+  products: LoanProduct[]
+  requestPrincipal: string
+  setRequestPrincipal: (v: string) => void
+  requestProductId: string
+  setRequestProductId: (v: string) => void
+  requestTermDays: string
+  setRequestTermDays: (v: string) => void
+  requestAccountIban: string
+  setRequestAccountIban: (v: string) => void
+  onSubmit: () => void
+  loading: boolean
+}) {
+  const { t, money, number } = useI18n()
+  const bootstrapQuery = useBootstrap()
+  const accounts = bootstrapQuery.data?.accounts.filter((acc, index) => acc.status === 'active' && (acc.account_class === 'checking' || acc.account_class === 'business_treasury' || (!acc.account_class && index === 0))) ?? []
+
+  // Auto-select first account if none selected
+  const selectedAccountIban = requestAccountIban || (accounts.length > 0 ? accounts[0].iban : '')
+
+  const selectedProduct = products.find((p) => p.id === requestProductId)
+  const principal = Number(requestPrincipal) * 100
+  const termDays = Number(requestTermDays)
+
+  // Calculate base rate based on term (shorter terms = lower rates)
+  const baseRate = selectedProduct ? calculateRateByTerm(selectedProduct.base_rate_bps, termDays) : 0
+  const monthlyRate = baseRate / 100 / 12
+  const months = Math.ceil(termDays / 30)
+  const monthlyPayment = months > 0 && monthlyRate > 0
+    ? principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1)
+    : principal / months
+  const totalCost = monthlyPayment * months
+  const totalInterest = totalCost - principal
+  const isTermValid = !selectedProduct || (termDays > 0 && termDays <= selectedProduct.max_term_days)
+  const isPrincipalValid = !selectedProduct || (principal >= selectedProduct.min_principal && principal <= selectedProduct.max_principal)
+  const canSubmit = selectedProduct && principal > 0 && termDays > 0 && isTermValid && isPrincipalValid && selectedAccountIban
+
+  // Generate term options based on product max_term_days
+  const termOptions = selectedProduct ? generateTermOptions(selectedProduct.max_term_days) : []
+
+  // Convert products to Select options
+  const productOptions = products.map((p) => ({
+    value: p.id,
+    label: `${p.name} — ${number(p.base_rate_bps / 100, { maximumFractionDigits: 2 })}% ${t('loans.request.tae')}`,
+  }))
+
+  // Convert accounts to Select options
+  const accountOptions = accounts.map((acc) => ({
+    value: acc.iban,
+    label: `${acc.account_class === 'business_treasury' ? 'Profesional' : 'Personal'} — ${acc.iban} - ${money(acc.balance_minor / 100)}`,
+  }))
+
+  // Convert term options to Select options
+  const termSelectOptions = termOptions.map((term) => ({
+    value: String(term),
+    label: `${term} ${t('loans.request.days')}`,
+  }))
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+      <div
+        className="w-full max-w-4xl rounded-[1.65rem] border"
+        style={{
+          background: 'var(--color-surface-card)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05),0_36px_90px_-50px_rgba(0,0,0,0.95),0_0_0_1px_var(--color-border-brand-subtle)',
+          borderColor: 'var(--color-border-subtle)',
+        }}
+      >
+        {/* Brand orange aura */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'var(--gradient-orange-aura-strong)', opacity: 0.55 }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 96% 0%, rgba(246,75,0,0.08), transparent 38%)',
+          }}
+        />
+
+        <div className="relative grid gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,1fr)]">
+          {/* ——— HERO COLUMN ———————————————————————————————————————————————————————— */}
+          <section
+            className="relative flex flex-col gap-4 border-b p-6 lg:border-b-0 lg:border-r lg:p-6"
+            style={{ borderColor: 'var(--color-border-subtle)' }}
+          >
+            <header className="flex items-start justify-between gap-3">
+              <div>
+                <div
+                  className="mb-2.5 inline-flex items-center gap-2 rounded-full border px-3 py-1.5"
+                  style={{
+                    borderColor: 'var(--color-border-brand-subtle)',
+                    background: 'var(--color-brand-signal-orange-subtle)',
+                  }}
+                >
+                  <CircleDollarSign size={13} strokeWidth={2} style={{ color: 'rgb(255, 147, 42)' }} />
+                  <span
+                    className="text-[9.5px] font-semibold uppercase tracking-[0.2em]"
+                    style={{ color: 'rgb(255, 147, 42)' }}
+                  >
+                    {t('loans.request.eyebrow')}
+                  </span>
+                </div>
+                <h2 className="text-[22px] font-semibold leading-[1.05] tracking-[-0.045em] text-text-primary">
+                  {t('loans.request.title')}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label={t('loans.request.close')}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-text-tertiary transition-colors hover:text-text-primary"
+                style={{
+                  borderColor: 'var(--color-border-subtle)',
+                  background: 'rgba(0,0,0,0.45)',
+                }}
+              >
+                <X size={15} strokeWidth={2} />
+              </button>
+            </header>
+
+            {selectedProduct && (
+              <>
+                <div className="relative">
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 rounded-[1.5rem]"
+                    style={{
+                      background:
+                        'radial-gradient(ellipse 80% 80% at 50% 38%, rgba(246,75,0,0.08), rgba(0,0,0,0.5) 70%)',
+                      boxShadow: 'inset 0 0 0 1px var(--color-border-subtle)',
+                    }}
+                  />
+                  <div className="relative flex flex-col gap-2.5 px-2 py-5">
+                    <div className="rounded-[1.4rem] border bg-white/[0.02] p-6" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <p className="text-sm font-semibold text-text-primary">{selectedProduct.name}</p>
+                          <p className="mt-0.5 text-xs text-text-secondary">
+                            {selectedProduct.collateral_required ? t('loans.request.collateralRequired') : t('loans.request.noCollateral')}
+                          </p>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.16] bg-black/30 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">
+                          <ShieldCheck size={10} />
+                          {t('loans.request.verified')}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">{t('loans.request.baseRate')}</p>
+                          <p className="mt-1 text-[16px] font-bold tactile-tabular-nums" style={{ color: 'rgb(255, 147, 42)' }}>
+                            {number(selectedProduct.base_rate_bps / 100, { maximumFractionDigits: 2 })}%
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">{t('loans.request.maxTerm')}</p>
+                          <p className="mt-1 text-[16px] font-bold text-text-primary tactile-tabular-nums">
+                            {selectedProduct.max_term_days} {t('loans.request.days')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-text-tertiary mb-2">{t('loans.request.amountRange')}</p>
+                        <div className="flex items-center gap-2 text-[13px]">
+                          <span className="font-semibold text-text-primary tactile-tabular-nums">{money(selectedProduct.min_principal / 100)}</span>
+                          <ArrowRight size={12} className="text-text-quaternary" />
+                          <span className="font-semibold text-text-primary tactile-tabular-nums">{money(selectedProduct.max_principal / 100)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {canSubmit && (
+                  <CostBlock
+                    monthlyPayment={money(monthlyPayment / 100)}
+                    totalCost={money(totalCost / 100)}
+                    totalInterest={money(totalInterest / 100)}
+                    months={months}
+                  />
+                )}
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <InfoRow
+                    icon={<Gauge size={13} className="text-text-tertiary" strokeWidth={2} />}
+                    label={t('loans.request.estimatedRate')}
+                    value={`${number(baseRate / 100, { maximumFractionDigits: 2 })}%`}
+                  />
+                  <InfoRow
+                    icon={<CalendarClock size={13} className="text-text-tertiary" strokeWidth={2} />}
+                    label={t('loans.request.term')}
+                    value={`${termDays} ${t('loans.request.days')}`}
+                  />
+                </div>
+              </>
+            )}
+          </section>
+
+          {/* ——— FLOW COLUMN ——————————————————————————————————————————————————————— */}
+          <section className="flex flex-col gap-4 p-6">
+            <Step number="01" label={t('loans.request.step01')} value={selectedProduct?.name}>
+              <Select
+                value={requestProductId}
+                onChange={(value) => setRequestProductId(value)}
+                selectSize="md"
+                options={productOptions}
+                placeholder={t('loans.request.selectProduct')}
+              />
+            </Step>
+
+            <Step number="02" label={t('loans.request.step02')} value={principal > 0 ? money(principal / 100) : undefined}>
+              <Input
+                type="number"
+                value={requestPrincipal}
+                onChange={(e) => setRequestPrincipal(e.currentTarget.value)}
+                leftAdornment="$"
+                hint={selectedProduct ? `${money(selectedProduct.min_principal / 100)} - ${money(selectedProduct.max_principal / 100)}` : undefined}
+                error={!isPrincipalValid ? t('loans.request.outOfRange') : undefined}
+              />
+            </Step>
+
+            <Step number="03" label="Select Account" value={selectedAccountIban ? selectedAccountIban.substring(0, 8) + '...' : undefined}>
+              <Select
+                value={selectedAccountIban}
+                onChange={(value) => setRequestAccountIban(value)}
+                selectSize="md"
+                options={accountOptions}
+                placeholder="Select account"
+              />
+            </Step>
+
+            <Step number="04" label="Term" value={termDays > 0 ? `${termDays} days` : undefined}>
+              <Select
+                value={requestTermDays}
+                onChange={(value) => setRequestTermDays(value)}
+                selectSize="md"
+                options={termSelectOptions}
+                placeholder={t('loans.request.enterTerm')}
+              />
+            </Step>
+
+            <div className="mt-auto space-y-2">
+              <button
+                type="button"
+                onClick={onSubmit}
+                disabled={!canSubmit || loading}
+                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1rem] px-5 py-3 text-[14px] font-bold tracking-[-0.01em] transition-all duration-200"
+                style={{
+                  background: canSubmit ? 'var(--gradient-primary)' : 'rgba(0,0,0,0.55)',
+                  color: canSubmit ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                  border: '1px solid',
+                  borderColor: canSubmit ? 'var(--color-border-brand-strong)' : 'var(--color-border-subtle)',
+                  boxShadow: canSubmit ? '0 18px 40px -22px rgba(246,75,0,0.78), inset 0 1px 0 rgba(255,255,255,0.18)' : 'none',
+                }}
+              >
+                {canSubmit ? (
+                  <span aria-hidden className="absolute inset-0 -translate-x-full bg-[linear-gradient(115deg,transparent_30%,rgba(255,255,255,0.22)_50%,transparent_70%)] transition-transform duration-700 group-hover:translate-x-full" />
+                ) : null}
+                {loading ? (
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : (
+                  <Sparkles size={15} strokeWidth={2} />
+                )}
+                <span className="relative">
+                  {loading ? t('loans.request.processing') : t('loans.request.submit')}
+                </span>
+                {!loading && canSubmit ? <ArrowRight size={14} strokeWidth={2.2} className="relative" /> : null}
+              </button>
+              {!canSubmit && !loading && (
+                <p className="text-center text-[10.5px] leading-relaxed text-text-quaternary">
+                  {t('loans.request.completeFields')}
+                </p>
+              )}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function generateTermOptions(maxTermDays: number): number[] {
+  const options: number[] = []
+  const step = maxTermDays >= 360 ? 90 : maxTermDays >= 180 ? 60 : 30
+
+  for (let term = 30; term <= maxTermDays; term += step) {
+    options.push(term)
+  }
+
+  // Always include the max_term_days as the last option
+  if (options[options.length - 1] !== maxTermDays) {
+    options.push(maxTermDays)
+  }
+
+  return options
+}
+
+// Calculate rate based on term: shorter terms get lower rates, longer terms get higher rates
+function calculateRateByTerm(baseRateBps: number, termDays: number): number {
+  if (termDays <= 0) return baseRateBps
+
+  // Rate adjustment: -0.5% for 30 days, 0% for 60-90 days, +0.5% for 180 days, +1% for 360 days
+  let adjustment = 0
+  if (termDays <= 30) {
+    adjustment = -50 // -0.5%
+  } else if (termDays <= 90) {
+    adjustment = 0 // base rate
+  } else if (termDays <= 180) {
+    adjustment = 50 // +0.5%
+  } else {
+    adjustment = 100 // +1%
+  }
+
+  return Math.max(100, baseRateBps + adjustment) // Minimum 1% rate
+}
+
+function Step({ number, label, value, children }: { number: string; label: string; value?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="flex items-baseline gap-2.5">
+          <span
+            className="text-[10px] font-bold tracking-[0.18em]"
+            style={{ color: 'rgb(255, 147, 42)', opacity: 0.85 }}
+          >
+            {number}
+          </span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-text-secondary">{label}</span>
+        </div>
+        {value ? <span className="truncate text-[11px] font-medium text-text-tertiary">{value}</span> : null}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function CostBlock({
+  monthlyPayment,
+  totalCost,
+  totalInterest,
+  months,
+}: {
+  monthlyPayment: string
+  totalCost: string
+  totalInterest: string
+  months: number
+}) {
+  const { t } = useI18n()
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-[1.1rem] border p-4"
+      style={{
+        borderColor: 'var(--color-border-brand-subtle)',
+        background:
+          'linear-gradient(135deg, rgba(246,75,0,0.10), rgba(246,75,0,0.02) 60%, rgba(0,0,0,0.55))',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
+    >
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
+        {t('loans.request.installments')}
+      </span>
+      <div
+        className="mt-1.5 text-[26px] font-bold leading-none tracking-[-0.04em] tactile-tabular-nums"
+        style={{ color: 'rgb(255, 147, 42)' }}
+      >
+        {monthlyPayment}
+        <span className="text-[13px] font-normal text-text-tertiary ml-1">{t('loans.request.month')}</span>
+      </div>
+      <div className="mt-2.5 space-y-1.5 text-[11px] tactile-tabular-nums">
+        <div className="flex items-center justify-between">
+          <span className="text-text-tertiary">{t('loans.request.totalCost')}</span>
+          <span className="font-semibold text-text-primary">{totalCost}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-text-tertiary">{t('loans.request.totalInterest')}</span>
+          <span className="font-semibold text-text-semantic-info-deep">{totalInterest}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-text-tertiary">{t('loans.request.installments')}</span>
+          <span className="font-semibold text-text-primary">{months} {t('loans.request.months')}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 rounded-[0.95rem] border px-3 py-2"
+      style={{
+        borderColor: 'var(--color-border-subtle)',
+        background: 'rgba(0,0,0,0.35)',
+      }}
+    >
+      <div className="flex items-center gap-2">
+        {icon}
+        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">{label}</span>
+      </div>
+      <span className="text-[12px] font-semibold tactile-tabular-nums text-text-primary">
+        {value}
+      </span>
+    </div>
+  )
 }

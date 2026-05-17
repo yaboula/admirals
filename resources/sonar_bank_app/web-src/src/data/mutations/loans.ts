@@ -8,12 +8,15 @@ import { useBankMutation } from '@/lib/bankQuery'
 
 const LOAN_REQUEST_EVENT = 'sonar:bank:loan:request'
 const LOAN_PAYMENT_EVENT = 'sonar:bank:loan:makePayment'
+const LOAN_APPROVE_EVENT = 'sonar:bank:loan:approve'
+const LOAN_REJECT_EVENT = 'sonar:bank:loan:reject'
 const IBAN_RE = /^[A-Z]{2}[0-9A-Z\s-]{10,34}$/
 
 export const loanRequestSchema = z.object({
+  product_id: z.string().min(1),
   principal_minor: z.number().int().positive(),
-  interest_bps: z.number().int().min(0).max(50_000),
   term_days: z.number().int().min(1).max(3_650),
+  deposit_iban: z.string().trim().toUpperCase().regex(IBAN_RE, 'INVALID_IBAN'),
 })
 
 export const loanPaymentSchema = z.object({
@@ -22,8 +25,21 @@ export const loanPaymentSchema = z.object({
   amount_minor: z.number().int().positive(),
 })
 
+export const loanApproveSchema = z.object({
+  loan_id: z.string().uuid(),
+  deposit_iban: z.string().trim().toUpperCase().regex(IBAN_RE, 'INVALID_IBAN'),
+  reason: z.string().optional(),
+})
+
+export const loanRejectSchema = z.object({
+  loan_id: z.string().uuid(),
+  reason: z.string().optional(),
+})
+
 export type LoanRequestArgs = z.input<typeof loanRequestSchema>
 export type LoanPaymentArgs = z.input<typeof loanPaymentSchema>
+export type LoanApproveArgs = z.input<typeof loanApproveSchema>
+export type LoanRejectArgs = z.input<typeof loanRejectSchema>
 
 type LoanPaymentContext = {
   previousLoans?: LoanListResponse
@@ -107,6 +123,52 @@ export function useMakeLoanPaymentMutation() {
     mutateAsync: async (input: LoanPaymentArgs) => {
       const parsed = loanPaymentSchema.safeParse(input)
       if (!parsed.success) throw validationError('Loan payment contains invalid fields', parsed.error)
+      return mutation.mutateAsync(parsed.data)
+    },
+  }
+}
+
+export function useApproveLoanMutation() {
+  const qc = useQueryClient()
+  const mutation = useBankMutation<unknown, LoanApproveArgs>(
+    LOAN_APPROVE_EVENT,
+    {
+      onSuccess: () => {
+        void qc.invalidateQueries({ queryKey: queryKeys.loans.list() })
+        void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      },
+    },
+    { idempotency: createBankOperationIds },
+  )
+
+  return {
+    ...mutation,
+    mutateAsync: async (input: LoanApproveArgs) => {
+      const parsed = loanApproveSchema.safeParse(input)
+      if (!parsed.success) throw validationError('Loan approve contains invalid fields', parsed.error)
+      return mutation.mutateAsync(parsed.data)
+    },
+  }
+}
+
+export function useRejectLoanMutation() {
+  const qc = useQueryClient()
+  const mutation = useBankMutation<unknown, LoanRejectArgs>(
+    LOAN_REJECT_EVENT,
+    {
+      onSuccess: () => {
+        void qc.invalidateQueries({ queryKey: queryKeys.loans.list() })
+        void qc.invalidateQueries({ queryKey: queryKeys.bootstrap() })
+      },
+    },
+    { idempotency: createBankOperationIds },
+  )
+
+  return {
+    ...mutation,
+    mutateAsync: async (input: LoanRejectArgs) => {
+      const parsed = loanRejectSchema.safeParse(input)
+      if (!parsed.success) throw validationError('Loan reject contains invalid fields', parsed.error)
       return mutation.mutateAsync(parsed.data)
     },
   }

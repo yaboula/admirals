@@ -28,7 +28,7 @@ local UUID = BankApp.lib.uuid
 -- -----------------------------------------------------------------------------
 
 local SQL_SELECT_BY_IBAN = [[
-SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+SELECT a.id AS account_id, a.iban, a.owner_type, a.account_class, sa.char_id AS owner_citizen_id,
        COALESCE(
          (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
           FROM sonar_bank_account_joints j
@@ -52,7 +52,7 @@ LIMIT 1
 ]]
 
 local SQL_SELECT_BY_ID = [[
-SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+SELECT a.id AS account_id, a.iban, a.owner_type, a.account_class, sa.char_id AS owner_citizen_id,
        COALESCE(
          (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
           FROM sonar_bank_account_joints j
@@ -76,7 +76,7 @@ LIMIT 1
 ]]
 
 local SQL_LIST_BY_CITIZEN = [[
-SELECT a.id AS account_id, a.iban, sa.char_id AS owner_citizen_id,
+SELECT a.id AS account_id, a.iban, a.owner_type, a.account_class, sa.char_id AS owner_citizen_id,
        COALESCE(
          (SELECT JSON_ARRAYAGG(j.joint_citizen_id)
           FROM sonar_bank_account_joints j
@@ -149,6 +149,54 @@ ORDER BY updated_at DESC
 LIMIT 1
 ]]
 
+local SQL_SELECT_EXISTING_BY_CLASS = [[
+SELECT a.id, a.iban
+FROM sonar_bank_accounts a
+INNER JOIN sonar_accounts sa ON sa.id = a.owner_account_id
+WHERE sa.char_id = ?
+  AND a.owner_type = ?
+  AND a.account_class = ?
+  AND a.closed_at IS NULL
+LIMIT 1
+]]
+
+local SQL_SELECT_PENDING_PROFESSIONAL_APPROVAL = [[
+SELECT id AS approval_id, citizen_id, account_class, state, note, requested_at * 1000 AS requested_ms
+FROM sonar_bank_account_approvals
+WHERE citizen_id = ? AND account_class = 'business_treasury' AND state = 'pending'
+ORDER BY requested_at DESC
+LIMIT 1
+]]
+
+local SQL_LIST_PROFESSIONAL_APPROVALS = [[
+SELECT id AS approval_id, citizen_id, account_class, state, note, decision_note, decided_by_citizen_id,
+       created_account_id, created_iban, requested_at * 1000 AS requested_ms, decided_at * 1000 AS decided_ms
+FROM sonar_bank_account_approvals
+WHERE state = 'pending'
+ORDER BY requested_at ASC
+LIMIT ?
+]]
+
+local SQL_GET_PROFESSIONAL_APPROVAL = [[
+SELECT id AS approval_id, citizen_id, account_class, state, note, decision_note, decided_by_citizen_id,
+       created_account_id, created_iban, requested_at * 1000 AS requested_ms, decided_at * 1000 AS decided_ms
+FROM sonar_bank_account_approvals
+WHERE id = ?
+LIMIT 1
+]]
+
+local SQL_INSERT_PROFESSIONAL_APPROVAL = [[
+INSERT INTO sonar_bank_account_approvals
+  (id, citizen_id, account_class, state, note, requested_at)
+VALUES (?, ?, 'business_treasury', 'pending', ?, UNIX_TIMESTAMP())
+]]
+
+local SQL_DECIDE_PROFESSIONAL_APPROVAL = [[
+UPDATE sonar_bank_account_approvals
+SET state = ?, decision_note = ?, decided_by_citizen_id = ?, created_account_id = ?, created_iban = ?, decided_at = UNIX_TIMESTAMP()
+WHERE id = ? AND state = 'pending'
+]]
+
 --- Insert — returns insert_id.
 ---@param iban string
 ---@param owner_citizen_id string
@@ -161,18 +209,59 @@ function R.Insert(iban, owner_citizen_id, opts)
   if not owner or not owner.id then
     return nil, Errors.New('ACCOUNT_NOT_FOUND', { reason = 'owner sonar account not found', citizen_id = owner_citizen_id })
   end
+  local owner_type = opts.owner_type or 'personal'
+  local account_class = opts.account_class or 'checking'
+  local existing, existing_err = DB.QuerySingle(SQL_SELECT_EXISTING_BY_CLASS, { owner_citizen_id, owner_type, account_class })
+  if existing_err then return nil, existing_err end
+  if existing and existing.id then
+    return nil, Errors.New('VALIDATION_FAILED', { reason = 'account class already exists for citizen', owner_type = owner_type, account_class = account_class, iban = existing.iban })
+  end
   local account_id = UUID.V4()
   local _, err = DB.Execute(SQL_INSERT, {
     account_id,
     iban,
-    opts.owner_type or 'personal',
-    opts.account_class or 'checking',
+    owner_type,
+    account_class,
     owner.id,
     opts.initial_balance or 0,
     opts.initial_savings or 0,
   })
   if err then return nil, err end
   return account_id, nil
+end
+
+function R.GetActiveByClass(owner_citizen_id, owner_type, account_class)
+  return DB.QuerySingle(SQL_SELECT_EXISTING_BY_CLASS, { owner_citizen_id, owner_type or 'personal', account_class })
+end
+
+function R.GetPendingProfessionalApproval(citizen_id)
+  return DB.QuerySingle(SQL_SELECT_PENDING_PROFESSIONAL_APPROVAL, { citizen_id })
+end
+
+function R.ListProfessionalApprovals(limit)
+  return DB.Query(SQL_LIST_PROFESSIONAL_APPROVALS, { limit or 50 })
+end
+
+function R.GetProfessionalApproval(approval_id)
+  return DB.QuerySingle(SQL_GET_PROFESSIONAL_APPROVAL, { approval_id })
+end
+
+function R.CreateProfessionalApproval(citizen_id, note)
+  local approval_id = UUID.V4()
+  local _, err = DB.Execute(SQL_INSERT_PROFESSIONAL_APPROVAL, { approval_id, citizen_id, note })
+  if err then return nil, err end
+  return approval_id, nil
+end
+
+function R.DecideProfessionalApproval(params)
+  return DB.Execute(SQL_DECIDE_PROFESSIONAL_APPROVAL, {
+    params.state,
+    params.decision_note,
+    params.decided_by_citizen_id,
+    params.created_account_id,
+    params.created_iban,
+    params.approval_id,
+  })
 end
 
 -- -----------------------------------------------------------------------------
