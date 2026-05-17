@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+﻿import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
@@ -13,10 +13,12 @@ import {
   Send,
   Settings2,
   ShieldCheck,
+  Users,
   Wallet,
+  X,
 } from 'lucide-react'
 import { Button, Card, CardEyebrow, CardTitle, Input, Spinner } from '@/components/ui'
-import { accountMutationPayload, kycSubmitPayload, useFreezeAccountMutation, useOpenAccountMutation, useSavingsTransferMutation, useSubmitKycMutation, useUnfreezeAccountMutation } from '@/data/mutations'
+import { accountMutationPayload, kycSubmitPayload, useFreezeAccountMutation, useOpenAccountMutation, useRequestProfessionalAccountMutation, useSavingsTransferMutation, useSubmitKycMutation, useUnfreezeAccountMutation } from '@/data/mutations'
 import { JointOwnersPanel } from './accounts/JointOwnersPanel'
 import { useBootstrap } from '@/data/queries'
 import type { Account } from '@/data/contracts'
@@ -29,13 +31,17 @@ import { usePrivacyMode } from '@/stores/privacy'
 import { toast } from '@/stores/toast'
 import { createBankOperationIds } from '@/lib/bankIdempotency'
 
+type AccountProductClass = 'checking' | 'savings' | 'business_treasury' | 'shared'
+
 export function Accounts() {
   const navigate = useNavigate()
   const { t } = useI18n()
   const { data, isLoading, isError, error } = useBootstrap()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [accountDialogOpen, setAccountDialogOpen] = useState(false)
   const streamerMode = usePrivacyMode((s) => s.streamerMode)
   const openAccount = useOpenAccountMutation()
+  const requestProfessionalAccount = useRequestProfessionalAccountMutation()
   const freezeAccount = useFreezeAccountMutation()
   const unfreezeAccount = useUnfreezeAccountMutation()
   const submitKyc = useSubmitKycMutation()
@@ -54,10 +60,22 @@ export function Accounts() {
 
   const totals = useMemo(() => computeAccountTotals(accounts), [accounts])
 
-  const handleOpenAccount = async (): Promise<void> => {
+  const handleOpenAccount = async (accountClass: AccountProductClass): Promise<void> => {
     try {
-      await openAccount.mutateAsync({ initial_balance: 0, initial_savings: 0 })
+      if (accountClass === 'business_treasury') {
+        const result = await requestProfessionalAccount.mutateAsync({ note: 'professional_account_request' })
+        if (result.status === 'approved') {
+          toast.success(t('accounts.accountOpenedTitle'), t('accounts.accountOpenedBody'))
+          setAccountDialogOpen(false)
+          return
+        }
+        toast.success('Solicitud enviada', 'Tu cuenta profesional queda pendiente de revisión')
+        setAccountDialogOpen(false)
+        return
+      }
+      await openAccount.mutateAsync({ initial_balance: 0, initial_savings: 0, owner_type: 'personal', account_class: accountClass })
       toast.success(t('accounts.accountOpenedTitle'), t('accounts.accountOpenedBody'))
+      setAccountDialogOpen(false)
     } catch (err) {
       handleBankError(err)
     }
@@ -137,13 +155,14 @@ export function Accounts() {
         </section>
 
         <aside className="min-h-0 flex flex-col gap-3 2xl:gap-4 overflow-y-auto scrollbar-thin -mr-1 pr-1">
-          <SavingsPanel accounts={accounts} selected={selected} totals={totals} streamerMode={streamerMode} />
+          <SavingsPanel accounts={accounts} totals={totals} streamerMode={streamerMode} />
           <QuickActionsPanel
+            accounts={accounts}
             selected={selected}
-            busy={openAccount.isPending || freezeAccount.isPending || unfreezeAccount.isPending || submitKyc.isPending}
+            busy={openAccount.isPending || requestProfessionalAccount.isPending || freezeAccount.isPending || unfreezeAccount.isPending || submitKyc.isPending}
             onTransfer={() => navigate('/transferir')}
             onCards={() => navigate('/tarjetas')}
-            onOpenAccount={handleOpenAccount}
+            onCreateAccount={() => setAccountDialogOpen(true)}
             onToggleFreeze={handleToggleFreeze}
             onSubmitKyc={handleSubmitKyc}
           />
@@ -154,6 +173,14 @@ export function Accounts() {
           <VaultArchitecturePanel selected={selected} streamerMode={streamerMode} />
         </aside>
       </div>
+      {accountDialogOpen ? (
+        <AccountCreationDialog
+          accounts={accounts}
+          busy={openAccount.isPending || requestProfessionalAccount.isPending}
+          onClose={() => setAccountDialogOpen(false)}
+          onSubmit={handleOpenAccount}
+        />
+      ) : null}
     </motion.div>
   )
 }
@@ -436,7 +463,7 @@ function AccountDetail({
             <div className="mt-4 grid grid-cols-3 gap-2">
               <BalanceSignal label={t('accounts.totalInAccount')} value={streamerMode ? maskMoneyDisplay() : money(totalMinor / 100)} />
               <BalanceSignal label={t('accounts.reserveShort')} value={streamerMode ? maskMoneyDisplay() : money(account.savings_minor / 100)} accent />
-              <BalanceSignal label={t('accounts.reserveRatio')} value={streamerMode ? '••%' : `${Math.round(reserveRatio * 100)}%`} />
+              <BalanceSignal label={t('accounts.reserveRatio')} value={streamerMode ? 'â€¢â€¢%' : `${Math.round(reserveRatio * 100)}%`} />
             </div>
           </div>
           <div>
@@ -502,7 +529,7 @@ function BalanceSignal({ label, value, accent }: { label: string; value: string;
   )
 }
 
-function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: Account[]; selected: Account | undefined; totals: AccountTotals; streamerMode: boolean }) {
+function SavingsPanel({ accounts, totals, streamerMode }: { accounts: Account[]; totals: AccountTotals; streamerMode: boolean }) {
   const { money, t } = useI18n()
   const [amountText, setAmountText] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -510,28 +537,37 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
   const ratio = totals.totalMinor > 0 ? totals.savingsMinor / totals.totalMinor : 0
   const displayRatio = streamerMode ? 0.56 : ratio
   const amountMinor = parseAmountMinor(amountText)
-  const canMove = Boolean(selected && amountMinor > 0 && !savingsTransfer.isPending)
-  const availableAfterSave = selected ? Math.max(0, selected.balance_minor - Math.max(0, amountMinor)) : 0
-  const reserveAfterSave = selected ? selected.savings_minor + Math.max(0, amountMinor) : 0
+  
+  const personalAccount = accounts.find((acc, idx) => acc.account_class === 'checking' || (!acc.account_class && idx === 0))
+  const savingsAccount = accounts.find((acc) => acc.account_class === 'savings')
+  
+  const canMoveToReserve = Boolean(personalAccount && savingsAccount && amountMinor > 0 && !savingsTransfer.isPending)
+  const canMoveFromReserve = Boolean(personalAccount && savingsAccount && amountMinor > 0 && !savingsTransfer.isPending)
+  const availableAfterSave = personalAccount ? Math.max(0, personalAccount.balance_minor - Math.max(0, amountMinor)) : 0
+  const reserveAfterSave = savingsAccount ? savingsAccount.balance_minor + Math.max(0, amountMinor) : 0
 
   const moveSavings = async (direction: 'to_savings' | 'from_savings'): Promise<void> => {
-    if (!selected) return
+    if (!personalAccount || !savingsAccount) {
+      setError(t('accounts.savingsRequiresBothAccounts'))
+      return
+    }
     if (amountMinor <= 0) {
       setError(t('accounts.savingsInvalidAmount'))
       return
     }
-    if (direction === 'to_savings' && amountMinor > selected.balance_minor) {
+    if (direction === 'to_savings' && amountMinor > personalAccount.balance_minor) {
       setError(t('accounts.savingsInsufficientAvailable'))
       return
     }
-    if (direction === 'from_savings' && amountMinor > selected.savings_minor) {
+    if (direction === 'from_savings' && amountMinor > savingsAccount.balance_minor) {
       setError(t('accounts.savingsInsufficientSavings'))
       return
     }
     const ids = createBankOperationIds()
     try {
       await savingsTransfer.mutateAsync({
-        iban: selected.iban,
+        iban: personalAccount.iban,
+        savings_iban: savingsAccount.iban,
         amount_minor: amountMinor,
         direction,
         idempotency_key: ids.idempotencyKey,
@@ -595,8 +631,8 @@ function SavingsPanel({ accounts, selected, totals, streamerMode }: { accounts: 
             inputMode="decimal"
           />
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('to_savings')}>{t('accounts.moveToReserve')}</Button>
-            <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMove} onClick={() => moveSavings('from_savings')}>{t('accounts.returnToBalance')}</Button>
+            <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMoveToReserve} onClick={() => moveSavings('to_savings')}>{t('accounts.moveToReserve')}</Button>
+            <Button variant="secondary" size="sm" loading={savingsTransfer.isPending} disabled={!canMoveFromReserve} onClick={() => moveSavings('from_savings')}>{t('accounts.returnToBalance')}</Button>
           </div>
         </div>
       </div>
@@ -613,7 +649,7 @@ function PreviewMetric({ label, value }: { label: string; value: string }) {
   )
 }
 
-function QuickActionsPanel({ selected, busy, onTransfer, onCards, onOpenAccount, onToggleFreeze, onSubmitKyc }: { selected: Account | undefined; busy: boolean; onTransfer: () => void; onCards: () => void; onOpenAccount: () => void; onToggleFreeze: () => void; onSubmitKyc: () => void }) {
+function QuickActionsPanel({ selected, busy, onTransfer, onCards, onCreateAccount, onToggleFreeze, onSubmitKyc }: { accounts: Account[]; selected: Account | undefined; busy: boolean; onTransfer: () => void; onCards: () => void; onCreateAccount: () => void; onToggleFreeze: () => void; onSubmitKyc: () => void }) {
   const { t } = useI18n()
   const frozen = selected?.status === 'frozen' || selected?.frozen_flag === true || selected?.frozen_flag === 1
   return (
@@ -639,7 +675,7 @@ function QuickActionsPanel({ selected, busy, onTransfer, onCards, onOpenAccount,
         </Button>
         <div className="grid grid-cols-2 gap-2">
           <Button variant="secondary" size="sm" leftIcon={<CreditCard size={14} />} onClick={onCards} className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">{t('accounts.cards')}</Button>
-          <Button variant="secondary" size="sm" loading={busy} onClick={onOpenAccount} className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">{t('accounts.openAccount')}</Button>
+          <Button variant="secondary" size="sm" loading={busy} onClick={onCreateAccount} className="shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">{t('accounts.openAccount')}</Button>
         </div>
         <div className="rounded-2xl border border-white/[0.08] bg-black/[0.20] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -653,6 +689,135 @@ function QuickActionsPanel({ selected, busy, onTransfer, onCards, onOpenAccount,
         </div>
       </div>
     </Card>
+  )
+}
+
+function AccountCreationDialog({ accounts, busy, onClose, onSubmit }: { accounts: Account[]; busy: boolean; onClose: () => void; onSubmit: (accountClass: AccountProductClass) => void }) {
+  const { t } = useI18n()
+  const [selectedProduct, setSelectedProduct] = useState<AccountProductClass>('checking')
+  const products: Array<{ id: AccountProductClass; title: string; eyebrow: string; body: string; icon: ReactNode; action: string }> = [
+    {
+      id: 'checking',
+      title: t('accounts.createDialog.personalTitle'),
+      eyebrow: t('accounts.createDialog.personalEyebrow'),
+      body: t('accounts.createDialog.personalBody'),
+      icon: <Wallet size={18} strokeWidth={2} />,
+      action: t('accounts.createDialog.personalAction'),
+    },
+    {
+      id: 'savings',
+      title: t('accounts.createDialog.savingsTitle'),
+      eyebrow: t('accounts.createDialog.savingsEyebrow'),
+      body: t('accounts.createDialog.savingsBody'),
+      icon: <PiggyBank size={18} strokeWidth={2} />,
+      action: t('accounts.createDialog.savingsAction'),
+    },
+    {
+      id: 'business_treasury',
+      title: t('accounts.createDialog.professionalTitle'),
+      eyebrow: t('accounts.createDialog.professionalEyebrow'),
+      body: t('accounts.createDialog.professionalBody'),
+      icon: <Landmark size={18} strokeWidth={2} />,
+      action: t('accounts.createDialog.professionalAction'),
+    },
+    {
+      id: 'shared',
+      title: t('accounts.createDialog.sharedTitle'),
+      eyebrow: t('accounts.createDialog.sharedEyebrow'),
+      body: t('accounts.createDialog.sharedBody'),
+      icon: <Users size={18} strokeWidth={2} />,
+      action: t('accounts.createDialog.sharedAction'),
+    },
+  ]
+  const selected = products.find((product) => product.id === selectedProduct) ?? products[0]
+  const exists = (accountClass: AccountProductClass) => accounts.some((account, index) => account.account_class === accountClass || (accountClass === 'checking' && !account.account_class && index === 0))
+  const selectedExists = exists(selectedProduct)
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+      <motion.div
+        initial={{ opacity: 0, y: 12, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-4xl overflow-hidden rounded-[1.65rem] border border-white/10 bg-[var(--color-surface-card)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_36px_90px_-50px_rgba(0,0,0,0.95)]"
+      >
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,0.08),transparent_34%),radial-gradient(circle_at_92%_10%,rgba(82,205,134,0.10),transparent_32%)]" />
+        <div className="relative grid gap-0 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+          <section className="border-b border-white/10 p-5 lg:border-b-0 lg:border-r lg:p-6">
+            <header className="mb-5 flex items-start justify-between gap-3">
+              <div>
+                <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5">
+                  <Landmark size={13} strokeWidth={2} className="text-text-secondary" />
+                  <span className="text-[9.5px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">{t('accounts.createDialog.products')}</span>
+                </div>
+                <h2 className="text-[22px] font-semibold leading-[1.05] tracking-[-0.045em] text-text-primary">{t('accounts.createDialog.title')}</h2>
+                <p className="mt-2 max-w-md text-sm leading-5 text-text-secondary">{t('accounts.createDialog.description')}</p>
+              </div>
+              <button type="button" onClick={onClose} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/45 text-text-tertiary transition-colors hover:text-text-primary">
+                <X size={15} strokeWidth={2} />
+              </button>
+            </header>
+            <div className="grid gap-2">
+              {products.map((product) => {
+                const active = selectedProduct === product.id
+                const unavailable = exists(product.id)
+                return (
+                  <button
+                    key={product.id}
+                    type="button"
+                    disabled={unavailable}
+                    onClick={() => setSelectedProduct(product.id)}
+                    className={cn(
+                      'group flex items-center gap-3 rounded-2xl border p-3 text-left transition-all',
+                      active ? 'border-white/20 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]' : 'border-white/10 bg-white/[0.025] hover:bg-white/[0.055]',
+                      unavailable && 'cursor-not-allowed opacity-45',
+                    )}
+                  >
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/[0.24] text-text-secondary">{product.icon}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-text-primary">{product.title}</span>
+                      <span className="mt-0.5 block text-xs text-text-tertiary">{product.body}</span>
+                    </span>
+                    <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.035] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-text-tertiary">{unavailable ? t('accounts.active') : product.eyebrow}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+          <section className="flex flex-col justify-between gap-5 p-5 lg:p-6">
+            <div className="rounded-[1.4rem] border border-white/10 bg-black/[0.20] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] text-text-secondary">{selected.icon}</span>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-text-tertiary">{selected.eyebrow}</p>
+                  <h3 className="text-xl font-semibold tracking-[-0.04em] text-text-primary">{selected.title}</h3>
+                </div>
+              </div>
+              <p className="text-sm leading-5 text-text-secondary">{selected.body}</p>
+              <div className="mt-4 grid gap-2">
+                <AccountDialogFact label={t('accounts.createDialog.limit')} value={t('accounts.createDialog.onePerType')} />
+                <AccountDialogFact label={t('accounts.createDialog.loans')} value={selectedProduct === 'checking' || selectedProduct === 'business_treasury' ? t('accounts.createDialog.availableAsDestination') : t('accounts.createDialog.notAvailableAsDestination')} />
+                <AccountDialogFact label={t('accounts.createDialog.status')} value={selectedExists ? t('accounts.createDialog.alreadyExists') : selectedProduct === 'business_treasury' ? t('accounts.createDialog.requiresRequest') : t('accounts.createDialog.readyToCreate')} />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="secondary" size="md" onClick={onClose} className="flex-1">{t('accounts.createDialog.cancel')}</Button>
+              <Button variant="primary" size="md" loading={busy} disabled={selectedExists} onClick={() => onSubmit(selectedProduct)} className="flex-1">{selectedExists ? t('accounts.createDialog.alreadyActive') : selected.action}</Button>
+            </div>
+          </section>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+function AccountDialogFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-text-tertiary">{label}</span>
+      <span className="text-xs font-semibold text-text-secondary">{value}</span>
+    </div>
   )
 }
 function VaultArchitecturePanel({ selected, streamerMode }: { selected: Account | undefined; streamerMode: boolean }) {
@@ -768,6 +933,10 @@ function AccountsLoading() {
 }
 
 function accountName(account: Account, index: number, t: (key: TranslationKey) => string): string {
+  if (account.account_class === 'checking' || (!account.account_class && index === 0)) return 'Cuenta personal'
+  if (account.account_class === 'savings') return 'Cuenta de ahorro'
+  if (account.account_class === 'business_treasury') return 'Cuenta profesional'
+  if (account.account_class === 'shared') return 'Cuenta compartida'
   if (account.savings_minor > account.balance_minor && account.balance_minor === 0) return t('accounts.protectedSavings')
   if (index === 0) return t('accounts.primaryAccount')
   return String(t('accounts.accountNumber') ?? '').replace('{number}', String(index + 1))
@@ -785,7 +954,7 @@ function getAccountKind(account: Account, index: number, t: (key: TranslationKey
   accent: string
   glow: string
 } {
-  if (account.savings_minor > account.balance_minor && account.balance_minor === 0) {
+  if (account.account_class === 'savings' || (account.savings_minor > account.balance_minor && account.balance_minor === 0)) {
     return {
       label: t('accounts.reserveLabel'),
       icon: PiggyBank,
@@ -793,7 +962,23 @@ function getAccountKind(account: Account, index: number, t: (key: TranslationKey
       glow: 'rgba(82,205,134,0.42)',
     }
   }
-  if (index === 0) {
+  if (account.account_class === 'business_treasury') {
+    return {
+      label: 'PRO',
+      icon: Landmark,
+      accent: 'rgb(167, 139, 250)',
+      glow: 'rgba(167,139,250,0.34)',
+    }
+  }
+  if (account.account_class === 'shared') {
+    return {
+      label: 'SHARED',
+      icon: Users,
+      accent: 'rgb(45, 212, 191)',
+      glow: 'rgba(45,212,191,0.32)',
+    }
+  }
+  if (account.account_class === 'checking' || index === 0) {
     return {
       label: t('accounts.dailyLabel'),
       icon: Wallet,
@@ -818,11 +1003,14 @@ function parseAmountMinor(value: string): number {
 }
 function computeAccountTotals(accounts: Account[]): AccountTotals {
   return accounts.reduce<AccountTotals>(
-    (acc, account) => ({
-      balanceMinor: acc.balanceMinor + account.balance_minor,
-      savingsMinor: acc.savingsMinor + account.savings_minor,
-      totalMinor: acc.totalMinor + account.balance_minor + account.savings_minor,
-    }),
+    (acc, account) => {
+      const isSavingsAccount = account.account_class === 'savings'
+      return {
+        balanceMinor: acc.balanceMinor + (isSavingsAccount ? 0 : account.balance_minor),
+        savingsMinor: acc.savingsMinor + (isSavingsAccount ? account.balance_minor : 0),
+        totalMinor: acc.totalMinor + account.balance_minor,
+      }
+    },
     { balanceMinor: 0, savingsMinor: 0, totalMinor: 0 },
   )
 }

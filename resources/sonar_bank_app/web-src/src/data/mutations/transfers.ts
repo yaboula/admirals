@@ -153,6 +153,7 @@ export function useExecuteTransfer() {
 
 export const savingsTransferSchema = z.object({
   iban: z.string().transform(normalizeIban).pipe(z.string().regex(SONAR_IBAN_RE, 'INVALID_IBAN')),
+  savings_iban: z.string().transform(normalizeIban).pipe(z.string().regex(SONAR_IBAN_RE, 'INVALID_IBAN')),
   amount_minor: z.number().int().positive().max(MAX_TRANSFER_MINOR),
   direction: z.enum(['to_savings', 'from_savings']),
   idempotency_key: z.string().uuid(),
@@ -164,6 +165,7 @@ export type SavingsTransferArgs = z.output<typeof savingsTransferSchema>
 
 export interface SavingsTransferResponse {
   iban: string
+  savings_iban: string
   amount_minor: number
   direction: 'to_savings' | 'from_savings'
   committed_ms: number
@@ -203,10 +205,17 @@ export function useSavingsTransferMutation() {
         qc.setQueryData<BootstrapSnapshot>(queryKeys.bootstrap(), {
           ...previousBootstrap,
           accounts: previousBootstrap.accounts.map((account) => {
-            if (normalizeIban(account.iban) !== args.iban) return account
-            return args.direction === 'to_savings'
-              ? { ...account, balance_minor: account.balance_minor - args.amount_minor, savings_minor: account.savings_minor + args.amount_minor }
-              : { ...account, balance_minor: account.balance_minor + args.amount_minor, savings_minor: account.savings_minor - args.amount_minor }
+            const isChecking = normalizeIban(account.iban) === args.iban
+            const isSavings = normalizeIban(account.iban) === args.savings_iban
+            if (!isChecking && !isSavings) return account
+            if (args.direction === 'to_savings') {
+              if (isChecking) return { ...account, balance_minor: account.balance_minor - args.amount_minor }
+              if (isSavings) return { ...account, balance_minor: account.balance_minor + args.amount_minor }
+            } else {
+              if (isSavings) return { ...account, balance_minor: account.balance_minor - args.amount_minor }
+              if (isChecking) return { ...account, balance_minor: account.balance_minor + args.amount_minor }
+            }
+            return account
           }),
         })
       }

@@ -270,6 +270,7 @@ local function execute_internal_move(ctx, direction)
   local schema_ok, schema_err = Validators.ValidateSchema(ctx, {
     citizen_id      = 'citizen_id',
     from_iban       = 'iban',
+    savings_iban    = 'iban',
     amount_minor    = 'amount',
     idempotency_key = 'idempotency_key',
   })
@@ -277,17 +278,41 @@ local function execute_internal_move(ctx, direction)
     Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = schema_err }
   end
-  ctx.from_iban = Validators.NormalizeIBAN(ctx.from_iban)
+  ctx.from_iban    = Validators.NormalizeIBAN(ctx.from_iban)
+  ctx.savings_iban = Validators.NormalizeIBAN(ctx.savings_iban)
 
-  local owner_cid, account, own_err = Auth.RequireOwnership(ctx.src, ctx.from_iban, { allow_joint = false })
+  if ctx.from_iban == ctx.savings_iban then
+    Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('VALIDATION_FAILED', { reason = 'same_iban' }) }
+  end
+
+  local owner_cid, checking_account, own_err = Auth.RequireOwnership(ctx.src, ctx.from_iban, { allow_joint = false })
   if own_err then
     Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
     return { ok = false, error = own_err }
   end
 
+  local savings_account, sav_err = AccountsRepo.GetByIban(ctx.savings_iban)
+  if sav_err or not savings_account then
+    Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('ACCOUNT_NOT_FOUND', { iban = ctx.savings_iban }) }
+  end
+  if savings_account.owner_citizen_id ~= owner_cid then
+    Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('FORBIDDEN', { reason = 'savings_not_owned' }) }
+  end
+  if savings_account.account_class ~= 'savings' then
+    Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('INVALID_ACCOUNT_CLASS', { account_class = savings_account.account_class }) }
+  end
+  if savings_account.status == 'closed' then
+    Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
+    return { ok = false, error = Errors.New('ACCOUNT_CLOSED', { iban = ctx.savings_iban }) }
+  end
+
   local idem_status, cached, idem_err = Idempotency.Acquire(
     ctx.idempotency_key,
-    { iban = ctx.from_iban, amount_minor = ctx.amount_minor, dir = direction },
+    { iban = ctx.from_iban, savings_iban = ctx.savings_iban, amount_minor = ctx.amount_minor, dir = direction },
     { actor_citizen_id = owner_cid, callback_id = 'C007' }
   )
   if idem_status == 'replay' then
@@ -298,27 +323,26 @@ local function execute_internal_move(ctx, direction)
     return { ok = false, error = idem_err or Errors.New('IDEMPOTENCY_IN_FLIGHT') }
   end
 
-  -- Build TX batch
+  -- Build TX batch: checking_account.balance ↔ savings_account.balance (separate rows)
   local tx_queries
   if direction == 'to_savings' then
-    -- balance → savings
-    if (tonumber(account.balance_minor) or 0) < ctx.amount_minor then
+    if (tonumber(checking_account.balance_minor) or 0) < ctx.amount_minor then
       Idempotency.Orphan(ctx.idempotency_key)
       Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
       return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS') }
     end
     tx_queries = {
       AccountsRepo.BuildDebitBalanceQuery(ctx.from_iban, ctx.amount_minor),
-      AccountsRepo.BuildCreditSavingsQuery(ctx.from_iban, ctx.amount_minor),
+      AccountsRepo.BuildCreditBalanceQuery(ctx.savings_iban, ctx.amount_minor),
     }
   else -- from_savings
-    if (tonumber(account.savings_minor) or 0) < ctx.amount_minor then
+    if (tonumber(savings_account.balance_minor) or 0) < ctx.amount_minor then
       Idempotency.Orphan(ctx.idempotency_key)
       Perf.EndTimer(timer, 'C007', { tier = Enums.TIER.TIER_2_WRITE })
       return { ok = false, error = Errors.New('INSUFFICIENT_FUNDS', { account = 'savings' }) }
     end
     tx_queries = {
-      AccountsRepo.BuildDebitSavingsQuery(ctx.from_iban, ctx.amount_minor),
+      AccountsRepo.BuildDebitBalanceQuery(ctx.savings_iban, ctx.amount_minor),
       AccountsRepo.BuildCreditBalanceQuery(ctx.from_iban, ctx.amount_minor),
     }
   end
@@ -331,12 +355,13 @@ local function execute_internal_move(ctx, direction)
   end
 
   -- Re-fetch updated balances for publish
-  local fresh, fetch_err = AccountsRepo.GetBalance(ctx.from_iban)
-  if not fetch_err and fresh then
+  local fresh_checking, _ = AccountsRepo.GetBalance(ctx.from_iban)
+  local fresh_savings, _   = AccountsRepo.GetBalance(ctx.savings_iban)
+  if fresh_checking then
     Publish.PublishBalanceUpdate(
       ctx.src, owner_cid,
-      tonumber(fresh.balance_minor) or 0,
-      tonumber(fresh.savings_minor) or 0,
+      tonumber(fresh_checking.balance_minor) or 0,
+      tonumber((fresh_savings or {}).balance_minor) or 0,
       { reason = direction == 'to_savings' and 'savings_deposit' or 'savings_withdraw', correlation = ctx.correlation_id }
     )
   end
@@ -346,11 +371,12 @@ local function execute_internal_move(ctx, direction)
     actor_citizen_id = owner_cid,
     actor_src        = ctx.src,
     target_iban      = ctx.from_iban,
-    event_data       = { amount_minor = ctx.amount_minor, direction = direction, correlation_id = ctx.correlation_id },
+    event_data       = { amount_minor = ctx.amount_minor, direction = direction, savings_iban = ctx.savings_iban, correlation_id = ctx.correlation_id },
   })
 
   local result = {
     iban         = ctx.from_iban,
+    savings_iban = ctx.savings_iban,
     amount_minor = ctx.amount_minor,
     direction    = direction,
     committed_ms = now_ms(),
